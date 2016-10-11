@@ -5,13 +5,11 @@ This bot is in active development.
 Download the bot first.
 
 With [SSH](https://gitgud.io/help/ssh/README):
-```
-git clone git@ssh.gitgud.io:infoteddy/bracketed_backslash.git
-```
+	git clone git@ssh.gitgud.io:infoteddy/bracketed_backslash.git
 With HTTPS:
-```
-git clone https://gitgud.io/infoteddy/bracketed_backslash.git
-```
+	git clone https://gitgud.io/infoteddy/bracketed_backslash.git
+With HTTPS, you will be prompted for your [gitgud.io](https://gitgud.io/) username and password every time, not just when cloning the repository.
+
 Python ≥3.5 is required.
 [`discord.py`](https://github.com/Rapptz/discord.py) is required.
 Make sure to `chmod +x intro.py` if you want to make sure the bot can restart properly.
