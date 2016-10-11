@@ -10,7 +10,6 @@ import sys
 import urllib.request
 import json
 
-token = "MjMzNzMxNjI0MTkyMTgwMjI2.CthxiA.5J7jgGC9w50mBYWFkWLywSMVBGs"
 client = discord.Client () # defines all client.* commands
 invoker = '\\' # command invoker
 altinvoker = 'ok glass, ' # alt command invoker
