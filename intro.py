@@ -14,6 +14,10 @@ client = discord.Client () # defines all client.* commands
 invoker = '\\' # command invoker
 altinvoker = 'ok glass, ' # alt command invoker
 
+token_config = open ('bot_token.conf', 'r')
+
+token = token_config.readline (60).split ('\n') [0] # read sixty characters also FUCKING NEWLINES
+
 specialchannel = discord.Object(id='234185735266238464')
 productionserver = '153368829160849408'
 
