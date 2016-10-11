@@ -2,6 +2,16 @@
 This is a bot made by Info Teddy in Python for use on the [tOLP Discord server](https://discord.gg/0r76El7PzkPMhSBF).
 This bot is in active development.
 # Installation Instructions
+Download the bot first.
+
+With [SSH](https://gitgud.io/help/ssh/README):
+```
+git clone git@ssh.gitgud.io:infoteddy/bracketed_backslash.git
+```
+With HTTPS:
+```
+git clone https://gitgud.io/infoteddy/bracketed_backslash.git
+```
 Python ≥3.5 is required.
 [`discord.py`](https://github.com/Rapptz/discord.py) is required.
 Make sure to `chmod +x intro.py` if you want to make sure the bot can restart properly.
