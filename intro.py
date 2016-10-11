@@ -30,9 +30,6 @@ def on_message (message):
 	if message.author == client.user: # is the message sent by the bot
 		return # do nothing
 
-<<<<<<< HEAD
-=======
->>>>>>> development
 	if message.content.startswith (invoker): # does the message start with command invoker
 		altinvokeractive = False
 		pass # continue, go on
