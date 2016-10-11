@@ -21,8 +21,6 @@ token = token_config.readline (60).split ('\n') [0] # read sixty characters also
 specialchannel = discord.Object (id='234185735266238464')
 productionserver = '153368829160849408'
 
-client.max_messages = 6969696969
-
 @client.async_event
 def on_ready ():
 	print ('[info] logged in as {} with id {}'.format (client.user.name, client.user.id))
