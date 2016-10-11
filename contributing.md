@@ -23,7 +23,7 @@ If you’re willing to let Info Teddy be lazy and do the work that he’s suppos
 If you’re willing to be lazy yourself, add ideas and/or requests here so people who aren’t lazy can actually do them.
 
 If an item is checked, then it means the team is going to do it (hopefully), and it will be added to the section above
-### v1.0.
-	- [ ] more secret shit
-	- [ ] maybe if the bot doesnt have a token specified itll just log shit to an output file
-	- [ ] maybe one single configuration location like a normal person xd
+### v1.0
+- [ ] more secret shit
+- [ ] maybe if the bot doesnt have a token specified itll just log shit to an output file
+- [ ] maybe one single configuration location like a normal person xd
