@@ -18,7 +18,7 @@ token_config = open ('bot_token.conf', 'r')
 
 token = token_config.readline (60).split ('\n') [0] # read sixty characters also FUCKING NEWLINES
 
-specialchannel = discord.Object(id='234185735266238464')
+specialchannel = discord.Object (id='234185735266238464')
 productionserver = '153368829160849408'
 
 client.max_messages = 6969696969
@@ -265,20 +265,14 @@ def on_message_delete (message): # when a message gets deleted
 		msg2 = msg_start + content2
 		if message.server.id != productionserver:
 			yield from client.send_message (message.channel, msg1)
-
 			yield from client.send_typing (message.channel)
-
 			yield from client.send_message (message.channel, msg2)
-
 			yield from client.send_typing (message.channel)
 
 		else:
 			yield from client.send_message (specialchannel, msg1)
-
 			yield from client.send_typing (specialchannel)
-
 			yield from client.send_message (specialchannel, msg2)
-
 			yield from client.send_typing (specialchannel)
 
 	else:
@@ -332,20 +326,17 @@ def on_message_edit (before, after): # when a message gets edited
 		msg2 = msg_start + content2
 		if before.server.id != productionserver:
 			yield from client.send_message (before.channel, msg1)
-
 			yield from client.send_typing (before.channel)
-
 			yield from client.send_message (before.channel, msg2)
 		else:
 			yield from client.send_message (specialchannel, msg1)
-
 			yield from client.send_typing (specialchannel)
-
 			yield from client.send_message (specialchannel, msg2)
 
 	else:
 		if before.server.id != productionserver:
 			yield from client.send_message (before.channel, msg)
+
 		else:
 			yield from client.send_message (specialchannel, msg)
 
@@ -371,16 +362,12 @@ def on_message_edit (before, after): # when a message gets edited
 		msg2 = msg_start + content2
 		if after.server.id != productionserver:
 			yield from client.send_message (after.channel, msg1)
-
 			yield from client.send_typing (after.channel)
-
 			yield from client.send_message (after.channel, msg2)
 
 		else:
 			yield from client.send_message (specialchannel, msg1)
-
 			yield from client.send_typing (specialchannel)
-
 			yield from client.send_message (specialchannel, msg2)
 
 	else:
@@ -410,12 +397,10 @@ def on_member_update (before, after):
 
 	if before.server.id != productionserver:
 		yield from client.send_message (before.server.default_channel, msg)
-
 		yield from client.send_typing (after.server.default_channel)
 
 	else:
 		yield from client.send_message (specialchannel, msg)
-
 		yield from client.send_typing (specialchannel)
 
 	msg_start = '**`>`**`user` {}`#{}` `({}) changed nickname`\n'.format (after.name, after.discriminator, after.id)
