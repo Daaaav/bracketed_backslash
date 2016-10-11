@@ -19,6 +19,7 @@ If you’re willing to let Info Teddy be lazy and do the work that he’s suppos
 - [ ] give roles
 	- [ ] give roles upon a new member joining
 	- [ ] remember roles so members cant circumvent softbans/other restrictive roles and ofc give them back upon joining
+
 # Ideas
 If you’re willing to be lazy yourself, add ideas and/or requests here so people who aren’t lazy can actually do them.
 
