@@ -8,5 +8,7 @@ Make sure to `chmod +x intro.py` if you want to make sure the bot can restart pr
 After that, you start the bot by doing `./intro.py` or `python3.5 intro.py` or `python intro.py`.
 # Configuration
 Since this is a private bot, the variables are pretty much hard-written into the bot script itself. But all of the variables (except for the token) are Discord IDs.
+## Token
+The bot token should be only by itself in a file, called `bot_token.conf`, in the same directory as `intro.py`.
 # Contributing
 Make a pull request.
