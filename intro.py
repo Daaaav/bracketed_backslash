@@ -33,11 +33,6 @@ def on_message (message):
 	if message.author == client.user: # is the message sent by the bot
 		return # do nothing
 
-	if message.attachments != []:
-		print (message.attachments)
-		response = urllib.request.urlretrieve (json.loads (repr (message.attachments [0])))
-		file.write (response)
-
 	if message.content.startswith (invoker): # does the message start with command invoker
 		altinvokeractive = False
 		pass # continue, go on
