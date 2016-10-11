@@ -66,6 +66,7 @@ def on_message (message):
 Special thanks to Dav999 for giving input and feedback on the bot.
 __`Commands:`__
 `\help` – Lists commands and their descriptions.
+`\source` – Luigi Master hates open source. But this command gives the link to the source code to the bot.
 `\echo` – Echoes your input.
 `\info` – Unfinished command to get information about a user.
 `\\teddy` – The obvious counterpart to `\info`.
@@ -81,6 +82,10 @@ __`Commands:`__
 		if arguments == 'help':
 			content = '''`\help` – Lists commands and their descriptions.
 Any arguments passed to `\help` will make `\help` try to look up more in-depth description of the command.'''
+
+		elif arguments == 'source':
+			content = '''`\source` – Luigi Master hates open source. But this command gives the link to the source code to the bot.
+It’s hosted on __https://gitgud.io/__.'''
 
 		elif arguments == 'echo':
 			content = '''`\echo` – Echoes your input.
@@ -169,6 +174,11 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			arguments = ''
 
 		content = arguments
+		msg = msg_start + content
+		yield from client.send_message (message.channel, msg)
+
+	elif command == 'source':
+		content = 'Source code to the bot: __https://gitgud.io/infoteddy/bracketed_backslash__'
 		msg = msg_start + content
 		yield from client.send_message (message.channel, msg)
 
