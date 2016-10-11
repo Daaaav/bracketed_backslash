@@ -11,4 +11,4 @@ Since this is a private bot, the variables are pretty much hard-written into the
 ## Token
 The bot token should be only by itself in a file, called `bot_token.conf`, in the same directory as `intro.py`.
 # Contributing
-Make a pull request.
+Make a pull request. Make sure to use tabs over spaces, though (with a tabstop of eight).
