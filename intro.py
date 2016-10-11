@@ -13,7 +13,7 @@ import json
 client = discord.Client () # defines all client.* commands
 invoker = '\\' # command invoker
 altinvoker = 'ok glass, ' # alt command invoker
-
+# whoops forgot how git works
 token_config = open ('bot_token.conf', 'r')
 
 token = token_config.readline (60).split ('\n') [0] # read sixty characters also FUCKING NEWLINES
