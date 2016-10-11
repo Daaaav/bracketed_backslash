@@ -7,8 +7,7 @@
 import discord
 import os
 import sys
-import urllib.request
-import json
+import urllib
 
 client = discord.Client () # defines all client.* commands
 invoker = '\\' # command invoker
@@ -31,6 +30,9 @@ def on_message (message):
 	if message.author == client.user: # is the message sent by the bot
 		return # do nothing
 
+<<<<<<< HEAD
+=======
+>>>>>>> development
 	if message.content.startswith (invoker): # does the message start with command invoker
 		altinvokeractive = False
 		pass # continue, go on
@@ -64,6 +66,7 @@ def on_message (message):
 Special thanks to Dav999 for giving input and feedback on the bot.
 __`Commands:`__
 `\help` – Lists commands and their descriptions.
+`\` – Mentions you.
 `\source` – Luigi Master hates open source. But this command gives the link to the source code to the bot.
 `\echo` – Echoes your input.
 `\info` – Unfinished command to get information about a user.
@@ -80,6 +83,10 @@ __`Commands:`__
 		if arguments == 'help':
 			content = '''`\help` – Lists commands and their descriptions.
 Any arguments passed to `\help` will make `\help` try to look up more in-depth description of the command.'''
+
+		elif arguments == invoker or arguments == altinvoker:
+			content = '''`\` – Mentions you.
+Don’t type this command in if you don’t want to be mentioned.'''
 
 		elif arguments == 'source':
 			content = '''`\source` – Luigi Master hates open source. But this command gives the link to the source code to the bot.
@@ -172,6 +179,11 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			arguments = ''
 
 		content = arguments
+		msg = msg_start + content
+		yield from client.send_message (message.channel, msg)
+
+	elif command == '':
+		content = '<@{}>'.format (message.author.id)
 		msg = msg_start + content
 		yield from client.send_message (message.channel, msg)
 
