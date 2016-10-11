@@ -11,4 +11,4 @@ Since this is a private bot, the variables are pretty much hard-written into the
 ## Token
 The bot token should be only by itself in a file, called `bot_token.conf`, in the same directory as `intro.py`.
 # Contributing
-See [contributing.md][contributing.md].
+See [contributing.md](contributing.md).
