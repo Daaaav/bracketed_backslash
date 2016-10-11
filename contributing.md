@@ -1,5 +1,5 @@
 # Contributing
-Make a pull request. You should use tabs over spaces with a tabstop of eight.
+Make a pull request. You should use tabs instead of spaces with a tabstop of eight.
 ## Tasks
 If you’re willing to let Info Teddy be lazy and do the work that he’s supposed to do (and he’ll convince you by saying he has homework to do and a life), you can add all of this.
 ### v1.0
