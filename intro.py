@@ -7,8 +7,7 @@
 import discord
 import os
 import sys
-import urllib.request
-import json
+import urllib
 
 client = discord.Client () # defines all client.* commands
 invoker = '\\' # command invoker
@@ -66,6 +65,7 @@ def on_message (message):
 Special thanks to Dav999 for giving input and feedback on the bot.
 __`Commands:`__
 `\help` – Lists commands and their descriptions.
+`\` – Mentions you.
 `\source` – Luigi Master hates open source. But this command gives the link to the source code to the bot.
 `\echo` – Echoes your input.
 `\info` – Unfinished command to get information about a user.
@@ -84,6 +84,10 @@ __`Commands:`__
 		if arguments == 'help':
 			content = '''`\help` – Lists commands and their descriptions.
 Any arguments passed to `\help` will make `\help` try to look up more in-depth description of the command.'''
+
+		elif arguments == invoker or arguments == altinvoker:
+			content = '''`\` – Mentions you.
+Don’t type this command in if you don’t want to be mentioned.'''
 
 		elif arguments == 'source':
 			content = '''`\source` – Luigi Master hates open source. But this command gives the link to the source code to the bot.
@@ -185,6 +189,11 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 		msg = msg_start + content
 		yield from client.send_message (message.channel, msg)
 
+	elif command == '':
+		content = '<@{}>'.format (message.author.id)
+		msg = msg_start + content
+		yield from client.send_message (message.channel, msg)
+
 	elif command == 'source':
 		content = 'Source code to the bot: __https://gitgud.io/infoteddy/bracketed_backslash__'
 		msg = msg_start + content
@@ -208,9 +217,15 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			yield from client.send_message(message.channel, msg)
 			return
 		
-		# Maybe check for my permissions and for whether this ID is actually a member?
-		yield from client.add_roles(message.server.get_member(arguments), discord.utils.get(message.server.roles, id='173240966575161344')) # The nonsense-only role
-		content = 'Gave <@' + arguments + '> the Nonsense-Only role.'
+		# Maybe check for my permissions?
+		try:
+			yield from client.add_roles(message.server.get_member(arguments), discord.utils.get(message.server.roles, id='173240966575161344')) # The nonsense-only role
+		except AttributeError:
+			content = 'Please specify a user ID.'
+			msg = msg_start + content
+			yield from client.send_message(message.channel, msg)
+			return
+		content = 'Gave <@{}> the Nonsense-Only role.'.format(message.author.id)
 		msg = msg_start + content
 		yield from client.send_message(message.channel, msg)
 
