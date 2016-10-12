@@ -205,7 +205,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			return
 		
 		# Maybe check for my permissions and for whether this ID is actually a member?
-		yield from client.add_roles(discord.Object(id=arguments), discord.utils.get(server.roles, id='173240966575161344')) # The nonsense-only role
+		yield from client.add_roles(message.server.get_member(arguments), discord.utils.get(message.server.roles, id='173240966575161344')) # The nonsense-only role
 		content = 'Gave <@' + arguments + '> the Nonsense-Only role.'
 		msg = msg_start + content
 		yield from client.send_message(message.channel, msg)
