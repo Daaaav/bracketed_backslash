@@ -79,7 +79,8 @@ __`Commands:`__
 `\\botok` – Pings the bot.
 `\\restart` – Restarts the bot.
 `\kill` – Kills the bot. This method does not kill it cleanly.
-`\\nononly` - Restrict a user to only chat in the <#173239163666038784> channel'''
+`\\nononly` - Restrict a user to only chat in the <#173239163666038784> channel
+`\\rolerst` - Reset roles for a user.'''
 		if arguments == 'help':
 			content = '''`\help` – Lists commands and their descriptions.
 Any arguments passed to `\help` will make `\help` try to look up more in-depth description of the command.'''
@@ -135,6 +136,9 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 
 		elif arguments == 'nononly':
 			content = '`\\nononly` - Restrict a user to only chat in the <#173239163666038784> channel. Accepts a user ID as an argument.'
+
+		elif arguments == 'rolerst':
+			content = '`\\rolerst` - Reset roles for a user. Accepts a user ID as an argument, and changes the user\'s roles back to normal.'
 
 		elif arguments == None:
 			pass
@@ -207,6 +211,35 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 		# Maybe check for my permissions and for whether this ID is actually a member?
 		yield from client.add_roles(message.server.get_member(arguments), discord.utils.get(message.server.roles, id='173240966575161344')) # The nonsense-only role
 		content = 'Gave <@' + arguments + '> the Nonsense-Only role.'
+		msg = msg_start + content
+		yield from client.send_message(message.channel, msg)
+
+	elif command == 'rolerst':
+		if not is_mod(message.author.id):
+			content = 'Permission denied, this can only be done by a moderator or admin.'
+			msg = msg_start + content
+			print('[info] rolerst attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			yield from client.send_message(message.channel, msg)
+			return
+		elif message.server.id != productionserver:
+			content = 'Production server only!'
+			msg = msg_start + content
+			yield from client.send_message(message.channel, msg)
+			return
+		elif arguments == None:
+			content = 'Please specify a user ID.'
+			msg = msg_start + content
+			yield from client.send_message(message.channel, msg)
+			return
+
+		yield from client.remove_roles(message.server.get_member(arguments),
+			discord.utils.get(message.server.roles, id='173240966575161344'), # nonsense-only
+			discord.utils.get(message.server.roles, id='216647716531339264'), # no general mentions
+			discord.utils.get(message.server.roles, id='222046096216686592'), # no cedule
+			discord.utils.get(message.server.roles, id='215954720555139073'), # no tts
+			discord.utils.get(message.server.roles, id='220643748508467220')  # banned
+		)
+		content = 'Lifted all restrictive roles for <@' + arguments + '>.'
 		msg = msg_start + content
 		yield from client.send_message(message.channel, msg)
 
