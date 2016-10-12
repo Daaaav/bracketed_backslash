@@ -11,7 +11,6 @@ import urllib.request
 import json
 
 client = discord.Client () # defines all client.* commands
-server = discord.Server () # defines all server.* commands
 invoker = '\\' # command invoker
 altinvoker = 'ok glass, ' # alt command invoker
 
@@ -21,6 +20,8 @@ token = token_config.readline (60).split ('\n') [0] # read sixty characters also
 
 specialchannel = discord.Object (id='234185735266238464')
 productionserver = '153368829160849408'
+
+server = client.get_server('153368829160849408') # defines all server.* commands
 
 @client.async_event
 def on_ready ():
