@@ -77,7 +77,7 @@ __`Commands:`__
 `\\botok` – Pings the bot.
 `\\restart` – Restarts the bot.
 `\kill` – Kills the bot. This method does not kill it cleanly.
-`\\nononly` - Restrict a user to only chat in the #nonsense channel'''
+`\\nononly` - Restrict a user to only chat in the <#173239163666038784> channel'''
 		if arguments == 'help':
 			content = '''`\help` – Lists commands and their descriptions.
 Any arguments passed to `\help` will make `\help` try to look up more in-depth description of the command.'''
@@ -132,7 +132,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			content = '`\kill` – Kills the bot. This method does not kill it cleanly.'
 
 		elif arguments == 'nononly':
-			content = '`\\nononly` - Restrict a user to only chat in the #nonsense channel. Accepts a user ID as an argument.'
+			content = '`\\nononly` - Restrict a user to only chat in the <#173239163666038784> channel. Accepts a user ID as an argument.'
 
 		elif arguments == None:
 			pass
