@@ -61,8 +61,7 @@ def on_message (message):
 	command = command.split (' ', 1) [0]
 
 	if command == 'help':
-		content = '''`[\]` is a bot written by Info Teddy in Python utilizing `discord.py`, for use on the tOLP Discord server.
-Special thanks to Dav999 for giving input and feedback on the bot.
+		content = '''`[\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server.
 __`Commands:`__
 `\help` – Lists commands and their descriptions.
 `\` – Mentions you.
