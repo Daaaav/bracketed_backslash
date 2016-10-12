@@ -76,7 +76,8 @@ __`Commands:`__
 `\*formatting*` – This is an example of italicized formatting.
 `\\botok` – Pings the bot.
 `\\restart` – Restarts the bot.
-`\kill` – Kills the bot. This method does not kill it cleanly.'''
+`\kill` – Kills the bot. This method does not kill it cleanly.
+`\\nononly` - Restrict a user to only chat in the #nonsense channel'''
 		if arguments == 'help':
 			content = '''`\help` – Lists commands and their descriptions.
 Any arguments passed to `\help` will make `\help` try to look up more in-depth description of the command.'''
@@ -129,6 +130,9 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 
 		elif arguments == 'kill':
 			content = '`\kill` – Kills the bot. This method does not kill it cleanly.'
+
+		elif arguments == 'nononly':
+			content = '`\\nononly` - Restrict a user to only chat in the #nonsense channel. Accepts a user ID as an argument.'
 
 		elif arguments == None:
 			pass
@@ -475,14 +479,14 @@ def on_member_remove (member):
 def is_admin(memberid):
 	# This should probably be changed to a membergroup/permissions check, but this works for now.
 	if memberid == '146814960574398464' or memberid == '159793749604433921': # these are the ids of info teddy and dav999
-		return true
+		return True
 
-	return false
+	return False
 
 def is_mod(memberid):
 	# Same here. No need to use is_admin and is_mod in the same conditional.
 	if memberid == '152931944357691394': # Format
-		return true
+		return True
 	
 	return is_admin(memberid) # Admins have moderator powers, too
 
