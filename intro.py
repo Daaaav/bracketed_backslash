@@ -20,6 +20,8 @@ token = token_config.readline (60).split ('\n') [0] # read sixty characters also
 specialchannel = discord.Object (id='234185735266238464')
 productionserver = '153368829160849408'
 
+server = client.get_server(productionserver) # defines all server.* commands
+
 @client.async_event
 def on_ready ():
 	print ('[info] logged in as {} with id {}'.format (client.user.name, client.user.id))
@@ -76,7 +78,8 @@ __`Commands:`__
 `\*formatting*` – This is an example of italicized formatting.
 `\\botok` – Pings the bot.
 `\\restart` – Restarts the bot.
-`\kill` – Kills the bot. This method does not kill it cleanly.'''
+`\kill` – Kills the bot. This method does not kill it cleanly.
+`\\nononly` - Restrict a user to only chat in the <#173239163666038784> channel'''
 		if arguments == 'help':
 			content = '''`\help` – Lists commands and their descriptions.
 Any arguments passed to `\help` will make `\help` try to look up more in-depth description of the command.'''
@@ -134,6 +137,9 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 		elif arguments == 'kill':
 			content = '`\kill` – Kills the bot. This method does not kill it cleanly.'
 
+		elif arguments == 'nononly':
+			content = '`\\nononly` - Restrict a user to only chat in the <#173239163666038784> channel. Accepts a user ID as an argument.'
+
 		elif arguments == None:
 			pass
 
@@ -144,7 +150,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 		yield from client.send_message (message.channel, msg)
 
 	elif command == 'restart':
-		if message.author.id != '146814960574398464' and message.author.id != '159793749604433921': # these are the ids of info teddy and dav999
+		if not is_admin(message.author.id):
 			content = 'Permission denied. This command can only be used by Info Teddy or Dav999.'
 			msg = msg_start + content
 			print ('[info] bot restart tried to be called by {}#{} (uuid {}) at {} utc but failed'.format (message.author.name, message.author.discriminator, message.author.id, message.timestamp))
@@ -158,7 +164,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 		yield from os.execl(__file__, '')
 
 	elif command == 'kill':
-		if message.author.id != '146814960574398464' and message.author.id != '159793749604433921': # these are the ids of info teddy and dav999
+		if not is_admin(message.author.id):
 			content = 'Permission denied. This command can only be used by Info Teddy or Dav999.'
 			msg = msg_start + content
 			print ('[info] bot kill tried to be called by {}#{} (uuid {}) at {} utc but failed'.format (message.author.name, message.author.discriminator, message.author.id, message.timestamp))
@@ -188,6 +194,30 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 		content = 'Source code to the bot: __https://gitgud.io/infoteddy/bracketed_backslash__'
 		msg = msg_start + content
 		yield from client.send_message (message.channel, msg)
+
+	elif command == 'nononly':
+		if not is_mod(message.author.id):
+			content = 'Permission denied, this can only be done by a moderator or admin.'
+			msg = msg_start + content
+			print('[info] nononly attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			yield from client.send_message(message.channel, msg)
+			return
+		elif message.server.id != productionserver:
+			content = 'Production server only!'
+			msg = msg_start + content
+			yield from client.send_message(message.channel, msg)
+			return
+		elif arguments == None:
+			content = 'Please specify a user ID.'
+			msg = msg_start + content
+			yield from client.send_message(message.channel, msg)
+			return
+		
+		# Maybe check for my permissions and for whether this ID is actually a member?
+		yield from client.add_roles(message.server.get_member(arguments), discord.utils.get(message.server.roles, id='173240966575161344')) # The nonsense-only role
+		content = 'Gave <@' + arguments + '> the Nonsense-Only role.'
+		msg = msg_start + content
+		yield from client.send_message(message.channel, msg)
 
 	elif command == 'info':
 		content = str (message.author.permissions_in (message.channel))
@@ -456,5 +486,19 @@ def on_member_remove (member):
 
 	else:
 		yield from client.send_message (specialchannel, msg)
+
+def is_admin(memberid):
+	# This should probably be changed to a membergroup/permissions check, but this works for now.
+	if memberid == '146814960574398464' or memberid == '159793749604433921': # these are the ids of info teddy and dav999
+		return True
+
+	return False
+
+def is_mod(memberid):
+	# Same here. No need to use is_admin and is_mod in the same conditional.
+	if memberid == '152931944357691394': # Format
+		return True
+	
+	return is_admin(memberid) # Admins have moderator powers, too
 
 client.run (token)
