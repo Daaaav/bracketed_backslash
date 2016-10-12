@@ -11,6 +11,7 @@ import urllib.request
 import json
 
 client = discord.Client () # defines all client.* commands
+server = discord.Server () # defines all server.* commands
 invoker = '\\' # command invoker
 altinvoker = 'ok glass, ' # alt command invoker
 
