@@ -224,7 +224,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			msg = msg_start + content
 			yield from client.send_message(message.channel, msg)
 			return
-		content = 'Gave <@{}> the Nonsense-Only role.'.format(message.author.id)
+		content = 'Gave <@{}> the Nonsense-Only role.'.format(arguments)
 		msg = msg_start + content
 		yield from client.send_message(message.channel, msg)
 
