@@ -61,8 +61,7 @@ def on_message (message):
 	command = command.split (' ', 1) [0]
 
 	if command == 'help':
-		content = '''`[\]` is a bot written by Info Teddy in Python utilizing `discord.py`, for use on the tOLP Discord server.
-Special thanks to Dav999 for giving input and feedback on the bot.
+		content = '''`[\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server.
 __`Commands:`__
 `\help` – Lists commands and their descriptions.
 `\` – Mentions you.
@@ -265,7 +264,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			msg = msg_start + content
 			yield from client.send_message(message.channel, msg)
 			return
-		content = 'Gave <@{}> the Nonsense-Only role.'.format(message.author.id)
+		content = 'Gave <@{}> the Nonsense-Only role.'.format(arguments)
 		msg = msg_start + content
 		yield from client.send_message(message.channel, msg)
 
