@@ -10,7 +10,7 @@ If you’re willing to let Info Teddy be lazy and do the work that he’s suppos
 	- [ ] when people are invisible for no reason
 - [ ] actually add moderation/administration commands
 	- [ ] `\softban`
-	- [ ] `\nononly`
+	- [x] `\nononly`
 	- [ ] `\nonick`
 	- [ ] `\notts`
 	- [ ] `\nogenmen`
