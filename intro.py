@@ -213,8 +213,14 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			yield from client.send_message(message.channel, msg)
 			return
 		
-		# Maybe check for my permissions and for whether this ID is actually a member?
-		yield from client.add_roles(message.server.get_member(arguments), discord.utils.get(message.server.roles, id='173240966575161344')) # The nonsense-only role
+		# Maybe check for my permissions?
+		try:
+			yield from client.add_roles(message.server.get_member(arguments), discord.utils.get(message.server.roles, id='173240966575161344')) # The nonsense-only role
+		except AttributeError:
+			content = 'Please specify a user ID.'
+			msg = msg_start + content
+			yield from client.send_message(message.channel, msg)
+			return
 		content = 'Gave <@{}> the Nonsense-Only role.'.format(message.author.id)
 		msg = msg_start + content
 		yield from client.send_message(message.channel, msg)
