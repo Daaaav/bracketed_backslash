@@ -154,9 +154,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 	elif command == 'echo':
 		if arguments == None:
 			arguments = ''
-		content = arguments
-		msg = msg_start + content
-		yield from client.send_message(message.channel, msg)
+		reply(arguments)
 	elif command == '':
 		content = '<@{}>'.format(message.author.id)
 		msg = msg_start + content
@@ -480,5 +478,10 @@ def is_mod(memberid):
 	if memberid == '152931944357691394': # Format
 		return True
 	return is_admin(memberid) # Admins have moderator powers, too
+
+def reply(message):
+	# Removes the need for adding msg_start manually every time
+	msg = msg_start + message
+	yield from client.send_message(message.channel, msg)
 
 client.run (token)
