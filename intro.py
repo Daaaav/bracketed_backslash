@@ -11,7 +11,6 @@ import urllib
 import warnings
 
 client = discord.Client() # defines all client.* commands
-server = client.get_server(productionserver) # defines all server.* commands
 
 invoker = '\\' # command invoker
 altinvoker = 'ok glass, ' # alt command invoker
@@ -22,6 +21,7 @@ token = token_config.readline(60).split('\n')[0] # read sixty characters also FU
 
 specialchannel = discord.Object(id='234185735266238464')
 productionserver = '153368829160849408'
+server = client.get_server(productionserver) # defines all server.* commands
 
 @client.async_event
 def on_ready():
