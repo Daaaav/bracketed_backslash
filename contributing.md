@@ -9,13 +9,14 @@ If you’re willing to let Info Teddy be lazy and do the work that he’s suppos
 	- [ ] member role adds/removes
 	- [ ] when people are invisible for no reason
 - [ ] actually add moderation/administration commands
-	- [ ] `\softban`
+	- [x] `\softban`
 	- [x] `\nononly`
 	- [ ] `\nonick`
 	- [ ] `\notts`
 	- [ ] `\nogenmen`
 	- [ ] `\nocedule`
 		- [ ] come up with a better name for this fucking command
+    - [x] `\rolerst`
 - [ ] give roles
 	- [ ] give roles upon a new member joining
 	- [ ] remember roles so members cant circumvent softbans/other restrictive roles and ofc give them back upon joining
