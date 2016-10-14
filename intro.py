@@ -489,10 +489,9 @@ def is_mod(memberid):
 		return True
 	return is_admin(memberid) # Admins have moderator powers, too
 
-@asyncio.coroutine
+@client.async_event
 def reply(message):
 	# Removes the need for adding msg_start manually every time
-	msg = msg_start + message
-	yield from client.send_message(message.channel, msg)
+	yield from client.send_message(message.channel, message)
 
 client.run (token)
