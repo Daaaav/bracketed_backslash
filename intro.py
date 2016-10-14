@@ -127,31 +127,26 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			pass
 		else:
 			content = 'Invalid arguments passed. Input `\help` for a list of valid commands to pass as arguments.'
-		msg = msg_start + content
-		yield from client.send_message(message.channel, msg)
+		yield from reply(message, content)
 	elif command == 'restart':
 		if not is_admin(message.author.id):
 			content = 'Permission denied. This command can only be used by Info Teddy or Dav999.'
-			msg = msg_start + content
 			print ('[info] bot restart tried to be called by {}#{} (uuid {}) at {} utc but failed'.format (message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-			yield from client.send_message(message.channel, msg)
+			yield from reply(message, content)
 			return
 		content = 'Restarting.'
-		msg = msg_start + content
 		print('[info] bot restart called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-		yield from client.send_message(message.channel, msg)
+		yield from reply(message, content)
 		yield from os.execl(__file__, '')
 	elif command == 'kill':
 		if not is_admin(message.author.id):
 			content = 'Permission denied. This command can only be used by Info Teddy or Dav999.'
-			msg = msg_start + content
 			print('[info] bot kill tried to be called by {}#{} (uuid {}) at {} utc but failed'.format (message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-			yield from client.send_message (message.channel, msg)
+			yield from reply(message, content)
 			return
 		content = 'Killing.'
-		msg = msg_start + content
 		print('[info] bot kill called by {}#{} (uuid {}) at {} utc'.format (message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-		yield from client.send_message(message.channel, msg)
+		yield from reply(message, content)
 		yield from sys.exit()
 	elif command == 'echo':
 		if arguments == None:
@@ -159,28 +154,23 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 		yield from reply(message, arguments)
 	elif command == '':
 		content = '<@{}>'.format(message.author.id)
-		msg = msg_start + content
-		yield from client.send_message(message.channel, msg)
+		yield from reply(message, content)
 	elif command == 'source':
 		content = 'Source code to the bot: __https://gitgud.io/infoteddy/bracketed_backslash__'
-		msg = msg_start + content
-		yield from client.send_message(message.channel, msg)
+		yield from reply(message, content)
 	elif command == 'softban':
 		if not is_mod(message.author.id):
 			content = 'Permission denied, this can only be done by a moderator or admin.'
-			msg = msg_start + content
 			print('[info] softban attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-			yield from client.send_message(message.channel, msg)
+			yield from reply(message, content)
 			return
 		elif message.server.id != productionserver:
 			content = 'Production server only!'
-			msg = msg_start + content
-			yield from client.send_message(message.channel, msg)
+			yield from reply(message, content)
 			return
 		elif arguments == None:
 			content = 'Please specify a user ID.'
-			msg = msg_start + content
-			yield from client.send_message(message.channel, msg)
+			yield from reply(message, content)
 			return
 		try:
 			# Some of the other restrictive roles might mess it up a bit by granting something, we banned them altogether now so no need to keep those
@@ -193,56 +183,46 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			yield from client.add_roles(message.server.get_member(arguments), discord.utils.get(message.server.roles, id='220643748508467220')) # The banned role
 		except AttributeError:
 			content = 'Please specify a user ID.'
-			msg = msg_start + content
-			yield from client.send_message(message.channel, msg)
+			yield from reply(message, content)
 			return
 		content = ':no_entry: <@{}> has been softbanned.'.format(arguments)
-		msg = msg_start + content
-		yield from client.send_message(message.channel, msg)
+		yield from reply(message, content)
 	elif command == 'nononly':
 		if not is_mod(message.author.id):
 			content = 'Permission denied, this can only be done by a moderator or administrator.'
-			msg = msg_start + content
 			print('[info] nononly attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-			yield from client.send_message(message.channel, msg)
+			yield from reply(message, content)
 			return
 		elif message.server.id != productionserver:
 			content = 'Production server only!'
-			msg = msg_start + content
-			yield from client.send_message(message.channel, msg)
+			yield from reply(message, content)
 			return
 		elif arguments == None:
 			content = 'Please specify a user ID.'
-			msg = msg_start + content
-			yield from client.send_message(message.channel, msg)
+			yield from reply(message, content)
 			return
 		# Maybe check for my permissions?
 		try:
 			yield from client.add_roles(message.server.get_member(arguments), discord.utils.get(message.server.roles, id='173240966575161344')) # The nonsense-only role
 		except AttributeError:
 			content = 'Please specify a user ID.'
-			msg = msg_start + content
-			yield from client.send_message(message.channel, msg)
+			yield from reply(message, content)
 			return
 		content = 'Gave <@{}> the Nonsense-Only role.'.format(arguments)
-		msg = msg_start + content
-		yield from client.send_message(message.channel, msg)
+		yield from reply(message, content)
 	elif command == 'rolerst':
 		if not is_mod(message.author.id):
 			content = 'Permission denied, this can only be done by a moderator or admin.'
-			msg = msg_start + content
 			print('[info] rolerst attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-			yield from client.send_message(message.channel, msg)
+			yield from reply(message, content)
 			return
 		elif message.server.id != productionserver:
 			content = 'Production server only!'
-			msg = msg_start + content
-			yield from client.send_message(message.channel, msg)
+			yield from reply(message, content)
 			return
 		elif arguments == None:
 			content = 'Please specify a user ID.'
-			msg = msg_start + content
-			yield from client.send_message(message.channel, msg)
+			yield from reply(message, content)
 			return
 		yield from client.remove_roles(message.server.get_member(arguments),
 			discord.utils.get(message.server.roles, id='173240966575161344'), # nonsense-only
@@ -252,54 +232,43 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			discord.utils.get(message.server.roles, id='220643748508467220')  # banned
 		)
 		content = 'Lifted all restrictive roles for <@' + arguments + '>.'
-		msg = msg_start + content
-		yield from client.send_message(message.channel, msg)
+		yield from reply(message, content)
 	elif command == 'info':
 		content = str(message.author.permissions_in(message.channel))
 		perms = discord.Channel.permissions_for(message.channel, message.author)
 		print(perms)
 		content = 'Unfinished command. This command currently sends output to Info Teddy.'
-		msg = msg_start + content
-		yield from client.send_message(message.channel, msg)
+		yield from reply(message, content)
 	elif command == 'teddy':
 		content = 'xd'
-		msg = msg_start + content
-		yield from client.send_message(message.channel, msg)
+		yield from reply(message, content)
 	elif command == 'samar':
 		content = 'Why does he like Undertale?'
-		msg = msg_start + content
-		yield from client.send_message(message.channel, msg)
+		yield from reply(message, content)
 	elif command == 'lui':
 		content = 'i think /r/undertale is a pretty cool guy, eh deletes messages and doesnt afraid of lying'
-		msg = msg_start + content
-		yield from client.send_message(message.channel, msg)
+		yield from reply(message, content)
 	elif command == 'shiny':
 		content = 'moar liek shittykitty amirite'
-		msg = msg_start + content
-		yield from client.send_message(message.channel, msg)
+		yield from reply(message, content)
 	elif command == 'tainy':
 		content = 'moar liek stainy amirite'
-		msg = msg_start + content
-		yield from client.send_message(message.channel, msg)
+		yield from reply(message, content)
 	elif command == 'kys':
 		content = 'nah'
-		msg = msg_start + content
-		yield from client.send_message(message.channel, msg)
+		yield from reply(message, content)
 	elif command == 'botok':
 		content = 'Bot is okay.'
-		msg = msg_start + content
-		yield from client.send_message(message.channel, msg)
+		yield from reply(message, content)
 	elif command == '*formatting*':
 		content = 'That’s italicized formatting.'
-		msg = msg_start + content
-		yield from client.send_message(message.channel, msg)
+		yield from reply(message, content)
 	else:
 		if altinvokeractive:
 			return # do not print error message if command is invalid
 		else:
 			content = 'Invalid command. Input `\help` for a list of valid commands.'
-			msg = msg_start + content
-			yield from client.send_message(message.channel, msg)
+			yield from reply(message, content)
 
 @client.async_event
 def on_message_delete(message): # when a message gets deleted
