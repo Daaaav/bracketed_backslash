@@ -224,15 +224,23 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			content = 'Please specify a user ID.'
 			yield from reply(message, content)
 			return
-		yield from client.remove_roles(message.server.get_member(arguments),
+			
+		targetmember = message.server.get_member(arguments)
+			
+		yield from client.remove_roles(targetmember,
 			discord.utils.get(message.server.roles, id='173240966575161344'), # nonsense-only
 			discord.utils.get(message.server.roles, id='216647716531339264'), # no general mentions
 			discord.utils.get(message.server.roles, id='222046096216686592'), # no cedule
 			discord.utils.get(message.server.roles, id='215954720555139073'), # no tts
 			discord.utils.get(message.server.roles, id='220643748508467220')  # banned
 		)
-		content = 'Lifted all restrictive roles for <@' + arguments + '>.'
+		if not is_bot(targetmember):
+			yield from client.add_roles(targetmember, discord.utils.get(member.server.roles, id='231644869351833600')) # Also give them the tOLPer role if they didn't have it
+		content = 'Reset roles for <@' + arguments + '> back to normal.'
 		yield from reply(message, content)
+	elif command == 'isbot': # TEMPORARY DEBUG COMMAND
+		targetmember = message.server.get_member(arguments)
+		yield from reply("Is a bot" if is_bot(targetmember) else "Is not a bot")
 	elif command == 'info':
 		content = str(message.author.permissions_in(message.channel))
 		perms = discord.Channel.permissions_for(message.channel, message.author)
@@ -459,6 +467,13 @@ def is_mod(memberid):
 	if memberid == '152931944357691394': # Format
 		return True
 	return is_admin(memberid) # Admins have moderator powers, too
+	
+def is_bot(memberid):
+	# Alright then.
+	for role in memberid.roles:
+		if rol.id == '201129507967598592': # Bot role
+			return True
+	return False
 
 @client.async_event
 def reply(messageobject, message):
