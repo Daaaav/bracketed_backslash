@@ -17,7 +17,7 @@ If you’re willing to let Info Teddy be lazy and do the work that he’s suppos
 	- [ ] `\nocedule`
 		- [ ] come up with a better name for this fucking command
 - [ ] give roles
-	- [ ] give roles upon a new member joining
+	- [x] give roles upon a new member joining
 	- [ ] remember roles so members cant circumvent softbans/other restrictive roles and ofc give them back upon joining
 
 # Ideas

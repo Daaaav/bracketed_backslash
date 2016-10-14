@@ -454,6 +454,16 @@ def on_member_join (member):
 		yield from client.send_message(member.server.default_channel, msg)
 	else:
 		yield from client.send_message(specialchannel, msg)
+		
+		# TODO: Look up that member in our database, to see if this user should get a restrictive group again.
+		# If someone is just a tOLPer, they won't be in the database.
+		if False:
+			# They're found in the database! Give them the groups they should have
+			pass
+		else:
+			# Not found, so they're just a tOLPer.
+			yield from client.add_roles(member, discord.utils.get(member.server.roles, id='231644869351833600')) # The tOLPer role
+			yield from client.send_message(specialchannel, '`Given {}`#{}` `({}) the tOLPer role.`'.format(member.name, member.discriminator, member.id))
 
 @client.async_event
 def on_member_remove(member):
