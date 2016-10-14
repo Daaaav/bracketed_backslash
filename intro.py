@@ -240,7 +240,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 		yield from reply(message, content)
 	elif command == 'isbot': # TEMPORARY DEBUG COMMAND
 		targetmember = message.server.get_member(arguments)
-		yield from reply("Is a bot" if is_bot(targetmember) else "Is not a bot")
+		yield from reply(message, "Is a bot" if is_bot(targetmember) else "Is not a bot")
 	elif command == 'info':
 		content = str(message.author.permissions_in(message.channel))
 		perms = discord.Channel.permissions_for(message.channel, message.author)
@@ -471,7 +471,7 @@ def is_mod(memberid):
 def is_bot(memberid):
 	# Alright then.
 	for role in memberid.roles:
-		if rol.id == '201129507967598592': # Bot role
+		if role.id == '201129507967598592': # Bot role
 			return True
 	return False
 
