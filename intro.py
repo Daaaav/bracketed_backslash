@@ -30,6 +30,8 @@ def on_ready():
 
 @client.async_event
 def on_message(message):
+	global msg_start
+
 	if message.author == client.user: # is the message sent by the bot
 		return # do nothing
 	if message.content.startswith(invoker): # does the message start with command invoker
@@ -154,7 +156,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 	elif command == 'echo':
 		if arguments == None:
 			arguments = ''
-		yield from reply(arguments)
+		yield from reply(message, arguments)
 	elif command == '':
 		content = '<@{}>'.format(message.author.id)
 		msg = msg_start + content
@@ -490,8 +492,8 @@ def is_mod(memberid):
 	return is_admin(memberid) # Admins have moderator powers, too
 
 @client.async_event
-def reply(message):
+def reply(messageobject, message):
 	# Removes the need for adding msg_start manually every time
-	yield from client.send_message(message.channel, message)
+	yield from client.send_message(messageobject.channel, msg_start + message)
 
 client.run (token)
