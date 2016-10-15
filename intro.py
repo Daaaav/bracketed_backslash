@@ -56,7 +56,7 @@ def on_message(message):
 	command = command.split (' ', 1)[0]
 	if command == 'help':
 		content = '''`[\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server.
-__`Commands:`__
+__`General Commands:`__
 `\help` – Lists commands and their descriptions.
 `\` – Mentions you.
 `\source` – Luigi Master hates open source. But this command gives the link to the source code to the bot.
@@ -69,12 +69,19 @@ __`Commands:`__
 `\\tainy` – Unobtaining is his name.
 `\kys` – Will the bot listen?
 `\*formatting*` – This is an example of italicized formatting.
+__`Bot Commands:`__
 `\\botok` – Pings the bot.
 `\\restart` – Restarts the bot.
 `\kill` – Kills the bot. This method does not kill it cleanly.
+__`Moderation Commands:`__
 `\softban` - Softban a user.
-`\\nononly` - Restrict a user to only chat in the <#173239163666038784> channel
+`\\nononly` - Restrict a user to only chat in the <#173239163666038784> channel.
+`\\nogenmen` - Gives a user the `No General Mentions` role.
+`\\nocedule` - Gives a user the role that prevents custom emotes, direct uploads and link embeds.
+`\\notts` - Gives a user the `No TTS` role.
 `\\rolerst` - Reset roles for a user.'''
+		
+		# General
 		if arguments == 'help':
 			content = '''`\help` – Lists commands and their descriptions.
 Any arguments passed to `\help` will make `\help` try to look up more in-depth description of the command.'''
@@ -110,6 +117,8 @@ It’s a meme command.'''
 		elif arguments == '*formatting*':
 			content = '''`\*formatting*` – This is an example of italicized formatting.
 It’s a meme command.'''
+
+		# Bot
 		elif arguments == 'botok':
 			content = '''`\\botok` – Pings the bot.
 If the bot is okay, the bot will respond with “Bot is okay”.'''
@@ -117,12 +126,22 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			content = '`\\restart` - Restarts the bot.'
 		elif arguments == 'kill':
 			content = '`\kill` – Kills the bot. This method does not kill it cleanly.'
+
+		# Moderation
 		elif arguments == 'softban':
-			content = '`\softban` - Softban a user by giving them the Banned role.'
+			content = '`\softban` - Softban a user by giving them the Banned role. Accepts a user ID as an argument.'
 		elif arguments == 'nononly':
 			content = '`\\nononly` - Restrict a user to only chat in the <#173239163666038784> channel. Accepts a user ID as an argument.'
+		elif arguments == 'nogenmen':
+			content = '`\\nogenmen` - Gives a user the `No General Mentions` role. Accepts a user ID as an argument.'
+		elif arguments == 'nocedule':
+			content = '`\\nocedule` - Gives a user the role that prevents custom emotes, direct uploads and link embeds. Accepts a user ID as an argument.'
+		elif arguments == 'notts':
+			content = '`\\notts` - Gives a user the `No TTS` role. Accepts a user ID as an argument.'
 		elif arguments == 'rolerst':
 			content = '`\\rolerst` - Reset roles for a user. Accepts a user ID as an argument, and changes the user\'s roles back to normal.'
+
+
 		elif arguments == None:
 			pass
 		else:
@@ -187,10 +206,10 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			return
 		content = ':no_entry: <@{}> has been softbanned.'.format(arguments)
 		yield from reply(message, content)
-	elif command == 'nononly':
+	elif command == 'nononly' or command == 'nogenmen' or command == 'nocedule' or command == 'notts':
 		if not is_mod(message.author.id):
 			content = 'Permission denied, this can only be done by a moderator or administrator.'
-			print('[info] nononly attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			print('[info] {} attempted by {}#{} (uuid {}) at {} utc but failed'.format(command, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			yield from reply(message, content)
 			return
 		elif message.server.id != productionserver:
@@ -201,9 +220,16 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			content = 'Please specify a user ID.'
 			yield from reply(message, content)
 			return
+			
+		roletoadd = {
+			'nononly': '173240966575161344',
+			'nogenmen': '216647716531339264',
+			'nocedule': '222046096216686592',
+			'notts': '215954720555139073'
+		}
 		# Maybe check for my permissions?
 		try:
-			yield from client.add_roles(message.server.get_member(arguments), discord.utils.get(message.server.roles, id='173240966575161344')) # The nonsense-only role
+			yield from client.add_roles(message.server.get_member(arguments), discord.utils.get(message.server.roles, id=roletoadd[command]))
 		except AttributeError:
 			content = 'Please specify a user ID.'
 			yield from reply(message, content)
@@ -225,22 +251,27 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			yield from reply(message, content)
 			return
 			
-		targetmember = message.server.get_member(arguments)
-			
-		yield from client.remove_roles(targetmember,
-			discord.utils.get(message.server.roles, id='173240966575161344'), # nonsense-only
-			discord.utils.get(message.server.roles, id='216647716531339264'), # no general mentions
-			discord.utils.get(message.server.roles, id='222046096216686592'), # no cedule
-			discord.utils.get(message.server.roles, id='215954720555139073'), # no tts
-			discord.utils.get(message.server.roles, id='220643748508467220')  # banned
-		)
-		if not is_bot(targetmember):
-			yield from client.add_roles(targetmember, discord.utils.get(member.server.roles, id='231644869351833600')) # Also give them the tOLPer role if they didn't have it
+		try:
+			targetmember = message.server.get_member(arguments)
+				
+			yield from client.remove_roles(targetmember,
+				discord.utils.get(message.server.roles, id='173240966575161344'), # nonsense-only
+				discord.utils.get(message.server.roles, id='216647716531339264'), # no general mentions
+				discord.utils.get(message.server.roles, id='222046096216686592'), # no cedule
+				discord.utils.get(message.server.roles, id='215954720555139073'), # no tts
+				discord.utils.get(message.server.roles, id='220643748508467220')  # banned
+			)
+			if not is_bot(targetmember):
+				yield from client.add_roles(targetmember, discord.utils.get(member.server.roles, id='231644869351833600')) # Also give them the tOLPer role if they didn't have it
+		except AttributeError:
+			content = 'Please specify a user ID.'
+			yield from reply(message, content)
+			return
 		content = 'Reset roles for <@' + arguments + '> back to normal.'
 		yield from reply(message, content)
-	elif command == 'isbot': # TEMPORARY DEBUG COMMAND
-		targetmember = message.server.get_member(arguments)
-		yield from reply(message, "Is a bot" if is_bot(targetmember) else "Is not a bot")
+	#elif command == 'isbot': # TEMPORARY DEBUG COMMAND
+		#targetmember = message.server.get_member(arguments)
+		#yield from reply(message, "Is a bot" if is_bot(targetmember) else "Is not a bot")
 	elif command == 'info':
 		content = str(message.author.permissions_in(message.channel))
 		perms = discord.Channel.permissions_for(message.channel, message.author)
