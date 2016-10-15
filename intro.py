@@ -79,6 +79,7 @@ __`General Commands:`__
 `\source` – Luigi Master hates open source. But this command gives the link to the source code to the bot.
 `\echo` – Echoes your input.
 `\info` – Unfinished command to get information about a user.
+`\\findu` - Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever
 __`Bot Commands:`__
 `\\botok` – Pings the bot.
 `\\restart` – Restarts the bot.
@@ -106,6 +107,8 @@ It’s hosted on __https://gitgud.io/__.'''
 Now, you could say that the bot echoed your input already, but it’s still better to have a dedicated echo command.'''
 		elif arguments == 'info':
 			content = '`\info` – Unfinished command to get information about a user.'
+		elif arguments == 'findu':
+			content = '`\\findu` - Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator. Warning: This pings the user.'
 		elif arguments == 'meme':
 			content = '''`\meme` – You found a secret, congratulations. The command to get this help message will change sometimes.
 __`Meme Commands:`__
@@ -197,6 +200,14 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 		yield from reply(message, content)
 	elif command == 'source':
 		content = 'Source code to the bot: __https://gitgud.io/infoteddy/bracketed_backslash__'
+		yield from reply(message, content)
+	elif command == 'findu':
+		targetmember = get_member_input(message.server, arguments)
+		if targetmember == None:
+			content = 'Unable to find that member. Please specify a user ID, a username, a username and discriminator, or a nickname.'
+			yield from reply(message, content)
+			return
+		content = 'Did you mean <@{}>? (ID: {})\nNickname: `{}`  Username: `{}`  Discriminator: `{}`'.format(targetmember.id, targetmember.id, targetmember.nick, targetmember.name, targetmember.discriminator)
 		yield from reply(message, content)
 	elif command == 'softban':
 		if not is_mod(message.author):
