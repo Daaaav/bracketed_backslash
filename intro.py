@@ -284,9 +284,6 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			return
 		content = 'Reset roles for <@{}> back to normal.'.format(targetmember.id)
 		yield from reply(message, content)
-	elif command == 'isbot': # TEMPORARY DEBUG COMMAND
-		targetmember = message.server.get_member(arguments)
-		yield from reply(message, "Is a bot" if is_bot(targetmember) else "Is not a bot")
 	elif command == 'info':
 		content = str(message.author.permissions_in(message.channel))
 		perms = discord.Channel.permissions_for(message.channel, message.author)
