@@ -196,7 +196,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			arguments = ''
 		yield from reply(message, arguments)
 	elif command == '':
-		content = '<@{}>'.format(message.author)
+		content = '<@{}>'.format(message.author.id)
 		yield from reply(message, content)
 	elif command == 'source':
 		content = 'Source code to the bot: __https://gitgud.io/infoteddy/bracketed_backslash__'
