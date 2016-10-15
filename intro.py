@@ -58,7 +58,6 @@ def on_message(message):
 		content = '''`[\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server.
 __`General Commands:`__
 `\help` – Lists commands and their descriptions.
-`\` – Mentions you.
 `\source` – Luigi Master hates open source. But this command gives the link to the source code to the bot.
 `\echo` – Echoes your input.
 `\info` – Unfinished command to get information about a user.
@@ -92,6 +91,7 @@ Now, you could say that the bot echoed your input already, but it’s still bett
 		elif arguments == 'meme':
 			content = '''`\meme` – You found a secret, congratulations. The command to get this help message will change sometimes.
 __`Meme Commands:`__
+`\` – Mentions you.
 `\\teddy` – The obvious counterpart to `\info`.
 `\samar` – The true name.
 `\lui` – Obligatory “pretty cool guy” meme.
