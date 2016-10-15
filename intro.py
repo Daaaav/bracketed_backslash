@@ -522,11 +522,58 @@ def is_bot(memberid):
 	return False
 	
 def get_member_input(server, input):
+	"""Tries to return a member object given a user input which could be anything that identifies that member.
+
+	The following priority is used:
+	1) Mention: <@1234567890>
+	2) ID: 1234567890
+	3) Username/Userame+discriminator/Nickname, whatever server.get_member_named() accepts
+	4) Case-insensitive nickname 100% match
+	5) Case-insensitive username 100% match
+	6) Case-insensitive nickname partial match
+	7) Case-insensitive username partial match
+	8) Discriminator only
+	
+	"""
+	# Is this a mention?
+	if input.startswith('<@') and input.endswith('>'):
+		input = input[2:-1] # Extract the ID from it
+
 	targetmember = server.get_member(input)
 	
-	if targetmember == None:
+	if targetmember == None:  # Not an ID
 		targetmember = server.get_member_named(input)
-		
+		if targetmember == None:  # Not found by server.get_member_named()
+			# Everything else fails? Then try searching. Nicknames have priority, then usernames.
+			# Maybe we're entering just a discriminator, match those as well.
+			nickmatched = False
+			usermatched = None
+			nickfound = None
+			userfound = None
+			discmatched = None
+			for mem in server.members:
+				if mem.nick != None and mem.nick.lower() == input.lower():
+					targetmember = mem
+					nickmatched = True
+					break
+				if mem.name.lower() == input.lower():
+					usermatched = mem
+				if mem.nick != None and mem.nick.lower().find(input.lower()) != -1:
+					nickfound = mem
+				if mem.name.lower().find(input.lower()) != -1:
+					userfound = mem
+				if mem.discriminator == input:
+					discmatched = mem
+
+			if not nickmatched:  # No 100% nickname match
+				targetmember = usermatched
+				if targetmember == None:  # No 100% username match
+					targetmember = nickfound
+					if targetmember == None:  # No partial nickname match
+						targetmember = userfound
+						if targetmember == None:  # No partial username match
+							targetmember = discmatched  # Last chance - just the discriminator
+
 	return targetmember
 
 @client.async_event
