@@ -525,7 +525,7 @@ def get_member_input(server, input):
 	"""Tries to return a member object given a user input which could be anything that identifies that member.
 
 	The following priority is used:
-	1) Mention: <@1234567890>
+	1) Mention: <@1234567890> or <@!1234567890>
 	2) ID: 1234567890
 	3) Username/Userame+discriminator/Nickname, whatever server.get_member_named() accepts
 	4) Case-insensitive nickname 100% match
@@ -536,8 +536,10 @@ def get_member_input(server, input):
 	
 	"""
 	# Is this a mention?
-	if input.startswith('<@') and input.endswith('>'):
-		input = input[2:-1] # Extract the ID from it
+	if input.startswith('<@!') and input.endswith('>'):
+		input = input[3:-1] # Extract the ID from it
+	elif input.startswith('<@') and input.endswith('>'):
+		input = input[2:-1] # Same
 
 	targetmember = server.get_member(input)
 	
