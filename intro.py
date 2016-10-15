@@ -506,14 +506,20 @@ def on_member_remove(member):
 		yield from client.send_message(specialchannel, msg)
 
 def is_admin(member):
-	perms = member.server_permissions 
+	try:
+		perms = member.server_permissions
+	except AttributeError:
+		return False
 	if perms.administrator:
 		return True
 	return False
 
 def is_mod(member):
 	# Same here. No need to use is_admin and is_mod in the same conditional.
-	perms = member.server_permissions 
+	try:
+		perms = member.server_permissions
+	except AttributeError:
+		return False
 	if perms.manage_messages:
 		return True
 	return is_admin(member) # Admins have moderator powers, too
