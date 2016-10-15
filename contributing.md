@@ -13,9 +13,9 @@ If you’re willing to let Info Teddy be lazy and do the work that he’s suppos
 	- [x] `\nononly`
 	- [x] `\nogenmen`
 	- [x] `\nocedule`
+		- [ ] come up with a better name for this fucking command
 	- [x] `\notts`
 	- [ ] `\nonick`
-		- [ ] come up with a better name for this fucking command
 	- [x] `\rolerst`
 - [ ] give roles
 	- [x] give roles upon a new member joining
