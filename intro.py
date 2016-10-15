@@ -49,6 +49,12 @@ def on_message(message):
 		yield from client.send_typing(message.channel)
 		command = message.content.split(invoker, 1)[1] # removes invoker from the message
 		msg_start = '**`>`**{}**`:`** \\{}\n'.format(message.author.name, message.content) # shows what the user put in
+	
+	if not is_mod(message.author.id) and message.channel.id != '201130047736643584':
+		content = 'Non-staff members can only use me in <#201130047736643584> from now on.'
+		yield from reply(message, content)
+		return
+
 	try:
 		arguments = command.split (' ', 1)[1]
 	except IndexError:
