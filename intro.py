@@ -63,7 +63,7 @@ def on_message(message):
 		command = message.content.split(invoker, 1)[1] # removes invoker from the message
 		msg_start = '**`>`**{}**`:`** \\{}\n'.format(message.author.name, message.content) # shows what the user put in
 
-	if not is_mod(message.author.id) and message.channel.id != '201130047736643584' and message.server.id == productionserver:
+	if not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver:
 		content = 'Non-staff members can only use me in <#201130047736643584> from now on.'
 		yield from reply(message, content)
 		return
@@ -169,7 +169,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			content = 'Invalid arguments passed. Input `\help` for a list of valid commands to pass as arguments.'
 		yield from reply(message, content)
 	elif command == 'restart':
-		if not is_admin(message.author.id):
+		if message.author.id != '146814960574398464' and message.author.id != '159793749604433921':
 			content = 'Permission denied. This command can only be used by Info Teddy or Dav999.'
 			print ('[info] bot restart tried to be called by {}#{} (uuid {}) at {} utc but failed'.format (message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			yield from reply(message, content)
@@ -179,7 +179,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 		yield from reply(message, content)
 		yield from os.execl(__file__, '')
 	elif command == 'kill':
-		if not is_admin(message.author.id):
+		if message.author.id != '146814960574398464' and message.author.id != '159793749604433921':
 			content = 'Permission denied. This command can only be used by Info Teddy or Dav999.'
 			print('[info] bot kill tried to be called by {}#{} (uuid {}) at {} utc but failed'.format (message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			yield from reply(message, content)
@@ -193,13 +193,13 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			arguments = ''
 		yield from reply(message, arguments)
 	elif command == '':
-		content = '<@{}>'.format(message.author.id)
+		content = '<@{}>'.format(message.author)
 		yield from reply(message, content)
 	elif command == 'source':
 		content = 'Source code to the bot: __https://gitgud.io/infoteddy/bracketed_backslash__'
 		yield from reply(message, content)
 	elif command == 'softban':
-		if not is_mod(message.author.id):
+		if not is_mod(message.author):
 			content = 'Permission denied. This command can only be used by a moderator or administrator.'
 			print('[info] softban attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			yield from reply(message, content)
@@ -284,9 +284,9 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			return
 		content = 'Reset roles for <@{}> back to normal.'.format(targetmember.id)
 		yield from reply(message, content)
-	#elif command == 'isbot': # TEMPORARY DEBUG COMMAND
-		#targetmember = message.server.get_member(arguments)
-		#yield from reply(message, "Is a bot" if is_bot(targetmember) else "Is not a bot")
+	elif command == 'isbot': # TEMPORARY DEBUG COMMAND
+		targetmember = message.server.get_member(arguments)
+		yield from reply(message, "Is a bot" if is_bot(targetmember) else "Is not a bot")
 	elif command == 'info':
 		content = str(message.author.permissions_in(message.channel))
 		perms = discord.Channel.permissions_for(message.channel, message.author)
@@ -505,23 +505,23 @@ def on_member_remove(member):
 	else:
 		yield from client.send_message(specialchannel, msg)
 
-def is_admin(memberid):
-	# This should probably be changed to a membergroup/permissions check, but this works for now.
-	if memberid == '146814960574398464' or memberid == '159793749604433921': # these are the ids of info teddy and dav999
+def is_admin(member):
+	perms = member.server_permissions 
+	if perms.administrator:
 		return True
 	return False
 
-def is_mod(memberid):
+def is_mod(member):
 	# Same here. No need to use is_admin and is_mod in the same conditional.
-	if memberid == '152931944357691394': # Format
+	perms = member.server_permissions 
+	if perms.manage_messages:
 		return True
-	return is_admin(memberid) # Admins have moderator powers, too
+	return is_admin(member) # Admins have moderator powers, too
 	
-def is_bot(memberid):
+def is_bot(member):
 	# Alright then.
-	for role in memberid.roles:
-		if role.id == '201129507967598592': # Bot role
-			return True
+	if member.bot:
+		return True
 	return False
 	
 def get_member_input(server, input):
