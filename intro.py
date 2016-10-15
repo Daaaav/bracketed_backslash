@@ -290,7 +290,6 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 	elif command == 'info':
 		content = str(message.author.permissions_in(message.channel))
 		perms = discord.Channel.permissions_for(message.channel, message.author)
-		print(perms)
 		if perms.administrator:
 			content = 'is admin???//'
 		else:
@@ -472,7 +471,7 @@ def on_member_update (before, after):
 		yield from client.send_message(specialchannel, msg)
 
 @client.async_event
-def on_member_join (member):
+def on_member_join(member):
 	if member.server.id != productionserver:
 		yield from client.send_typing(member.server.default_channel)
 	else:
@@ -482,7 +481,11 @@ def on_member_join (member):
 		yield from client.send_message(member.server.default_channel, msg)
 	else:
 		yield from client.send_message(specialchannel, msg)
-		
+		if is_bot(member):
+			yield from client.add_roles(member, discord.utils.get(member.server.roles, id='201129507967598592')) # bot role
+			# TODO: make the "role added" message be sent by on_member_update()
+			yield from client.send_message(specialchannel, '`Given` {}`#{}` `({}) the Bot role.`'.format(member.name, member.discriminator, member.id))
+			return
 		# TODO: Look up that member in our database, to see if this user should get a restrictive group again.
 		# If someone is just a tOLPer, they won't be in the database.
 		if False:
