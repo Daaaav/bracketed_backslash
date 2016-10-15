@@ -62,13 +62,6 @@ __`General Commands:`__
 `\source` – Luigi Master hates open source. But this command gives the link to the source code to the bot.
 `\echo` – Echoes your input.
 `\info` – Unfinished command to get information about a user.
-`\\teddy` – The obvious counterpart to `\info`.
-`\samar` – The true name.
-`\lui` – Obligatory “pretty cool guy” meme.
-`\shiny` – He’s a shiny trinket.
-`\\tainy` – Unobtaining is his name.
-`\kys` – Will the bot listen?
-`\*formatting*` – This is an example of italicized formatting.
 __`Bot Commands:`__
 `\\botok` – Pings the bot.
 `\\restart` – Restarts the bot.
@@ -80,7 +73,7 @@ __`Moderation Commands:`__
 `\\nocedule` - Gives a user the role that prevents custom emotes, direct uploads and link embeds.
 `\\notts` - Gives a user the `No TTS` role.
 `\\rolerst` - Reset roles for a user.'''
-		
+
 		# General
 		if arguments == 'help':
 			content = '''`\help` – Lists commands and their descriptions.
@@ -96,6 +89,16 @@ It’s hosted on __https://gitgud.io/__.'''
 Now, you could say that the bot echoed your input already, but it’s still better to have a dedicated echo command.'''
 		elif arguments == 'info':
 			content = '`\info` – Unfinished command to get information about a user.'
+		elif arguments == 'meme':
+			content = '''`\meme` – You found a secret, congratulations. The command to get this help message will change sometimes.
+__`Meme Commands:`__
+`\\teddy` – The obvious counterpart to `\info`.
+`\samar` – The true name.
+`\lui` – Obligatory “pretty cool guy” meme.
+`\shiny` – He’s a shiny trinket.
+`\\tainy` – Unobtaining is his name.
+`\kys` – Will the bot listen?
+`\*formatting*` – This is an example of italicized formatting.'''
 		elif arguments == 'teddy':
 			content = '''`\\teddy` – The obvious counterpart to `\info`.
 It’s a meme command.'''
