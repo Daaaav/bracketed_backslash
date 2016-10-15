@@ -580,7 +580,7 @@ def get_member_input(server, input):
 	5) Case-insensitive username 100% match
 	6) Case-insensitive nickname partial match
 	7) Case-insensitive username partial match
-	8) Discriminator only
+	8) Discriminator only (either with or without #)
 	
 	"""
 	# Is this a mention?
@@ -613,6 +613,8 @@ def get_member_input(server, input):
 				if mem.name.lower().find(input.lower()) != -1:
 					userfound = mem
 				if mem.discriminator == input:
+					discmatched = mem
+				if input.startswith('#') and mem.discriminator == input[1:]:
 					discmatched = mem
 
 			if not nickmatched:  # No 100% nickname match
