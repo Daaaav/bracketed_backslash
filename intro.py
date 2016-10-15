@@ -291,7 +291,10 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 		content = str(message.author.permissions_in(message.channel))
 		perms = discord.Channel.permissions_for(message.channel, message.author)
 		print(perms)
-		content = 'Unfinished command. This command currently sends output to Info Teddy.'
+		if perms.administrator:
+			content = 'is admin???//'
+		else:
+			content = 'is not admin???//'
 		yield from reply(message, content)
 	elif command == 'teddy':
 		content = 'xd'
