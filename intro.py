@@ -226,7 +226,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 		content = ':no_entry: <@{}> has been softbanned.'.format(targetmember.id)
 		yield from reply(message, content)
 	elif command == 'nononly' or command == 'nogenmen' or command == 'nocedule' or command == 'notts':
-		if not is_mod(message.author.id):
+		if not is_mod(message.author):
 			content = 'Permission denied. This command can only be used by a moderator or administrator.'
 			print('[info] {} attempted by {}#{} (uuid {}) at {} utc but failed'.format(command, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			yield from reply(message, content)
