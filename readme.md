@@ -1,5 +1,5 @@
 # \[\\\]
-This is a bot made by Info Teddy in Python for use on the [tOLP Discord server](https://discord.gg/0r76El7PzkPMhSBF).
+This is a bot created by Info Teddy, and currently maintained by Info Teddy and Dav999, written in Python for use on the [tOLP Discord server](https://discord.gg/0r76El7PzkPMhSBF).
 This bot is in active development.
 # Installation Instructions
 Download the bot first.
