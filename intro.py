@@ -208,35 +208,22 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			content = 'Production server only!'
 			yield from reply(message, content)
 			return
+
 		try:
-			# Some of the other restrictive roles might mess it up a bit by granting something, we banned them altogether now so no need to keep those
-			arguments_is_id = True
-			yield from client.remove_roles(message.server.get_member(arguments),
+			targetmember = get_member_input(message.server, arguments)
+			yield from client.remove_roles(targetmember,
 				discord.utils.get(message.server.roles, id='173240966575161344'), # nonsense-only
 				discord.utils.get(message.server.roles, id='216647716531339264'), # no general mentions
 				discord.utils.get(message.server.roles, id='222046096216686592'), # no cedule
 				discord.utils.get(message.server.roles, id='215954720555139073'), # no tts
 			)
-			yield from client.add_roles(message.server.get_member(arguments), discord.utils.get(message.server.roles, id='220643748508467220')) # The banned role
-		except AttributeError:
-			arguments_is_id = False
-			try:
-				yield from client.remove_roles(message.server.get_member_named(arguments),
-					discord.utils.get(message.server.roles, id='173240966575161344'), # nonsense-only
-					discord.utils.get(message.server.roles, id='216647716531339264'), # no general mentions
-					discord.utils.get(message.server.roles, id='222046096216686592'), # no cedule
-					discord.utils.get(message.server.roles, id='215954720555139073'), # no tts
-				)
-				yield from client.add_roles(message.server.get_member_named(arguments), discord.utils.get(message.server.roles, id='220643748508467220')) # The banned role
-			except(AttributeError,TypeError):
-				content = 'Please specify a user ID, a username, a username and discriminator, or a nickname.'
-				yield from reply(message, content)
-				return
+			yield from client.add_roles(targetmember, discord.utils.get(message.server.roles, id='220643748508467220')) # The banned role
+		except(AttributeError,TypeError):
+			content = 'Please specify a user ID, a username, a username and discriminator, or a nickname.'
+			yield from reply(message, content)
+			return
 
-		if arguments_is_id:
-			content = ':no_entry: <@{}> has been softbanned.'.format(arguments)
-		else:
-			content = ':no_entry: <@{}> has been softbanned.'.format(message.server.get_member_named(arguments).id)
+		content = ':no_entry: <@{}> has been softbanned.'.format(targetmember.id)
 		yield from reply(message, content)
 	elif command == 'nononly' or command == 'nogenmen' or command == 'nocedule' or command == 'notts':
 		if not is_mod(message.author.id):
@@ -260,22 +247,14 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			'nocedule': 'No Custom Emotes/Direct Uploads/Link Embeds',
 			'notts': 'No TTS'
 		}
-		# Maybe check for my permissions?
 		try:
-			arguments_is_id = True
-			yield from client.add_roles(message.server.get_member(arguments), discord.utils.get(message.server.roles, id=roletoadd[command]))
-		except AttributeError:
-			arguments_is_id = False
-			try:
-				yield from client.add_roles(message.server.get_member_named(arguments), discord.utils.get(message.server.roles, id=roletoadd[command]))
-			except(AttributeError,TypeError):
-				content = 'Please specify a user ID, a username, a username and discriminator, or a nickname.'
-				yield from reply(message, content)
-				return
-		if arguments_is_id:
-			content = 'Gave <@{}> the {} role.'.format(arguments, rolelabel[command])
-		else:
-			content = 'Gave <@{}> the {} role.'.format(message.server.get_member_named(arguments).id, rolelabel[command])
+			targetmember = get_member_input(message.server, arguments)
+			yield from client.add_roles(targetmember, discord.utils.get(message.server.roles, id=roletoadd[command]))
+		except(AttributeError,TypeError):
+			content = 'Please specify a user ID, a username, a username and discriminator, or a nickname.'
+			yield from reply(message, content)
+			return
+		content = 'Gave <@{}> the {} role.'.format(targetmember.id, rolelabel[command])
 		yield from reply(message, content)
 	elif command == 'rolerst':
 		if not is_mod(message.author.id):
@@ -287,39 +266,23 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			content = 'Production server only!'
 			yield from reply(message, content)
 			return
+
 		try:
-			arguments_is_id = True
-			targetmember = message.server.get_member(arguments)
+			targetmember = get_member_input(message.server, arguments)
 			yield from client.remove_roles(targetmember,
 				discord.utils.get(message.server.roles, id='173240966575161344'), # nonsense-only
 				discord.utils.get(message.server.roles, id='216647716531339264'), # no general mentions
 				discord.utils.get(message.server.roles, id='222046096216686592'), # no cedule
 				discord.utils.get(message.server.roles, id='215954720555139073'), # no tts
-				discord.utils.get(message.server.roles, id='220643748508467220'),  # banned
+				discord.utils.get(message.server.roles, id='220643748508467220'), # banned
 			)
 			if not is_bot(targetmember):
-				yield from client.add_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600')) # Also give them the tOLPer role if they didn't have it
-		except AttributeError:
-			arguments_is_id = False
-			try:
-				targetmember = message.server.get_member_named(arguments)
-				yield from client.remove_roles(targetmember,
-					discord.utils.get(message.server.roles, id='173240966575161344'), # nonsense-only
-					discord.utils.get(message.server.roles, id='216647716531339264'), # no general mentions
-					discord.utils.get(message.server.roles, id='222046096216686592'), # no cedule
-					discord.utils.get(message.server.roles, id='215954720555139073'), # no tts
-					discord.utils.get(message.server.roles, id='220643748508467220'),  # banned
-				)
-				if not is_bot(targetmember):
-					yield from client.add_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
-			except(AttributeError,TypeError):
-				content = 'Please specify a user ID, a username, a username and discriminator, or a nickname.'
-				yield from reply(message, content)
-				return
-		if arguments_is_id:
-			content = 'Reset roles for <@{}> back to normal.'.format(arguments)
-		else:
-			content = 'Reset roles for <@{}> back to normal.'.format(message.server.get_member_named(arguments).id)
+				yield from client.add_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
+		except(AttributeError,TypeError):
+			content = 'Please specify a user ID, a username, a username and discriminator, or a nickname.'
+			yield from reply(message, content)
+			return
+		content = 'Reset roles for <@{}> back to normal.'.format(targetmember.id)
 		yield from reply(message, content)
 	#elif command == 'isbot': # TEMPORARY DEBUG COMMAND
 		#targetmember = message.server.get_member(arguments)
@@ -557,6 +520,14 @@ def is_bot(memberid):
 		if role.id == '201129507967598592': # Bot role
 			return True
 	return False
+	
+def get_member_input(server, input):
+	targetmember = server.get_member(input)
+	
+	if targetmember == None:
+		targetmember = server.get_member_named(input)
+		
+	return targetmember
 
 @client.async_event
 def reply(messageobject, message):
