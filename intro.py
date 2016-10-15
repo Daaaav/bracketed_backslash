@@ -257,7 +257,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 		content = 'Gave <@{}> the {} role.'.format(targetmember.id, rolelabel[command])
 		yield from reply(message, content)
 	elif command == 'nonick':
-		if not is_mod(message.author.id):
+		if not is_mod(message.author):
 			content = 'Permission denied. This command can only be used by a moderator or administrator.'
 			print('[info] nonick attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			yield from reply(message, content)
