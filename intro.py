@@ -34,6 +34,19 @@ def on_message(message):
 
 	if message.author == client.user: # is the message sent by the bot
 		return # do nothing
+
+	if str(message.author.status) == 'offline':
+		if message.server.id != productionserver:
+			yield from client.send_typing(message.channel)
+		else:
+			yield from client.send_typing(specialchannel)
+		msg_start = '**`>`**`user` {}`#{}` `({}) was invisible when sending message {} at {} UTC`'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.timestamp)
+		if message.server.id != productionserver:
+			yield from client.send_message(message.channel, msg_start)
+		else:
+			yield from client.send_message(specialchannel, msg_start)
+		pass
+
 	if message.content.startswith(invoker): # does the message start with command invoker
 		altinvokeractive = False
 		pass # continue, go on
@@ -49,6 +62,7 @@ def on_message(message):
 		yield from client.send_typing(message.channel)
 		command = message.content.split(invoker, 1)[1] # removes invoker from the message
 		msg_start = '**`>`**{}**`:`** \\{}\n'.format(message.author.name, message.content) # shows what the user put in
+
 	if not is_mod(message.author.id) and message.channel.id != '201130047736643584' and message.server.id == productionserver:
 		content = 'Non-staff members can only use me in <#201130047736643584> from now on.'
 		yield from reply(message, content)
