@@ -7,7 +7,8 @@ If you’re willing to let Info Teddy be lazy and do the work that he’s suppos
 - [ ] log more shit
 	- [ ] member avatar changes
 	- [ ] member role adds/removes
-	- [ ] when people are invisible for no reason
+	- [x] when people are invisible for no reason
+	- its done however it can only detect invisible people when they send a message
 - [ ] actually add moderation/administration commands
 	- [x] `\softban`
 	- [x] `\nononly`
