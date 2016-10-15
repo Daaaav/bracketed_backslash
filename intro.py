@@ -583,6 +583,10 @@ def get_member_input(server, input):
 	8) Discriminator only (either with or without #)
 	
 	"""
+	# Is this anything at all?
+	if input == None:
+		return None  # right back at ya
+
 	# Is this a mention?
 	if input.startswith('<@!') and input.endswith('>'):
 		input = input[3:-1] # Extract the ID from it
