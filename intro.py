@@ -473,7 +473,11 @@ def on_member_update (before, after):
 	else:
 		yield from client.send_typing(specialchannel)
 	msg_start = '**`>`**:pager:`user` {}`#{}` `({}) changed nickname`\n'.format(before.name, before.discriminator, before.id)
-	content = '_`The older nickname is:`_\n' + str(before.nick)
+	if before.nick == None:
+		nick = ''
+	else:
+		nick = before.nick
+	content = '_`The older nickname is:`_\n' + nick
 	msg = msg_start + content
 	if before.server.id != productionserver:
 		yield from client.send_message(before.server.default_channel, msg)
@@ -482,7 +486,11 @@ def on_member_update (before, after):
 		yield from client.send_message(specialchannel, msg)
 		yield from client.send_typing(specialchannel)
 	msg_start = '**`>`**`user` {}`#{}` `({}) changed nickname`\n'.format(after.name, after.discriminator, after.id)
-	content = '_`The newer nickname is:`_\n' + str(after.nick)
+	if after.nick == None:
+		nick = ''
+	else:
+		nick = after.nick
+	content = '_`The newer nickname is:`_\n' + nick
 	msg = msg_start + content
 	if after.server.id != productionserver:
 		yield from client.send_message(after.server.default_channel, msg)
@@ -528,14 +536,20 @@ def on_member_remove(member):
 		yield from client.send_message(specialchannel, msg)
 
 def is_admin(member):
-	perms = member.server_permissions 
+	try:
+		perms = member.server_permissions
+	except AttributeError:
+		return False
 	if perms.administrator:
 		return True
 	return False
 
 def is_mod(member):
 	# Same here. No need to use is_admin and is_mod in the same conditional.
-	perms = member.server_permissions 
+	try:
+		perms = member.server_permissions
+	except AttributeError:
+		return False
 	if perms.manage_messages:
 		return True
 	return is_admin(member) # Admins have moderator powers, too
