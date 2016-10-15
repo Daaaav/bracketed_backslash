@@ -79,7 +79,7 @@ __`General Commands:`__
 `\source` – Luigi Master hates open source. But this command gives the link to the source code to the bot.
 `\echo` – Echoes your input.
 `\info` – Unfinished command to get information about a user.
-`\\findu` - Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever
+`\\findu` - Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever.
 __`Bot Commands:`__
 `\\botok` – Pings the bot.
 `\\restart` – Restarts the bot.
@@ -90,6 +90,7 @@ __`Moderation Commands:`__
 `\\nogenmen` - Gives a user the `No General Mentions` role.
 `\\nocedule` - Gives a user the role that prevents custom emotes, direct uploads and link embeds.
 `\\notts` - Gives a user the `No TTS` role.
+`\\nonick` – Removes from a user the tOLPer role, and gives them the tOLPer who can’t change nickname role.
 `\\rolerst` - Reset roles for a user.'''
 
 		# General
@@ -153,17 +154,19 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 
 		# Moderation
 		elif arguments == 'softban':
-			content = '`\softban` - Softban a user by giving them the Banned role. Accepts a user ID as an argument.'
+			content = '`\softban` - Softban a user by giving them the Banned role. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'
 		elif arguments == 'nononly':
-			content = '`\\nononly` - Restrict a user to only chat in the <#173239163666038784> channel. Accepts a user ID as an argument.'
+			content = '`\\nononly` - Restrict a user to only chat in the <#173239163666038784> channel. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'
 		elif arguments == 'nogenmen':
-			content = '`\\nogenmen` - Gives a user the `No General Mentions` role. Accepts a user ID as an argument.'
+			content = '`\\nogenmen` - Gives a user the `No General Mentions` role. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'
 		elif arguments == 'nocedule':
-			content = '`\\nocedule` - Gives a user the role that prevents custom emotes, direct uploads and link embeds. Accepts a user ID as an argument.'
+			content = '`\\nocedule` - Gives a user the role that prevents custom emotes, direct uploads and link embeds. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'
 		elif arguments == 'notts':
-			content = '`\\notts` - Gives a user the `No TTS` role. Accepts a user ID as an argument.'
+			content = '`\\notts` - Gives a user the `No TTS` role. Accepts as an argument a user ID, nickname, username, or username and discriminator.'
+		elif arguments == 'nonick':
+			content = '`\\nonick` – Removes from a user the tOLPer role, and gives them the tOLPer who can’t change nickname role. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'
 		elif arguments == 'rolerst':
-			content = '`\\rolerst` - Reset roles for a user. Accepts a user ID as an argument, and changes the user\'s roles back to normal.'
+			content = '`\\rolerst` - Reset roles for a user. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator, and changes the user\'s roles back to normal.'
 
 
 		elif arguments == None:
