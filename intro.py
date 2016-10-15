@@ -194,10 +194,6 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			content = 'Production server only!'
 			yield from reply(message, content)
 			return
-		elif arguments == None:
-			content = 'Please specify a user ID.'
-			yield from reply(message, content)
-			return
 		try:
 			# Some of the other restrictive roles might mess it up a bit by granting something, we banned them altogether now so no need to keep those
 			yield from client.remove_roles(message.server.get_member(arguments),
@@ -223,11 +219,6 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			content = 'Production server only!'
 			yield from reply(message, content)
 			return
-		elif arguments == None:
-			content = 'Please specify a user ID.'
-			yield from reply(message, content)
-			return
-			
 		roletoadd = {
 			'nononly': '173240966575161344',
 			'nogenmen': '216647716531339264',
@@ -259,11 +250,6 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			content = 'Production server only!'
 			yield from reply(message, content)
 			return
-		elif arguments == None:
-			content = 'Please specify a user ID.'
-			yield from reply(message, content)
-			return
-			
 		try:
 			targetmember = message.server.get_member(arguments)
 				
