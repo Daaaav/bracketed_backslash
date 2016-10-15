@@ -227,7 +227,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 		yield from reply(message, content)
 	elif command == 'nononly' or command == 'nogenmen' or command == 'nocedule' or command == 'notts':
 		if not is_mod(message.author.id):
-			content = 'Permission denied, this can only be done by a moderator or administrator.'
+			content = 'Permission denied. This command can only be used by a moderator or administrator.'
 			print('[info] {} attempted by {}#{} (uuid {}) at {} utc but failed'.format(command, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			yield from reply(message, content)
 			return
@@ -256,9 +256,30 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			return
 		content = 'Gave <@{}> the {} role.'.format(targetmember.id, rolelabel[command])
 		yield from reply(message, content)
+	elif command == 'nonick':
+		if not is_mod(message.author):
+			content = 'Permission denied. This command can only be used by a moderator or administrator.'
+			print('[info] nonick attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			yield from reply(message, content)
+			return
+		elif message.server.id != productionserver:
+			content = 'Proudction server only!'
+			yield from reply(message, content)
+			return
+		try:
+			targetmember = get_member_input(message.server, arguments)
+			yield from client.add_roles(targetmember, discord.utils.get(message.server.roles, id='236925451216355338'))
+			yield from client.remove_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
+		except(AttributeError,TypeError):
+			content = 'Please specify a user ID, a username, a username and discriminator, or a nickname.'
+			yield from reply(message, content)
+			return
+		content = 'Gave <@{}> the tOLPer who can’t change nickname role.\nRemoved from <@{}> the tOLPer role.'.format(targetmember.id, targetmember.id)
+		yield from reply(message, content)
+		return
 	elif command == 'rolerst':
-		if not is_mod(message.author.id):
-			content = 'Permission denied. This command can only be done by a moderator or administrator.'
+		if not is_mod(message.author):
+			content = 'Permission denied. This command can only be used by a moderator or administrator.'
 			print('[info] rolerst attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			yield from reply(message, content)
 			return
@@ -275,6 +296,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 				discord.utils.get(message.server.roles, id='222046096216686592'), # no cedule
 				discord.utils.get(message.server.roles, id='215954720555139073'), # no tts
 				discord.utils.get(message.server.roles, id='220643748508467220'), # banned
+				discord.utils.get(message.server.roles, id='236925451216355338'), # tolper who cant change nickname
 			)
 			if not is_bot(targetmember):
 				yield from client.add_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
