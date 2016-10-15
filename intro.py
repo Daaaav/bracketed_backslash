@@ -227,6 +227,12 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			'nocedule': '222046096216686592',
 			'notts': '215954720555139073'
 		}
+		rolelabel = {
+			'nononly': 'Nonsense-Only',
+			'nogenmen': 'No General Mentions',
+			'nocedule': 'No Custom Emotes/Direct Uploads/Link Embeds',
+			'notts': 'No TTS'
+		}
 		# Maybe check for my permissions?
 		try:
 			yield from client.add_roles(message.server.get_member(arguments), discord.utils.get(message.server.roles, id=roletoadd[command]))
@@ -234,7 +240,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			content = 'Please specify a user ID.'
 			yield from reply(message, content)
 			return
-		content = 'Gave <@{}> the Nonsense-Only role.'.format(arguments)
+		content = 'Gave <@{}> the {} role.'.format(arguments, rolelabel[command])
 		yield from reply(message, content)
 	elif command == 'rolerst':
 		if not is_mod(message.author.id):
@@ -262,7 +268,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 				discord.utils.get(message.server.roles, id='220643748508467220')  # banned
 			)
 			if not is_bot(targetmember):
-				yield from client.add_roles(targetmember, discord.utils.get(member.server.roles, id='231644869351833600')) # Also give them the tOLPer role if they didn't have it
+				yield from client.add_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600')) # Also give them the tOLPer role if they didn't have it
 		except AttributeError:
 			content = 'Please specify a user ID.'
 			yield from reply(message, content)
