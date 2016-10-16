@@ -220,7 +220,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			displaynick = targetmember.nick
 		if command == "findup":
 			displaymatch = '<@{}>'.format(targetmember.id)
-		else
+		else:
 			displaymatch = '__@{}__'.format(targetmember.display_name)
 
 		content = 'Matched {}.\n**`User ID:`** `{}`\n**`Nickname:`** {}\n**`Username:`** {}\n**`Discriminator:`** `#{}`'.format(displaymatch, targetmember.id, displaynick, targetmember.name, targetmember.discriminator)
@@ -239,7 +239,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			statuss = 'idle'
 		elif targetmember.status.dnd:
 			statuss = 'dnd'
-		content = '{} is :{}:'.(targetmember.display_name, statuss)
+		content = '{} is :{}:'.format(targetmember.display_name, statuss)
 		yield from reply(message, content)
 	elif command == 'softban':
 		if not is_mod(message.author):
