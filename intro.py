@@ -246,9 +246,21 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 			yield from reply(message, content)
 			return
 		if targetmember.nick == None:
-			displaynick = ''
+			displaynick = '**`No Nickname`**'
 		else:
-			displaynick = targetmember.nick
+			displaynick = '**`Nickname:`** ' + targetmember.nick
+		if targetmember.game.name == None and targetmember.game.type == 0:
+			displaygame = '**`Not Playing`**'
+		elif targetmember.game.type == 0:
+			displaygame = '**`Playing:`** ' + targetmember.game.name
+		if targetmember.game.name == None and targetmember.game.type == 1:
+			displaygame = '**`Not Streaming`**'
+		elif targetmember.game.type == 1:
+			displaygame = '**`Streaming:`** ' + targetmember.game.name
+		if targetmember.game.url == None:
+			displaygameurl = '**`No Stream Link`**'
+		else:
+			displaygameurl = '**`Stream Link:`** <{}>'.format(targetmember.game.url) # the angled brackets are to make discord not preview the link
 		if command == "findup":
 			displaymatch = '<@{}>'.format(targetmember.id)
 		else:
@@ -262,7 +274,7 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 		elif str(targetmember.status) == 'dnd' or str(targetmember.status) == 'do_not_disturb':
 			statuss = 'dnd:232230526109351938'
 
-		content = 'Matched {} <:{}>\n**`User ID:`** `{}`\n**`Nickname:`** {}\n**`Username:`** {}\n**`Discriminator:`** `#{}`'.format(displaymatch, statuss, targetmember.id, displaynick, targetmember.name, targetmember.discriminator)
+		content = 'Matched {} <:{}>\n**`User ID:`** `{}`\n{}\n**`Username:`** {}\n**`Discriminator:`** `#{}`\n{}\n{}'.format(displaymatch, statuss, targetmember.id, displaynick, targetmember.name, targetmember.discriminator, displaygame, displaygameurl)
 		yield from reply(message, content)
 	elif command == 'softban':
 		if not is_mod(message.author):
