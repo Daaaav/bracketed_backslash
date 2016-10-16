@@ -231,13 +231,13 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			content = 'Unable to find that member. Please specify a user ID, a username, a username and discriminator, or a nickname.'
 			yield from reply(message, content)
 			return
-		if targetmember.status.online:
+		if str(targetmember.status) == 'online':
 			statuss = 'online'
-		elif targetmember.status.offline:
+		elif str(targetmember.status) == 'offline' or str(targetmember.status) == 'invisible':
 			statuss = 'invisible'
-		elif targetmember.status.idle:
+		elif str(targetmember.status) == 'idle':
 			statuss = 'idle'
-		elif targetmember.status.dnd:
+		elif str(targetmember.status) == 'dnd' or str(targetmember.status) == 'do_not_disturb':
 			statuss = 'dnd'
 		content = '{} is :{}:'.(targetmember.display_name, statuss)
 		yield from reply(message, content)
