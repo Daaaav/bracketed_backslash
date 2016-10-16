@@ -9,6 +9,8 @@ import os
 import sys
 import urllib
 import warnings
+import random
+from random import randint
 
 client = discord.Client() # defines all client.* commands
 
@@ -345,7 +347,11 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 		content = 'moar liek shittykitty amirite'
 		yield from reply(message, content)
 	elif command == 'tainy':
-		content = 'moar liek stainy amirite'
+		rngint = random.randint(0,1)
+		if rngint == 0:
+			content = 'moar liek stainy amirite'
+		else:
+			content = 'moar like painy amirite'
 		yield from reply(message, content)
 	elif command == 'kys':
 		content = 'nah'
