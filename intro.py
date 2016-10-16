@@ -10,7 +10,6 @@ import sys
 import urllib
 import warnings
 import random
-from random import randint
 
 client = discord.Client() # defines all client.* commands
 
