@@ -81,6 +81,7 @@ __`General Commands:`__
 `\echo` – Echoes your input.
 `\info` – Unfinished command to get information about a user.
 `\\findu` - Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever.
+`\\findup` - Same as `\\findu`, but also pings the user.
 __`Bot Commands:`__
 `\\botok` – Pings the bot.
 `\\restart` – Restarts the bot.
@@ -110,7 +111,9 @@ Now, you could say that the bot echoed your input already, but it’s still bett
 		elif arguments == 'info':
 			content = '`\info` – Unfinished command to get information about a user.'
 		elif arguments == 'findu':
-			content = '`\\findu` - Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator. Warning: This pings the user.'
+			content = '`\\findu` - Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator.'
+		elif arguments == 'findup':
+			content = '`\\findup` - Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator. Warning: This pings the user.'
 		elif arguments == 'meme':
 			content = '''`\meme` – You found a secret, congratulations. The command to get this help message will change sometimes.
 __`Meme Commands:`__
@@ -205,7 +208,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 	elif command == 'source':
 		content = 'Source code to the bot: __https://gitgud.io/infoteddy/bracketed_backslash__'
 		yield from reply(message, content)
-	elif command == 'findu':
+	elif command == 'findu' or command == 'findup':
 		targetmember = get_member_input(message.server, arguments)
 		if targetmember == None:
 			content = 'Unable to find that member. Please specify a user ID, a username, a username and discriminator, or a nickname.'
@@ -215,7 +218,28 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			displaynick = ''
 		else:
 			displaynick = targetmember.nick
-		content = 'Matched <@{}>.\n**`User ID:`** `{}`\n**`Nickname:`** {}\n**`Username:`** {}\n**`Discriminator:`** `#{}`'.format(targetmember.id, targetmember.id, displaynick, targetmember.name, targetmember.discriminator)
+		if command == "findup":
+			displaymatch = '<@{}>'.format(targetmember.id)
+		else:
+			displaymatch = '__@{}__'.format(targetmember.display_name)
+
+		content = 'Matched {}.\n**`User ID:`** `{}`\n**`Nickname:`** {}\n**`Username:`** {}\n**`Discriminator:`** `#{}`'.format(displaymatch, targetmember.id, displaynick, targetmember.name, targetmember.discriminator)
+		yield from reply(message, content)
+	elif command == 'status_temp':
+		targetmember = get_member_input(message.server, arguments)
+		if targetmember == None:
+			content = 'Unable to find that member. Please specify a user ID, a username, a username and discriminator, or a nickname.'
+			yield from reply(message, content)
+			return
+		if targetmember.status.online:
+			statuss = 'online'
+		elif targetmember.status.offline:
+			statuss = 'invisible'
+		elif targetmember.status.idle:
+			statuss = 'idle'
+		elif targetmember.status.dnd:
+			statuss = 'dnd'
+		content = '{} is :{}:'.format(targetmember.display_name, statuss)
 		yield from reply(message, content)
 	elif command == 'softban':
 		if not is_mod(message.author):
