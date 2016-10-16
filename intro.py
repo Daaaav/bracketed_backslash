@@ -210,7 +210,11 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			content = 'Unable to find that member. Please specify a user ID, a username, a username and discriminator, or a nickname.'
 			yield from reply(message, content)
 			return
-		content = 'Did you mean <@{}>? (ID: {})\nNickname: `{}`  Username: `{}`  Discriminator: `{}`'.format(targetmember.id, targetmember.id, targetmember.nick, targetmember.name, targetmember.discriminator)
+		if targetmember.nick == None:
+			displaynick = ''
+		else:
+			displaynick = targetmember.nick
+		content = 'Matched <@{}>.\n**`User ID:`** `{}`\n**`Nickname:`** {}\n**`Username:`** {}\n**`Discriminator:`** `#{}`'.format(targetmember.id, targetmember.id, displaynick, targetmember.name, targetmember.discriminator)
 		yield from reply(message, content)
 	elif command == 'softban':
 		if not is_mod(message.author):
