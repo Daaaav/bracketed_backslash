@@ -257,7 +257,7 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 		else:
 			memberhasgame = True
 		if memberhasgame:
-			if targetmember.game.type == 0:
+			if targetmember.game.type == 0 or targetmember.game.type == None:
 				displaygame = '**`Playing:`** ' + targetmember.game.name
 			if targetmember.game.type == 1:
 				displaygame = '**`Streaming:`** ' + targetmember.game.name
