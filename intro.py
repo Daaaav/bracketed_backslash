@@ -114,8 +114,8 @@ Now, you could say that the bot echoed your input already, but it’s still bett
 			content = '`\\findu` - Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator.'
 		elif arguments == 'findup':
 			content = '`\\findup` - Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator. Warning: This pings the user.'
-		elif arguments == 'meme':
-			content = '''`\meme` – You found a secret, congratulations. The command to get this help message will change sometimes.
+		elif arguments == 'useless':
+			content = '''`useless` – You found a secret, congratulations. The command to get this help message will change sometimes.
 __`Meme Commands:`__
 `\` – Mentions you.
 `\\teddy` – The obvious counterpart to `\info`.
@@ -124,7 +124,8 @@ __`Meme Commands:`__
 `\shiny` – He’s a shiny trinket.
 `\\tainy` – Unobtaining is his name.
 `\kys` – Will the bot listen?
-`\*formatting*` – This is an example of italicized formatting.'''
+`\*formatting*` – This is an example of italicized formatting.
+`\/r/undertale` – This is going to give my bot cancer.'''
 		elif arguments == 'teddy':
 			content = '''`\\teddy` – The obvious counterpart to `\info`.
 It’s a meme command.'''
@@ -146,7 +147,9 @@ It’s a meme command.'''
 		elif arguments == '*formatting*':
 			content = '''`\*formatting*` – This is an example of italicized formatting.
 It’s a meme command.'''
-
+		elif arguments == '/r/undertale':
+			content = '''`\/r/undertale` – This is going to give my bot cancer.
+It’s a meme command.'''
 		# Bot
 		elif arguments == 'botok':
 			content = '''`\\botok` – Pings the bot.
@@ -171,8 +174,6 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			content = '`\\nonick` – Removes from a user the tOLPer role, and gives them the tOLPer who can’t change nickname role. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'
 		elif arguments == 'rolerst':
 			content = '`\\rolerst` - Reset roles for a user. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator, and changes the user\'s roles back to normal.'
-
-
 		elif arguments == None:
 			pass
 		else:
@@ -376,6 +377,9 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 		yield from reply(message, content)
 	elif command == '*formatting*':
 		content = 'That’s italicized formatting.'
+		yield from reply(message, content)
+	elif command == '/r/undertale':
+		content = 'They banned someone for posting an honest review of Undertale. Seriously, don’t go there if you don’t want to be censored.'
 		yield from reply(message, content)
 	else:
 		if altinvokeractive:
