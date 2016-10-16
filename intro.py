@@ -79,6 +79,7 @@ __`General Commands:`__
 `\source` – Luigi Master hates open source. But this command gives the link to the source code to the bot.
 `\echo` – Echoes your input.
 `\info` – Unfinished command to get information about a user.
+`\\findu` - Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever.
 __`Bot Commands:`__
 `\\botok` – Pings the bot.
 `\\restart` – Restarts the bot.
@@ -89,6 +90,7 @@ __`Moderation Commands:`__
 `\\nogenmen` - Gives a user the `No General Mentions` role.
 `\\nocedule` - Gives a user the role that prevents custom emotes, direct uploads and link embeds.
 `\\notts` - Gives a user the `No TTS` role.
+`\\nonick` – Removes from a user the tOLPer role, and gives them the tOLPer who can’t change nickname role.
 `\\rolerst` - Reset roles for a user.'''
 
 		# General
@@ -106,6 +108,8 @@ It’s hosted on __https://gitgud.io/__.'''
 Now, you could say that the bot echoed your input already, but it’s still better to have a dedicated echo command.'''
 		elif arguments == 'info':
 			content = '`\info` – Unfinished command to get information about a user.'
+		elif arguments == 'findu':
+			content = '`\\findu` - Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator. Warning: This pings the user.'
 		elif arguments == 'meme':
 			content = '''`\meme` – You found a secret, congratulations. The command to get this help message will change sometimes.
 __`Meme Commands:`__
@@ -150,17 +154,19 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 
 		# Moderation
 		elif arguments == 'softban':
-			content = '`\softban` - Softban a user by giving them the Banned role. Accepts a user ID as an argument.'
+			content = '`\softban` - Softban a user by giving them the Banned role. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'
 		elif arguments == 'nononly':
-			content = '`\\nononly` - Restrict a user to only chat in the <#173239163666038784> channel. Accepts a user ID as an argument.'
+			content = '`\\nononly` - Restrict a user to only chat in the <#173239163666038784> channel. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'
 		elif arguments == 'nogenmen':
-			content = '`\\nogenmen` - Gives a user the `No General Mentions` role. Accepts a user ID as an argument.'
+			content = '`\\nogenmen` - Gives a user the `No General Mentions` role. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'
 		elif arguments == 'nocedule':
-			content = '`\\nocedule` - Gives a user the role that prevents custom emotes, direct uploads and link embeds. Accepts a user ID as an argument.'
+			content = '`\\nocedule` - Gives a user the role that prevents custom emotes, direct uploads and link embeds. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'
 		elif arguments == 'notts':
-			content = '`\\notts` - Gives a user the `No TTS` role. Accepts a user ID as an argument.'
+			content = '`\\notts` - Gives a user the `No TTS` role. Accepts as an argument a user ID, nickname, username, or username and discriminator.'
+		elif arguments == 'nonick':
+			content = '`\\nonick` – Removes from a user the tOLPer role, and gives them the tOLPer who can’t change nickname role. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'
 		elif arguments == 'rolerst':
-			content = '`\\rolerst` - Reset roles for a user. Accepts a user ID as an argument, and changes the user\'s roles back to normal.'
+			content = '`\\rolerst` - Reset roles for a user. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator, and changes the user\'s roles back to normal.'
 
 
 		elif arguments == None:
@@ -197,6 +203,18 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 		yield from reply(message, content)
 	elif command == 'source':
 		content = 'Source code to the bot: __https://gitgud.io/infoteddy/bracketed_backslash__'
+		yield from reply(message, content)
+	elif command == 'findu':
+		targetmember = get_member_input(message.server, arguments)
+		if targetmember == None:
+			content = 'Unable to find that member. Please specify a user ID, a username, a username and discriminator, or a nickname.'
+			yield from reply(message, content)
+			return
+		if targetmember.nick == None:
+			displaynick = ''
+		else:
+			displaynick = targetmember.nick
+		content = 'Matched <@{}>.\n**`User ID:`** `{}`\n**`Nickname:`** {}\n**`Username:`** {}\n**`Discriminator:`** `#{}`'.format(targetmember.id, targetmember.id, displaynick, targetmember.name, targetmember.discriminator)
 		yield from reply(message, content)
 	elif command == 'softban':
 		if not is_mod(message.author):
@@ -569,9 +587,13 @@ def get_member_input(server, input):
 	5) Case-insensitive username 100% match
 	6) Case-insensitive nickname partial match
 	7) Case-insensitive username partial match
-	8) Discriminator only
+	8) Discriminator only (either with or without #)
 	
 	"""
+	# Is this anything at all?
+	if input == None:
+		return None  # right back at ya
+
 	# Is this a mention?
 	if input.startswith('<@!') and input.endswith('>'):
 		input = input[3:-1] # Extract the ID from it
@@ -602,6 +624,8 @@ def get_member_input(server, input):
 				if mem.name.lower().find(input.lower()) != -1:
 					userfound = mem
 				if mem.discriminator == input:
+					discmatched = mem
+				if input.startswith('#') and mem.discriminator == input[1:]:
 					discmatched = mem
 
 			if not nickmatched:  # No 100% nickname match
