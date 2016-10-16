@@ -204,7 +204,37 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			arguments = ''
 		yield from reply(message, arguments)
 	elif command == '':
-		content = '<@{}>'.format(message.author.id)
+		content = '''<@{}>
+```fix
+Luigi: have you ever by accident pressed another key at the same time you have pressed enter?'
+Luigi: ugh
+ShinyWolf07: \\
+ShinyWolf07: this
+Luigi: is
+Luigi: cancer
+ShinyWolf07: I always do th
+ShinyWolf07: its so annoyng
+ShinyWolf07: \\
+ShinyWolf07: UGh\\
+Luigi: xd
+Luigi: x
+Luigi: d
+Luigi: d
+ShinyWolf07: xd\\
+Luigi: x
+ShinyWolf07: F***!!!!!|
+Luigi: XD
+ShinyWolf07: ARGH\\
+Luigi: This is funny to watch you
+Luigi: Did you make popcorn
+ShinyWolf07: xd ikr \\
+ShinyWolf07: ...
+ShinyWolf07: -_-\\
+ShinyWolf07: GAH\\
+Luigi: don't you mean ...\\
+ShinyWolf07: ...
+ShinyWolf07: sigh
+Luigi: 10/10 would watch again```'''.format(message.author.id)
 		yield from reply(message, content)
 	elif command == 'source':
 		content = 'Source code to the bot: __https://gitgud.io/infoteddy/bracketed_backslash__'
