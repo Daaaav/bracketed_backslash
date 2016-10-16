@@ -222,15 +222,6 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			displaymatch = '<@{}>'.format(targetmember.id)
 		else:
 			displaymatch = '__@{}__'.format(targetmember.display_name)
-
-		content = 'Matched {}.\n**`User ID:`** `{}`\n**`Nickname:`** {}\n**`Username:`** {}\n**`Discriminator:`** `#{}`'.format(displaymatch, targetmember.id, displaynick, targetmember.name, targetmember.discriminator)
-		yield from reply(message, content)
-	elif command == 'status_temp':
-		targetmember = get_member_input(message.server, arguments)
-		if targetmember == None:
-			content = 'Unable to find that member. Please specify a user ID, a username, a username and discriminator, or a nickname.'
-			yield from reply(message, content)
-			return
 		if str(targetmember.status) == 'online':
 			statuss = 'online:232230526331650058'
 		elif str(targetmember.status) == 'offline' or str(targetmember.status) == 'invisible':
@@ -239,7 +230,8 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			statuss = 'idle:232230526067408896'
 		elif str(targetmember.status) == 'dnd' or str(targetmember.status) == 'do_not_disturb':
 			statuss = 'dnd:232230526109351938'
-		content = '{} is <:{}>'.format(targetmember.display_name, statuss)
+
+		content = 'Matched {} <:{}>\n**`User ID:`** `{}`\n**`Nickname:`** {}\n**`Username:`** {}\n**`Discriminator:`** `#{}`'.format(displaymatch, statuss, targetmember.id, displaynick, targetmember.name, targetmember.discriminator)
 		yield from reply(message, content)
 	elif command == 'softban':
 		if not is_mod(message.author):
