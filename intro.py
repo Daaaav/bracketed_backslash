@@ -249,18 +249,22 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 			displaynick = '**`No Nickname`**'
 		else:
 			displaynick = '**`Nickname:`** ' + targetmember.nick
-		if targetmember.game.name == None and targetmember.game.type == 0:
+		if targetmember.game == None:
+			memberhasgame = False
 			displaygame = '**`Not Playing`**'
-		elif targetmember.game.type == 0:
-			displaygame = '**`Playing:`** ' + targetmember.game.name
-		if targetmember.game.name == None and targetmember.game.type == 1:
-			displaygame = '**`Not Streaming`**'
-		elif targetmember.game.type == 1:
-			displaygame = '**`Streaming:`** ' + targetmember.game.name
-		if targetmember.game.url == None:
 			displaygameurl = '**`No Stream Link`**'
+			pass
 		else:
-			displaygameurl = '**`Stream Link:`** <{}>'.format(targetmember.game.url) # the angled brackets are to make discord not preview the link
+			memberhasgame = True
+		if memberhasgame:
+			if targetmember.game.type == 0:
+				displaygame = '**`Playing:`** ' + targetmember.game.name
+			if targetmember.game.type == 1:
+				displaygame = '**`Streaming:`** ' + targetmember.game.name
+			if targetmember.game.url == None:
+				displaygameurl = '**`No Stream Link`**'
+			else:
+				displaygameurl = '**`Stream Link:`** <{}>'.format(targetmember.game.url) # the angled brackets are to make discord not preview the link
 		if command == "findup":
 			displaymatch = '<@{}>'.format(targetmember.id)
 		else:
