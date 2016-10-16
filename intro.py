@@ -77,7 +77,7 @@ def on_message(message):
 		content = '''`[\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server.
 __`General Commands:`__
 `\help` – Lists commands and their descriptions.
-`\source` – Luigi Master hates open source. But this command gives the link to the source code to the bot.
+`\source` – Gives the link to the source code to the bot.
 `\echo` – Echoes your input.
 `\info` – Unfinished command to get information about a user.
 `\\findu` - Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever.
@@ -103,7 +103,7 @@ Any arguments passed to `\help` will make `\help` try to look up more in-depth d
 			content = '''`\` – Mentions you.
 Don’t type this command in if you don’t want to be mentioned.'''
 		elif arguments == 'source':
-			content = '''`\source` – Luigi Master hates open source. But this command gives the link to the source code to the bot.
+			content = '''`\source` – Gives the link to the source code to the bot.
 It’s hosted on __https://gitgud.io/__.'''
 		elif arguments == 'echo':
 			content = '''`\echo` – Echoes your input.
