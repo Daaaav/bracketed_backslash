@@ -232,14 +232,14 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 			yield from reply(message, content)
 			return
 		if str(targetmember.status) == 'online':
-			statuss = 'online'
+			statuss = 'online:232230526331650058'
 		elif str(targetmember.status) == 'offline' or str(targetmember.status) == 'invisible':
-			statuss = 'invisible'
+			statuss = 'invisible:232230525711024129'
 		elif str(targetmember.status) == 'idle':
-			statuss = 'idle'
+			statuss = 'idle:232230526067408896'
 		elif str(targetmember.status) == 'dnd' or str(targetmember.status) == 'do_not_disturb':
-			statuss = 'dnd'
-		content = '{} is :{}:'.format(targetmember.display_name, statuss)
+			statuss = 'dnd:232230526109351938'
+		content = '{} is <:{}>'.format(targetmember.display_name, statuss)
 		yield from reply(message, content)
 	elif command == 'softban':
 		if not is_mod(message.author):
