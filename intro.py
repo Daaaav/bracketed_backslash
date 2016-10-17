@@ -622,6 +622,21 @@ def on_member_remove(member):
 	else:
 		yield from client.send_message(specialchannel, msg)
 
+@client.async_event
+def on_typing(channel, user, when):
+	if str(user.status) == 'offline':
+		if user.server.id != productionserver:
+			yield from client.send_typing(user.server.default_channel)
+		else:
+			yield from client.send_typing(specialchannel)
+		msg = '**`>`**`user` {}`#{}` `({}) was invisible while typing in channel` <#{}> `at {}`'.format(user.name, user.discriminator, user.id, channel.id, when)
+		if user.server.id != productionserver:
+			yield from client.send_message(channel, msg)
+		else:
+			yield from client.send_message(specialchannel, msg)
+	else:
+		return # practically unnecessary, but this is for if we want to do things when members type later
+
 def is_admin(member):
 	try:
 		perms = member.server_permissions
