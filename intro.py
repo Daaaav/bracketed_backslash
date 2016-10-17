@@ -640,13 +640,13 @@ def is_mod(member):
 	if perms.manage_messages:
 		return True
 	return is_admin(member) # Admins have moderator powers, too
-	
+
 def is_bot(member):
 	# Alright then.
 	if member.bot:
 		return True
 	return False
-	
+
 def get_member_input(server, input):
 	"""Tries to return a member object given a user input which could be anything that identifies that member.
 
@@ -659,7 +659,7 @@ def get_member_input(server, input):
 	6) Case-insensitive nickname partial match
 	7) Case-insensitive username partial match
 	8) Discriminator only (either with or without #)
-	
+
 	"""
 	# Is this anything at all?
 	if input == None:
@@ -672,7 +672,7 @@ def get_member_input(server, input):
 		input = input[2:-1] # Same
 
 	targetmember = server.get_member(input)
-	
+
 	if targetmember == None:  # Not an ID
 		targetmember = server.get_member_named(input)
 		if targetmember == None:  # Not found by server.get_member_named()
