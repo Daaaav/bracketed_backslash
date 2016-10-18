@@ -646,7 +646,7 @@ def on_typing(channel, user, when):
 			yield from client.send_typing(user.server.default_channel)
 		else:
 			yield from client.send_typing(specialchannel)
-		msg = '**`>`**`user` {}`#{}` `({}) was invisible while typing in channel` <#{}> `at {}`'.format(user.name, user.discriminator, user.id, channel.id, when)
+		msg = '**`>`**:ghost:`user` {}`#{}` `({}) was invisible while typing in channel` <#{}> `at {}`'.format(user.name, user.discriminator, user.id, channel.id, when)
 		if user.server.id != productionserver:
 			yield from client.send_message(channel, msg)
 		else:
