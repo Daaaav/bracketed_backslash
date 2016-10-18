@@ -48,7 +48,7 @@ def on_message(message):
 			yield from client.send_typing(message.channel)
 		else:
 			yield from client.send_typing(specialchannel)
-		msg_start = '**`>`**`user` {}`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
+		msg_start = '**`>`**:ghost:`user` {}`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
 		if message.server.id != productionserver:
 			yield from client.send_message(message.channel, msg_start)
 		else:
