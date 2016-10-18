@@ -48,12 +48,22 @@ def on_message(message):
 			yield from client.send_typing(message.channel)
 		else:
 			yield from client.send_typing(specialchannel)
-		msg_start = '**`>`**`user` {}`#{}` `({}) was invisible when sending message {} at {} UTC`'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.timestamp)
+		msg_start = '**`>`**`user` {}`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
 		if message.server.id != productionserver:
 			yield from client.send_message(message.channel, msg_start)
 		else:
 			yield from client.send_message(specialchannel, msg_start)
 		pass
+
+	if message.attachments != []:
+		if message.server.id != productionserver:
+			yield from client.send_typing(message.channel)
+		else:
+			yield from client.send_typing(specialchannel)
+		msg_start = '**`>`**`user` {}`#{}` `({}) attached a file to message {} in channel` <#{}> `at {} UTC`'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
+		content = '_`The attachment is:`_\n' + message.attachments[0]['url']
+		msg = msg_start + content
+		yield from client.send_message(specialchannel, msg)
 
 	if message.content.startswith(invoker): # does the message start with command invoker
 		altinvokeractive = False
@@ -444,7 +454,7 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 @client.async_event
 def on_message_delete(message): # when a message gets deleted
 	if message.author == client.user: # is the deleted message originally sent by the bot
-		print('bot message {} by user {}#{} ({}) in channel {} ({}) at {} utc deleted'.format(message.id, message.author.name, message.author.discriminator, message.author.id, message.channel.id, message.channel.name, message.timestamp))
+		print('bot message {} by user {}#{} ({}) in channel {} ({}) at {} utc deleted, original content is \n{}'.format(message.id, message.author.name, message.author.discriminator, message.author.id, message.channel.id, message.channel.name, message.timestamp, message.content))
 		return
 	if message.content == '' and message.attachments == []:
 		return
@@ -628,6 +638,21 @@ def on_member_remove(member):
 		yield from client.send_message(member.server.default_channel, msg)
 	else:
 		yield from client.send_message(specialchannel, msg)
+
+@client.async_event
+def on_typing(channel, user, when):
+	if str(user.status) == 'offline':
+		if user.server.id != productionserver:
+			yield from client.send_typing(user.server.default_channel)
+		else:
+			yield from client.send_typing(specialchannel)
+		msg = '**`>`**`user` {}`#{}` `({}) was invisible while typing in channel` <#{}> `at {}`'.format(user.name, user.discriminator, user.id, channel.id, when)
+		if user.server.id != productionserver:
+			yield from client.send_message(channel, msg)
+		else:
+			yield from client.send_message(specialchannel, msg)
+	else:
+		return # practically unnecessary, but this is for if we want to do things when members type later
 
 def is_admin(member):
 	try:
