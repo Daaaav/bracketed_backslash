@@ -60,7 +60,7 @@ def on_message(message):
 			yield from client.send_typing(message.channel)
 		else:
 			yield from client.send_typing(specialchannel)
-		msg_start = '**`>`**`user` {}`#{}` `({}) attached a file to message {} in channel` <#{}> `at {} UTC`'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
+		msg_start = '**`>`**:paperclip:`user` {}`#{}` `({}) attached a file to message {} in channel` <#{}> `at {} UTC`'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
 		content = '_`The attachment is:`_\n' + message.attachments[0]['url']
 		msg = msg_start + content
 		yield from client.send_message(specialchannel, msg)
