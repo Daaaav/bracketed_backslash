@@ -44,10 +44,6 @@ def on_message(message):
 		return # do nothing
 
 	if str(message.author.status) == 'offline':
-		if message.server.id != productionserver:
-			yield from client.send_typing(message.channel)
-		else:
-			yield from client.send_typing(specialchannel)
 		msg_start = '**`>`**:ghost:`user` {}`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
 		if message.server.id != productionserver:
 			yield from client.send_message(message.channel, msg_start)
@@ -56,10 +52,6 @@ def on_message(message):
 		pass
 
 	if message.attachments != []:
-		if message.server.id != productionserver:
-			yield from client.send_typing(message.channel)
-		else:
-			yield from client.send_typing(specialchannel)
 		msg_start = '**`>`**:paperclip:`user` {}`#{}` `({}) attached a file to message {} in channel` <#{}> `at {} UTC`\n'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
 		content = '_`The attachment is:`_\n' + message.attachments[0]['url']
 		msg = msg_start + content
@@ -80,7 +72,6 @@ def on_message(message):
 		command = message.content.split(altinvoker, 1)[1]
 		msg_start = '**`>`**{}**`:`** {}\n'.format(message.author.name, message.content) # shows what the user put in, without main invoker
 	else:
-		yield from client.send_typing(message.channel)
 		command = message.content.split(invoker, 1)[1] # removes invoker from the message
 		msg_start = '**`>`**{}**`:`** \\{}\n'.format(message.author.name, message.content) # shows what the user put in
 
@@ -461,10 +452,6 @@ def on_message_delete(message): # when a message gets deleted
 		return
 	if message.content == '' and message.attachments == []:
 		return
-	if message.server.id != productionserver:
-		yield from client.send_typing(message.channel)
-	else:
-		yield from client.send_typing (specialchannel)
 	msg_start = '**`>`**:no_entry_sign:`message {} by user` {}`#{}` `({}) in channel` <#{}> `at {} UTC deleted`\n'.format(message.id, message.author.name, message.author.discriminator, message.author.id, message.channel.id, message.timestamp)
 	content = '_`The original content is:`_\n' + message.content
 	msg = msg_start + content
@@ -480,14 +467,10 @@ def on_message_delete(message): # when a message gets deleted
 		msg2 = msg_start + content2
 		if message.server.id != productionserver:
 			yield from client.send_message(message.channel, msg1)
-			yield from client.send_typing(message.channel)
 			yield from client.send_message(message.channel, msg2)
-			yield from client.send_typing(message.channel)
 		else:
 			yield from client.send_message(specialchannel, msg1)
-			yield from client.send_typing(specialchannel)
 			yield from client.send_message(specialchannel, msg2)
-			yield from client.send_typing(specialchannel)
 	else:
 		if message.server.id != productionserver:
 			yield from client.send_message(message.channel, msg)
@@ -510,10 +493,6 @@ def on_message_edit(before, after): # when a message gets edited
 	if before.content == after.content:
 		return # must be the message being pinned and/or embed(s) displaying
 	# checks succeeded
-	if before.server.id != productionserver:
-		yield from client.send_typing(before.channel)
-	else:
-		yield from client.send_typing(specialchannel)
 	msg_start = '**`>`**:pencil:`message {} by user` {}`#{}` `({}) in channel` <#{}> `at {} UTC edited`\n'.format(before.id, before.author.name, before.author.discriminator, before.author.id, before.channel.id, before.timestamp)
 	content = '_`The older content is:`_\n' + before.content
 	msg = msg_start + content
@@ -529,21 +508,15 @@ def on_message_edit(before, after): # when a message gets edited
 		msg2 = msg_start + content2
 		if before.server.id != productionserver:
 			yield from client.send_message(before.channel, msg1)
-			yield from client.send_typing(before.channel)
 			yield from client.send_message(before.channel, msg2)
 		else:
 			yield from client.send_message(specialchannel, msg1)
-			yield from client.send_typing(specialchannel)
 			yield from client.send_message(specialchannel, msg2)
 	else:
 		if before.server.id != productionserver:
 			yield from client.send_message(before.channel, msg)
 		else:
 			yield from client.send_message(specialchannel, msg)
-	if after.server.id != productionserver:
-		yield from client.send_typing(after.channel)
-	else:
-		yield from client.send_typing(specialchannel)
 	msg_start = '**`>`**`message {} by user` {}`#{}` `({}) in channel` <#{}> `at {} UTC edited`\n'.format(after.id, after.author.name, after.author.discriminator, after.author.id, after.channel.id, after.timestamp)
 	content = '_`The newer content is:`_\n' + after.content
 	msg = msg_start + content
@@ -559,11 +532,9 @@ def on_message_edit(before, after): # when a message gets edited
 		msg2 = msg_start + content2
 		if after.server.id != productionserver:
 			yield from client.send_message(after.channel, msg1)
-			yield from client.send_typing(after.channel)
 			yield from client.send_message(after.channel, msg2)
 		else:
 			yield from client.send_message(specialchannel, msg1)
-			yield from client.send_typing(specialchannel)
 			yield from client.send_message(specialchannel, msg2)
 	else:
 		if after.server.id != productionserver:
@@ -577,10 +548,6 @@ def on_member_update (before, after):
 		return
 	if before.nick == after.nick:
 		return # only looking for nick changes right now
-	if before.server.id != productionserver:
-		yield from client.send_typing(before.server.default_channel)
-	else:
-		yield from client.send_typing(specialchannel)
 	msg_start = '**`>`**:pager:`user` {}`#{}` `({}) changed nickname`\n'.format(before.name, before.discriminator, before.id)
 	if before.nick == None:
 		content = '_`The older nickname is:`_ `(none)`'
@@ -589,10 +556,8 @@ def on_member_update (before, after):
 	msg = msg_start + content
 	if before.server.id != productionserver:
 		yield from client.send_message(before.server.default_channel, msg)
-		yield from client.send_typing(after.server.default_channel)
 	else:
 		yield from client.send_message(specialchannel, msg)
-		yield from client.send_typing(specialchannel)
 	msg_start = '**`>`**`user` {}`#{}` `({}) changed nickname`\n'.format(after.name, after.discriminator, after.id)
 	if after.nick == None:
 		content = '_`The newer nickname is:`_ `(none)`'
@@ -606,10 +571,6 @@ def on_member_update (before, after):
 
 @client.async_event
 def on_member_join(member):
-	if member.server.id != productionserver:
-		yield from client.send_typing(member.server.default_channel)
-	else:
-		yield from client.send_typing(specialchannel)
 	msg = '**`>`**:arrow_right:`user` {}`#{}` `({}) joined server {} ({})`'.format(member.name, member.discriminator, member.id, member.server.name, member.server.id)
 	if member.server.id != productionserver:
 		yield from client.send_message(member.server.default_channel, msg)
@@ -632,10 +593,6 @@ def on_member_join(member):
 
 @client.async_event
 def on_member_remove(member):
-	if member.server.id != productionserver:
-		yield from client.send_typing(member.server.default_channel)
-	else:
-		yield from client.send_typing(specialchannel)
 	msg = '**`>`**:door:`user` {}`#{}` `({}) removed from server {} ({})`'.format (member.name, member.discriminator, member.id, member.server.name, member.server.id)
 	if member.server.id != productionserver:
 		yield from client.send_message(member.server.default_channel, msg)
@@ -645,10 +602,6 @@ def on_member_remove(member):
 @client.async_event
 def on_typing(channel, user, when):
 	if str(user.status) == 'offline':
-		if user.server.id != productionserver:
-			yield from client.send_typing(user.server.default_channel)
-		else:
-			yield from client.send_typing(specialchannel)
 		msg = '**`>`**:ghost:`user` {}`#{}` `({}) was invisible while typing in channel` <#{}> `at {}`'.format(user.name, user.discriminator, user.id, channel.id, when)
 		if user.server.id != productionserver:
 			yield from client.send_message(channel, msg)
