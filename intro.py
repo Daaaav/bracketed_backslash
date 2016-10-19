@@ -24,6 +24,13 @@ specialchannel = discord.Object(id='234185735266238464')
 productionserver = '153368829160849408'
 server = client.get_server(productionserver) # defines all server.* commands
 
+t = {
+	'op_only': 'Permission denied. This command can only be used by Info Teddy or Dav999.',
+	'mod_only': 'Permission denied. This command can only be used by a moderator or administrator.',
+	'specify_user': 'Please specify a user ID, a username, a username and discriminator, or a nickname.',
+	'production_only': 'Production server only!',
+}
+
 @client.async_event
 def on_ready():
 	print('[info] logged in as {} with id {}'.format(client.user.name, client.user.id))
@@ -41,12 +48,25 @@ def on_message(message):
 			yield from client.send_typing(message.channel)
 		else:
 			yield from client.send_typing(specialchannel)
-		msg_start = '**`>`**`user` {}`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
+		msg_start = '**`>`**:ghost:`user` {}`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
 		if message.server.id != productionserver:
 			yield from client.send_message(message.channel, msg_start)
 		else:
 			yield from client.send_message(specialchannel, msg_start)
 		pass
+
+	if message.attachments != []:
+		if message.server.id != productionserver:
+			yield from client.send_typing(message.channel)
+		else:
+			yield from client.send_typing(specialchannel)
+		msg_start = '**`>`**:paperclip:`user` {}`#{}` `({}) attached a file to message {} in channel` <#{}> `at {} UTC`\n'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
+		content = '_`The attachment is:`_\n' + message.attachments[0]['url']
+		msg = msg_start + content
+		if message.server.id != productionserver:
+			yield from client.send_message(message.channel, msg)
+		else:
+			yield from client.send_message(specialchannel, msg)
 
 	if message.content.startswith(invoker): # does the message start with command invoker
 		altinvokeractive = False
@@ -181,7 +201,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 		yield from reply(message, content)
 	elif command == 'restart':
 		if message.author.id != '146814960574398464' and message.author.id != '159793749604433921':
-			content = 'Permission denied. This command can only be used by Info Teddy or Dav999.'
+			content = t['op_only']
 			print ('[info] bot restart tried to be called by {}#{} (uuid {}) at {} utc but failed'.format (message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			yield from reply(message, content)
 			return
@@ -191,7 +211,7 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 		yield from os.execl(__file__, '')
 	elif command == 'kill':
 		if message.author.id != '146814960574398464' and message.author.id != '159793749604433921':
-			content = 'Permission denied. This command can only be used by Info Teddy or Dav999.'
+			content = t['op_only']
 			print('[info] bot kill tried to be called by {}#{} (uuid {}) at {} utc but failed'.format (message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			yield from reply(message, content)
 			return
@@ -242,7 +262,7 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 	elif command == 'findu' or command == 'findup':
 		targetmember = get_member_input(message.server, arguments)
 		if targetmember == None:
-			content = 'Unable to find that member. Please specify a user ID, a username, a username and discriminator, or a nickname.'
+			content = 'Unable to find that member. ' + t['specify_user']
 			yield from reply(message, content)
 			return
 		if targetmember.nick == None:
@@ -282,12 +302,12 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 		yield from reply(message, content)
 	elif command == 'softban':
 		if not is_mod(message.author):
-			content = 'Permission denied. This command can only be used by a moderator or administrator.'
+			content = t['mod_only']
 			print('[info] softban attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			yield from reply(message, content)
 			return
 		elif message.server.id != productionserver:
-			content = 'Production server only!'
+			content = t['production_only']
 			yield from reply(message, content)
 			return
 
@@ -301,7 +321,7 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 			)
 			yield from client.add_roles(targetmember, discord.utils.get(message.server.roles, id='220643748508467220')) # The banned role
 		except(AttributeError,TypeError):
-			content = 'Please specify a user ID, a username, a username and discriminator, or a nickname.'
+			content = t['specify_user']
 			yield from reply(message, content)
 			return
 
@@ -309,12 +329,12 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 		yield from reply(message, content)
 	elif command == 'nononly' or command == 'nogenmen' or command == 'nocedule' or command == 'notts':
 		if not is_mod(message.author):
-			content = 'Permission denied. This command can only be used by a moderator or administrator.'
+			content = t['mod_only']
 			print('[info] {} attempted by {}#{} (uuid {}) at {} utc but failed'.format(command, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			yield from reply(message, content)
 			return
 		elif message.server.id != productionserver:
-			content = 'Production server only!'
+			content = t['production_only']
 			yield from reply(message, content)
 			return
 		roletoadd = {
@@ -333,19 +353,19 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 			targetmember = get_member_input(message.server, arguments)
 			yield from client.add_roles(targetmember, discord.utils.get(message.server.roles, id=roletoadd[command]))
 		except(AttributeError,TypeError):
-			content = 'Please specify a user ID, a username, a username and discriminator, or a nickname.'
+			content = t['specify_user']
 			yield from reply(message, content)
 			return
 		content = 'Gave <@{}> the {} role.'.format(targetmember.id, rolelabel[command])
 		yield from reply(message, content)
 	elif command == 'nonick':
 		if not is_mod(message.author):
-			content = 'Permission denied. This command can only be used by a moderator or administrator.'
+			content = t['mod_only']
 			print('[info] nonick attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			yield from reply(message, content)
 			return
 		elif message.server.id != productionserver:
-			content = 'Proudction server only!'
+			content = t['production_only']
 			yield from reply(message, content)
 			return
 		try:
@@ -353,20 +373,20 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 			yield from client.add_roles(targetmember, discord.utils.get(message.server.roles, id='236925451216355338'))
 			yield from client.remove_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
 		except(AttributeError,TypeError):
-			content = 'Please specify a user ID, a username, a username and discriminator, or a nickname.'
+			content = t['specify_user']
 			yield from reply(message, content)
 			return
-		content = 'Gave <@{}> the tOLPer who can’t change nickname role.\nRemoved from <@{}> the tOLPer role.'.format(targetmember.id, targetmember.id)
+		content = 'Gave <@{}> the tOLPer who can’t change nickname role, and removed the tOLPer role from them.'.format(targetmember.id)
 		yield from reply(message, content)
 		return
 	elif command == 'rolerst':
 		if not is_mod(message.author):
-			content = 'Permission denied. This command can only be used by a moderator or administrator.'
+			content = t['mod_only']
 			print('[info] rolerst attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			yield from reply(message, content)
 			return
 		elif message.server.id != productionserver:
-			content = 'Production server only!'
+			content = t['production_only']
 			yield from reply(message, content)
 			return
 
@@ -383,7 +403,7 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 			if not is_bot(targetmember):
 				yield from client.add_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
 		except(AttributeError,TypeError):
-			content = 'Please specify a user ID, a username, a username and discriminator, or a nickname.'
+			content = t['specify_user']
 			yield from reply(message, content)
 			return
 		content = 'Reset roles for <@{}> back to normal.'.format(targetmember.id)
@@ -437,7 +457,7 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 @client.async_event
 def on_message_delete(message): # when a message gets deleted
 	if message.author == client.user: # is the deleted message originally sent by the bot
-		print('bot message {} by user {}#{} ({}) in channel {} ({}) at {} utc deleted'.format(message.id, message.author.name, message.author.discriminator, message.author.id, message.channel.id, message.channel.name, message.timestamp))
+		print('bot message {} by user {}#{} ({}) in channel {} ({}) at {} utc deleted, original content is \n{}'.format(message.id, message.author.name, message.author.discriminator, message.author.id, message.channel.id, message.channel.name, message.timestamp, message.content))
 		return
 	if message.content == '' and message.attachments == []:
 		return
@@ -629,7 +649,7 @@ def on_typing(channel, user, when):
 			yield from client.send_typing(user.server.default_channel)
 		else:
 			yield from client.send_typing(specialchannel)
-		msg = '**`>`**`user` {}`#{}` `({}) was invisible while typing in channel` <#{}> `at {}`'.format(user.name, user.discriminator, user.id, channel.id, when)
+		msg = '**`>`**:ghost:`user` {}`#{}` `({}) was invisible while typing in channel` <#{}> `at {}`'.format(user.name, user.discriminator, user.id, channel.id, when)
 		if user.server.id != productionserver:
 			yield from client.send_message(channel, msg)
 		else:
