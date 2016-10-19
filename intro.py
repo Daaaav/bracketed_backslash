@@ -496,11 +496,11 @@ def on_message_delete(message): # when a message gets deleted
 @client.async_event
 def on_message_edit(before, after): # when a message gets edited
 	# preliminary checkings
+	if before.content == after.content:
+		return # must be the message being pinned and/or embed(s) displaying
 	if before.author == client.user or after.author == client.user: # the bot doesnt edits its own messages, so throw a warning
 		warnings.warn('this is the bots own message and the bot doesnt edit messages\nid of before: {}\nid of after: {}'.format (before.id, after.id))
 		return
-	if before.content == after.content:
-		return # must be the message being pinned and/or embed(s) displaying
 	# checks succeeded
 	msg_start = '**`>`**:pencil:`message {} by user` {}`#{}` `({}) in channel` <#{}> `at {} UTC edited`\n'.format(before.id, before.author.name, before.author.discriminator, before.author.id, before.channel.id, before.timestamp)
 	content = '_`The older content is:`_\n' + before.content
