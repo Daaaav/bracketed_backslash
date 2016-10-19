@@ -14,7 +14,7 @@ git clone https://gitgud.io/infoteddy/bracketed_backslash.git
 ```
 With HTTPS, you will be prompted for your [gitgud.io](https://gitgud.io/) username and password every time, not just when cloning the repository.
 
-Python ≥3.5 is required.
+Python 3.4 is required. I can’t figure out how to install `discord.py` with Python 3.5, sorry.
 [`discord.py`](https://github.com/Rapptz/discord.py) is required.
 Make sure to `chmod +x intro.py` if you want to make sure the bot can restart with a command.
 After that, you start the bot by doing `./intro.py` (if you did `chmod +x intro.py`) or `python3.5 intro.py` or `python intro.py`.
