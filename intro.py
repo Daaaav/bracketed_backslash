@@ -706,7 +706,7 @@ def reply(messageobject, message):
 	yield from client.send_message(messageobject.channel, msg_start + message)
 
 def mdspecialchars(string):
-	out = re.sub('`(\w+)`', u'`​\\1​`', string)
+	out = re.sub('`(\w+)`', u'`​\\1​`', string) # there are two u+200b characters on this line, find a way to see them if you cant
 	print(out)
 	return out
 
