@@ -10,6 +10,7 @@ import sys
 import urllib
 import warnings
 import random
+import re
 
 client = discord.Client() # defines all client.* commands
 
@@ -42,6 +43,7 @@ def on_message(message):
 
 	if message.author == client.user: # is the message sent by the bot
 		return # do nothing
+
 
 	if str(message.author.status) == 'offline':
 		msg_start = '**`>`**:ghost:`user` {}`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
@@ -98,13 +100,13 @@ __`Bot Commands:`__
 `\\restart` – Restarts the bot.
 `\kill` – Kills the bot. This method does not kill it cleanly.
 __`Moderation Commands:`__
-`\softban` - Softban a user.
-`\\nononly` - Restrict a user to only chat in the <#173239163666038784> channel.
+`\softban` - Gives a user the `Banned` role.
+`\\nononly` - Gives a user the `Nonsense-Only` role.
 `\\nogenmen` - Gives a user the `No General Mentions` role.
-`\\nocedule` - Gives a user the role that prevents custom emotes, direct uploads and link embeds.
+`\\nocedule` - Gives a user the `No CE/DU/LE` role.
 `\\notts` - Gives a user the `No TTS` role.
-`\\nonick` – Removes from a user the tOLPer role, and gives them the tOLPer who can’t change nickname role.
-`\\rolerst` - Reset roles for a user.'''
+`\\nonick` – Removes from a user the `tOLPer` role, and gives them the `tOLPer who can’t change nickname` role.
+`\\rolerst` - Removes all restrictive roles from a user, and gives back the `tOLPer` role if necessary.'''
 
 		# General
 		if arguments == 'help':
@@ -259,7 +261,7 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 		if targetmember.nick == None:
 			displaynick = '**`No Nickname`**'
 		else:
-			displaynick = '**`Nickname:`** ' + targetmember.nick
+			displaynick = '**`Nickname:`** ``​{}​``'.format(mdspecialchars(targetmember.nick))
 		if targetmember.game == None:
 			memberhasgame = False
 			displaygame = '**`Not Playing`**'
@@ -702,5 +704,10 @@ def get_member_input(server, input):
 def reply(messageobject, message):
 	# Removes the need for adding msg_start manually every time
 	yield from client.send_message(messageobject.channel, msg_start + message)
+
+def mdspecialchars(string):
+	out = re.sub('`(\w+)`', u'`​\\1​`', string)
+	print(out)
+	return out
 
 client.run (token)
