@@ -552,31 +552,43 @@ def on_message_edit(before, after): # when a message gets edited
 			yield from client.send_message(specialchannel, msg)
 
 @client.async_event
-def on_member_update (before, after):
-	if client.user == before and client.user == after:
-		return
-	if before.nick == after.nick:
-		return # only looking for nick changes right now
-	msg_start = '**`>`**:pager:`user` {}`#{}` `({}) changed nickname`\n'.format(before.name, before.discriminator, before.id)
-	if before.nick == None:
-		content = '_`The older nickname is:`_ `(none)`'
-	else:
-		content = '_`The older nickname is:`_\n' + before.nick
-	msg = msg_start + content
-	if before.server.id != productionserver:
-		yield from client.send_message(before.server.default_channel, msg)
-	else:
-		yield from client.send_message(specialchannel, msg)
-	msg_start = '**`>`**`user` {}`#{}` `({}) changed nickname`\n'.format(after.name, after.discriminator, after.id)
-	if after.nick == None:
-		content = '_`The newer nickname is:`_ `(none)`'
-	else:
-		content = '_`The newer nickname is:`_\n' + after.nick
-	msg = msg_start + content
-	if after.server.id != productionserver:
-		yield from client.send_message(after.server.default_channel, msg)
-	else:
-		yield from client.send_message(specialchannel, msg)
+def on_member_update(before, after):
+	if before.nick != after.nick:
+		msg_start = '**`>`**:pager:`user` {}`#{}` `({}) changed nickname`\n'.format(before.name, before.discriminator, before.id)
+		if before.nick == None:
+			content = '_`The older nickname is:`_ `(none)`'
+		else:
+			content = '_`The older nickname is:`_\n' + before.nick
+		msg = msg_start + content
+		if before.server.id != productionserver:
+			yield from client.send_message(before.server.default_channel, msg)
+		else:
+			yield from client.send_message(specialchannel, msg)
+		msg_start = '**`>`**`user` {}`#{}` `({}) changed nickname`\n'.format(after.name, after.discriminator, after.id)
+		if after.nick == None:
+			content = '_`The newer nickname is:`_ `(none)`'
+		else:
+			content = '_`The newer nickname is:`_\n' + after.nick
+		msg = msg_start + content
+		if after.server.id != productionserver:
+			yield from client.send_message(after.server.default_channel, msg)
+		else:
+			yield from client.send_message(specialchannel, msg)
+	if before.roles != after.roles:
+		if len(before.roles) > len(after.roles): # if a role has been removed
+			roleremoved = list(set(before.roles).symmetric_difference(set(after.roles)))[0]
+			msg_start = '**`>`**`user` {}`#{}` `({}) has role {} ({}) removed`'.format(before.name, before.discriminator, before.id, roleremoved.name, roleremoved.id)
+			if before.server.id != productionserver:
+				yield from client.send_message(before.server.default_channel, msg_start)
+			else:
+				yield from client.send_message(specialchannel, msg_start)
+		if len(before.roles) < len(after.roles): # if a role has been added
+			roleadded = list(set(after.roles).symmetric_difference(set(before.roles)))[0]
+			msg_start = '**`>`**`user` {}`#{}` `({}) has role {} ({}) added`'.format(after.name, after.discriminator, after.id, roleadded.name, roleadded.id)
+			if after.server.id != productionserver:
+				yield from client.send_message(after.server.default_channel, msg_start)
+			else:
+				yield from client.send_message(specialchannel, msg_start)
 
 @client.async_event
 def on_member_join(member):
@@ -587,8 +599,6 @@ def on_member_join(member):
 		yield from client.send_message(specialchannel, msg)
 		if is_bot(member):
 			yield from client.add_roles(member, discord.utils.get(member.server.roles, id='201129507967598592')) # bot role
-			# TODO: make the "role added" message be sent by on_member_update()
-			yield from client.send_message(specialchannel, '`Given` {}`#{}` `({}) the Bot role.`'.format(member.name, member.discriminator, member.id))
 			return
 		# TODO: Look up that member in our database, to see if this user should get a restrictive group again.
 		# If someone is just a tOLPer, they won't be in the database.
@@ -598,7 +608,6 @@ def on_member_join(member):
 		else:
 			# Not found, so they're just a tOLPer.
 			yield from client.add_roles(member, discord.utils.get(member.server.roles, id='231644869351833600')) # The tOLPer role
-			yield from client.send_message(specialchannel, '`Given` {}`#{}` `({}) the tOLPer role.`'.format(member.name, member.discriminator, member.id))
 
 @client.async_event
 def on_member_remove(member):
