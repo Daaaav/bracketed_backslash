@@ -174,19 +174,26 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 
 		# Moderation
 		elif arguments == 'softban':
-			content = '`\softban` - Softban a user by giving them the Banned role. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'
+			content = '''`\softban` - Gives a user the `Banned` role.
+Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
 		elif arguments == 'nononly':
-			content = '`\\nononly` - Restrict a user to only chat in the <#173239163666038784> channel. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'
+			content = '''`\\nononly` - Gives a user the `Nonsense-Only` role.
+Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
 		elif arguments == 'nogenmen':
-			content = '`\\nogenmen` - Gives a user the `No General Mentions` role. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'
+			content = '''`\\nogenmen` - Gives a user the `No General Mentions` role.
+Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
 		elif arguments == 'nocedule':
-			content = '`\\nocedule` - Gives a user the role that prevents custom emotes, direct uploads and link embeds. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'
+			content = '''`\\nocedule` - Gives a user the `No CE/DU/LE` role.
+Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
 		elif arguments == 'notts':
-			content = '`\\notts` - Gives a user the `No TTS` role. Accepts as an argument a user ID, nickname, username, or username and discriminator.'
+			content = '''`\\notts` - Gives a user the `No TTS` role.
+Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
 		elif arguments == 'nonick':
-			content = '`\\nonick` – Removes from a user the tOLPer role, and gives them the tOLPer who can’t change nickname role. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'
+			content = '''`\\nonick` – Removes from a user the `tOLPer` role, and gives them the `tOLPer who can’t change nickname` role.
+Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
 		elif arguments == 'rolerst':
-			content = '`\\rolerst` - Reset roles for a user. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator, and changes the user\'s roles back to normal.'
+			content = '''`\\rolerst` - Removes all restrictive roles from a user, and gives back the `tOLPer` role if necessary.
+Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
 		elif arguments == None:
 			pass
 		else:
