@@ -80,9 +80,7 @@ def on_message(message):
 		msg_start = '**`>`**{}**`:`** \\{}\n'.format(message.author.name, message.content) # shows what the user put in
 
 	if not isprivate:
-		if not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver:
-			content = 'Non-staff members can only use me in <#201130047736643584> from now on.'
-			yield from reply(message, content)
+		if not is_mod(message.author) and message.channel.id != '201130047736643584' and message.channel.id != '238423391571279872' and message.server.id == productionserver:
 			return
 	try:
 		arguments = command.split (' ', 1)[1]
