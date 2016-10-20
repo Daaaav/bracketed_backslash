@@ -709,6 +709,10 @@ def get_member_input(server, input):
 	8) Discriminator only (either with or without #)
 
 	"""
+	# Is there a Discord server in between us?
+	if isprivatemessage(server):
+		return None
+	
 	# Is this anything at all?
 	if input == None:
 		return None  # right back at ya
