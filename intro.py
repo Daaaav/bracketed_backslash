@@ -44,14 +44,16 @@ def on_message(message):
 	if message.author == client.user: # is the message sent by the bot
 		return # do nothing
 
+	isprivate = isprivatemessage(message.server)
 
-	if str(message.author.status) == 'offline':
-		msg_start = '**`>`**:ghost:`user` {}`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
-		if message.server.id != productionserver:
-			yield from client.send_message(message.channel, msg_start)
-		else:
-			yield from client.send_message(specialchannel, msg_start)
-		pass
+	if not isprivate:
+		if str(message.author.status) == 'offline':
+			msg_start = '**`>`**:ghost:`user` {}`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
+			if message.server.id != productionserver:
+				yield from client.send_message(message.channel, msg_start)
+			else:
+				yield from client.send_message(specialchannel, msg_start)
+			pass
 
 	if message.attachments != []:
 		msg_start = '**`>`**:paperclip:`user` {}`#{}` `({}) attached a file to message {} in channel` <#{}> `at {} UTC`\n'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
@@ -77,10 +79,11 @@ def on_message(message):
 		command = message.content.split(invoker, 1)[1] # removes invoker from the message
 		msg_start = '**`>`**{}**`:`** \\{}\n'.format(message.author.name, message.content) # shows what the user put in
 
-	if not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver:
-		content = 'Non-staff members can only use me in <#201130047736643584> from now on.'
-		yield from reply(message, content)
-		return
+	if not isprivate:
+		if not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver:
+			content = 'Non-staff members can only use me in <#201130047736643584> from now on.'
+			yield from reply(message, content)
+			return
 	try:
 		arguments = command.split (' ', 1)[1]
 	except IndexError:
@@ -174,19 +177,26 @@ If the bot is okay, the bot will respond with “Bot is okay”.'''
 
 		# Moderation
 		elif arguments == 'softban':
-			content = '`\softban` - Softban a user by giving them the Banned role. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'
+			content = '''`\softban` - Gives a user the `Banned` role.
+Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
 		elif arguments == 'nononly':
-			content = '`\\nononly` - Restrict a user to only chat in the <#173239163666038784> channel. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'
+			content = '''`\\nononly` - Gives a user the `Nonsense-Only` role.
+Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
 		elif arguments == 'nogenmen':
-			content = '`\\nogenmen` - Gives a user the `No General Mentions` role. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'
+			content = '''`\\nogenmen` - Gives a user the `No General Mentions` role.
+Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
 		elif arguments == 'nocedule':
-			content = '`\\nocedule` - Gives a user the role that prevents custom emotes, direct uploads and link embeds. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'
+			content = '''`\\nocedule` - Gives a user the `No CE/DU/LE` role.
+Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
 		elif arguments == 'notts':
-			content = '`\\notts` - Gives a user the `No TTS` role. Accepts as an argument a user ID, nickname, username, or username and discriminator.'
+			content = '''`\\notts` - Gives a user the `No TTS` role.
+Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
 		elif arguments == 'nonick':
-			content = '`\\nonick` – Removes from a user the tOLPer role, and gives them the tOLPer who can’t change nickname role. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'
+			content = '''`\\nonick` – Removes from a user the `tOLPer` role, and gives them the `tOLPer who can’t change nickname` role.
+Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
 		elif arguments == 'rolerst':
-			content = '`\\rolerst` - Reset roles for a user. Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator, and changes the user\'s roles back to normal.'
+			content = '''`\\rolerst` - Removes all restrictive roles from a user, and gives back the `tOLPer` role if necessary.
+Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
 		elif arguments == None:
 			pass
 		else:
@@ -489,11 +499,11 @@ def on_message_delete(message): # when a message gets deleted
 @client.async_event
 def on_message_edit(before, after): # when a message gets edited
 	# preliminary checkings
+	if before.content == after.content:
+		return # must be the message being pinned and/or embed(s) displaying
 	if before.author == client.user or after.author == client.user: # the bot doesnt edits its own messages, so throw a warning
 		warnings.warn('this is the bots own message and the bot doesnt edit messages\nid of before: {}\nid of after: {}'.format (before.id, after.id))
 		return
-	if before.content == after.content:
-		return # must be the message being pinned and/or embed(s) displaying
 	# checks succeeded
 	msg_start = '**`>`**:pencil:`message {} by user` {}`#{}` `({}) in channel` <#{}> `at {} UTC edited`\n'.format(before.id, before.author.name, before.author.discriminator, before.author.id, before.channel.id, before.timestamp)
 	content = '_`The older content is:`_\n' + before.content
@@ -545,31 +555,43 @@ def on_message_edit(before, after): # when a message gets edited
 			yield from client.send_message(specialchannel, msg)
 
 @client.async_event
-def on_member_update (before, after):
-	if client.user == before and client.user == after:
-		return
-	if before.nick == after.nick:
-		return # only looking for nick changes right now
-	msg_start = '**`>`**:pager:`user` {}`#{}` `({}) changed nickname`\n'.format(before.name, before.discriminator, before.id)
-	if before.nick == None:
-		content = '_`The older nickname is:`_ `(none)`'
-	else:
-		content = '_`The older nickname is:`_\n' + before.nick
-	msg = msg_start + content
-	if before.server.id != productionserver:
-		yield from client.send_message(before.server.default_channel, msg)
-	else:
-		yield from client.send_message(specialchannel, msg)
-	msg_start = '**`>`**`user` {}`#{}` `({}) changed nickname`\n'.format(after.name, after.discriminator, after.id)
-	if after.nick == None:
-		content = '_`The newer nickname is:`_ `(none)`'
-	else:
-		content = '_`The newer nickname is:`_\n' + after.nick
-	msg = msg_start + content
-	if after.server.id != productionserver:
-		yield from client.send_message(after.server.default_channel, msg)
-	else:
-		yield from client.send_message(specialchannel, msg)
+def on_member_update(before, after):
+	if before.nick != after.nick:
+		msg_start = '**`>`**:pager:`user` {}`#{}` `({}) changed nickname`\n'.format(before.name, before.discriminator, before.id)
+		if before.nick == None:
+			content = '_`The older nickname is:`_ `(none)`'
+		else:
+			content = '_`The older nickname is:`_\n' + before.nick
+		msg = msg_start + content
+		if before.server.id != productionserver:
+			yield from client.send_message(before.server.default_channel, msg)
+		else:
+			yield from client.send_message(specialchannel, msg)
+		msg_start = '**`>`**`user` {}`#{}` `({}) changed nickname`\n'.format(after.name, after.discriminator, after.id)
+		if after.nick == None:
+			content = '_`The newer nickname is:`_ `(none)`'
+		else:
+			content = '_`The newer nickname is:`_\n' + after.nick
+		msg = msg_start + content
+		if after.server.id != productionserver:
+			yield from client.send_message(after.server.default_channel, msg)
+		else:
+			yield from client.send_message(specialchannel, msg)
+	if before.roles != after.roles:
+		if len(before.roles) > len(after.roles): # if a role has been removed
+			roleremoved = list(set(before.roles).symmetric_difference(set(after.roles)))[0]
+			msg_start = '**`>`**`user` {}`#{}` `({}) has role {} ({}) removed`'.format(before.name, before.discriminator, before.id, roleremoved.name, roleremoved.id)
+			if before.server.id != productionserver:
+				yield from client.send_message(before.server.default_channel, msg_start)
+			else:
+				yield from client.send_message(specialchannel, msg_start)
+		if len(before.roles) < len(after.roles): # if a role has been added
+			roleadded = list(set(after.roles).symmetric_difference(set(before.roles)))[0]
+			msg_start = '**`>`**`user` {}`#{}` `({}) has role {} ({}) added`'.format(after.name, after.discriminator, after.id, roleadded.name, roleadded.id)
+			if after.server.id != productionserver:
+				yield from client.send_message(after.server.default_channel, msg_start)
+			else:
+				yield from client.send_message(specialchannel, msg_start)
 
 @client.async_event
 def on_member_join(member):
@@ -580,8 +602,6 @@ def on_member_join(member):
 		yield from client.send_message(specialchannel, msg)
 		if is_bot(member):
 			yield from client.add_roles(member, discord.utils.get(member.server.roles, id='201129507967598592')) # bot role
-			# TODO: make the "role added" message be sent by on_member_update()
-			yield from client.send_message(specialchannel, '`Given` {}`#{}` `({}) the Bot role.`'.format(member.name, member.discriminator, member.id))
 			return
 		# TODO: Look up that member in our database, to see if this user should get a restrictive group again.
 		# If someone is just a tOLPer, they won't be in the database.
@@ -591,7 +611,6 @@ def on_member_join(member):
 		else:
 			# Not found, so they're just a tOLPer.
 			yield from client.add_roles(member, discord.utils.get(member.server.roles, id='231644869351833600')) # The tOLPer role
-			yield from client.send_message(specialchannel, '`Given` {}`#{}` `({}) the tOLPer role.`'.format(member.name, member.discriminator, member.id))
 
 @client.async_event
 def on_member_remove(member):
@@ -709,5 +728,11 @@ def mdspecialchars(string):
 	out = re.sub('`(\w+)`', u'`​\\1​`', string) # there are two u+200b characters on this line, find a way to see them if you cant
 	print(out)
 	return out
+
+def isprivatemessage(server): # this is a function because so in the future more checks for if its a private message can ezily be added
+	if server == None:
+		return True
+	else:
+		return False
 
 client.run (token)
