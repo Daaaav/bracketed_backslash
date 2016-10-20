@@ -44,7 +44,7 @@ def on_message(message):
 	if message.author == client.user: # is the message sent by the bot
 		return # do nothing
 
-	isprivate = isprivatemessage(message.server)
+	isprivate = isprivatemessage(message.server) # cant use isprivatemessage = isprivatemessage(), otherwise python will think "holy fuck a variable was referenced before assignment"
 
 	if not isprivate:
 		if str(message.author.status) == 'offline':
