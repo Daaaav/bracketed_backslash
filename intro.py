@@ -46,14 +46,13 @@ def on_message(message):
 
 	isprivate = isprivatemessage(message.server) # cant use isprivatemessage = isprivatemessage(), otherwise python will think "holy fuck a variable was referenced before assignment"
 
-	if not isprivate:
-		if str(message.author.status) == 'offline':
-			msg_start = '**`>`**:ghost:`user` {}`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
-			if message.server.id != productionserver:
-				yield from client.send_message(message.channel, msg_start)
-			else:
-				yield from client.send_message(specialchannel, msg_start)
-			pass
+	if not isprivate and str(message.author.status) == 'offline':
+		msg_start = '**`>`**:ghost:`user` {}`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
+		if message.server.id != productionserver:
+			yield from client.send_message(message.channel, msg_start)
+		else:
+			yield from client.send_message(specialchannel, msg_start)
+		pass
 
 	if message.attachments != []:
 		msg_start = '**`>`**:paperclip:`user` {}`#{}` `({}) attached a file to message {} in channel` <#{}> `at {} UTC`\n'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
@@ -79,11 +78,10 @@ def on_message(message):
 		command = message.content.split(invoker, 1)[1] # removes invoker from the message
 		msg_start = '**`>`**{}**`:`** \\{}\n'.format(message.author.name, message.content) # shows what the user put in
 
-	if not isprivate:
-		if not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver:
-			content = 'Non-staff members can only use me in <#201130047736643584> from now on.'
-			yield from reply(message, content)
-			return
+	if not isprivate and not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver:
+		content = 'Non-staff members can only use me in <#201130047736643584> from now on.'
+		yield from reply(message, content)
+		return
 	try:
 		arguments = command.split (' ', 1)[1]
 	except IndexError:
