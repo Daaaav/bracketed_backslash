@@ -17,7 +17,7 @@ client = discord.Client() # defines all client.* commands
 
 invoker = '\\' # command invoker
 altinvoker = 'ok glass, ' # alt command invoker
-hangmaninvoker = '='
+hangmaninvoker = '-'
 
 # Hangman stuff
 alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' 
