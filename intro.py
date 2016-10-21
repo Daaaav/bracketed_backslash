@@ -83,6 +83,10 @@ cmds = [
 				'short': 'Initiate a game of hangman (use \stophangman to stop). Send via PM with a custom word.',
 				'extra': 'Ported from DavBot!'
 			},
+			'stophangman': {
+				'short': 'Stop the current game of hangman.',
+				'extra': 'Can only be done by the one who started the game or a moderator.'
+			},
 		}
 	},
 	{
