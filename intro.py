@@ -208,8 +208,6 @@ def on_message(message):
 		msg_start = '**`>`**{}**`:`** \\{}\n'.format(message.author.name, message.content) # shows what the user put in
 
 	if not isprivate and not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver:
-		content = 'Non-staff members can only use me in <#201130047736643584> from now on.'
-		yield from reply(message, content)
 		return
 	try:
 		arguments = command.split (' ', 1)[1]
@@ -237,7 +235,7 @@ def on_message(message):
 						break
 				if matched:
 					break
-			
+
 			if not matched:
 				content = 'Invalid arguments passed. Input `\help` for a list of valid commands to pass as arguments.'
 		yield from reply(message, content)
@@ -712,7 +710,7 @@ def get_member_input(server, input):
 	# Is there a Discord server in between us?
 	if isprivatemessage(server):
 		return None
-	
+
 	# Is this anything at all?
 	if input == None:
 		return None  # right back at ya
@@ -777,7 +775,7 @@ def isprivatemessage(server): # this is a function because so in the future more
 		return True
 	else:
 		return False
-		
+
 def helplist(cats):
 	returnage = ''
 	for cat in cats:
