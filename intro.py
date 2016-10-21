@@ -11,11 +11,15 @@ import urllib
 import warnings
 import random
 import re
+import time
 
 client = discord.Client() # defines all client.* commands
 
 invoker = '\\' # command invoker
 altinvoker = 'ok glass, ' # alt command invoker
+
+timeformat = '%Y-%m-%d %H:%M:%S (%Z)'
+boottime = time.strftime(timeformat)
 
 token_config = open('bot_token.conf', 'r')
 
@@ -71,6 +75,10 @@ cmds = [
 			'botok': {
 				'short': 'Pings the bot.',
 				'extra': 'If the bot is okay, the bot will respond with “Bot is okay”.'
+			},
+			'uptime': {
+				'short': 'Prints the time the bot was booted.',
+				'extra': 'Doesn\'t yet give the amount of time between the boot and now, but does give those timestamps.'
 			},
 			'restart': {
 				'short': 'Restarts the bot.',
@@ -481,6 +489,9 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 		yield from reply(message, content)
 	elif command == 'botok':
 		content = 'Bot is okay.'
+		yield from reply(message, content)
+	elif command == 'uptime':
+		content = 'Boot time:       `{}`\nCurrent time: `{}`'.format(boottime, time.strftime(timeformat))
 		yield from reply(message, content)
 	elif command == '*formatting*':
 		content = 'That’s italicized formatting.'
