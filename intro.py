@@ -224,18 +224,19 @@ def on_message(message):
 			pass
 		else:
 			matched = False
-			for cat in list(set(cmds) | set(meme_cmds)): # Union
-				for cmd in cat['commands']: # Maybe have a nested try-except KeyError instead of looping through every command
-					if arguments == cmd:
-						try:
-							content = '`\{}` – {}'.format(cmd, cat['commands'][cmd]['extrafull'])
-						except KeyError:
-							content = '`\{}` – {}\n{}'.format(cmd, cat['commands'][cmd]['short'], cat['commands'][cmd]['extra'])
-						matched = True
+			for i in range(0,2):
+				for cat in (cmds if i == 0 else meme_cmds): # Good enough replacement to union
+					for cmd in cat['commands']: # Maybe have a nested try-except KeyError instead of looping through every command
+						if arguments == cmd:
+							try:
+								content = '`\{}` – {}'.format(cmd, cat['commands'][cmd]['extrafull'])
+							except KeyError:
+								content = '`\{}` – {}\n{}'.format(cmd, cat['commands'][cmd]['short'], cat['commands'][cmd]['extra'])
+							matched = True
+							break
+					if matched:
 						break
-				if matched:
-					break
-
+###############
 			if not matched:
 				content = 'Invalid arguments passed. Input `\help` for a list of valid commands to pass as arguments.'
 		yield from reply(message, content)
