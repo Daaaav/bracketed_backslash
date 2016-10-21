@@ -420,7 +420,7 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 		hangmanstarter = message.author
 		guessedletters = [False]*26
 
-		content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "=" followed by the letter (for example =a) or the word. {} attempts left.\n{}'.format(hangmanstarter.id, hangmanattempts, hangmanworddisp(hangmanchosenword))
+		content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "{}" followed by the letter (for example =a) or the word. {} attempts left.\n{}'.format(hangmanstarter.id, hangmaninvoker, hangmanattempts, hangmanworddisp(hangmanchosenword))
 		yield from client.send_message(botschannel, content)
 	elif command == 'stophangman':
 		if not hangmanactive:
