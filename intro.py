@@ -78,7 +78,7 @@ cmds = [
 			},
 			'uptime': {
 				'short': 'Prints the time the bot was booted.',
-				'extra': 'Doesn\'t yet give the amount of time between the boot and now, but does give those timestamps.'
+				'extra': 'Doesn’t yet give the amount of time between the boot and now, but does give those timestamps.'
 			},
 			'restart': {
 				'short': 'Restarts the bot.',
