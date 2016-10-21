@@ -192,7 +192,7 @@ def on_ready():
 
 @client.async_event
 def on_message(message):
-	global msg_start
+	global msg_start, hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, hangmanstarter, guessedletters
 
 	if message.author == client.user: # is the message sent by the bot
 		return # do nothing
@@ -927,6 +927,8 @@ def helplist(cats):
 	return returnage
 
 def hangmanworddisp(theword):
+	global hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, hangmanstarter, guessedletters
+
 	theoutput = ''
 	algeraden = True
 	
