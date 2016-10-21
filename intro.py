@@ -241,7 +241,7 @@ def on_message(message):
 		
 		if len(hangmanguessed) == 1:
 			# Have we already used that letter? And is it a valid letter?
-			if alphabet.find(hangmanguessed.upper()) != -1:
+			if alphabet.find(hangmanguessed.upper()) == -1:
 				content = 'The letter **{}** is invalid.'.format(hangmanguessed.upper())
 				yield from reply(message, content)
 				return
