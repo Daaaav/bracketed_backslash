@@ -17,6 +17,17 @@ client = discord.Client() # defines all client.* commands
 
 invoker = '\\' # command invoker
 altinvoker = 'ok glass, ' # alt command invoker
+hangmaninvoker = '='
+
+# Hangman stuff
+alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' 
+hangmanchosenword = ''
+hangmanattempts = 0
+hangmantotalattempts = 0
+hangmanactive = False
+hangmanstarter = None
+guessedletters = [False]*26
+algeraden = False
 
 timeformat = '%Y-%m-%d %H:%M:%S (%Z)'
 boottime = time.strftime(timeformat)
@@ -26,6 +37,7 @@ token_config = open('bot_token.conf', 'r')
 token = token_config.readline(60).split('\n')[0] # read sixty characters also FUCKING NEWLINES
 
 specialchannel = discord.Object(id='234185735266238464')
+botschannel = discord.Object(id='201130047736643584')
 productionserver = '153368829160849408'
 server = client.get_server(productionserver) # defines all server.* commands
 
@@ -66,6 +78,10 @@ cmds = [
 			'findup': {
 				'short': 'Same as `\\findu`, but also pings the user.',
 				'extrafull': 'Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator. Warning: This pings the user.'
+			},
+			'hangman': {
+				'short': 'Initiate a game of hangman (use \stophangman to stop). Send via PM with a custom word.',
+				'extra': 'Ported from DavBot!'
 			},
 		}
 	},
@@ -202,13 +218,83 @@ def on_message(message):
 
 	if message.content.startswith(invoker): # does the message start with command invoker
 		altinvokeractive = False
+		hangmaninvokeractive = False
 		pass # continue, go on
 	elif message.content.startswith(altinvoker): # does the message start with alt invoker
 		altinvokeractive = True
+		hangmaninvokeractive = False
+		pass
+	elif message.content.startswith(hangmaninvoker):
+		hangmaninvokeractive = True
 		pass
 	else:
 		return
-	if altinvokeractive:
+	if hangmaninvokeractive:
+		if not hangmanactive:
+			return
+		if isprivate:
+			content = 'Sorry, guesses are not accepted via PM!'
+			yield from reply(message, content)
+		if message.channel.id != '201130047736643584':
+			return
+		hangmanguessed = message.content[1:]
+		
+		if len(hangmanguessed) == 1:
+			# Have we already used that letter? And is it a valid letter?
+			if alphabet.find(hangmanguessed.upper()) == 1:
+				content = 'The letter **{}** is invalid.'.format(hangmanguessed.upper())
+				yield from reply(message, content)
+				return
+			if guessedletters[alphabet.find(hangmanguessed.upper())]:
+				content = 'The letter **{}** has already been used.'
+				yield from reply(message, content)
+				return
+			# Ok, so does this letter occur in the word?
+			if hangmanchosenword.upper().find(hangmanguessed.upper()):
+				# Set the guessed letter correctly
+				guessedletters[alphabet.find(hangmanguessed.upper())] = True
+
+				content = '**{}** is correct!\n{}'.format(hangmanguessed.upper(), hangmanworddisp(hangmanchosenword))
+				yield from reply(message, content)
+
+				if algeraden:
+					hangmanactive = False
+					content = 'You guessed the word correctly! You made {} mistakes in total.'.format(hangmantotalattempts-hangmanattempts)
+					yield from reply(message, content)
+			else:
+				# Set the guessed letter correctly, and it has to be a letter
+				guessedletters[alphabet.find(hangmanguessed.upper())] = True
+				hangmanattempts -= 1
+
+				if hangmanattempts == 0:
+					hangmanactive = False
+					content = '**{}** is incorrect! Game over. The word was: **{}**'.format(hangmanguessed.upper(), hangmanchosenword)
+					yield from reply(message, content)
+				else:
+					content = '**{}** is incorrect! {} attempts left.\n{}'.format(hangmanguessed.upper(), hangmanattempts, hangmanworddisp(hangmanchosenword))
+					yield from reply(message, content)
+		else:
+			# We're guessing the entire word. Well, is it the word?
+			if hangmanguessed.lower() == hangmanchosenword.lower():
+				hangmanactive = False
+				content = 'You guessed the word ({}) correctly! You made {} mistakes in total.'.format(hangmanchosenword, hangmantotalattempts-hangmanattempts)
+				yield from reply(message, content)
+			elif len(hangmanguessed) != len(hangmanchosenword):
+				# We're not even trying. It's not the same length.
+				content = '**{}** isn\'t even the same length as the correct word. Please try again.'.format(hangmanguessed)
+				yield from reply(message, content)
+			else:
+				hangmanattempts -= 1
+
+				if hangmanattempts == 0:
+					hangmanactive = False
+					content = '**{}** is not the word! Game over. The word was: **{}**'.format(hangmanguessed, hangmanchosenword)
+					yield from reply(message, content)
+				else:
+					content = '**{}** is not the word! {} attempts left.\n{}'.format(hangmanguessed, hangmanattempts, hangmanworddisp(hangmanchosenword))
+					yield from reply(message, content)
+
+	elif altinvokeractive:
 		command = message.content.split(altinvoker, 1)[1]
 		msg_start = '**`>`**{}**`:`** {}\n'.format(message.author.name, message.content) # shows what the user put in, without main invoker
 	else:
@@ -244,7 +330,7 @@ def on_message(message):
 							break
 					if matched:
 						break
-###############
+
 			if not matched:
 				content = 'Invalid arguments passed. Input `\help` for a list of valid commands to pass as arguments.'
 		yield from reply(message, content)
@@ -305,6 +391,50 @@ ShinyWolf07: ...
 ShinyWolf07: sigh
 Luigi: 10/10 would watch again```'''.format(message.author.id)
 		yield from reply(message, content)
+	elif command == 'hangman':
+		if hangmanactive:
+			content = 'ERROR: Hangman is already running. It can be aborted by the starter or by a mod with !stophangman.'
+			yield from reply(message, content)
+			return
+		if not isprivatemessage(message.server):
+			content = 'For now, this can only be run via DM.'
+			yield from reply(message, content)
+			return
+		if arguments == None:
+			content = 'Please specify a word.'
+			yield from reply(message, content)
+			return
+		if not arguments.isalpha():
+			content = 'ERROR: Words can only consist of letters A-Z'
+			yield from reply(message, content)
+			return
+		if len(arguments) > 50:
+			content = 'ERROR: Sorry, but your word is too long. It can be 50 characters max.'
+			yield from reply(message, content)
+			return
+
+		hangmanchosenword = arguments
+		hangmanattempts = 10
+		hangmantotalattempts = 10
+		hangmanactive = True
+		hangmanstarter = message.author
+		guessedletters = [False]*26
+
+		content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "=" followed by the letter (for example =a) or the word. {} attempts left.\n{}'.format(hangmanstarter.id, hangmanattempts, hangmanworddisp(hangmanchosenword))
+		yield from client.send_message(botschannel, content)
+	elif command == 'stophangman':
+		if not hangmanactive:
+			content = 'ERROR: Can\'t abort hangman because it\'s not running.'
+			yield from reply(message, content)
+			return
+		elif not is_mod(message.author) and message.author.id != hangmanstarter.id:
+			content = 'ERROR: Can\'t abort hangman because you haven\'t started this game.'
+			yield from reply(message, content)
+			return
+
+		hangmanactive = False
+		content = 'Game of hangman aborted. The word was: **{}**'.format(hangmanchosenword)
+		yield from client.send_message(botschannel, content)
 	elif command == 'source':
 		content = 'Source code to the bot: __https://gitgud.io/infoteddy/bracketed_backslash__'
 		yield from reply(message, content)
@@ -795,5 +925,33 @@ def helplist(cats):
 		for cmd in cat['commands']:
 			returnage += '\n`\{}` – {}'.format(cmd, cat['commands'][cmd]['short'])
 	return returnage
+
+def hangmanworddisp(theword):
+	theoutput = ''
+	algeraden = True
+	
+	for i in range(0, len(theword)):
+		if guessedletters[alphabet.find(theword[i].upper())]:
+			theoutput += '__**`{}`**__ '.format(theword[i])
+		else:
+			theoutput += '`_` '
+			algeraden = False
+
+	# Now display already guessed letters.
+	theoutput += '    (used: '
+
+	notnone = False
+
+	for i in range(0, 26):
+		if guessedletters[i]:
+			notnone = True
+			theoutput += alphabet[i]
+	
+	if not notnone:
+		theoutput += 'none'
+	
+	theoutput += ')'
+
+	return theoutput
 
 client.run (token)
