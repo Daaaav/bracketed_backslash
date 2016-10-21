@@ -393,7 +393,7 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 		yield from reply(message, content)
 	elif command == 'hangman':
 		if hangmanactive:
-			content = 'ERROR: Hangman is already running. It can be aborted by the starter or by a mod with !stophangman.'
+			content = 'ERROR: Hangman is already running. It can be aborted by the starter or by a mod with \stophangman.'
 			yield from reply(message, content)
 			return
 		if not isprivatemessage(message.server):
@@ -420,7 +420,7 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 		hangmanstarter = message.author
 		guessedletters = [False]*26
 
-		content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "{}" followed by the letter (for example -a) or the word. {} attempts left.\n{}'.format(hangmanstarter.id, hangmaninvoker, hangmaninvoker, hangmanattempts, hangmanworddisp(hangmanchosenword))
+		content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "{}" followed by the letter (for example {}a) or the word. {} attempts left.\n{}'.format(hangmanstarter.id, hangmaninvoker, hangmaninvoker, hangmanattempts, hangmanworddisp(hangmanchosenword))
 		yield from client.send_message(botschannel, content)
 	elif command == 'stophangman':
 		if not hangmanactive:
