@@ -29,8 +29,137 @@ t = {
 	'op_only': 'Permission denied. This command can only be used by Info Teddy or Dav999.',
 	'mod_only': 'Permission denied. This command can only be used by a moderator or administrator.',
 	'specify_user': 'Please specify a user ID, a username, a username and discriminator, or a nickname.',
+	'accepts_user': 'Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.',
 	'production_only': 'Production server only!',
+	'noprivate': 'This command cannot be run inside a private conversation! You can probably guess why.',
+	'its_meme': 'It’s a meme command.',
 }
+
+cmds = [
+	{
+		'cat_name': 'General Commands',
+		'commands': {
+			'help': {
+				'short': 'Lists commands and their descriptions.',
+				'extra': 'Any arguments passed to `\help` will make `\help` try to look up more in-depth description of the command.'
+			},
+			'source': {
+				'short': 'Gives the link to the source code to the bot.',
+				'extra': 'It’s hosted on __https://gitgud.io/__.'
+			},
+			'echo': {
+				'short': 'Echoes your input.',
+				'extra': 'Now, you could say that the bot echoed your input already, but it’s still better to have a dedicated echo command.'
+			},
+			'info': {
+				'short': 'Unfinished command to get information about a user.',
+				'extra': ''
+			},
+			'findu': {
+				'short': 'Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever.',
+				'extrafull': 'Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator.'
+			},
+			'findup': {
+				'short': 'Same as `\\findu`, but also pings the user.',
+				'extrafull': 'Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator. Warning: This pings the user.'
+			},
+		}
+	},
+	{
+		'cat_name': 'Bot Commands',
+		'commands': {
+			'botok': {
+				'short': 'Pings the bot.',
+				'extra': 'If the bot is okay, the bot will respond with “Bot is okay”.'
+			},
+			'restart': {
+				'short': 'Restarts the bot.',
+				'extra': ''
+			},
+			'kill': {
+				'short': 'Kills the bot. This method does not kill it cleanly.',
+				'extra': ''
+			},
+		}
+	},
+	{
+		'cat_name': 'Moderation Commands',
+		'commands': {
+			'softban': {
+				'short': 'Gives a user the `Banned` role.',
+				'extra': t['accepts_user']
+			},
+			'nononly': {
+				'short': 'Gives a user the `Nonsense-Only` role.',
+				'extra': t['accepts_user']
+			},
+			'nogenmen': {
+				'short': 'Gives a user the `No General Mentions` role.',
+				'extra': t['accepts_user']
+			},
+			'nocedule': {
+				'short': 'Gives a user the `No CE/DU/LE` role.',
+				'extra': t['accepts_user']
+			},
+			'notts': {
+				'short': 'Gives a user the `No TTS` role.',
+				'extra': t['accepts_user']
+			},
+			'nonick': {
+				'short': 'Removes from a user the `tOLPer` role, and gives them the `tOLPer who can’t change nickname` role.',
+				'extra': t['accepts_user']
+			},
+			'rolerst': {
+				'short': 'Resets the roles for a user back to the normal state.',
+				'extra': 'Removes all restrictive roles from a user, and gives back the `tOLPer` role if necessary.\n' + t['accepts_user']
+			},
+		}
+	},
+]
+
+meme_cmds = [
+	{
+		'cat_name': 'Meme Commands',
+		'commands': {
+			'': {
+				'short': 'Mentions you.',
+				'extra': 'Don’t type this command in if you don’t want to be mentioned.'
+			},
+			'teddy': {
+				'short': 'The obvious counterpart to `\info`.',
+				'extra': t['its_meme']
+			},
+			'samar': {
+				'short': 'The true name.',
+				'extra': t['its_meme']
+			},
+			'lui': {
+				'short': 'Obligatory “pretty cool guy” meme.',
+				'extra': t['its_meme']
+			},
+			'shiny': {
+				'short': 'He’s a shiny trinket.',
+				'extra': t['its_meme']
+			},
+			'tainy': {
+				'short': 'Unobtaining is his name.',
+				'extra': t['its_meme']
+			},
+			'kys': {
+				'short': 'Will the bot listen?',
+				'extra': t['its_meme']
+			},
+			'*formatting*': {
+				'short': 'This is an example of italicized formatting.',
+				'extra': t['its_meme']
+			},
+			'/r/undertale': {
+				'short': 'This is going to give my bot cancer.',
+				'extra': t['its_meme']
+			},
+		}
+	}
+]
 
 @client.async_event
 def on_ready():
@@ -46,14 +175,13 @@ def on_message(message):
 
 	isprivate = isprivatemessage(message.server) # cant use isprivatemessage = isprivatemessage(), otherwise python will think "holy fuck a variable was referenced before assignment"
 
-	if not isprivate:
-		if str(message.author.status) == 'offline':
-			msg_start = '**`>`**:ghost:`user` {}`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
-			if message.server.id != productionserver:
-				yield from client.send_message(message.channel, msg_start)
-			else:
-				yield from client.send_message(specialchannel, msg_start)
-			pass
+	if not isprivate and str(message.author.status) == 'offline':
+		msg_start = '**`>`**:ghost:`user` {}`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
+		if message.server.id != productionserver:
+			yield from client.send_message(message.channel, msg_start)
+		else:
+			yield from client.send_message(specialchannel, msg_start)
+		pass
 
 	if message.attachments != []:
 		msg_start = '**`>`**:paperclip:`user` {}`#{}` `({}) attached a file to message {} in channel` <#{}> `at {} UTC`\n'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
@@ -79,126 +207,39 @@ def on_message(message):
 		command = message.content.split(invoker, 1)[1] # removes invoker from the message
 		msg_start = '**`>`**{}**`:`** \\{}\n'.format(message.author.name, message.content) # shows what the user put in
 
-	if not isprivate:
-		if not is_mod(message.author) and message.channel.id != '201130047736643584' and message.channel.id != '238423391571279872' and message.server.id == productionserver:
-			return
+	if not isprivate and not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver:
+		content = 'Non-staff members can only use me in <#201130047736643584> from now on.'
+		yield from reply(message, content)
+		return
 	try:
 		arguments = command.split (' ', 1)[1]
 	except IndexError:
 		arguments = None
 	command = command.split (' ', 1)[0]
 	if command == 'help':
-		content = '''`[\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server.
-__`General Commands:`__
-`\help` – Lists commands and their descriptions.
-`\source` – Gives the link to the source code to the bot.
-`\echo` – Echoes your input.
-`\info` – Unfinished command to get information about a user.
-`\\findu` - Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever.
-`\\findup` - Same as `\\findu`, but also pings the user.
-__`Bot Commands:`__
-`\\botok` – Pings the bot.
-`\\restart` – Restarts the bot.
-`\kill` – Kills the bot. This method does not kill it cleanly.
-__`Moderation Commands:`__
-`\softban` - Gives a user the `Banned` role.
-`\\nononly` - Gives a user the `Nonsense-Only` role.
-`\\nogenmen` - Gives a user the `No General Mentions` role.
-`\\nocedule` - Gives a user the `No CE/DU/LE` role.
-`\\notts` - Gives a user the `No TTS` role.
-`\\nonick` – Removes from a user the `tOLPer` role, and gives them the `tOLPer who can’t change nickname` role.
-`\\rolerst` - Removes all restrictive roles from a user, and gives back the `tOLPer` role if necessary.'''
+		content = '`[\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server.' + helplist(cmds)
 
 		# General
-		if arguments == 'help':
-			content = '''`\help` – Lists commands and their descriptions.
-Any arguments passed to `\help` will make `\help` try to look up more in-depth description of the command.'''
-		elif arguments == invoker or arguments == altinvoker:
-			content = '''`\` – Mentions you.
-Don’t type this command in if you don’t want to be mentioned.'''
-		elif arguments == 'source':
-			content = '''`\source` – Gives the link to the source code to the bot.
-It’s hosted on __https://gitgud.io/__.'''
-		elif arguments == 'echo':
-			content = '''`\echo` – Echoes your input.
-Now, you could say that the bot echoed your input already, but it’s still better to have a dedicated echo command.'''
-		elif arguments == 'info':
-			content = '`\info` – Unfinished command to get information about a user.'
-		elif arguments == 'findu':
-			content = '`\\findu` - Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator.'
-		elif arguments == 'findup':
-			content = '`\\findup` - Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator. Warning: This pings the user.'
-		elif arguments == 'useless':
-			content = '''`useless` – You found a secret, congratulations. The command to get this help message will change sometimes.
-__`Meme Commands:`__
-`\` – Mentions you.
-`\\teddy` – The obvious counterpart to `\info`.
-`\samar` – The true name.
-`\lui` – Obligatory “pretty cool guy” meme.
-`\shiny` – He’s a shiny trinket.
-`\\tainy` – Unobtaining is his name.
-`\kys` – Will the bot listen?
-`\*formatting*` – This is an example of italicized formatting.
-`\/r/undertale` – This is going to give my bot cancer.'''
-		elif arguments == 'teddy':
-			content = '''`\\teddy` – The obvious counterpart to `\info`.
-It’s a meme command.'''
-		elif arguments == 'samar':
-			content = '''`\samar` – The true name.
-It’s a meme command.'''
-		elif arguments == 'lui':
-			content = '''`\lui` – Obligatory “pretty cool guy” meme.
-It’s a meme command.'''
-		elif arguments == 'shiny':
-			content = '''`\shiny` – He’s a shiny trinket.
-It’s a meme command.'''
-		elif arguments == 'tainy':
-			content = '''`\\tainy` – Unobtaining is his name.
-It’s a meme command.'''
-		elif arguments == 'kys':
-			content = '''`\kys` – Will the bot listen?
-It’s a meme command.'''
-		elif arguments == '*formatting*':
-			content = '''`\*formatting*` – This is an example of italicized formatting.
-It’s a meme command.'''
-		elif arguments == '/r/undertale':
-			content = '''`\/r/undertale` – This is going to give my bot cancer.
-It’s a meme command.'''
-		# Bot
-		elif arguments == 'botok':
-			content = '''`\\botok` – Pings the bot.
-If the bot is okay, the bot will respond with “Bot is okay”.'''
-		elif arguments == 'restart':
-			content = '`\\restart` - Restarts the bot.'
-		elif arguments == 'kill':
-			content = '`\kill` – Kills the bot. This method does not kill it cleanly.'
-
-		# Moderation
-		elif arguments == 'softban':
-			content = '''`\softban` - Gives a user the `Banned` role.
-Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
-		elif arguments == 'nononly':
-			content = '''`\\nononly` - Gives a user the `Nonsense-Only` role.
-Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
-		elif arguments == 'nogenmen':
-			content = '''`\\nogenmen` - Gives a user the `No General Mentions` role.
-Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
-		elif arguments == 'nocedule':
-			content = '''`\\nocedule` - Gives a user the `No CE/DU/LE` role.
-Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
-		elif arguments == 'notts':
-			content = '''`\\notts` - Gives a user the `No TTS` role.
-Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
-		elif arguments == 'nonick':
-			content = '''`\\nonick` – Removes from a user the `tOLPer` role, and gives them the `tOLPer who can’t change nickname` role.
-Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
-		elif arguments == 'rolerst':
-			content = '''`\\rolerst` - Removes all restrictive roles from a user, and gives back the `tOLPer` role if necessary.
-Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
+		if arguments == 'useless':
+			content = '`useless` – You found a secret, congratulations. The command to get this help message will change sometimes.' + helplist(meme_cmds)
 		elif arguments == None:
 			pass
 		else:
-			content = 'Invalid arguments passed. Input `\help` for a list of valid commands to pass as arguments.'
+			matched = False
+			for cat in list(set(cmds) | set(meme_cmds)): # Union
+				for cmd in cat['commands']: # Maybe have a nested try-except KeyError instead of looping through every command
+					if arguments == cmd:
+						try:
+							content = '`\{}` – {}'.format(cmd, cat['commands'][cmd]['extrafull'])
+						except KeyError:
+							content = '`\{}` – {}\n{}'.format(cmd, cat['commands'][cmd]['short'], cat['commands'][cmd]['extra'])
+						matched = True
+						break
+				if matched:
+					break
+			
+			if not matched:
+				content = 'Invalid arguments passed. Input `\help` for a list of valid commands to pass as arguments.'
 		yield from reply(message, content)
 	elif command == 'restart':
 		if message.author.id != '146814960574398464' and message.author.id != '159793749604433921':
@@ -668,6 +709,10 @@ def get_member_input(server, input):
 	8) Discriminator only (either with or without #)
 
 	"""
+	# Is there a Discord server in between us?
+	if isprivatemessage(server):
+		return None
+	
 	# Is this anything at all?
 	if input == None:
 		return None  # right back at ya
@@ -732,5 +777,13 @@ def isprivatemessage(server): # this is a function because so in the future more
 		return True
 	else:
 		return False
+		
+def helplist(cats):
+	returnage = ''
+	for cat in cats:
+		returnage += '\n__`{}:`__'.format(cat['cat_name'])
+		for cmd in cat['commands']:
+			returnage += '\n`\{}` – {}'.format(cmd, cat['commands'][cmd]['short'])
+	return returnage
 
 client.run (token)
