@@ -241,16 +241,16 @@ def on_message(message):
 		
 		if len(hangmanguessed) == 1:
 			# Have we already used that letter? And is it a valid letter?
-			if alphabet.find(hangmanguessed.upper()) == 1:
+			if alphabet.find(hangmanguessed.upper()) != -1:
 				content = 'The letter **{}** is invalid.'.format(hangmanguessed.upper())
 				yield from reply(message, content)
 				return
 			if guessedletters[alphabet.find(hangmanguessed.upper())]:
-				content = 'The letter **{}** has already been used.'
+				content = 'The letter **{}** has already been used.'.format(hangmanguessed.upper())
 				yield from reply(message, content)
 				return
 			# Ok, so does this letter occur in the word?
-			if hangmanchosenword.upper().find(hangmanguessed.upper()):
+			if hangmanchosenword.upper().find(hangmanguessed.upper()) != -1:
 				# Set the guessed letter correctly
 				guessedletters[alphabet.find(hangmanguessed.upper())] = True
 
