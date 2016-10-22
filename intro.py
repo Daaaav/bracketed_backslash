@@ -201,7 +201,7 @@ def on_message(message):
 	if message.author == client.user: # is the message sent by the bot
 		return # do nothing
 
-	displaymessagecontent = (message.content[:100] + '…') if len(message.content) > 100 else message.content
+	displaymessagecontent = (mdspecialchars(message.content[:100]) + '**`…`**') if len(message.content) > 100 else mdspecialchars(message.content)
 
 	isprivate = isprivatemessage(message.server) # cant use isprivatemessage = isprivatemessage(), otherwise python will think "holy fuck a variable was referenced before assignment"
 
@@ -238,7 +238,7 @@ def on_message(message):
 	if hangmaninvokeractive:
 		if not hangmanactive:
 			return
-		msg_start = '**`>`**{}**`:`** {}\n'.format(message.author.name, displaymessagecontent)
+		msg_start = '**`>`**``{}``**`:`** ``{}``\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
 		if isprivate:
 			content = 'Sorry, guesses are not accepted via PM!'
 			msg = msg_start + content
@@ -296,6 +296,11 @@ def on_message(message):
 				yield from client.send_message(message.channel, msg)
 			elif len(hangmanguessed) != len(hangmanchosenword):
 				# We're not even trying. It's not the same length.
+				if len(hangmanguessed) == 0: # if before was "not even trying", this is -1 trying
+					content = 'You should probably enter in a letter.'
+					msg = msg_start + content
+					yield from client.send_message(message.channel, msg)
+					return
 				content = '**{}** isn\'t even the same length as the correct word. Please try again.'.format(hangmanguessed)
 				msg = msg_start + content
 				yield from client.send_message(message.channel, msg)
@@ -316,10 +321,10 @@ def on_message(message):
 
 	elif altinvokeractive:
 		command = message.content.split(altinvoker, 1)[1]
-		msg_start = '**`>`**{}**`:`** {}\n'.format(message.author.name, displaymessagecontent) # shows what the user put in, without main invoker
+		msg_start = '**`>`**``{}``**`:`** ``{}``\n'.format(mdspecialchars(message.author.name), displaymessagecontent) # shows what the user put in, without main invoker
 	else:
 		command = message.content.split(invoker, 1)[1] # removes invoker from the message
-		msg_start = '**`>`**{}**`:`** \\{}\n'.format(message.author.name, displaymessagecontent) # shows what the user put in
+		msg_start = '**`>`**``{}``**`:`** ``{}``\n'.format(mdspecialchars(message.author.name), displaymessagecontent) # shows what the user put in
 
 	# Prevent access to those who aren't supposed to send messages
 	if not isprivate and not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver and not (is_dev(message.author) and message.channel.id == '238423391571279872'):
