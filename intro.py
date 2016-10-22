@@ -319,7 +319,8 @@ def on_message(message):
 		command = message.content.split(invoker, 1)[1] # removes invoker from the message
 		msg_start = '**`>`**{}**`:`** \\{}\n'.format(message.author.name, message.content) # shows what the user put in
 
-	if not isprivate and not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver:
+	# Prevent access to those who aren't supposed to send messages
+	if not isprivate and not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver and not (is_dev(message.author) and message.channel.id == '238423391571279872'):
 		return
 	try:
 		arguments = command.split (' ', 1)[1]
@@ -884,6 +885,13 @@ def is_bot(member):
 	# Alright then.
 	if member.bot:
 		return True
+	return False
+
+def is_dev(member):
+	# Alright then. [2]
+	for role in member.roles:
+		if role.id == '238424544379928576': # [\] dev role
+			return True
 	return False
 
 def get_member_input(server, input):
