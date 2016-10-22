@@ -20,7 +20,7 @@ altinvoker = 'ok glass, ' # alt command invoker
 hangmaninvoker = '-'
 
 # Hangman stuff
-alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' 
+alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 hangmanchosenword = ''
 hangmanattempts = 0
 hangmantotalattempts = 0
@@ -236,22 +236,27 @@ def on_message(message):
 	if hangmaninvokeractive:
 		if not hangmanactive:
 			return
+		command = message.content.split(hangmaninvoker, 1)[1]
+		msg_start = '**`>`**{}**`:`** {}\n'.format(message.author.name, message.content)
 		if isprivate:
 			content = 'Sorry, guesses are not accepted via PM!'
-			yield from client.send_message(message.channel, content)
+			msg = msg_start + content
+			yield from client.send_message(message.channel, msg)
 		if message.channel.id != '201130047736643584':
 			return
 		hangmanguessed = message.content[1:]
-		
+
 		if len(hangmanguessed) == 1:
 			# Have we already used that letter? And is it a valid letter?
 			if alphabet.find(hangmanguessed.upper()) == -1:
+				msg = msg_start + content
 				content = 'The letter **{}** is invalid.'.format(hangmanguessed.upper())
-				yield from client.send_message(message.channel, content)
+				yield from client.send_message(message.channel, msg)
 				return
 			if guessedletters[alphabet.find(hangmanguessed.upper())]:
+				msg = msg_start + content
 				content = 'The letter **{}** has already been used.'.format(hangmanguessed.upper())
-				yield from client.send_message(message.channel, content)
+				yield from client.send_message(message.channel, msg)
 				return
 			# Ok, so does this letter occur in the word?
 			if hangmanchosenword.upper().find(hangmanguessed.upper()) != -1:
@@ -259,12 +264,14 @@ def on_message(message):
 				guessedletters[alphabet.find(hangmanguessed.upper())] = True
 
 				content = '**{}** is correct!\n{}'.format(hangmanguessed.upper(), hangmanworddisp(hangmanchosenword))
-				yield from client.send_message(message.channel, content)
+				msg = msg_start + content
+				yield from client.send_message(message.channel, msg)
 
 				if algeraden:
 					hangmanactive = False
 					content = 'You guessed the word correctly! You made {} mistakes in total.'.format(hangmantotalattempts-hangmanattempts)
-					yield from client.send_message(message.channel, content)
+					msg = msg_start + content
+					yield from client.send_message(message.channel, msg)
 			else:
 				# Set the guessed letter correctly, and it has to be a letter
 				guessedletters[alphabet.find(hangmanguessed.upper())] = True
@@ -273,30 +280,38 @@ def on_message(message):
 				if hangmanattempts == 0:
 					hangmanactive = False
 					content = '**{}** is incorrect! Game over. The word was: **{}**'.format(hangmanguessed.upper(), hangmanchosenword)
-					yield from client.send_message(message.channel, content)
+					msg = msg_start + content
+					yield from client.send_message(message.channel, msg)
 				else:
 					content = '**{}** is incorrect! {} attempts left.\n{}'.format(hangmanguessed.upper(), hangmanattempts, hangmanworddisp(hangmanchosenword))
-					yield from client.send_message(message.channel, content)
+					msg = msg_start + content
+					yield from client.send_message(message.channel, msg)
 		else:
 			# We're guessing the entire word. Well, is it the word?
 			if hangmanguessed.lower() == hangmanchosenword.lower():
 				hangmanactive = False
 				content = 'You guessed the word ({}) correctly! You made {} mistakes in total.'.format(hangmanchosenword, hangmantotalattempts-hangmanattempts)
-				yield from client.send_message(message.channel, content)
+				msg = msg_start + content
+				yield from client.send_message(message.channel, msg)
 			elif len(hangmanguessed) != len(hangmanchosenword):
 				# We're not even trying. It's not the same length.
 				content = '**{}** isn\'t even the same length as the correct word. Please try again.'.format(hangmanguessed)
-				yield from client.send_message(message.channel, content)
+				msg = msg_start + content
+				yield from client.send_message(message.channel, msg)
 			else:
 				hangmanattempts -= 1
 
 				if hangmanattempts == 0:
 					hangmanactive = False
+					msg = msg_start + content
 					content = '**{}** is not the word! Game over. The word was: **{}**'.format(hangmanguessed, hangmanchosenword)
-					yield from client.send_message(message.channel, content)
+					yield from client.send_message(message.channel, msg)
 				else:
 					content = '**{}** is not the word! {} attempts left.\n{}'.format(hangmanguessed, hangmanattempts, hangmanworddisp(hangmanchosenword))
-					yield from client.send_message(message.channel, content)
+					msg = msg_start + content
+					yield from client.send_message(message.channel, msg)
+
+		return
 
 	elif altinvokeractive:
 		command = message.content.split(altinvoker, 1)[1]
@@ -935,7 +950,7 @@ def hangmanworddisp(theword):
 
 	theoutput = ''
 	algeraden = True
-	
+
 	for i in range(0, len(theword)):
 		if guessedletters[alphabet.find(theword[i].upper())]:
 			theoutput += '__**`{}`**__ '.format(theword[i])
@@ -952,10 +967,10 @@ def hangmanworddisp(theword):
 		if guessedletters[i]:
 			notnone = True
 			theoutput += alphabet[i]
-	
+
 	if not notnone:
 		theoutput += 'none'
-	
+
 	theoutput += ')'
 
 	return theoutput
