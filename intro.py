@@ -236,7 +236,6 @@ def on_message(message):
 	if hangmaninvokeractive:
 		if not hangmanactive:
 			return
-		command = message.content.split(hangmaninvoker, 1)[1]
 		msg_start = '**`>`**{}**`:`** {}\n'.format(message.author.name, message.content)
 		if isprivate:
 			content = 'Sorry, guesses are not accepted via PM!'
