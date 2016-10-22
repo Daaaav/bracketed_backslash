@@ -319,7 +319,8 @@ def on_message(message):
 		command = message.content.split(invoker, 1)[1] # removes invoker from the message
 		msg_start = '**`>`**{}**`:`** \\{}\n'.format(message.author.name, message.content) # shows what the user put in
 
-	if not isprivate and not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver:
+	# Prevent access to those who aren't supposed to send messages
+	if not isprivate and not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver and not (is_dev(message.author) and message.channel.id == '238423391571279872'):
 		return
 	try:
 		arguments = command.split (' ', 1)[1]
@@ -440,6 +441,9 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 
 		content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "{}" followed by the letter (for example {}a) or the word. {} attempts left.\n{}'.format(hangmanstarter.id, hangmaninvoker, hangmaninvoker, hangmanattempts, hangmanworddisp(hangmanchosenword))
 		yield from client.send_message(botschannel, content)
+
+		content = 'https://discord.gg/6e3KcEv'
+		yield from reply(message, content)
 	elif command == 'stophangman':
 		if not hangmanactive:
 			content = 'ERROR: Can\'t abort hangman because it\'s not running.'
@@ -797,15 +801,15 @@ def on_member_update(before, after):
 			yield from client.send_message(before.server.default_channel, msg)
 		else:
 			yield from client.send_message(specialchannel, msg)
-		msg_start = '**`>`**`user {} changed username`\n'.format(after.nick, after.id)
+		msg_start = '**`>`**`user {} changed username`\n'.format(after.id)
 		content = '_`The newer username is:`_\n{}\n_`The newer discriminator is:`_ `#{}`'.format(after.name, after.discriminator)
 		msg = msg_start + content
 		if after.server.id != productionserver:
 			yield from client.send_message(after.server.default_channel, msg)
 		else:
 			yield from client.send_message(specialchannel, msg)
-	if before.avatar_url != after.avatar_url:
-		msg_start = '**`>`**`user` {}`#{}` `({}) changed avatar`\n'.format(before.name, before.discriminator, before.id)
+	if before.avatar_url != after.avatar_url and before.id != '141769689406636032' and before.id != '88575421972516864' and before.id != '196574963673595904': # isn't 35, 42 or beta 42
+		msg_start = '**`>`**:busts_in_silhouette:`user` {}`#{}` `({}) changed avatar`\n'.format(before.name, before.discriminator, before.id)
 		content = '_`The older avatar URL is:`_ ' + before.avatar_url
 		msg = msg_start + content
 		if before.server.id != productionserver:
@@ -841,9 +845,25 @@ def on_member_join(member):
 
 @client.async_event
 def on_member_remove(member):
-	msg = '**`>`**:door:`user` {}`#{}` `({}) removed from server {} ({})`'.format (member.name, member.discriminator, member.id, member.server.name, member.server.id)
+	msg = '**`>`**:door:`user` {}`#{}` `({}) removed from server {} ({})`'.format(member.name, member.discriminator, member.id, member.server.name, member.server.id)
 	if member.server.id != productionserver:
 		yield from client.send_message(member.server.default_channel, msg)
+	else:
+		yield from client.send_message(specialchannel, msg)
+
+@client.async_event
+def on_member_ban(member):
+	msg = '**`>`**:mans_shoe::door::no_entry:`user` {}`#{}` `({}) banned from server {} ({})`'.format(member.name, member.discriminator, member.id, member.server.name, member.server.id)
+	if member.server.id != productionserver:
+		yield from client.send_message(member.server.default_channel, msg)
+	else:
+		yield from client.send_message(specialchannel, msg)
+
+@client.async_event
+def on_member_unban(server, user):
+	msg = '**`>`**<:doormat:239361673532669953>`user` {}`#{}` `({}) unbanned from server {} ({})`'.format(user.name, user.discriminator, user.id, server.name, server.id)
+	if server.id != productionserver:
+		yield from client.send_message(server.default_channel, msg)
 	else:
 		yield from client.send_message(specialchannel, msg)
 
@@ -881,6 +901,13 @@ def is_bot(member):
 	# Alright then.
 	if member.bot:
 		return True
+	return False
+
+def is_dev(member):
+	# Alright then. [2]
+	for role in member.roles:
+		if role.id == '238424544379928576': # [\] dev role
+			return True
 	return False
 
 def get_member_input(server, input):
@@ -956,9 +983,7 @@ def reply(messageobject, message):
 	yield from client.send_message(messageobject.channel, msg_start + message)
 
 def mdspecialchars(string):
-	out = re.sub('`(\w+)`', u'`​\\1​`', string) # there are two u+200b characters on this line, find a way to see them if you cant
-	print(out)
-	return out
+	return string.replace('`', u'​`​')
 
 def isprivatemessage(server): # this is a function because so in the future more checks for if its a private message can ezily be added
 	if server == None:
