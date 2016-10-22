@@ -783,7 +783,7 @@ def on_member_update(before, after):
 			yield from client.send_message(before.server.default_channel, msg)
 		else:
 			yield from client.send_message(specialchannel, msg)
-		msg_start = '**`>`**`user` {}`#{}` `({}) changed nickname`\n'.format(after.name, after.discriminator, after.id)
+		msg_start = '**`>`**`user` **``{}``**`#{}` `({}) changed nickname`\n'.format(after.name, after.discriminator, after.id)
 		if after.nick == None:
 			content = '_`The newer nickname is:`_ `(none)`'
 		else:
