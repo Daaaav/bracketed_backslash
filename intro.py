@@ -254,8 +254,8 @@ def on_message(message):
 				yield from client.send_message(message.channel, msg)
 				return
 			if guessedletters[alphabet.find(hangmanguessed.upper())]:
-				msg = msg_start + content
 				content = 'The letter **{}** has already been used.'.format(hangmanguessed.upper())
+				msg = msg_start + content
 				yield from client.send_message(message.channel, msg)
 				return
 			# Ok, so does this letter occur in the word?
