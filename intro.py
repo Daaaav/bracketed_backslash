@@ -808,7 +808,7 @@ def on_member_update(before, after):
 			yield from client.send_message(after.server.default_channel, msg)
 		else:
 			yield from client.send_message(specialchannel, msg)
-	if before.avatar_url != after.avatar_url:
+	if before.avatar_url != after.avatar_url and before.id != '141769689406636032' and before.id != '88575421972516864' and before.id != '196574963673595904': # isn't 35, 42 or beta 42
 		msg_start = '**`>`**:busts_in_silhouette:`user` {}`#{}` `({}) changed avatar`\n'.format(before.name, before.discriminator, before.id)
 		content = '_`The older avatar URL is:`_ ' + before.avatar_url
 		msg = msg_start + content
