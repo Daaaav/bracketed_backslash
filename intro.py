@@ -755,7 +755,7 @@ def on_message_edit(before, after): # when a message gets edited
 @client.async_event
 def on_member_update(before, after):
 	if before.nick != after.nick:
-		msg_start = '**`>`**:pager:`user` {}`#{}` `({}) changed nickname`\n'.format(before.name, before.discriminator, before.id)
+		msg_start = '**`>`**:regional_indicator_n::pager:`user` {}`#{}` `({}) changed nickname`\n'.format(before.name, before.discriminator, before.id)
 		if before.nick == None:
 			content = '_`The older nickname is:`_ `(none)`'
 		else:
@@ -790,6 +790,21 @@ def on_member_update(before, after):
 				yield from client.send_message(after.server.default_channel, msg_start)
 			else:
 				yield from client.send_message(specialchannel, msg_start)
+	if before.name != after.name:
+		msg_start = '**`>`**:regional_indicator_u::pager:`user {} changed username`\n'.format(before.id)
+		content = '_`The older username is:`_\n{}\n_`The older discriminator is:`_ `#{}`'.format(before.name, before.discriminator)
+		msg = msg_start + content
+		if before.server.id != productionserver:
+			yield from client.send_message(before.server.default_channel, msg)
+		else:
+			yield from client.send_message(specialchannel, msg)
+		msg_start = '**`>`**`user {} changed username`\n'.format(after.nick, after.id)
+		content = '_`The newer username is:`_\n{}\n_`The newer discriminator is:`_ `#{}`'.format(after.name, after.discriminator)
+		msg = msg_start + content
+		if after.server.id != productionserver:
+			yield from client.send_message(after.server.default_channel, msg)
+		else:
+			yield from client.send_message(specialchannel, msg)
 
 @client.async_event
 def on_member_join(member):
