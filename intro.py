@@ -845,9 +845,25 @@ def on_member_join(member):
 
 @client.async_event
 def on_member_remove(member):
-	msg = '**`>`**:door:`user` {}`#{}` `({}) removed from server {} ({})`'.format (member.name, member.discriminator, member.id, member.server.name, member.server.id)
+	msg = '**`>`**:door:`user` {}`#{}` `({}) removed from server {} ({})`'.format(member.name, member.discriminator, member.id, member.server.name, member.server.id)
 	if member.server.id != productionserver:
 		yield from client.send_message(member.server.default_channel, msg)
+	else:
+		yield from client.send_message(specialchannel, msg)
+
+@client.async_event
+def on_member_ban(member):
+	msg = '**`>`**:mans_shoe::door::no_entry:`user` {}`#{}` `({}) banned from server {} ({})`'.format(member.name, member.discriminator, member.id, member.server.name, member.server.id)
+	if member.server.id != productionserver:
+		yield from client.send_message(member.server.default_channel, msg)
+	else:
+		yield from client.send_message(specialchannel, msg)
+
+@client.async_event
+def on_member_unban(server, user):
+	msg = '**`>`**<:doormat:239361673532669953>`user` {}`#{}` `({}) unbanned from server {} ({})`'.format(user.name, user.discriminator, user.id, server.name, server.id)
+	if server.id != productionserver:
+		yield from client.send_message(server.default_channel, msg)
 	else:
 		yield from client.send_message(specialchannel, msg)
 
