@@ -440,6 +440,9 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 
 		content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "{}" followed by the letter (for example {}a) or the word. {} attempts left.\n{}'.format(hangmanstarter.id, hangmaninvoker, hangmaninvoker, hangmanattempts, hangmanworddisp(hangmanchosenword))
 		yield from client.send_message(botschannel, content)
+
+		content = 'https://discord.gg/6e3KcEv'
+		yield from reply(message, content)
 	elif command == 'stophangman':
 		if not hangmanactive:
 			content = 'ERROR: Can\'t abort hangman because it\'s not running.'
@@ -805,7 +808,7 @@ def on_member_update(before, after):
 		else:
 			yield from client.send_message(specialchannel, msg)
 	if before.avatar_url != after.avatar_url:
-		msg_start = '**`>`**`user` {}`#{}` `({}) changed avatar`\n'.format(before.name, before.discriminator, before.id)
+		msg_start = '**`>`**:busts_in_silhouette:`user` {}`#{}` `({}) changed avatar`\n'.format(before.name, before.discriminator, before.id)
 		content = '_`The older avatar URL is:`_ ' + before.avatar_url
 		msg = msg_start + content
 		if before.server.id != productionserver:
