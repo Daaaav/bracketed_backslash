@@ -201,7 +201,7 @@ def on_message(message):
 	if message.author == client.user: # is the message sent by the bot
 		return # do nothing
 
-	displaymessagecontent = message.content[:100] + (message.content[:100] and '…')
+	displaymessagecontent = (message.content[:100] + '…') if len(message.content) > 100 else message.content
 
 	isprivate = isprivatemessage(message.server) # cant use isprivatemessage = isprivatemessage(), otherwise python will think "holy fuck a variable was referenced before assignment"
 
