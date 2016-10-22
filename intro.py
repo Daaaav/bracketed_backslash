@@ -805,14 +805,14 @@ def on_member_update(before, after):
 		else:
 			yield from client.send_message(specialchannel, msg)
 	if before.avatar_url != after.avatar_url:
-		msg_start = '**`>`**`user` {}`#{}` `({}) changed avatar`'.format(before.name, before.discriminator, before.id)
+		msg_start = '**`>`**`user` {}`#{}` `({}) changed avatar`\n'.format(before.name, before.discriminator, before.id)
 		content = '_`The older avatar URL is:`_ ' + before.avatar_url
 		msg = msg_start + content
 		if before.server.id != productionserver:
 			yield from client.send_message(before.server.default_channel, msg)
 		else:
 			yield from client.send_message(specialchannel, msg)
-		msg_start = '**`>`**`user` {}`#{}` `changed avatar`'.format(after.name, after.discriminator, after.id)
+		msg_start = '**`>`**`user` {}`#{}` `changed avatar`\n'.format(after.name, after.discriminator, after.id)
 		content = '_`The newer avatar URL is:`_ ' + after.avatar_url
 		msg = msg_start + content
 		if after.server.id != productionserver:
