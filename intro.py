@@ -267,12 +267,14 @@ def on_message(message):
 				content = '**{}** is correct!\n{}'.format(hangmanguessed.upper(), hangmanworddisp(hangmanchosenword))
 				msg = msg_start + content
 				yield from client.send_message(message.channel, msg)
+				return
 
 				if algeraden:
 					hangmanactive = False
 					content = 'You guessed the word correctly! You made {} mistakes in total.'.format(hangmantotalattempts-hangmanattempts)
 					msg = msg_start + content
 					yield from client.send_message(message.channel, msg)
+					return
 			else:
 				# Set the guessed letter correctly, and it has to be a letter
 				guessedletters[alphabet.find(hangmanguessed.upper())] = True
@@ -283,10 +285,12 @@ def on_message(message):
 					content = '**{}** is incorrect! Game over. The word was: **{}**'.format(hangmanguessed.upper(), hangmanchosenword)
 					msg = msg_start + content
 					yield from client.send_message(message.channel, msg)
+					return
 				else:
 					content = '**{}** is incorrect! {} attempts left.\n{}'.format(hangmanguessed.upper(), hangmanattempts, hangmanworddisp(hangmanchosenword))
 					msg = msg_start + content
 					yield from client.send_message(message.channel, msg)
+					return
 		else:
 			# We're guessing the entire word. Well, is it the word?
 			if hangmanguessed.lower() == hangmanchosenword.lower():
@@ -294,6 +298,7 @@ def on_message(message):
 				content = 'You guessed the word ({}) correctly! You made {} mistakes in total.'.format(hangmanchosenword, hangmantotalattempts-hangmanattempts)
 				msg = msg_start + content
 				yield from client.send_message(message.channel, msg)
+				return
 			elif len(hangmanguessed) != len(hangmanchosenword):
 				# We're not even trying. It's not the same length.
 				if len(hangmanguessed) == 0: # if before was "not even trying", this is -1 trying
@@ -304,6 +309,7 @@ def on_message(message):
 				content = '**{}** isn\'t even the same length as the correct word. Please try again.'.format(hangmanguessed)
 				msg = msg_start + content
 				yield from client.send_message(message.channel, msg)
+				return
 			else:
 				hangmanattempts -= 1
 
@@ -312,12 +318,14 @@ def on_message(message):
 					msg = msg_start + content
 					content = '**{}** is not the word! Game over. The word was: **{}**'.format(hangmanguessed, hangmanchosenword)
 					yield from client.send_message(message.channel, msg)
+					return
 				else:
 					content = '**{}** is not the word! {} attempts left.\n{}'.format(hangmanguessed, hangmanattempts, hangmanworddisp(hangmanchosenword))
 					msg = msg_start + content
 					yield from client.send_message(message.channel, msg)
+					return
 
-		return
+		return # make sure it always returns
 
 	elif altinvokeractive:
 		command = message.content.split(altinvoker, 1)[1]
