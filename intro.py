@@ -11,17 +11,33 @@ import urllib
 import warnings
 import random
 import re
+import time
 
 client = discord.Client() # defines all client.* commands
 
 invoker = '\\' # command invoker
 altinvoker = 'ok glass, ' # alt command invoker
+hangmaninvoker = '-'
+
+# Hangman stuff
+alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+hangmanchosenword = ''
+hangmanattempts = 0
+hangmantotalattempts = 0
+hangmanactive = False
+hangmanstarter = None
+guessedletters = [False]*26
+algeraden = False
+
+timeformat = '%Y-%m-%d %H:%M:%S (%Z)'
+boottime = time.strftime(timeformat)
 
 token_config = open('bot_token.conf', 'r')
 
 token = token_config.readline(60).split('\n')[0] # read sixty characters also FUCKING NEWLINES
 
 specialchannel = discord.Object(id='234185735266238464')
+botschannel = discord.Object(id='201130047736643584')
 productionserver = '153368829160849408'
 server = client.get_server(productionserver) # defines all server.* commands
 
@@ -29,8 +45,149 @@ t = {
 	'op_only': 'Permission denied. This command can only be used by Info Teddy or Dav999.',
 	'mod_only': 'Permission denied. This command can only be used by a moderator or administrator.',
 	'specify_user': 'Please specify a user ID, a username, a username and discriminator, or a nickname.',
+	'accepts_user': 'Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.',
 	'production_only': 'Production server only!',
+	'noprivate': 'This command cannot be run inside a private conversation! You can probably guess why.',
+	'its_meme': 'It’s a meme command.',
 }
+
+cmds = [
+	{
+		'cat_name': 'General Commands',
+		'commands': {
+			'help': {
+				'short': 'Lists commands and their descriptions.',
+				'extra': 'Any arguments passed to `\help` will make `\help` try to look up more in-depth description of the command.'
+			},
+			'source': {
+				'short': 'Gives the link to the source code to the bot.',
+				'extra': 'It’s hosted on __https://gitgud.io/__.'
+			},
+			'echo': {
+				'short': 'Echoes your input.',
+				'extra': 'Now, you could say that the bot echoed your input already, but it’s still better to have a dedicated echo command.'
+			},
+			'info': {
+				'short': 'Unfinished command to get information about a user.',
+				'extra': ''
+			},
+			'findu': {
+				'short': 'Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever.',
+				'extrafull': 'Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator.'
+			},
+			'findup': {
+				'short': 'Same as `\\findu`, but also pings the user.',
+				'extrafull': 'Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator. Warning: This pings the user.'
+			},
+			'hangman': {
+				'short': 'Initiate a game of hangman (use \stophangman to stop). Send via PM with a custom word.',
+				'extra': 'Ported from DavBot!'
+			},
+			'stophangman': {
+				'short': 'Stop the current game of hangman.',
+				'extra': 'Can only be done by the one who started the game or a moderator.'
+			},
+		}
+	},
+	{
+		'cat_name': 'Bot Commands',
+		'commands': {
+			'botok': {
+				'short': 'Pings the bot.',
+				'extra': 'If the bot is okay, the bot will respond with “Bot is okay”.'
+			},
+			'uptime': {
+				'short': 'Prints the time the bot was booted.',
+				'extra': 'Doesn’t yet give the amount of time between the boot and now, but does give those timestamps.'
+			},
+			'restart': {
+				'short': 'Restarts the bot.',
+				'extra': ''
+			},
+			'kill': {
+				'short': 'Kills the bot. This method does not kill it cleanly.',
+				'extra': ''
+			},
+		}
+	},
+	{
+		'cat_name': 'Moderation Commands',
+		'commands': {
+			'softban': {
+				'short': 'Gives a user the `Banned` role.',
+				'extra': t['accepts_user']
+			},
+			'nononly': {
+				'short': 'Gives a user the `Nonsense-Only` role.',
+				'extra': t['accepts_user']
+			},
+			'nogenmen': {
+				'short': 'Gives a user the `No General Mentions` role.',
+				'extra': t['accepts_user']
+			},
+			'nocedule': {
+				'short': 'Gives a user the `No CE/DU/LE` role.',
+				'extra': t['accepts_user']
+			},
+			'notts': {
+				'short': 'Gives a user the `No TTS` role.',
+				'extra': t['accepts_user']
+			},
+			'nonick': {
+				'short': 'Removes from a user the `tOLPer` role, and gives them the `tOLPer who can’t change nickname` role.',
+				'extra': t['accepts_user']
+			},
+			'rolerst': {
+				'short': 'Resets the roles for a user back to the normal state.',
+				'extra': 'Removes all restrictive roles from a user, and gives back the `tOLPer` role if necessary.\n' + t['accepts_user']
+			},
+		}
+	},
+]
+
+meme_cmds = [
+	{
+		'cat_name': 'Meme Commands',
+		'commands': {
+			'': {
+				'short': 'Mentions you.',
+				'extra': 'Don’t type this command in if you don’t want to be mentioned.'
+			},
+			'teddy': {
+				'short': 'The obvious counterpart to `\info`.',
+				'extra': t['its_meme']
+			},
+			'samar': {
+				'short': 'The true name.',
+				'extra': t['its_meme']
+			},
+			'lui': {
+				'short': 'Obligatory “pretty cool guy” meme.',
+				'extra': t['its_meme']
+			},
+			'shiny': {
+				'short': 'He’s a shiny trinket.',
+				'extra': t['its_meme']
+			},
+			'tainy': {
+				'short': 'Unobtaining is his name.',
+				'extra': t['its_meme']
+			},
+			'kys': {
+				'short': 'Will the bot listen?',
+				'extra': t['its_meme']
+			},
+			'*formatting*': {
+				'short': 'This is an example of italicized formatting.',
+				'extra': t['its_meme']
+			},
+			'/r/undertale': {
+				'short': 'This is going to give my bot cancer.',
+				'extra': t['its_meme']
+			},
+		}
+	}
+]
 
 @client.async_event
 def on_ready():
@@ -39,21 +196,20 @@ def on_ready():
 
 @client.async_event
 def on_message(message):
-	global msg_start
+	global msg_start, hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, hangmanstarter, guessedletters, algeraden
 
 	if message.author == client.user: # is the message sent by the bot
 		return # do nothing
 
 	isprivate = isprivatemessage(message.server) # cant use isprivatemessage = isprivatemessage(), otherwise python will think "holy fuck a variable was referenced before assignment"
 
-	if not isprivate:
-		if str(message.author.status) == 'offline':
-			msg_start = '**`>`**:ghost:`user` {}`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
-			if message.server.id != productionserver:
-				yield from client.send_message(message.channel, msg_start)
-			else:
-				yield from client.send_message(specialchannel, msg_start)
-			pass
+	if not isprivate and str(message.author.status) == 'offline':
+		msg_start = '**`>`**:ghost:`user` {}`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
+		if message.server.id != productionserver:
+			yield from client.send_message(message.channel, msg_start)
+		else:
+			yield from client.send_message(specialchannel, msg_start)
+		pass
 
 	if message.attachments != []:
 		msg_start = '**`>`**:paperclip:`user` {}`#{}` `({}) attached a file to message {} in channel` <#{}> `at {} UTC`\n'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
@@ -66,141 +222,135 @@ def on_message(message):
 
 	if message.content.startswith(invoker): # does the message start with command invoker
 		altinvokeractive = False
+		hangmaninvokeractive = False
 		pass # continue, go on
 	elif message.content.startswith(altinvoker): # does the message start with alt invoker
 		altinvokeractive = True
+		hangmaninvokeractive = False
+		pass
+	elif message.content.startswith(hangmaninvoker):
+		hangmaninvokeractive = True
 		pass
 	else:
 		return
-	if altinvokeractive:
+	if hangmaninvokeractive:
+		if not hangmanactive:
+			return
+		msg_start = '**`>`**{}**`:`** {}\n'.format(message.author.name, message.content)
+		if isprivate:
+			content = 'Sorry, guesses are not accepted via PM!'
+			msg = msg_start + content
+			yield from client.send_message(message.channel, msg)
+		if message.channel.id != '201130047736643584':
+			return
+		hangmanguessed = message.content[1:]
+
+		if len(hangmanguessed) == 1:
+			# Have we already used that letter? And is it a valid letter?
+			if alphabet.find(hangmanguessed.upper()) == -1:
+				msg = msg_start + content
+				content = 'The letter **{}** is invalid.'.format(hangmanguessed.upper())
+				yield from client.send_message(message.channel, msg)
+				return
+			if guessedletters[alphabet.find(hangmanguessed.upper())]:
+				content = 'The letter **{}** has already been used.'.format(hangmanguessed.upper())
+				msg = msg_start + content
+				yield from client.send_message(message.channel, msg)
+				return
+			# Ok, so does this letter occur in the word?
+			if hangmanchosenword.upper().find(hangmanguessed.upper()) != -1:
+				# Set the guessed letter correctly
+				guessedletters[alphabet.find(hangmanguessed.upper())] = True
+
+				content = '**{}** is correct!\n{}'.format(hangmanguessed.upper(), hangmanworddisp(hangmanchosenword))
+				msg = msg_start + content
+				yield from client.send_message(message.channel, msg)
+
+				if algeraden:
+					hangmanactive = False
+					content = 'You guessed the word correctly! You made {} mistakes in total.'.format(hangmantotalattempts-hangmanattempts)
+					msg = msg_start + content
+					yield from client.send_message(message.channel, msg)
+			else:
+				# Set the guessed letter correctly, and it has to be a letter
+				guessedletters[alphabet.find(hangmanguessed.upper())] = True
+				hangmanattempts -= 1
+
+				if hangmanattempts == 0:
+					hangmanactive = False
+					content = '**{}** is incorrect! Game over. The word was: **{}**'.format(hangmanguessed.upper(), hangmanchosenword)
+					msg = msg_start + content
+					yield from client.send_message(message.channel, msg)
+				else:
+					content = '**{}** is incorrect! {} attempts left.\n{}'.format(hangmanguessed.upper(), hangmanattempts, hangmanworddisp(hangmanchosenword))
+					msg = msg_start + content
+					yield from client.send_message(message.channel, msg)
+		else:
+			# We're guessing the entire word. Well, is it the word?
+			if hangmanguessed.lower() == hangmanchosenword.lower():
+				hangmanactive = False
+				content = 'You guessed the word ({}) correctly! You made {} mistakes in total.'.format(hangmanchosenword, hangmantotalattempts-hangmanattempts)
+				msg = msg_start + content
+				yield from client.send_message(message.channel, msg)
+			elif len(hangmanguessed) != len(hangmanchosenword):
+				# We're not even trying. It's not the same length.
+				content = '**{}** isn\'t even the same length as the correct word. Please try again.'.format(hangmanguessed)
+				msg = msg_start + content
+				yield from client.send_message(message.channel, msg)
+			else:
+				hangmanattempts -= 1
+
+				if hangmanattempts == 0:
+					hangmanactive = False
+					msg = msg_start + content
+					content = '**{}** is not the word! Game over. The word was: **{}**'.format(hangmanguessed, hangmanchosenword)
+					yield from client.send_message(message.channel, msg)
+				else:
+					content = '**{}** is not the word! {} attempts left.\n{}'.format(hangmanguessed, hangmanattempts, hangmanworddisp(hangmanchosenword))
+					msg = msg_start + content
+					yield from client.send_message(message.channel, msg)
+
+		return
+
+	elif altinvokeractive:
 		command = message.content.split(altinvoker, 1)[1]
 		msg_start = '**`>`**{}**`:`** {}\n'.format(message.author.name, message.content) # shows what the user put in, without main invoker
 	else:
 		command = message.content.split(invoker, 1)[1] # removes invoker from the message
 		msg_start = '**`>`**{}**`:`** \\{}\n'.format(message.author.name, message.content) # shows what the user put in
 
-	if not isprivate:
-		if not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver:
-			content = 'Non-staff members can only use me in <#201130047736643584> from now on.'
-			yield from reply(message, content)
-			return
+	if not isprivate and not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver:
+		return
 	try:
 		arguments = command.split (' ', 1)[1]
 	except IndexError:
 		arguments = None
 	command = command.split (' ', 1)[0]
 	if command == 'help':
-		content = '''`[\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server.
-__`General Commands:`__
-`\help` – Lists commands and their descriptions.
-`\source` – Gives the link to the source code to the bot.
-`\echo` – Echoes your input.
-`\info` – Unfinished command to get information about a user.
-`\\findu` - Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever.
-`\\findup` - Same as `\\findu`, but also pings the user.
-__`Bot Commands:`__
-`\\botok` – Pings the bot.
-`\\restart` – Restarts the bot.
-`\kill` – Kills the bot. This method does not kill it cleanly.
-__`Moderation Commands:`__
-`\softban` - Gives a user the `Banned` role.
-`\\nononly` - Gives a user the `Nonsense-Only` role.
-`\\nogenmen` - Gives a user the `No General Mentions` role.
-`\\nocedule` - Gives a user the `No CE/DU/LE` role.
-`\\notts` - Gives a user the `No TTS` role.
-`\\nonick` – Removes from a user the `tOLPer` role, and gives them the `tOLPer who can’t change nickname` role.
-`\\rolerst` - Removes all restrictive roles from a user, and gives back the `tOLPer` role if necessary.'''
+		content = '`[\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server.' + helplist(cmds)
 
 		# General
-		if arguments == 'help':
-			content = '''`\help` – Lists commands and their descriptions.
-Any arguments passed to `\help` will make `\help` try to look up more in-depth description of the command.'''
-		elif arguments == invoker or arguments == altinvoker:
-			content = '''`\` – Mentions you.
-Don’t type this command in if you don’t want to be mentioned.'''
-		elif arguments == 'source':
-			content = '''`\source` – Gives the link to the source code to the bot.
-It’s hosted on __https://gitgud.io/__.'''
-		elif arguments == 'echo':
-			content = '''`\echo` – Echoes your input.
-Now, you could say that the bot echoed your input already, but it’s still better to have a dedicated echo command.'''
-		elif arguments == 'info':
-			content = '`\info` – Unfinished command to get information about a user.'
-		elif arguments == 'findu':
-			content = '`\\findu` - Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator.'
-		elif arguments == 'findup':
-			content = '`\\findup` - Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator. Warning: This pings the user.'
-		elif arguments == 'useless':
-			content = '''`useless` – You found a secret, congratulations. The command to get this help message will change sometimes.
-__`Meme Commands:`__
-`\` – Mentions you.
-`\\teddy` – The obvious counterpart to `\info`.
-`\samar` – The true name.
-`\lui` – Obligatory “pretty cool guy” meme.
-`\shiny` – He’s a shiny trinket.
-`\\tainy` – Unobtaining is his name.
-`\kys` – Will the bot listen?
-`\*formatting*` – This is an example of italicized formatting.
-`\/r/undertale` – This is going to give my bot cancer.'''
-		elif arguments == 'teddy':
-			content = '''`\\teddy` – The obvious counterpart to `\info`.
-It’s a meme command.'''
-		elif arguments == 'samar':
-			content = '''`\samar` – The true name.
-It’s a meme command.'''
-		elif arguments == 'lui':
-			content = '''`\lui` – Obligatory “pretty cool guy” meme.
-It’s a meme command.'''
-		elif arguments == 'shiny':
-			content = '''`\shiny` – He’s a shiny trinket.
-It’s a meme command.'''
-		elif arguments == 'tainy':
-			content = '''`\\tainy` – Unobtaining is his name.
-It’s a meme command.'''
-		elif arguments == 'kys':
-			content = '''`\kys` – Will the bot listen?
-It’s a meme command.'''
-		elif arguments == '*formatting*':
-			content = '''`\*formatting*` – This is an example of italicized formatting.
-It’s a meme command.'''
-		elif arguments == '/r/undertale':
-			content = '''`\/r/undertale` – This is going to give my bot cancer.
-It’s a meme command.'''
-		# Bot
-		elif arguments == 'botok':
-			content = '''`\\botok` – Pings the bot.
-If the bot is okay, the bot will respond with “Bot is okay”.'''
-		elif arguments == 'restart':
-			content = '`\\restart` - Restarts the bot.'
-		elif arguments == 'kill':
-			content = '`\kill` – Kills the bot. This method does not kill it cleanly.'
-
-		# Moderation
-		elif arguments == 'softban':
-			content = '''`\softban` - Gives a user the `Banned` role.
-Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
-		elif arguments == 'nononly':
-			content = '''`\\nononly` - Gives a user the `Nonsense-Only` role.
-Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
-		elif arguments == 'nogenmen':
-			content = '''`\\nogenmen` - Gives a user the `No General Mentions` role.
-Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
-		elif arguments == 'nocedule':
-			content = '''`\\nocedule` - Gives a user the `No CE/DU/LE` role.
-Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
-		elif arguments == 'notts':
-			content = '''`\\notts` - Gives a user the `No TTS` role.
-Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
-		elif arguments == 'nonick':
-			content = '''`\\nonick` – Removes from a user the `tOLPer` role, and gives them the `tOLPer who can’t change nickname` role.
-Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
-		elif arguments == 'rolerst':
-			content = '''`\\rolerst` - Removes all restrictive roles from a user, and gives back the `tOLPer` role if necessary.
-Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.'''
+		if arguments == 'useless':
+			content = '`useless` – You found a secret, congratulations. The command to get this help message will change sometimes.' + helplist(meme_cmds)
 		elif arguments == None:
 			pass
 		else:
-			content = 'Invalid arguments passed. Input `\help` for a list of valid commands to pass as arguments.'
+			matched = False
+			for i in range(0,2):
+				for cat in (cmds if i == 0 else meme_cmds): # Good enough replacement to union
+					for cmd in cat['commands']: # Maybe have a nested try-except KeyError instead of looping through every command
+						if arguments == cmd:
+							try:
+								content = '`\{}` – {}'.format(cmd, cat['commands'][cmd]['extrafull'])
+							except KeyError:
+								content = '`\{}` – {}\n{}'.format(cmd, cat['commands'][cmd]['short'], cat['commands'][cmd]['extra'])
+							matched = True
+							break
+					if matched:
+						break
+
+			if not matched:
+				content = 'Invalid arguments passed. Input `\help` for a list of valid commands to pass as arguments.'
 		yield from reply(message, content)
 	elif command == 'restart':
 		if message.author.id != '146814960574398464' and message.author.id != '159793749604433921':
@@ -259,6 +409,50 @@ ShinyWolf07: ...
 ShinyWolf07: sigh
 Luigi: 10/10 would watch again```'''.format(message.author.id)
 		yield from reply(message, content)
+	elif command == 'hangman':
+		if hangmanactive:
+			content = 'ERROR: Hangman is already running. It can be aborted by the starter or by a mod with \stophangman.'
+			yield from reply(message, content)
+			return
+		if not isprivatemessage(message.server):
+			content = 'For now, this can only be run via DM.'
+			yield from reply(message, content)
+			return
+		if arguments == None:
+			content = 'Please specify a word.'
+			yield from reply(message, content)
+			return
+		if not arguments.isalpha():
+			content = 'ERROR: Words can only consist of letters A-Z'
+			yield from reply(message, content)
+			return
+		if len(arguments) > 50:
+			content = 'ERROR: Sorry, but your word is too long. It can be 50 characters max.'
+			yield from reply(message, content)
+			return
+
+		hangmanchosenword = arguments
+		hangmanattempts = 10
+		hangmantotalattempts = 10
+		hangmanactive = True
+		hangmanstarter = message.author
+		guessedletters = [False]*26
+
+		content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "{}" followed by the letter (for example {}a) or the word. {} attempts left.\n{}'.format(hangmanstarter.id, hangmaninvoker, hangmaninvoker, hangmanattempts, hangmanworddisp(hangmanchosenword))
+		yield from client.send_message(botschannel, content)
+	elif command == 'stophangman':
+		if not hangmanactive:
+			content = 'ERROR: Can\'t abort hangman because it\'s not running.'
+			yield from reply(message, content)
+			return
+		elif not is_mod(message.author) and message.author.id != hangmanstarter.id:
+			content = 'ERROR: Can\'t abort hangman because you haven\'t started this game.'
+			yield from reply(message, content)
+			return
+
+		hangmanactive = False
+		content = 'Game of hangman aborted. The word was: **{}**'.format(hangmanchosenword)
+		yield from client.send_message(botschannel, content)
 	elif command == 'source':
 		content = 'Source code to the bot: __https://gitgud.io/infoteddy/bracketed_backslash__'
 		yield from reply(message, content)
@@ -444,6 +638,9 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 	elif command == 'botok':
 		content = 'Bot is okay.'
 		yield from reply(message, content)
+	elif command == 'uptime':
+		content = 'Boot time:       `{}`\nCurrent time: `{}`'.format(boottime, time.strftime(timeformat))
+		yield from reply(message, content)
 	elif command == '*formatting*':
 		content = 'That’s italicized formatting.'
 		yield from reply(message, content)
@@ -557,7 +754,7 @@ def on_message_edit(before, after): # when a message gets edited
 @client.async_event
 def on_member_update(before, after):
 	if before.nick != after.nick:
-		msg_start = '**`>`**:pager:`user` {}`#{}` `({}) changed nickname`\n'.format(before.name, before.discriminator, before.id)
+		msg_start = '**`>`**:regional_indicator_n::pager:`user` {}`#{}` `({}) changed nickname`\n'.format(before.name, before.discriminator, before.id)
 		if before.nick == None:
 			content = '_`The older nickname is:`_ `(none)`'
 		else:
@@ -592,6 +789,36 @@ def on_member_update(before, after):
 				yield from client.send_message(after.server.default_channel, msg_start)
 			else:
 				yield from client.send_message(specialchannel, msg_start)
+	if before.name != after.name:
+		msg_start = '**`>`**:regional_indicator_u::pager:`user {} changed username`\n'.format(before.id)
+		content = '_`The older username is:`_\n{}\n_`The older discriminator is:`_ `#{}`'.format(before.name, before.discriminator)
+		msg = msg_start + content
+		if before.server.id != productionserver:
+			yield from client.send_message(before.server.default_channel, msg)
+		else:
+			yield from client.send_message(specialchannel, msg)
+		msg_start = '**`>`**`user {} changed username`\n'.format(after.nick, after.id)
+		content = '_`The newer username is:`_\n{}\n_`The newer discriminator is:`_ `#{}`'.format(after.name, after.discriminator)
+		msg = msg_start + content
+		if after.server.id != productionserver:
+			yield from client.send_message(after.server.default_channel, msg)
+		else:
+			yield from client.send_message(specialchannel, msg)
+	if before.avatar_url != after.avatar_url:
+		msg_start = '**`>`**`user` {}`#{}` `({}) changed avatar`\n'.format(before.name, before.discriminator, before.id)
+		content = '_`The older avatar URL is:`_ ' + before.avatar_url
+		msg = msg_start + content
+		if before.server.id != productionserver:
+			yield from client.send_message(before.server.default_channel, msg)
+		else:
+			yield from client.send_message(specialchannel, msg)
+		msg_start = '**`>`**`user` {}`#{}` `changed avatar`\n'.format(after.name, after.discriminator, after.id)
+		content = '_`The newer avatar URL is:`_ ' + after.avatar_url
+		msg = msg_start + content
+		if after.server.id != productionserver:
+			yield from client.send_message(after.server.default_channel, msg)
+		else:
+			yield from client.send_message(specialchannel, msg)
 
 @client.async_event
 def on_member_join(member):
@@ -670,6 +897,10 @@ def get_member_input(server, input):
 	8) Discriminator only (either with or without #)
 
 	"""
+	# Is there a Discord server in between us?
+	if isprivatemessage(server):
+		return None
+
 	# Is this anything at all?
 	if input == None:
 		return None  # right back at ya
@@ -734,5 +965,43 @@ def isprivatemessage(server): # this is a function because so in the future more
 		return True
 	else:
 		return False
+
+def helplist(cats):
+	returnage = ''
+	for cat in cats:
+		returnage += '\n__`{}:`__'.format(cat['cat_name'])
+		for cmd in cat['commands']:
+			returnage += '\n`\{}` – {}'.format(cmd, cat['commands'][cmd]['short'])
+	return returnage
+
+def hangmanworddisp(theword):
+	global hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, hangmanstarter, guessedletters, algeraden
+
+	theoutput = ''
+	algeraden = True
+
+	for i in range(0, len(theword)):
+		if guessedletters[alphabet.find(theword[i].upper())]:
+			theoutput += '__**`{}`**__ '.format(theword[i])
+		else:
+			theoutput += '`_` '
+			algeraden = False
+
+	# Now display already guessed letters.
+	theoutput += '    (used: '
+
+	notnone = False
+
+	for i in range(0, 26):
+		if guessedletters[i]:
+			notnone = True
+			theoutput += alphabet[i]
+
+	if not notnone:
+		theoutput += 'none'
+
+	theoutput += ')'
+
+	return theoutput
 
 client.run (token)
