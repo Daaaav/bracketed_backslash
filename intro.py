@@ -983,9 +983,7 @@ def reply(messageobject, message):
 	yield from client.send_message(messageobject.channel, msg_start + message)
 
 def mdspecialchars(string):
-	out = string.replace('`', u'​`​')
-	print(out)
-	return out
+	return string.replace('`', u'​`​')
 
 def isprivatemessage(server): # this is a function because so in the future more checks for if its a private message can ezily be added
 	if server == None:
