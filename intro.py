@@ -201,6 +201,8 @@ def on_message(message):
 	if message.author == client.user: # is the message sent by the bot
 		return # do nothing
 
+	displaymessagecontent = message.content[:100] + (message.content[:100] and '…')
+
 	isprivate = isprivatemessage(message.server) # cant use isprivatemessage = isprivatemessage(), otherwise python will think "holy fuck a variable was referenced before assignment"
 
 	if not isprivate and str(message.author.status) == 'offline':
@@ -236,7 +238,7 @@ def on_message(message):
 	if hangmaninvokeractive:
 		if not hangmanactive:
 			return
-		msg_start = '**`>`**{}**`:`** {}\n'.format(message.author.name, message.content)
+		msg_start = '**`>`**{}**`:`** {}\n'.format(message.author.name, displaymessagecontent)
 		if isprivate:
 			content = 'Sorry, guesses are not accepted via PM!'
 			msg = msg_start + content
@@ -314,10 +316,10 @@ def on_message(message):
 
 	elif altinvokeractive:
 		command = message.content.split(altinvoker, 1)[1]
-		msg_start = '**`>`**{}**`:`** {}\n'.format(message.author.name, message.content) # shows what the user put in, without main invoker
+		msg_start = '**`>`**{}**`:`** {}\n'.format(message.author.name, displaymessagecontent) # shows what the user put in, without main invoker
 	else:
 		command = message.content.split(invoker, 1)[1] # removes invoker from the message
-		msg_start = '**`>`**{}**`:`** \\{}\n'.format(message.author.name, message.content) # shows what the user put in
+		msg_start = '**`>`**{}**`:`** \\{}\n'.format(message.author.name, displaymessagecontent) # shows what the user put in
 
 	# Prevent access to those who aren't supposed to send messages
 	if not isprivate and not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver and not (is_dev(message.author) and message.channel.id == '238423391571279872'):
@@ -762,7 +764,7 @@ def on_member_update(before, after):
 		if before.nick == None:
 			content = '_`The older nickname is:`_ `(none)`'
 		else:
-			content = '_`The older nickname is:`_\n' + before.nick
+			content = '_`The older nickname is:`_\n``{}``'.format(mdspecialchars(before.nick))
 		msg = msg_start + content
 		if before.server.id != productionserver:
 			yield from client.send_message(before.server.default_channel, msg)
@@ -772,7 +774,7 @@ def on_member_update(before, after):
 		if after.nick == None:
 			content = '_`The newer nickname is:`_ `(none)`'
 		else:
-			content = '_`The newer nickname is:`_\n' + after.nick
+			content = '_`The newer nickname is:`_\n``{}``'.format(mdspecialchars(after.nick))
 		msg = msg_start + content
 		if after.server.id != productionserver:
 			yield from client.send_message(after.server.default_channel, msg)
