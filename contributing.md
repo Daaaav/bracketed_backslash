@@ -6,7 +6,7 @@ If you’re willing to let Info Teddy be lazy and do the work that he’s suppos
 - [ ] less hard-written configuration (see im lazy) and/or none at all
 - [ ] log more shit
 	- [ ] member avatar changes
-	- [ ] member role adds/removes
+	- [x] member role adds/removes
 	- [x] when people are invisible for no reason
 		- its done however it can only detect invisible people when they send a message
 - [ ] actually add moderation/administration commands
@@ -16,7 +16,7 @@ If you’re willing to let Info Teddy be lazy and do the work that he’s suppos
 	- [x] `\nocedule`
 		- [ ] come up with a better name for this fucking command
 	- [x] `\notts`
-	- [ ] `\nonick`
+	- [x] `\nonick`
 	- [x] `\rolerst`
 - [ ] give roles
 	- [x] give roles upon a new member joining
