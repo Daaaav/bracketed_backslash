@@ -206,7 +206,7 @@ def on_message(message):
 	isprivate = isprivatemessage(message.server) # cant use isprivatemessage = isprivatemessage(), otherwise python will think "holy fuck a variable was referenced before assignment"
 
 	if not isprivate and str(message.author.status) == 'offline':
-		msg_start = '**`>`**:ghost:`user` {}`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
+		msg_start = '**`>`**:ghost:`user` **``{}``**`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
 		if message.server.id != productionserver:
 			yield from client.send_message(message.channel, msg_start)
 		else:
@@ -214,7 +214,7 @@ def on_message(message):
 		pass
 
 	if message.attachments != []:
-		msg_start = '**`>`**:paperclip:`user` {}`#{}` `({}) attached a file to message {} in channel` <#{}> `at {} UTC`\n'.format(message.author.name, message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
+		msg_start = '**`>`**:paperclip:`user` ``**{}**``**`#{}` `({}) attached a file to message {} in channel` <#{}> `at {} UTC`\n'.format(mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
 		content = '_`The attachment is:`_\n' + message.attachments[0]['url']
 		msg = msg_start + content
 		if message.server.id != productionserver:
@@ -484,7 +484,7 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 		if targetmember.nick == None:
 			displaynick = '**`No Nickname`**'
 		else:
-			displaynick = '**`Nickname:`** ``​{}​``'.format(mdspecialchars(targetmember.nick))
+			displaynick = '**`Nickname:`** ``{}``'.format(mdspecialchars(targetmember.nick))
 		if targetmember.game == None:
 			memberhasgame = False
 			displaygame = '**`Not Playing`**'
@@ -494,13 +494,13 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 			memberhasgame = True
 		if memberhasgame:
 			if targetmember.game.type == 0 or targetmember.game.type == None:
-				displaygame = '**`Playing:`** ' + targetmember.game.name
+				displaygame = '**`Playing:`** ``{}``'.format(mdspecialchars(targetmember.game.name))
 			if targetmember.game.type == 1:
-				displaygame = '**`Streaming:`** ' + targetmember.game.name
+				displaygame = '**`Streaming:`** ``{}``'.format(mdspecialchars(targetmember.game.name))
 			if targetmember.game.url == None:
 				displaygameurl = '**`No Stream Link`**'
 			else:
-				displaygameurl = '**`Stream Link:`** <{}>'.format(targetmember.game.url) # the angled brackets are to make discord not preview the link
+				displaygameurl = '**`Stream Link:`** ``{}``'.format(mdspecialchars(targetmember.game.url))
 		if command == "findup":
 			displaymatch = '<@{}>'.format(targetmember.id)
 		else:
@@ -514,7 +514,7 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 		elif str(targetmember.status) == 'dnd' or str(targetmember.status) == 'do_not_disturb':
 			statuss = 'dnd:232230526109351938'
 
-		content = 'Matched {} <:{}>\n**`User ID:`** `{}`\n{}\n**`Username:`** {}\n**`Discriminator:`** `#{}`\n{}\n{}'.format(displaymatch, statuss, targetmember.id, displaynick, targetmember.name, targetmember.discriminator, displaygame, displaygameurl)
+		content = 'Matched {} <:{}>\n**`User ID:`** `{}`\n{}\n**`Username:`** ``{}``\n**`Discriminator:`** `#{}`\n{}\n{}'.format(displaymatch, statuss, targetmember.id, displaynick, mdspecialchars(targetmember.name), targetmember.discriminator, displaygame, displaygameurl)
 		yield from reply(message, content)
 	elif command == 'softban':
 		if not is_mod(message.author):
@@ -680,7 +680,7 @@ def on_message_delete(message): # when a message gets deleted
 		return
 	if message.content == '' and message.attachments == []:
 		return
-	msg_start = '**`>`**:no_entry_sign:`message {} by user` {}`#{}` `({}) in channel` <#{}> `at {} UTC deleted`\n'.format(message.id, message.author.name, message.author.discriminator, message.author.id, message.channel.id, message.timestamp)
+	msg_start = '**`>`**:no_entry_sign:`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC deleted`\n'.format(message.id, mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.channel.id, message.timestamp)
 	content = '_`The original content is:`_\n' + message.content
 	msg = msg_start + content
 	if len(msg) >= 2000:
@@ -721,7 +721,7 @@ def on_message_edit(before, after): # when a message gets edited
 		warnings.warn('this is the bots own message and the bot doesnt edit messages\nid of before: {}\nid of after: {}'.format (before.id, after.id))
 		return
 	# checks succeeded
-	msg_start = '**`>`**:pencil:`message {} by user` {}`#{}` `({}) in channel` <#{}> `at {} UTC edited`\n'.format(before.id, before.author.name, before.author.discriminator, before.author.id, before.channel.id, before.timestamp)
+	msg_start = '**`>`**:pencil:`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC edited`\n'.format(before.id, mdspecialchars(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp)
 	content = '_`The older content is:`_\n' + before.content
 	msg = msg_start + content
 	if len(msg) >= 2000:
@@ -745,7 +745,7 @@ def on_message_edit(before, after): # when a message gets edited
 			yield from client.send_message(before.channel, msg)
 		else:
 			yield from client.send_message(specialchannel, msg)
-	msg_start = '**`>`**`message {} by user` {}`#{}` `({}) in channel` <#{}> `at {} UTC edited`\n'.format(after.id, after.author.name, after.author.discriminator, after.author.id, after.channel.id, after.timestamp)
+	msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC edited`\n'.format(after.id, mdspecialchars(after.author.name), after.author.discriminator, after.author.id, after.channel.id, after.timestamp)
 	content = '_`The newer content is:`_\n' + after.content
 	msg = msg_start + content
 	if len(msg) >= 2000:
@@ -773,7 +773,7 @@ def on_message_edit(before, after): # when a message gets edited
 @client.async_event
 def on_member_update(before, after):
 	if before.nick != after.nick:
-		msg_start = '**`>`**:regional_indicator_n::pager:`user` {}`#{}` `({}) changed nickname`\n'.format(before.name, before.discriminator, before.id)
+		msg_start = '**`>`**:regional_indicator_n::pager:`user` **``{}``**`#{}` `({}) changed nickname`\n'.format(mdspecialchars(before.name), before.discriminator, before.id)
 		if before.nick == None:
 			content = '_`The older nickname is:`_ `(none)`'
 		else:
@@ -796,42 +796,42 @@ def on_member_update(before, after):
 	if before.roles != after.roles:
 		if len(before.roles) > len(after.roles): # if a role has been removed
 			roleremoved = list(set(before.roles).symmetric_difference(set(after.roles)))[0]
-			msg_start = '**`>`**`user` {}`#{}` `({}) has role {} ({}) removed`'.format(before.name, before.discriminator, before.id, roleremoved.name, roleremoved.id)
+			msg_start = '**`>`**`user` **``{}``**`#{}` `({}) has role {} ({}) removed`'.format(mdspecialchars(before.name), before.discriminator, before.id, roleremoved.name, roleremoved.id)
 			if before.server.id != productionserver:
 				yield from client.send_message(before.server.default_channel, msg_start)
 			else:
 				yield from client.send_message(specialchannel, msg_start)
 		if len(before.roles) < len(after.roles): # if a role has been added
 			roleadded = list(set(after.roles).symmetric_difference(set(before.roles)))[0]
-			msg_start = '**`>`**`user` {}`#{}` `({}) has role {} ({}) added`'.format(after.name, after.discriminator, after.id, roleadded.name, roleadded.id)
+			msg_start = '**`>`**`user` **``{}``**`#{}` `({}) has role {} ({}) added`'.format(after.name, after.discriminator, after.id, roleadded.name, roleadded.id)
 			if after.server.id != productionserver:
 				yield from client.send_message(after.server.default_channel, msg_start)
 			else:
 				yield from client.send_message(specialchannel, msg_start)
 	if before.name != after.name:
 		msg_start = '**`>`**:regional_indicator_u::pager:`user {} changed username`\n'.format(before.id)
-		content = '_`The older username is:`_\n{}\n_`The older discriminator is:`_ `#{}`'.format(before.name, before.discriminator)
+		content = '_`The older username is:`_\n**``{}``**\n_`The older discriminator is:`_ `#{}`'.format(mdspecialchars(before.name), before.discriminator)
 		msg = msg_start + content
 		if before.server.id != productionserver:
 			yield from client.send_message(before.server.default_channel, msg)
 		else:
 			yield from client.send_message(specialchannel, msg)
 		msg_start = '**`>`**`user {} changed username`\n'.format(after.id)
-		content = '_`The newer username is:`_\n{}\n_`The newer discriminator is:`_ `#{}`'.format(after.name, after.discriminator)
+		content = '_`The newer username is:`_\n``**{}**``\n_`The newer discriminator is:`_ `#{}`'.format(mdspecialchars(after.name), after.discriminator)
 		msg = msg_start + content
 		if after.server.id != productionserver:
 			yield from client.send_message(after.server.default_channel, msg)
 		else:
 			yield from client.send_message(specialchannel, msg)
 	if before.avatar_url != after.avatar_url and before.id != '141769689406636032' and before.id != '88575421972516864' and before.id != '196574963673595904': # isn't 35, 42 or beta 42
-		msg_start = '**`>`**:busts_in_silhouette:`user` {}`#{}` `({}) changed avatar`\n'.format(before.name, before.discriminator, before.id)
+		msg_start = '**`>`**:busts_in_silhouette:`user` **``{}``**`#{}` `({}) changed avatar`\n'.format(mdspecialchars(before.name), before.discriminator, before.id)
 		content = '_`The older avatar URL is:`_ ' + before.avatar_url
 		msg = msg_start + content
 		if before.server.id != productionserver:
 			yield from client.send_message(before.server.default_channel, msg)
 		else:
 			yield from client.send_message(specialchannel, msg)
-		msg_start = '**`>`**`user` {}`#{}` `changed avatar`\n'.format(after.name, after.discriminator, after.id)
+		msg_start = '**`>`**`user` **``{}``**`#{}` `changed avatar`\n'.format(mdspecialchars(after.name), after.discriminator, after.id)
 		content = '_`The newer avatar URL is:`_ ' + after.avatar_url
 		msg = msg_start + content
 		if after.server.id != productionserver:
@@ -841,7 +841,7 @@ def on_member_update(before, after):
 
 @client.async_event
 def on_member_join(member):
-	msg = '**`>`**:arrow_right:`user` {}`#{}` `({}) joined server {} ({})`'.format(member.name, member.discriminator, member.id, member.server.name, member.server.id)
+	msg = '**`>`**:arrow_right:`user` **``{}``**`#{}` `({}) joined server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	if member.server.id != productionserver:
 		yield from client.send_message(member.server.default_channel, msg)
 	else:
@@ -860,7 +860,7 @@ def on_member_join(member):
 
 @client.async_event
 def on_member_remove(member):
-	msg = '**`>`**:door:`user` {}`#{}` `({}) removed from server {} ({})`'.format(member.name, member.discriminator, member.id, member.server.name, member.server.id)
+	msg = '**`>`**:door:`user` **``{}``**`#{}` `({}) removed from server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	if member.server.id != productionserver:
 		yield from client.send_message(member.server.default_channel, msg)
 	else:
@@ -868,7 +868,7 @@ def on_member_remove(member):
 
 @client.async_event
 def on_member_ban(member):
-	msg = '**`>`**:mans_shoe::door::no_entry:`user` {}`#{}` `({}) banned from server {} ({})`'.format(member.name, member.discriminator, member.id, member.server.name, member.server.id)
+	msg = '**`>`**:mans_shoe::door::no_entry:`user` **``{}``**`#{}` `({}) banned from server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	if member.server.id != productionserver:
 		yield from client.send_message(member.server.default_channel, msg)
 	else:
@@ -876,7 +876,7 @@ def on_member_ban(member):
 
 @client.async_event
 def on_member_unban(server, user):
-	msg = '**`>`**<:doormat:239361673532669953>`user` {}`#{}` `({}) unbanned from server {} ({})`'.format(user.name, user.discriminator, user.id, server.name, server.id)
+	msg = '**`>`**<:doormat:239361673532669953>`user` **``{}``**`#{}` `({}) unbanned from server {} ({})`'.format(mdspecialchars(user.name), user.discriminator, user.id, server.name, server.id)
 	if server.id != productionserver:
 		yield from client.send_message(server.default_channel, msg)
 	else:
@@ -885,7 +885,7 @@ def on_member_unban(server, user):
 @client.async_event
 def on_typing(channel, user, when):
 	if str(user.status) == 'offline':
-		msg = '**`>`**:ghost:`user` {}`#{}` `({}) was invisible while typing in channel` <#{}> `at {}`'.format(user.name, user.discriminator, user.id, channel.id, when)
+		msg = '**`>`**:ghost:`user` **``{}``**`#{}` `({}) was invisible while typing in channel` <#{}> `at {}`'.format(mdspecialchars(user.name), user.discriminator, user.id, channel.id, when)
 		if user.server.id != productionserver:
 			yield from client.send_message(channel, msg)
 		else:
