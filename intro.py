@@ -797,7 +797,7 @@ def on_member_update(before, after):
 			yield from client.send_message(before.server.default_channel, msg)
 		else:
 			yield from client.send_message(specialchannel, msg)
-		msg_start = '**`>`**`user {} changed username`\n'.format(after.nick, after.id)
+		msg_start = '**`>`**`user {} changed username`\n'.format(after.id)
 		content = '_`The newer username is:`_\n{}\n_`The newer discriminator is:`_ `#{}`'.format(after.name, after.discriminator)
 		msg = msg_start + content
 		if after.server.id != productionserver:
