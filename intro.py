@@ -61,7 +61,7 @@ cmds = [
 			},
 			'source': {
 				'short': 'Gives the link to the source code to the bot.',
-				'extra': 'It’s hosted on __https://gitgud.io/__. Use `\stophangman` to stop.'
+				'extra': 'It’s hosted on __https://gitgud.io/__.'
 			},
 			'echo': {
 				'short': 'Echoes your input.',
