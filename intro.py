@@ -68,7 +68,7 @@ cmds = [
 				'extra': 'Now, you could say that the bot echoed your input already, but it’s still better to have a dedicated echo command.'
 			},
 			'info': {
-				'short': 'Unfinished command to get information about a user.',
+				'short': 'Gives information about a user.',
 				'extra': ''
 			},
 			'findu': {
