@@ -403,7 +403,8 @@ def on_message(message):
 	elif command == 'echo':
 		if arguments == None:
 			arguments = ''
-		yield from reply(message, arguments)
+		displayarguments = (arguments[:1769]) if len(arguments) > 1769 else arguments
+		yield from reply(message, displayarguments)
 	elif command == '':
 		content = (
 			'<@{}>\n'
