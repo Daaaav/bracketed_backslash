@@ -61,7 +61,7 @@ cmds = [
 			},
 			'source': {
 				'short': 'Gives the link to the source code to the bot.',
-				'extra': 'It’s hosted on __https://gitgud.io/__.'
+				'extra': 'It’s hosted on __https://gitgud.io/__. Use `\stophangman` to stop.'
 			},
 			'echo': {
 				'short': 'Echoes your input.',
@@ -80,7 +80,7 @@ cmds = [
 				'extrafull': 'Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator. Warning: This pings the user.'
 			},
 			'hangman': {
-				'short': 'Initiate a game of hangman (use \stophangman to stop). Send via PM with a custom word.',
+				'short': 'Initiate a game of hangman. Send via private message with a custom word. Use `\stophangman` to stop.',
 				'extra': 'Ported from DavBot!'
 			},
 			'stophangman': {
@@ -442,7 +442,7 @@ def on_message(message):
 		yield from reply(message, content)
 	elif command == 'hangman':
 		if hangmanactive:
-			content = 'ERROR: Hangman is already running. It can be aborted by the starter or by a mod with \stophangman.'
+			content = 'ERROR: Hangman is already running. It can be aborted by the starter or by a mod with `\stophangman`.'
 			yield from reply(message, content)
 			return
 		if not isprivatemessage(message.server):
