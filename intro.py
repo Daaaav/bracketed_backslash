@@ -634,12 +634,75 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 		content = 'Reset roles for <@{}> back to normal.'.format(targetmember.id)
 		yield from reply(message, content)
 	elif command == 'info':
-		content = str(message.author.permissions_in(message.channel))
-		perms = discord.Channel.permissions_for(message.channel, message.author)
-		if perms.administrator:
-			content = 'is admin???//'
-		else:
-			content = 'is not admin???//'
+		persontocheck = get_member_input(message.server, arguments)
+		yesperm = ':ballot_box_with_check:'
+		noperm = ':negative_squared_cross_mark:'
+		try:
+			perms = discord.Channel.permissions_for(message.channel, persontocheck)
+		except AttributeError:
+			content = t['specify_user']
+			yield from reply(message, content)
+			return
+		content = ( # i wonder if this parenthesis is important
+				'Permissions for **``{}``**`#{}` in <#{}>:\n'
+				'**`Server Owner:`** {owner}\n'
+				'**`Administrator:`** {admin}\n'
+				# idea: mayb just stop right there if theyre an admin, why bother listing the rest
+				'**`Manage Server:`** {server}\n'
+				'**`Manage Channels:`** {channels}\n'
+				'**`Manage Roles:`** {roles}\n'
+				'**`Ban Members:`** {ban}\n'
+				'**`Kick Members:`** {kick}\n'
+				'**`Move Members:`** {move}\n'
+				'**`Deafen Members:`** {deafen}\n'
+				'**`Mute Members:`** {mute}\n'
+				'**`Manage Webhooks:`** {webhooks}\n' # for some reason manage_webhooks isnt an attribute of a Permissions object yet?
+				'**`Manage Nicknames:`** {nicks}\n'
+				'**`Manage Custom Emotes:`** {emotes}\n'
+				'**`Change Nickname:`** {nick}\n'
+				'**`Mention General Mentions:`** {genmen}\n'
+				'**`Use Custom Emotes:`** {emote}\n'
+				'**`Upload Direct Uploads:`** {upload}\n'
+				'**`Embed Link Embeds:`** {embed}\n'
+				'**`Use Text-to-Speech:`** {tts}\n'
+				'**`Read Message History:`** {history}\n'
+				'**`Send Messages:`** {send}\n'
+				'**`Read Messages:`** {read}\n'
+				'**`Use Voice Activity:`** {voiceact}\n'
+				'**`Speak:`** {speak}\n'
+				'**`Connect:`** {connect}'
+			).format(
+					# TODO: for loop or something to make this look less like a "cs graduates" thread
+					# but idk how also im lazy
+					# (apparently not lazy enough to do more work than i need to)
+					persontocheck.name, persontocheck.discriminator, message.channel.id,
+					owner = yesperm if persontocheck == persontocheck.server.owner else noperm,
+					admin = yesperm if perms.administrator else noperm,
+					server = yesperm if perms.manage_server else noperm,
+					channels = yesperm if perms.manage_channels else noperm,
+					roles = yesperm if perms.manage_roles else noperm,
+					ban = yesperm if perms.ban_members else noperm,
+					kick = yesperm if perms.kick_members else noperm,
+					move = yesperm if perms.move_members else noperm,
+					deafen = yesperm if perms.deafen_members else noperm,
+					mute = yesperm if perms.mute_members else noperm,
+#					webhooks = yesperm if perms.manage_webhooks else noperm,
+					webhooks = '`manage_webhooks` isnt a `Permissions` attribute apparently?',
+					nicks = yesperm if perms.manage_nicknames else noperm,
+					emotes = yesperm if perms.manage_emojis else noperm,
+					nick = yesperm if perms.change_nickname else noperm,
+					genmen = yesperm if perms.mention_everyone else noperm,
+					emote = yesperm if perms.external_emojis else noperm,
+					upload = yesperm if perms.attach_files else noperm,
+					embed = yesperm if perms.embed_links else noperm,
+					tts = yesperm if perms.send_tts_messages else noperm,
+					history = yesperm if perms.read_message_history else noperm,
+					send = yesperm if perms.send_messages else noperm,
+					read = yesperm if perms.read_messages else noperm,
+					voiceact = yesperm if perms.use_voice_activation else noperm,
+					speak = yesperm if perms.speak else noperm,
+					connect = yesperm if perms.connect else noperm,
+				)
 		yield from reply(message, content)
 	elif command == 'teddy':
 		content = 'xd'
