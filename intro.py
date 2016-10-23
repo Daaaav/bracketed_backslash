@@ -351,7 +351,11 @@ def on_message(message):
 		arguments = None
 	command = command.split (' ', 1)[0]
 	if command == 'help':
-		content = '`[\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server.' + helplist(cmds)
+		content = (
+			'`[\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server.\n'
+			'To get accepted into the developer team, you have to be accepted by every one of the current members of the team.'
+			+ helplist(cmds)
+			)
 
 		# General
 		if arguments == 'useless':
