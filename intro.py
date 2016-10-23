@@ -250,8 +250,8 @@ def on_message(message):
 		if len(hangmanguessed) == 1:
 			# Have we already used that letter? And is it a valid letter?
 			if alphabet.find(hangmanguessed.upper()) == -1:
-				msg = msg_start + content
 				content = 'The letter **{}** is invalid.'.format(hangmanguessed.upper())
+				msg = msg_start + content
 				yield from client.send_message(message.channel, msg)
 				return
 			if guessedletters[alphabet.find(hangmanguessed.upper())]:
