@@ -238,9 +238,12 @@ def on_message(message):
 	if hangmaninvokeractive:
 		if not hangmanactive:
 			return
-		msg_start = '**`>`**``{}``**`:`** {}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
+		if is_mod(message.author):
+			msg_start = '**`>`**``{}``**`#`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
+		else:
+			msg_start = '**`>`**``{}``**`$`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
 		if isprivate:
-			content = 'Sorry, guesses are not accepted via PM!'
+			content = 'Guesses are not accepted via PM.'
 			msg = msg_start + content
 			yield from client.send_message(message.channel, msg)
 		if message.channel.id != '201130047736643584':
@@ -250,8 +253,8 @@ def on_message(message):
 		if len(hangmanguessed) == 1:
 			# Have we already used that letter? And is it a valid letter?
 			if alphabet.find(hangmanguessed.upper()) == -1:
+				content = 'The character ``{}`` is invalid.'.format(mdspecialchars(hangmanguessed.upper()))
 				msg = msg_start + content
-				content = 'The letter **{}** is invalid.'.format(hangmanguessed.upper())
 				yield from client.send_message(message.channel, msg)
 				return
 			if guessedletters[alphabet.find(hangmanguessed.upper())]:
@@ -267,7 +270,6 @@ def on_message(message):
 				content = '**{}** is correct!\n{}'.format(hangmanguessed.upper(), hangmanworddisp(hangmanchosenword))
 				msg = msg_start + content
 				yield from client.send_message(message.channel, msg)
-				return
 
 				if algeraden:
 					hangmanactive = False
@@ -306,7 +308,7 @@ def on_message(message):
 					msg = msg_start + content
 					yield from client.send_message(message.channel, msg)
 					return
-				content = '**{}** isn\'t even the same length as the correct word. Please try again.'.format(hangmanguessed)
+				content = '**``{}``** isn’t even the same length as the correct word. Please try again.'.format(mdspecialchars(hangmanguessed))
 				msg = msg_start + content
 				yield from client.send_message(message.channel, msg)
 				return
@@ -329,10 +331,16 @@ def on_message(message):
 
 	elif altinvokeractive:
 		command = message.content.split(altinvoker, 1)[1]
-		msg_start = '**`>`**``{}``**`:`** {}\n'.format(mdspecialchars(message.author.name), displaymessagecontent) # shows what the user put in, without main invoker
+		if is_mod(message.author):
+			msg_start = '**`>`**``{}``**`#`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
+		else:
+			msg_start = '**`>`**``{}``**`$`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent) # shows what the user put in, without main invoker
 	else:
 		command = message.content.split(invoker, 1)[1] # removes invoker from the message
-		msg_start = '**`>`**``{}``**`:`** {}\n'.format(mdspecialchars(message.author.name), displaymessagecontent) # shows what the user put in
+		if is_mod(message.author):
+			msg_start = '**`>`**``{}``**`#`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
+		else:
+			msg_start = '**`>`**``{}``**`$`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent) # shows what the user put in
 
 	# Prevent access to those who aren't supposed to send messages
 	if not isprivate and not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver and not (is_dev(message.author) and message.channel.id == '238423391571279872'):
@@ -393,37 +401,39 @@ def on_message(message):
 			arguments = ''
 		yield from reply(message, arguments)
 	elif command == '':
-		content = '''<@{}>
-```fix
-Luigi: have you ever by accident pressed another key at the same time you have pressed enter?'
-Luigi: ugh
-ShinyWolf07: \\
-ShinyWolf07: this
-Luigi: is
-Luigi: cancer
-ShinyWolf07: I always do th
-ShinyWolf07: its so annoyng
-ShinyWolf07: \\
-ShinyWolf07: UGh\\
-Luigi: xd
-Luigi: x
-Luigi: d
-Luigi: d
-ShinyWolf07: xd\\
-Luigi: x
-ShinyWolf07: F***!!!!!|
-Luigi: XD
-ShinyWolf07: ARGH\\
-Luigi: This is funny to watch you
-Luigi: Did you make popcorn
-ShinyWolf07: xd ikr \\
-ShinyWolf07: ...
-ShinyWolf07: -_-\\
-ShinyWolf07: GAH\\
-Luigi: don't you mean ...\\
-ShinyWolf07: ...
-ShinyWolf07: sigh
-Luigi: 10/10 would watch again```'''.format(message.author.id)
+		content = (
+			'<@{}>\n'
+			'```fix\n'
+			'Luigi: have you ever by accident pressed another key at the same time you have pressed enter?\'\n'
+			'Luigi: ugh\n'
+			'ShinyWolf07: \\\n'
+			'ShinyWolf07: this\n'
+			'Luigi: is\n'
+			'Luigi: cancer\n'
+			'ShinyWolf07: I always do th\n'
+			'ShinyWolf07: its so annoyng\n'
+			'ShinyWolf07: \\\n'
+			'ShinyWolf07: UGh\\\n'
+			'Luigi: xd\n'
+			'Luigi: x\n'
+			'Luigi: d\n'
+			'Luigi: d\n'
+			'ShinyWolf07: xd\\\n'
+			'Luigi: x\n'
+			'ShinyWolf07: F***!!!!!|\n'
+			'Luigi: XD\n'
+			'ShinyWolf07: ARGH\\\n'
+			'Luigi: This is funny to watch you\n'
+			'Luigi: Did you make popcorn\n'
+			'ShinyWolf07: xd ikr \\\n'
+			'ShinyWolf07: ...\n'
+			'ShinyWolf07: -_-\\\n'
+			'ShinyWolf07: GAH\\\n'
+			'Luigi: don\'t you mean ...\\\n'
+			'ShinyWolf07: ...\n'
+			'ShinyWolf07: sigh\n'
+			'Luigi: 10/10 would watch again```\n'
+			).format(message.author.id)
 		yield from reply(message, content)
 	elif command == 'hangman':
 		if hangmanactive:
@@ -453,19 +463,20 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 		hangmanactive = True
 		hangmanstarter = message.author
 		guessedletters = [False]*26
-
+		msg_start = '**`>`**``{}``**`$`**``{}``\n'.format(mdspecialchars(message.author.name), mdspecialchars(command.split(' ')[0])) # you will never have mod/admin perms in private messages (probably), where the hangman will be started from, so for now theres no mod/admin check to make the input display different
 		content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "{}" followed by the letter (for example {}a) or the word. {} attempts left.\n{}'.format(hangmanstarter.id, hangmaninvoker, hangmaninvoker, hangmanattempts, hangmanworddisp(hangmanchosenword))
-		yield from client.send_message(botschannel, content)
+		msg = msg_start + content
+		yield from client.send_message(botschannel, msg)
 
 		content = 'https://discord.gg/6e3KcEv'
 		yield from reply(message, content)
 	elif command == 'stophangman':
 		if not hangmanactive:
-			content = 'ERROR: Can\'t abort hangman because it\'s not running.'
+			content = 'ERROR: Can’t abort hangman because it’s not running.'
 			yield from reply(message, content)
 			return
 		elif not is_mod(message.author) and message.author.id != hangmanstarter.id:
-			content = 'ERROR: Can\'t abort hangman because you haven\'t started this game.'
+			content = 'ERROR: Can’t abort hangman because you haven’t started this game.'
 			yield from reply(message, content)
 			return
 
@@ -625,12 +636,75 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 		content = 'Reset roles for <@{}> back to normal.'.format(targetmember.id)
 		yield from reply(message, content)
 	elif command == 'info':
-		content = str(message.author.permissions_in(message.channel))
-		perms = discord.Channel.permissions_for(message.channel, message.author)
-		if perms.administrator:
-			content = 'is admin???//'
-		else:
-			content = 'is not admin???//'
+		persontocheck = get_member_input(message.server, arguments)
+		yesperm = ':ballot_box_with_check:'
+		noperm = ':negative_squared_cross_mark:'
+		try:
+			perms = discord.Channel.permissions_for(message.channel, persontocheck)
+		except AttributeError:
+			content = t['specify_user']
+			yield from reply(message, content)
+			return
+		content = ( # i wonder if this parenthesis is important
+				'Permissions for **``{}``**`#{}` in <#{}>:\n'
+				'**`Server Owner:`** {owner}\n'
+				'**`Administrator:`** {admin}\n'
+				# idea: mayb just stop right there if theyre an admin, why bother listing the rest
+				'**`Manage Server:`** {server}\n'
+				'**`Manage Channels:`** {channels}\n'
+				'**`Manage Roles:`** {roles}\n'
+				'**`Ban Members:`** {ban}\n'
+				'**`Kick Members:`** {kick}\n'
+				'**`Move Members:`** {move}\n'
+				'**`Deafen Members:`** {deafen}\n'
+				'**`Mute Members:`** {mute}\n'
+				'**`Manage Webhooks:`** {webhooks}\n' # for some reason manage_webhooks isnt an attribute of a Permissions object yet?
+				'**`Manage Nicknames:`** {nicks}\n'
+				'**`Manage Custom Emotes:`** {emotes}\n'
+				'**`Change Nickname:`** {nick}\n'
+				'**`Mention General Mentions:`** {genmen}\n'
+				'**`Use Custom Emotes:`** {emote}\n'
+				'**`Upload Direct Uploads:`** {upload}\n'
+				'**`Embed Link Embeds:`** {embed}\n'
+				'**`Use Text-to-Speech:`** {tts}\n'
+				'**`Read Message History:`** {history}\n'
+				'**`Send Messages:`** {send}\n'
+				'**`Read Messages:`** {read}\n'
+				'**`Use Voice Activity:`** {voiceact}\n'
+				'**`Speak:`** {speak}\n'
+				'**`Connect:`** {connect}'
+			).format(
+					# TODO: for loop or something to make this look less like a "cs graduates" thread
+					# but idk how also im lazy
+					# (apparently not lazy enough to do more work than i need to)
+					persontocheck.name, persontocheck.discriminator, message.channel.id,
+					owner = yesperm if persontocheck == persontocheck.server.owner else noperm,
+					admin = yesperm if perms.administrator else noperm,
+					server = yesperm if perms.manage_server else noperm,
+					channels = yesperm if perms.manage_channels else noperm,
+					roles = yesperm if perms.manage_roles else noperm,
+					ban = yesperm if perms.ban_members else noperm,
+					kick = yesperm if perms.kick_members else noperm,
+					move = yesperm if perms.move_members else noperm,
+					deafen = yesperm if perms.deafen_members else noperm,
+					mute = yesperm if perms.mute_members else noperm,
+#					webhooks = yesperm if perms.manage_webhooks else noperm,
+					webhooks = '`manage_webhooks` isnt a `Permissions` attribute apparently?',
+					nicks = yesperm if perms.manage_nicknames else noperm,
+					emotes = yesperm if perms.manage_emojis else noperm,
+					nick = yesperm if perms.change_nickname else noperm,
+					genmen = yesperm if perms.mention_everyone else noperm,
+					emote = yesperm if perms.external_emojis else noperm,
+					upload = yesperm if perms.attach_files else noperm,
+					embed = yesperm if perms.embed_links else noperm,
+					tts = yesperm if perms.send_tts_messages else noperm,
+					history = yesperm if perms.read_message_history else noperm,
+					send = yesperm if perms.send_messages else noperm,
+					read = yesperm if perms.read_messages else noperm,
+					voiceact = yesperm if perms.use_voice_activation else noperm,
+					speak = yesperm if perms.speak else noperm,
+					connect = yesperm if perms.connect else noperm,
+				)
 		yield from reply(message, content)
 	elif command == 'teddy':
 		content = 'xd'
