@@ -401,37 +401,39 @@ def on_message(message):
 			arguments = ''
 		yield from reply(message, arguments)
 	elif command == '':
-		content = '''<@{}>
-```fix
-Luigi: have you ever by accident pressed another key at the same time you have pressed enter?'
-Luigi: ugh
-ShinyWolf07: \\
-ShinyWolf07: this
-Luigi: is
-Luigi: cancer
-ShinyWolf07: I always do th
-ShinyWolf07: its so annoyng
-ShinyWolf07: \\
-ShinyWolf07: UGh\\
-Luigi: xd
-Luigi: x
-Luigi: d
-Luigi: d
-ShinyWolf07: xd\\
-Luigi: x
-ShinyWolf07: F***!!!!!|
-Luigi: XD
-ShinyWolf07: ARGH\\
-Luigi: This is funny to watch you
-Luigi: Did you make popcorn
-ShinyWolf07: xd ikr \\
-ShinyWolf07: ...
-ShinyWolf07: -_-\\
-ShinyWolf07: GAH\\
-Luigi: don't you mean ...\\
-ShinyWolf07: ...
-ShinyWolf07: sigh
-Luigi: 10/10 would watch again```'''.format(message.author.id)
+		content = (
+			'<@{}>\n'
+			'```fix\n'
+			'Luigi: have you ever by accident pressed another key at the same time you have pressed enter?\'\n'
+			'Luigi: ugh\n'
+			'ShinyWolf07: \\\n'
+			'ShinyWolf07: this\n'
+			'Luigi: is\n'
+			'Luigi: cancer\n'
+			'ShinyWolf07: I always do th\n'
+			'ShinyWolf07: its so annoyng\n'
+			'ShinyWolf07: \\\n'
+			'ShinyWolf07: UGh\\\n'
+			'Luigi: xd\n'
+			'Luigi: x\n'
+			'Luigi: d\n'
+			'Luigi: d\n'
+			'ShinyWolf07: xd\\\n'
+			'Luigi: x\n'
+			'ShinyWolf07: F***!!!!!|\n'
+			'Luigi: XD\n'
+			'ShinyWolf07: ARGH\\\n'
+			'Luigi: This is funny to watch you\n'
+			'Luigi: Did you make popcorn\n'
+			'ShinyWolf07: xd ikr \\\n'
+			'ShinyWolf07: ...\n'
+			'ShinyWolf07: -_-\\\n'
+			'ShinyWolf07: GAH\\\n'
+			'Luigi: don\'t you mean ...\\\n'
+			'ShinyWolf07: ...\n'
+			'ShinyWolf07: sigh\n'
+			'Luigi: 10/10 would watch again```\n'
+			).format(message.author.id)
 		yield from reply(message, content)
 	elif command == 'hangman':
 		if hangmanactive:
