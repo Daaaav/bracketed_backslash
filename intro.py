@@ -517,6 +517,7 @@ def on_message(message):
 				displaygameurl = '**`No Stream Link`**'
 			else:
 				displaygameurl = '**`Stream Link:`** ``{}``'.format(mdspecialchars(targetmember.game.url))
+
 		if command == "findup":
 			displaymatch = '<@{}>'.format(targetmember.id)
 		else:
@@ -530,7 +531,27 @@ def on_message(message):
 		elif str(targetmember.status) == 'dnd' or str(targetmember.status) == 'do_not_disturb':
 			statuss = 'dnd:232230526109351938'
 
-		content = 'Matched {} <:{}>\n**`User ID:`** `{}`\n{}\n**`Username:`** ``{}``\n**`Discriminator:`** `#{}`\n{}\n{}'.format(displaymatch, statuss, targetmember.id, displaynick, mdspecialchars(targetmember.name), targetmember.discriminator, displaygame, displaygameurl)
+		content = (
+			'Matched {} <:{}>\n'
+			'**`User ID:`** `{}`\n'
+			'{}\n'
+			'**`Username:`** ``{}``\n'
+			'**`Discriminator:`** `#{}`\n'
+			'{}\n'
+			'{}\n'
+			'**`Default Avatar:`** `{}`\n'
+			'**`Avatar URL:`** {}\n'
+		).format(
+			displaymatch, statuss,
+			targetmember.id,
+			displaynick,
+			mdspecialchars(targetmember.name),
+			targetmember.discriminator,
+			displaygame,
+			displaygameurl,
+			targetmember.default_avatar,
+			targetmember.avatar_url,
+		)
 		yield from reply(message, content)
 	elif command == 'softban':
 		if not is_mod(message.author):
