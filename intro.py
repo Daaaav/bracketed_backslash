@@ -238,7 +238,10 @@ def on_message(message):
 	if hangmaninvokeractive:
 		if not hangmanactive:
 			return
-		msg_start = '**`>`**``{}``**`:~`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
+		if is_mod(message.author):
+			msg_start = '**`>`**``{}``**`:#`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
+		else:
+			msg_start = '**`>`**``{}``**`:$`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
 		if isprivate:
 			content = 'Sorry, guesses are not accepted via PM!'
 			msg = msg_start + content
@@ -328,10 +331,16 @@ def on_message(message):
 
 	elif altinvokeractive:
 		command = message.content.split(altinvoker, 1)[1]
-		msg_start = '**`>`**``{}``**`:~`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent) # shows what the user put in, without main invoker
+		if is_mod(message.author):
+			msg_start = '**`>`**``{}``**`:#`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
+		else:
+			msg_start = '**`>`**``{}``**`:$`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent) # shows what the user put in, without main invoker
 	else:
 		command = message.content.split(invoker, 1)[1] # removes invoker from the message
-		msg_start = '**`>`**``{}``**`:~`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent) # shows what the user put in
+		if is_mod(message.author):
+			msg_start = '**`>`**``{}``**`:#`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
+		else:
+			msg_start = '**`>`**``{}``**`:$`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent) # shows what the user put in
 
 	# Prevent access to those who aren't supposed to send messages
 	if not isprivate and not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver and not (is_dev(message.author) and message.channel.id == '238423391571279872'):
