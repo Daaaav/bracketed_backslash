@@ -239,9 +239,9 @@ def on_message(message):
 		if not hangmanactive:
 			return
 		if is_mod(message.author):
-			msg_start = '**`>`**``{}``**`:#`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
+			msg_start = '**`>`**``{}``**`#`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
 		else:
-			msg_start = '**`>`**``{}``**`:$`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
+			msg_start = '**`>`**``{}``**`$`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
 		if isprivate:
 			content = 'Guesses are not accepted via PM.'
 			msg = msg_start + content
@@ -332,15 +332,15 @@ def on_message(message):
 	elif altinvokeractive:
 		command = message.content.split(altinvoker, 1)[1]
 		if is_mod(message.author):
-			msg_start = '**`>`**``{}``**`:#`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
+			msg_start = '**`>`**``{}``**`#`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
 		else:
-			msg_start = '**`>`**``{}``**`:$`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent) # shows what the user put in, without main invoker
+			msg_start = '**`>`**``{}``**`$`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent) # shows what the user put in, without main invoker
 	else:
 		command = message.content.split(invoker, 1)[1] # removes invoker from the message
 		if is_mod(message.author):
-			msg_start = '**`>`**``{}``**`:#`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
+			msg_start = '**`>`**``{}``**`#`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
 		else:
-			msg_start = '**`>`**``{}``**`:$`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent) # shows what the user put in
+			msg_start = '**`>`**``{}``**`$`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent) # shows what the user put in
 
 	# Prevent access to those who aren't supposed to send messages
 	if not isprivate and not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver and not (is_dev(message.author) and message.channel.id == '238423391571279872'):
@@ -461,7 +461,7 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 		hangmanactive = True
 		hangmanstarter = message.author
 		guessedletters = [False]*26
-		msg_start = '**`>`**``{}``**`:$`**``{}``\n'.format(mdspecialchars(message.author.name), mdspecialchars(command.split(' ')[0])) # you will never have mod/admin perms in private messages (probably), where the hangman will be started from, so for now theres no mod/admin check to make the input display different
+		msg_start = '**`>`**``{}``**`$`**``{}``\n'.format(mdspecialchars(message.author.name), mdspecialchars(command.split(' ')[0])) # you will never have mod/admin perms in private messages (probably), where the hangman will be started from, so for now theres no mod/admin check to make the input display different
 		content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "{}" followed by the letter (for example {}a) or the word. {} attempts left.\n{}'.format(hangmanstarter.id, hangmaninvoker, hangmaninvoker, hangmanattempts, hangmanworddisp(hangmanchosenword))
 		msg = msg_start + content
 		yield from client.send_message(botschannel, msg)
