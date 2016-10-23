@@ -3,6 +3,7 @@ Make a pull request. You should use tabs instead of spaces with a tabstop of eig
 ## Tasks
 If you’re willing to let Info Teddy be lazy and do the work that he’s supposed to do (and he’ll convince you by saying he has homework to do and a life), you can add all of this.
 ### v1.0
+- [ ] make `\restart` restart the bot in place such that everything is reloaded but the `Client.messages` cache isnt cleared
 - [ ] less hard-written configuration (see im lazy) and/or none at all
 - [ ] log more shit
 	- [x] member avatar changes
