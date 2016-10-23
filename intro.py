@@ -306,7 +306,7 @@ def on_message(message):
 					msg = msg_start + content
 					yield from client.send_message(message.channel, msg)
 					return
-				content = '**{}** isn\'t even the same length as the correct word. Please try again.'.format(hangmanguessed)
+				content = '**{}** isn’t even the same length as the correct word. Please try again.'.format(hangmanguessed)
 				msg = msg_start + content
 				yield from client.send_message(message.channel, msg)
 				return
@@ -461,11 +461,11 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 		yield from reply(message, content)
 	elif command == 'stophangman':
 		if not hangmanactive:
-			content = 'ERROR: Can\'t abort hangman because it\'s not running.'
+			content = 'ERROR: Can’t abort hangman because it’s not running.'
 			yield from reply(message, content)
 			return
 		elif not is_mod(message.author) and message.author.id != hangmanstarter.id:
-			content = 'ERROR: Can\'t abort hangman because you haven\'t started this game.'
+			content = 'ERROR: Can’t abort hangman because you haven’t started this game.'
 			yield from reply(message, content)
 			return
 
