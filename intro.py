@@ -810,7 +810,7 @@ def on_message_delete(message): # when a message gets deleted
 		if message.server.id != productionserver:
 			yield from client.send_message(message.channel, msg)
 		else:
-			yield from client.send_message(specialchannel)
+			yield from client.send_message(specialchannel, msg)
 
 @client.async_event
 def on_message_edit(before, after): # when a message gets edited
