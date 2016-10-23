@@ -243,7 +243,7 @@ def on_message(message):
 		else:
 			msg_start = '**`>`**``{}``**`:$`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
 		if isprivate:
-			content = 'Sorry, guesses are not accepted via PM!'
+			content = 'Guesses are not accepted via PM.'
 			msg = msg_start + content
 			yield from client.send_message(message.channel, msg)
 		if message.channel.id != '201130047736643584':
@@ -253,7 +253,7 @@ def on_message(message):
 		if len(hangmanguessed) == 1:
 			# Have we already used that letter? And is it a valid letter?
 			if alphabet.find(hangmanguessed.upper()) == -1:
-				content = 'The letter **{}** is invalid.'.format(hangmanguessed.upper())
+				content = 'The character ``{}`` is invalid.'.format(mdspecialchars(hangmanguessed.upper()))
 				msg = msg_start + content
 				yield from client.send_message(message.channel, msg)
 				return
@@ -308,7 +308,7 @@ def on_message(message):
 					msg = msg_start + content
 					yield from client.send_message(message.channel, msg)
 					return
-				content = '**{}** isn’t even the same length as the correct word. Please try again.'.format(hangmanguessed)
+				content = '**``{}``** isn’t even the same length as the correct word. Please try again.'.format(mdspecialchars(hangmanguessed))
 				msg = msg_start + content
 				yield from client.send_message(message.channel, msg)
 				return
@@ -461,9 +461,10 @@ Luigi: 10/10 would watch again```'''.format(message.author.id)
 		hangmanactive = True
 		hangmanstarter = message.author
 		guessedletters = [False]*26
-
+		msg_start = '**`>`**``{}``**`:$`**``{}``\n'.format(mdspecialchars(message.author.name), mdspecialchars(command.split(' ')[0])) # you will never have mod/admin perms in private messages (probably), where the hangman will be started from, so for now theres no mod/admin check to make the input display different
 		content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "{}" followed by the letter (for example {}a) or the word. {} attempts left.\n{}'.format(hangmanstarter.id, hangmaninvoker, hangmaninvoker, hangmanattempts, hangmanworddisp(hangmanchosenword))
-		yield from client.send_message(botschannel, content)
+		msg = msg_start + content
+		yield from client.send_message(botschannel, msg)
 
 		content = 'https://discord.gg/6e3KcEv'
 		yield from reply(message, content)
