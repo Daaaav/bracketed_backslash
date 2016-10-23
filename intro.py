@@ -214,7 +214,7 @@ def on_message(message):
 		pass
 
 	if message.attachments != []:
-		msg_start = '**`>`**:paperclip:`user` ``**{}**``**`#{}` `({}) attached a file to message {} in channel` <#{}> `at {} UTC`\n'.format(mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
+		msg_start = '**`>`**:paperclip:`user` **``{}``**`#{}` `({}) attached a file to message {} in channel` <#{}> `at {} UTC`\n'.format(mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
 		content = '_`The attachment is:`_\n' + message.attachments[0]['url']
 		msg = msg_start + content
 		if message.server.id != productionserver:
@@ -917,7 +917,7 @@ def on_member_update(before, after):
 		else:
 			yield from client.send_message(specialchannel, msg)
 		msg_start = '**`>`**`user {} changed username`\n'.format(after.id)
-		content = '_`The newer username is:`_\n``**{}**``\n_`The newer discriminator is:`_ `#{}`'.format(mdspecialchars(after.name), after.discriminator)
+		content = '_`The newer username is:`_\n**``{}``**\n_`The newer discriminator is:`_ `#{}`'.format(mdspecialchars(after.name), after.discriminator)
 		msg = msg_start + content
 		if after.server.id != productionserver:
 			yield from client.send_message(after.server.default_channel, msg)
