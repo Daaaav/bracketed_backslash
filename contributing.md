@@ -5,6 +5,7 @@ Just make sure your code is worth its merit.
 - no trailing whitespace
 	- this includes lines that are just whitespace
 - things that look like `this()` should stay looking like `this()` and not `this ()`
+
 ## Tasks
 If you’re willing to let Info Teddy be lazy and do the work that he’s supposed to do (and he’ll convince you by saying he has homework to do and a life), you can add all of this.
 ### v1.0
