@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3.5
 # encoding=utf-8
 
 #	[\] bot, will be used for tolp server
@@ -18,6 +18,7 @@
 #	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import discord
+import asyncio
 import os
 import sys
 import urllib
@@ -203,12 +204,12 @@ meme_cmds = [
 ]
 
 @client.async_event
-def on_ready():
+async def on_ready():
 	print('[info] logged in as {} with id {}'.format(client.user.name, client.user.id))
-	yield from client.change_presence(game=discord.Game(name='​')) # the game name is u+200b
+	await client.change_presence(game=discord.Game(name='​')) # the game name is u+200b
 
 @client.async_event
-def on_message(message):
+async def on_message(message):
 	global msg_start, hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, hangmanstarter, guessedletters, algeraden
 
 	if message.author == client.user: # is the message sent by the bot
@@ -221,9 +222,9 @@ def on_message(message):
 	if not isprivate and str(message.author.status) == 'offline':
 		msg_start = '**`>`**:ghost:`user` **``{}``**`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
 		if message.server.id != productionserver:
-			yield from client.send_message(message.channel, msg_start)
+			await client.send_message(message.channel, msg_start)
 		else:
-			yield from client.send_message(specialchannel, msg_start)
+			await client.send_message(specialchannel, msg_start)
 		pass
 
 	if message.attachments != []:
@@ -231,9 +232,9 @@ def on_message(message):
 		content = '_`The attachment is:`_\n' + message.attachments[0]['url']
 		msg = msg_start + content
 		if message.server.id != productionserver:
-			yield from client.send_message(message.channel, msg)
+			await client.send_message(message.channel, msg)
 		else:
-			yield from client.send_message(specialchannel, msg)
+			await client.send_message(specialchannel, msg)
 
 	if message.content.startswith(invoker): # does the message start with command invoker
 		altinvokeractive = False
@@ -258,7 +259,7 @@ def on_message(message):
 		if isprivate:
 			content = 'Guesses are not accepted via PM.'
 			msg = msg_start + content
-			yield from client.send_message(message.channel, msg)
+			await client.send_message(message.channel, msg)
 		if message.channel.id != '201130047736643584':
 			return
 		hangmanguessed = message.content[1:]
@@ -268,12 +269,12 @@ def on_message(message):
 			if alphabet.find(hangmanguessed.upper()) == -1:
 				content = 'The character ``{}`` is invalid.'.format(mdspecialchars(hangmanguessed.upper()))
 				msg = msg_start + content
-				yield from client.send_message(message.channel, msg)
+				await client.send_message(message.channel, msg)
 				return
 			if guessedletters[alphabet.find(hangmanguessed.upper())]:
 				content = 'The letter **{}** has already been used.'.format(hangmanguessed.upper())
 				msg = msg_start + content
-				yield from client.send_message(message.channel, msg)
+				await client.send_message(message.channel, msg)
 				return
 			# Ok, so does this letter occur in the word?
 			if hangmanchosenword.upper().find(hangmanguessed.upper()) != -1:
@@ -282,13 +283,13 @@ def on_message(message):
 
 				content = '**{}** is correct!\n{}'.format(hangmanguessed.upper(), hangmanworddisp(hangmanchosenword))
 				msg = msg_start + content
-				yield from client.send_message(message.channel, msg)
+				await client.send_message(message.channel, msg)
 
 				if algeraden:
 					hangmanactive = False
 					content = 'You guessed the word correctly! You made {} mistakes in total.'.format(hangmantotalattempts-hangmanattempts)
 					msg = msg_start + content
-					yield from client.send_message(message.channel, msg)
+					await client.send_message(message.channel, msg)
 					return
 			else:
 				# Set the guessed letter correctly, and it has to be a letter
@@ -299,12 +300,12 @@ def on_message(message):
 					hangmanactive = False
 					content = '**{}** is incorrect! Game over. The word was: **{}**'.format(hangmanguessed.upper(), hangmanchosenword)
 					msg = msg_start + content
-					yield from client.send_message(message.channel, msg)
+					await client.send_message(message.channel, msg)
 					return
 				else:
 					content = '**{}** is incorrect! {} attempts left.\n{}'.format(hangmanguessed.upper(), hangmanattempts, hangmanworddisp(hangmanchosenword))
 					msg = msg_start + content
-					yield from client.send_message(message.channel, msg)
+					await client.send_message(message.channel, msg)
 					return
 		else:
 			# We're guessing the entire word. Well, is it the word?
@@ -312,18 +313,18 @@ def on_message(message):
 				hangmanactive = False
 				content = 'You guessed the word ({}) correctly! You made {} mistakes in total.'.format(hangmanchosenword, hangmantotalattempts-hangmanattempts)
 				msg = msg_start + content
-				yield from client.send_message(message.channel, msg)
+				await client.send_message(message.channel, msg)
 				return
 			elif len(hangmanguessed) != len(hangmanchosenword):
 				# We're not even trying. It's not the same length.
 				if len(hangmanguessed) == 0: # if before was "not even trying", this is -1 trying
 					content = 'You should probably enter in a letter.'
 					msg = msg_start + content
-					yield from client.send_message(message.channel, msg)
+					await client.send_message(message.channel, msg)
 					return
 				content = '**``{}``** isn’t even the same length as the correct word. Please try again.'.format(mdspecialchars(hangmanguessed))
 				msg = msg_start + content
-				yield from client.send_message(message.channel, msg)
+				await client.send_message(message.channel, msg)
 				return
 			else:
 				hangmanattempts -= 1
@@ -332,12 +333,12 @@ def on_message(message):
 					hangmanactive = False
 					msg = msg_start + content
 					content = '**{}** is not the word! Game over. The word was: **{}**'.format(hangmanguessed, hangmanchosenword)
-					yield from client.send_message(message.channel, msg)
+					await client.send_message(message.channel, msg)
 					return
 				else:
 					content = '**{}** is not the word! {} attempts left.\n{}'.format(hangmanguessed, hangmanattempts, hangmanworddisp(hangmanchosenword))
 					msg = msg_start + content
-					yield from client.send_message(message.channel, msg)
+					await client.send_message(message.channel, msg)
 					return
 
 		return # make sure it always returns
@@ -392,32 +393,32 @@ def on_message(message):
 
 			if not matched:
 				content = 'Invalid arguments passed. Input `\help` for a list of valid commands to pass as arguments.'
-		yield from reply(message, content)
+		await reply(message, content)
 	elif command == 'restart':
 		if message.author.id != '146814960574398464' and message.author.id != '159793749604433921':
 			content = t['op_only']
 			print('[info] bot restart tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 		content = 'Restarting.'
 		print('[info] bot restart called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-		yield from reply(message, content)
-		yield from os.execl(__file__, '')
+		await reply(message, content)
+		await os.execl(__file__, '')
 	elif command == 'kill':
 		if message.author.id != '146814960574398464' and message.author.id != '159793749604433921':
 			content = t['op_only']
 			print('[info] bot kill tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 		content = 'Killing.'
 		print('[info] bot kill called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-		yield from reply(message, content)
-		yield from sys.exit()
+		await reply(message, content)
+		await sys.exit()
 	elif command == 'echo':
 		if arguments == None:
 			arguments = ''
 		displayarguments = (arguments[:1769]) if len(arguments) > 1769 else arguments
-		yield from reply(message, displayarguments)
+		await reply(message, displayarguments)
 	elif command == '':
 		content = (
 			'<@{}>\n'
@@ -452,27 +453,27 @@ def on_message(message):
 			'ShinyWolf07: sigh\n'
 			'Luigi: 10/10 would watch again```\n'
 			).format(message.author.id)
-		yield from reply(message, content)
+		await reply(message, content)
 	elif command == 'hangman':
 		if hangmanactive:
 			content = 'ERROR: Hangman is already running. It can be aborted by the starter or by a mod with `\stophangman`.'
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 		if not isprivatemessage(message.server):
 			content = 'For now, this can only be run via DM.'
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 		if arguments == None:
 			content = 'Please specify a word.'
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 		if not arguments.isalpha():
 			content = 'ERROR: Words can only consist of letters A-Z'
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 		if len(arguments) > 50:
 			content = 'ERROR: Sorry, but your word is too long. It can be 50 characters max.'
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 
 		hangmanchosenword = arguments
@@ -484,31 +485,31 @@ def on_message(message):
 		msg_start = '**`>`**``{}``**`$`**``{}``\n'.format(mdspecialchars(message.author.name), mdspecialchars(command.split(' ')[0])) # you will never have mod/admin perms in private messages (probably), where the hangman will be started from, so for now theres no mod/admin check to make the input display different
 		content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "{}" followed by the letter (for example {}a) or the word. {} attempts left.\n{}'.format(hangmanstarter.id, hangmaninvoker, hangmaninvoker, hangmanattempts, hangmanworddisp(hangmanchosenword))
 		msg = msg_start + content
-		yield from client.send_message(botschannel, msg)
+		await client.send_message(botschannel, msg)
 
 		content = 'https://discord.gg/6e3KcEv'
-		yield from reply(message, content)
+		await reply(message, content)
 	elif command == 'stophangman':
 		if not hangmanactive:
 			content = 'ERROR: Can’t abort hangman because it’s not running.'
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 		elif not is_mod(message.author) and message.author.id != hangmanstarter.id:
 			content = 'ERROR: Can’t abort hangman because you haven’t started this game.'
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 
 		hangmanactive = False
 		content = 'Game of hangman aborted. The word was: **{}**'.format(hangmanchosenword)
-		yield from client.send_message(botschannel, content)
+		await client.send_message(botschannel, content)
 	elif command == 'source':
 		content = 'Source code to the bot: __https://gitgud.io/infoteddy/bracketed_backslash__'
-		yield from reply(message, content)
+		await reply(message, content)
 	elif command == 'findu' or command == 'findup':
 		targetmember = get_member_input(message.server, arguments)
 		if targetmember == None:
 			content = 'Unable to find that member. ' + t['specify_user']
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 		if targetmember.nick == None:
 			displaynick = '**`No Nickname`**'
@@ -565,43 +566,43 @@ def on_message(message):
 			targetmember.default_avatar,
 			targetmember.avatar_url,
 		)
-		yield from reply(message, content)
+		await reply(message, content)
 	elif command == 'softban':
 		if not is_mod(message.author):
 			content = t['mod_only']
 			print('[info] softban attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
 			content = t['production_only']
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 
 		try:
 			targetmember = get_member_input(message.server, arguments)
-			yield from client.remove_roles(targetmember,
+			await client.remove_roles(targetmember,
 				discord.utils.get(message.server.roles, id='173240966575161344'), # nonsense-only
 				discord.utils.get(message.server.roles, id='216647716531339264'), # no general mentions
 				discord.utils.get(message.server.roles, id='222046096216686592'), # no cedule
 				discord.utils.get(message.server.roles, id='215954720555139073'), # no tts
 			)
-			yield from client.add_roles(targetmember, discord.utils.get(message.server.roles, id='220643748508467220')) # The banned role
+			await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='220643748508467220')) # The banned role
 		except(AttributeError,TypeError):
 			content = t['specify_user']
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 
 		content = ':no_entry: <@{}> has been softbanned.'.format(targetmember.id)
-		yield from reply(message, content)
+		await reply(message, content)
 	elif command == 'nononly' or command == 'nogenmen' or command == 'nocedule' or command == 'notts':
 		if not is_mod(message.author):
 			content = t['mod_only']
 			print('[info] {} attempted by {}#{} (uuid {}) at {} utc but failed'.format(command, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
 			content = t['production_only']
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 		roletoadd = {
 			'nononly': '173240966575161344',
@@ -617,48 +618,48 @@ def on_message(message):
 		}
 		try:
 			targetmember = get_member_input(message.server, arguments)
-			yield from client.add_roles(targetmember, discord.utils.get(message.server.roles, id=roletoadd[command]))
+			await client.add_roles(targetmember, discord.utils.get(message.server.roles, id=roletoadd[command]))
 		except(AttributeError,TypeError):
 			content = t['specify_user']
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 		content = 'Gave <@{}> the {} role.'.format(targetmember.id, rolelabel[command])
-		yield from reply(message, content)
+		await reply(message, content)
 	elif command == 'nonick':
 		if not is_mod(message.author):
 			content = t['mod_only']
 			print('[info] nonick attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
 			content = t['production_only']
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 		try:
 			targetmember = get_member_input(message.server, arguments)
-			yield from client.add_roles(targetmember, discord.utils.get(message.server.roles, id='236925451216355338'))
-			yield from client.remove_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
+			await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='236925451216355338'))
+			await client.remove_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
 		except(AttributeError,TypeError):
 			content = t['specify_user']
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 		content = 'Gave <@{}> the tOLPer who can’t change nickname role, and removed the tOLPer role from them.'.format(targetmember.id)
-		yield from reply(message, content)
+		await reply(message, content)
 		return
 	elif command == 'rolerst':
 		if not is_mod(message.author):
 			content = t['mod_only']
 			print('[info] rolerst attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
 			content = t['production_only']
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 
 		try:
 			targetmember = get_member_input(message.server, arguments)
-			yield from client.remove_roles(targetmember,
+			await client.remove_roles(targetmember,
 				discord.utils.get(message.server.roles, id='173240966575161344'), # nonsense-only
 				discord.utils.get(message.server.roles, id='216647716531339264'), # no general mentions
 				discord.utils.get(message.server.roles, id='222046096216686592'), # no cedule
@@ -667,13 +668,13 @@ def on_message(message):
 				discord.utils.get(message.server.roles, id='236925451216355338'), # tolper who cant change nickname
 			)
 			if not is_bot(targetmember):
-				yield from client.add_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
+				await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
 		except(AttributeError,TypeError):
 			content = t['specify_user']
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 		content = 'Reset roles for <@{}> back to normal.'.format(targetmember.id)
-		yield from reply(message, content)
+		await reply(message, content)
 	elif command == 'info':
 		persontocheck = get_member_input(message.server, arguments)
 		yesperm = ':ballot_box_with_check:'
@@ -682,7 +683,7 @@ def on_message(message):
 			perms = discord.Channel.permissions_for(message.channel, persontocheck)
 		except AttributeError:
 			content = t['specify_user']
-			yield from reply(message, content)
+			await reply(message, content)
 			return
 		content = ( # i wonder if this parenthesis is important
 				'Permissions for **``{}``**`#{}` in <#{}>:\n'
@@ -744,50 +745,50 @@ def on_message(message):
 					speak = yesperm if perms.speak else noperm,
 					connect = yesperm if perms.connect else noperm,
 				)
-		yield from reply(message, content)
+		await reply(message, content)
 	elif command == 'teddy':
 		content = 'xd'
-		yield from reply(message, content)
+		await reply(message, content)
 	elif command == 'samar':
 		content = 'Why does he like Undertale?'
-		yield from reply(message, content)
+		await reply(message, content)
 	elif command == 'lui':
 		content = 'i think /r/undertale is a pretty cool guy, eh deletes messages and doesnt afraid of lying'
-		yield from reply(message, content)
+		await reply(message, content)
 	elif command == 'shiny':
 		content = 'moar liek shittykitty amirite'
-		yield from reply(message, content)
+		await reply(message, content)
 	elif command == 'tainy':
 		rngint = random.randint(0,1)
 		if rngint == 0:
 			content = 'moar liek stainy amirite'
 		else:
 			content = 'moar like painy amirite'
-		yield from reply(message, content)
+		await reply(message, content)
 	elif command == 'kys':
 		content = 'nah'
-		yield from reply(message, content)
+		await reply(message, content)
 	elif command == 'botok':
 		content = 'Bot is okay.'
-		yield from reply(message, content)
+		await reply(message, content)
 	elif command == 'uptime':
 		content = 'Boot time:       `{}`\nCurrent time: `{}`'.format(boottime, time.strftime(timeformat))
-		yield from reply(message, content)
+		await reply(message, content)
 	elif command == '*formatting*':
 		content = 'That’s italicized formatting.'
-		yield from reply(message, content)
+		await reply(message, content)
 	elif command == '/r/undertale':
 		content = 'They banned someone for posting an honest review of Undertale. Seriously, don’t go there if you don’t want to be censored.'
-		yield from reply(message, content)
+		await reply(message, content)
 	else:
 		if altinvokeractive:
 			return # do not print error message if command is invalid
 		else:
 			content = 'Invalid command. Input `\help` for a list of valid commands.'
-			yield from reply(message, content)
+			await reply(message, content)
 
 @client.async_event
-def on_message_delete(message): # when a message gets deleted
+async def on_message_delete(message): # when a message gets deleted
 	if message.author == client.user: # is the deleted message originally sent by the bot
 		print('bot message {} by user {}#{} ({}) in channel {} ({}) at {} utc deleted, original content is \n{}'.format(message.id, message.author.name, message.author.discriminator, message.author.id, message.channel.id, message.channel.name, message.timestamp, message.content))
 		return
@@ -807,26 +808,26 @@ def on_message_delete(message): # when a message gets deleted
 		msg1 = content1
 		msg2 = msg_start + content2
 		if message.server.id != productionserver:
-			yield from client.send_message(message.channel, msg1)
-			yield from client.send_message(message.channel, msg2)
+			await client.send_message(message.channel, msg1)
+			await client.send_message(message.channel, msg2)
 		else:
-			yield from client.send_message(specialchannel, msg1)
-			yield from client.send_message(specialchannel, msg2)
+			await client.send_message(specialchannel, msg1)
+			await client.send_message(specialchannel, msg2)
 	else:
 		if message.server.id != productionserver:
-			yield from client.send_message(message.channel, msg)
+			await client.send_message(message.channel, msg)
 		else:
-			yield from client.send_message(specialchannel, msg)
+			await client.send_message(specialchannel, msg)
 	if message.attachments != []:
 		content = '_`The original attachment is:`_\n' + str(message.attachments)
 		msg = msg_start + content
 		if message.server.id != productionserver:
-			yield from client.send_message(message.channel, msg)
+			await client.send_message(message.channel, msg)
 		else:
-			yield from client.send_message(specialchannel, msg)
+			await client.send_message(specialchannel, msg)
 
 @client.async_event
-def on_message_edit(before, after): # when a message gets edited
+async def on_message_edit(before, after): # when a message gets edited
 	# preliminary checkings
 	if before.content == after.content:
 		return # must be the message being pinned and/or embed(s) displaying
@@ -848,16 +849,16 @@ def on_message_edit(before, after): # when a message gets edited
 		msg1 = content1
 		msg2 = msg_start + content2
 		if before.server.id != productionserver:
-			yield from client.send_message(before.channel, msg1)
-			yield from client.send_message(before.channel, msg2)
+			await client.send_message(before.channel, msg1)
+			await client.send_message(before.channel, msg2)
 		else:
-			yield from client.send_message(specialchannel, msg1)
-			yield from client.send_message(specialchannel, msg2)
+			await client.send_message(specialchannel, msg1)
+			await client.send_message(specialchannel, msg2)
 	else:
 		if before.server.id != productionserver:
-			yield from client.send_message(before.channel, msg)
+			await client.send_message(before.channel, msg)
 		else:
-			yield from client.send_message(specialchannel, msg)
+			await client.send_message(specialchannel, msg)
 	msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC edited`\n'.format(after.id, mdspecialchars(after.author.name), after.author.discriminator, after.author.id, after.channel.id, after.timestamp)
 	content = '_`The newer content is:`_\n' + after.content
 	msg = msg_start + content
@@ -872,19 +873,19 @@ def on_message_edit(before, after): # when a message gets edited
 		msg1 = content1
 		msg2 = msg_start + content2
 		if after.server.id != productionserver:
-			yield from client.send_message(after.channel, msg1)
-			yield from client.send_message(after.channel, msg2)
+			await client.send_message(after.channel, msg1)
+			await client.send_message(after.channel, msg2)
 		else:
-			yield from client.send_message(specialchannel, msg1)
-			yield from client.send_message(specialchannel, msg2)
+			await client.send_message(specialchannel, msg1)
+			await client.send_message(specialchannel, msg2)
 	else:
 		if after.server.id != productionserver:
-			yield from client.send_message(after.channel, msg)
+			await client.send_message(after.channel, msg)
 		else:
-			yield from client.send_message(specialchannel, msg)
+			await client.send_message(specialchannel, msg)
 
 @client.async_event
-def on_member_update(before, after):
+async def on_member_update(before, after):
 	if before.nick != after.nick:
 		msg_start = '**`>`**:regional_indicator_n::pager:`user` **``{}``**`#{}` `({}) changed nickname`\n'.format(mdspecialchars(before.name), before.discriminator, before.id)
 		if before.nick == None:
@@ -893,9 +894,9 @@ def on_member_update(before, after):
 			content = '_`The older nickname is:`_\n``{}``'.format(mdspecialchars(before.nick))
 		msg = msg_start + content
 		if before.server.id != productionserver:
-			yield from client.send_message(before.server.default_channel, msg)
+			await client.send_message(before.server.default_channel, msg)
 		else:
-			yield from client.send_message(specialchannel, msg)
+			await client.send_message(specialchannel, msg)
 		msg_start = '**`>`**`user` **``{}``**`#{}` `({}) changed nickname`\n'.format(after.name, after.discriminator, after.id)
 		if after.nick == None:
 			content = '_`The newer nickname is:`_ `(none)`'
@@ -903,64 +904,64 @@ def on_member_update(before, after):
 			content = '_`The newer nickname is:`_\n``{}``'.format(mdspecialchars(after.nick))
 		msg = msg_start + content
 		if after.server.id != productionserver:
-			yield from client.send_message(after.server.default_channel, msg)
+			await client.send_message(after.server.default_channel, msg)
 		else:
-			yield from client.send_message(specialchannel, msg)
+			await client.send_message(specialchannel, msg)
 	if before.roles != after.roles:
 		if len(before.roles) > len(after.roles): # if a role has been removed
 			roleremoved = list(set(before.roles).symmetric_difference(set(after.roles)))[0]
 			msg_start = '**`>`**`user` **``{}``**`#{}` `({}) has role {} ({}) removed`'.format(mdspecialchars(before.name), before.discriminator, before.id, roleremoved.name, roleremoved.id)
 			if before.server.id != productionserver:
-				yield from client.send_message(before.server.default_channel, msg_start)
+				await client.send_message(before.server.default_channel, msg_start)
 			else:
-				yield from client.send_message(specialchannel, msg_start)
+				await client.send_message(specialchannel, msg_start)
 		if len(before.roles) < len(after.roles): # if a role has been added
 			roleadded = list(set(after.roles).symmetric_difference(set(before.roles)))[0]
 			msg_start = '**`>`**`user` **``{}``**`#{}` `({}) has role {} ({}) added`'.format(after.name, after.discriminator, after.id, roleadded.name, roleadded.id)
 			if after.server.id != productionserver:
-				yield from client.send_message(after.server.default_channel, msg_start)
+				await client.send_message(after.server.default_channel, msg_start)
 			else:
-				yield from client.send_message(specialchannel, msg_start)
+				await client.send_message(specialchannel, msg_start)
 	if before.name != after.name:
 		msg_start = '**`>`**:regional_indicator_u::pager:`user {} changed username`\n'.format(before.id)
 		content = '_`The older username is:`_\n**``{}``**\n_`The older discriminator is:`_ `#{}`'.format(mdspecialchars(before.name), before.discriminator)
 		msg = msg_start + content
 		if before.server.id != productionserver:
-			yield from client.send_message(before.server.default_channel, msg)
+			await client.send_message(before.server.default_channel, msg)
 		else:
-			yield from client.send_message(specialchannel, msg)
+			await client.send_message(specialchannel, msg)
 		msg_start = '**`>`**`user {} changed username`\n'.format(after.id)
 		content = '_`The newer username is:`_\n**``{}``**\n_`The newer discriminator is:`_ `#{}`'.format(mdspecialchars(after.name), after.discriminator)
 		msg = msg_start + content
 		if after.server.id != productionserver:
-			yield from client.send_message(after.server.default_channel, msg)
+			await client.send_message(after.server.default_channel, msg)
 		else:
-			yield from client.send_message(specialchannel, msg)
+			await client.send_message(specialchannel, msg)
 	if before.avatar_url != after.avatar_url and before.id != '141769689406636032' and before.id != '88575421972516864' and before.id != '196574963673595904': # isn't 35, 42 or beta 42
 		msg_start = '**`>`**:busts_in_silhouette:`user` **``{}``**`#{}` `({}) changed avatar`\n'.format(mdspecialchars(before.name), before.discriminator, before.id)
 		content = '_`The older avatar URL is:`_ ' + before.avatar_url
 		msg = msg_start + content
 		if before.server.id != productionserver:
-			yield from client.send_message(before.server.default_channel, msg)
+			await client.send_message(before.server.default_channel, msg)
 		else:
-			yield from client.send_message(specialchannel, msg)
+			await client.send_message(specialchannel, msg)
 		msg_start = '**`>`**`user` **``{}``**`#{}` `changed avatar`\n'.format(mdspecialchars(after.name), after.discriminator, after.id)
 		content = '_`The newer avatar URL is:`_ ' + after.avatar_url
 		msg = msg_start + content
 		if after.server.id != productionserver:
-			yield from client.send_message(after.server.default_channel, msg)
+			await client.send_message(after.server.default_channel, msg)
 		else:
-			yield from client.send_message(specialchannel, msg)
+			await client.send_message(specialchannel, msg)
 
 @client.async_event
-def on_member_join(member):
+async def on_member_join(member):
 	msg = '**`>`**:arrow_right:`user` **``{}``**`#{}` `({}) joined server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	if member.server.id != productionserver:
-		yield from client.send_message(member.server.default_channel, msg)
+		await client.send_message(member.server.default_channel, msg)
 	else:
-		yield from client.send_message(specialchannel, msg)
+		await client.send_message(specialchannel, msg)
 		if is_bot(member):
-			yield from client.add_roles(member, discord.utils.get(member.server.roles, id='201129507967598592')) # bot role
+			await client.add_roles(member, discord.utils.get(member.server.roles, id='201129507967598592')) # bot role
 			return
 		# TODO: Look up that member in our database, to see if this user should get a restrictive group again.
 		# If someone is just a tOLPer, they won't be in the database.
@@ -969,40 +970,40 @@ def on_member_join(member):
 			pass
 		else:
 			# Not found, so they're just a tOLPer.
-			yield from client.add_roles(member, discord.utils.get(member.server.roles, id='231644869351833600')) # The tOLPer role
+			await client.add_roles(member, discord.utils.get(member.server.roles, id='231644869351833600')) # The tOLPer role
 
 @client.async_event
-def on_member_remove(member):
+async def on_member_remove(member):
 	msg = '**`>`**:door:`user` **``{}``**`#{}` `({}) removed from server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	if member.server.id != productionserver:
-		yield from client.send_message(member.server.default_channel, msg)
+		await client.send_message(member.server.default_channel, msg)
 	else:
-		yield from client.send_message(specialchannel, msg)
+		await client.send_message(specialchannel, msg)
 
 @client.async_event
-def on_member_ban(member):
+async def on_member_ban(member):
 	msg = '**`>`**:mans_shoe::door::no_entry:`user` **``{}``**`#{}` `({}) banned from server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	if member.server.id != productionserver:
-		yield from client.send_message(member.server.default_channel, msg)
+		await client.send_message(member.server.default_channel, msg)
 	else:
-		yield from client.send_message(specialchannel, msg)
+		await client.send_message(specialchannel, msg)
 
 @client.async_event
-def on_member_unban(server, user):
+async def on_member_unban(server, user):
 	msg = '**`>`**<:doormat:239361673532669953>`user` **``{}``**`#{}` `({}) unbanned from server {} ({})`'.format(mdspecialchars(user.name), user.discriminator, user.id, server.name, server.id)
 	if server.id != productionserver:
-		yield from client.send_message(server.default_channel, msg)
+		await client.send_message(server.default_channel, msg)
 	else:
-		yield from client.send_message(specialchannel, msg)
+		await client.send_message(specialchannel, msg)
 
 @client.async_event
-def on_typing(channel, user, when):
+async def on_typing(channel, user, when):
 	if str(user.status) == 'offline':
 		msg = '**`>`**:ghost:`user` **``{}``**`#{}` `({}) was invisible while typing in channel` <#{}> `at {}`'.format(mdspecialchars(user.name), user.discriminator, user.id, channel.id, when)
 		if user.server.id != productionserver:
-			yield from client.send_message(channel, msg)
+			await client.send_message(channel, msg)
 		else:
-			yield from client.send_message(specialchannel, msg)
+			await client.send_message(specialchannel, msg)
 	else:
 		return # practically unnecessary, but this is for if we want to do things when members type later
 
@@ -1106,9 +1107,9 @@ def get_member_input(server, input):
 	return targetmember
 
 @client.async_event
-def reply(messageobject, message):
+async def reply(messageobject, message):
 	# Removes the need for adding msg_start manually every time
-	yield from client.send_message(messageobject.channel, msg_start + message)
+	await client.send_message(messageobject.channel, msg_start + message)
 
 def mdspecialchars(string):
 	return string.replace('`', u'​`​')
