@@ -1,5 +1,7 @@
 # Contributing
 Just make sure your code is worth its merit.
+## General
+Please don't push your changes to the `master` branch, unless you know what you are doing! Use the `untested` branch instead.
 ## Code Style
 - tabs instead of spaces with a tabstop of eight.
 - no trailing whitespace
