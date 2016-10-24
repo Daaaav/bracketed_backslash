@@ -346,10 +346,10 @@ def on_message(message):
 	if not isprivate and not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver and not (is_dev(message.author) and message.channel.id == '238423391571279872'):
 		return
 	try:
-		arguments = command.split (' ', 1)[1]
+		arguments = command.split(' ', 1)[1]
 	except IndexError:
 		arguments = None
-	command = command.split (' ', 1)[0]
+	command = command.split(' ', 1)[0]
 	if command == 'help':
 		content = (
 			'`[\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server.\n'
@@ -383,7 +383,7 @@ def on_message(message):
 	elif command == 'restart':
 		if message.author.id != '146814960574398464' and message.author.id != '159793749604433921':
 			content = t['op_only']
-			print ('[info] bot restart tried to be called by {}#{} (uuid {}) at {} utc but failed'.format (message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			print('[info] bot restart tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			yield from reply(message, content)
 			return
 		content = 'Restarting.'
@@ -393,11 +393,11 @@ def on_message(message):
 	elif command == 'kill':
 		if message.author.id != '146814960574398464' and message.author.id != '159793749604433921':
 			content = t['op_only']
-			print('[info] bot kill tried to be called by {}#{} (uuid {}) at {} utc but failed'.format (message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			print('[info] bot kill tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			yield from reply(message, content)
 			return
 		content = 'Killing.'
-		print('[info] bot kill called by {}#{} (uuid {}) at {} utc'.format (message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+		print('[info] bot kill called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 		yield from reply(message, content)
 		yield from sys.exit()
 	elif command == 'echo':
@@ -818,7 +818,7 @@ def on_message_edit(before, after): # when a message gets edited
 	if before.content == after.content:
 		return # must be the message being pinned and/or embed(s) displaying
 	if before.author == client.user or after.author == client.user: # the bot doesnt edits its own messages, so throw a warning
-		warnings.warn('this is the bots own message and the bot doesnt edit messages\nid of before: {}\nid of after: {}'.format (before.id, after.id))
+		warnings.warn('this is the bots own message and the bot doesnt edit messages\nid of before: {}\nid of after: {}'.format(before.id, after.id))
 		return
 	# checks succeeded
 	msg_start = '**`>`**:pencil:`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC edited`\n'.format(before.id, mdspecialchars(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp)
@@ -829,7 +829,7 @@ def on_message_edit(before, after): # when a message gets edited
 		msg = msg_start + content
 		msg_split = [msg[i:i+2000] for i in range(0, len(msg), 2000)]
 		if len(msg_split [0]) >= 2000:
-			msg_split = [msg[i:i+2000] for i in range (0, len(msg), 2000)]
+			msg_split = [msg[i:i+2000] for i in range(0, len(msg), 2000)]
 		content1 = msg_split[0]
 		content2 = '_`The older content is (part 2):`_\n' + msg_split[1]
 		msg1 = content1
@@ -853,7 +853,7 @@ def on_message_edit(before, after): # when a message gets edited
 		msg = msg_start + content
 		msg_split = [msg[i:i+2000] for i in range(0, len(msg), 2000)]
 		if len(msg_split[0]) >= 2000:
-			msg_split = [msg[i:i+2000] for i in range (0, len(msg), 2000)]
+			msg_split = [msg[i:i+2000] for i in range(0, len(msg), 2000)]
 		content1 = msg_split [0]
 		content2 = '_`The newer content is (part 2):`_\n' + msg_split[1]
 		msg1 = content1
@@ -1144,4 +1144,4 @@ def hangmanworddisp(theword):
 
 	return theoutput
 
-client.run (token)
+client.run(token)
