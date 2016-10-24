@@ -249,6 +249,13 @@ async def on_message(message):
 		pass
 	else:
 		return
+
+	if isprivate:
+		invokesymbol = 'P'
+	elif is_mod(message.author):
+		invokesymbol = '#'
+	else:
+		invokesymbol = '$'
 	if hangmaninvokeractive:
 		if not hangmanactive:
 			return
@@ -288,8 +295,7 @@ async def on_message(message):
 				if algeraden:
 					hangmanactive = False
 					content = 'You guessed the word correctly! You made {} mistakes in total.'.format(hangmantotalattempts-hangmanattempts)
-					msg = msg_start + content
-					await client.send_message(message.channel, msg)
+					await client.send_message(message.channel, content)
 					return
 			else:
 				# Set the guessed letter correctly, and it has to be a letter
@@ -345,16 +351,10 @@ async def on_message(message):
 
 	elif altinvokeractive:
 		command = message.content.split(altinvoker, 1)[1]
-		if is_mod(message.author):
-			msg_start = '**`>`**``{}``**`#`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
-		else:
-			msg_start = '**`>`**``{}``**`$`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent) # shows what the user put in, without main invoker
+			msg_start = '**`>`**``{}``**`{}`**{}\n'.format(mdspecialchars(message.author.name), invokesymbol, displaymessagecontent) # shows what the user put in, without main invoker
 	else:
 		command = message.content.split(invoker, 1)[1] # removes invoker from the message
-		if is_mod(message.author):
-			msg_start = '**`>`**``{}``**`#`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
-		else:
-			msg_start = '**`>`**``{}``**`$`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent) # shows what the user put in
+			msg_start = '**`>`**``{}``**`{}`**{}\n'.format(mdspecialchars(message.author.name), invokesymbol, displaymessagecontent) # shows what the user put in
 
 	# Prevent access to those who aren't supposed to send messages
 	if not isprivate and not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver and not (is_dev(message.author) and message.channel.id == '238423391571279872'):
@@ -482,7 +482,7 @@ async def on_message(message):
 		hangmanactive = True
 		hangmanstarter = message.author
 		guessedletters = [False]*26
-		msg_start = '**`>`**``{}``**`$`**``{}``\n'.format(mdspecialchars(message.author.name), mdspecialchars(command.split(' ')[0])) # you will never have mod/admin perms in private messages (probably), where the hangman will be started from, so for now theres no mod/admin check to make the input display different
+		msg_start = '**`>`**``{}``**`{}`**``{} {}``\n'.format(mdspecialchars(message.author.name), invokesymbol, mdspecialchars(command.split(' ')[0]), '*'*len(hangmanchosenword)) # you will never have mod/admin perms in private messages (probably), where the hangman will be started from, so for now theres no mod/admin check to make the input display different
 		content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "{}" followed by the letter (for example {}a) or the word. {} attempts left.\n{}'.format(hangmanstarter.id, hangmaninvoker, hangmaninvoker, hangmanattempts, hangmanworddisp(hangmanchosenword))
 		msg = msg_start + content
 		await client.send_message(botschannel, msg)
