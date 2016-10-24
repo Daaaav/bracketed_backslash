@@ -1,7 +1,13 @@
 # Contributing
 Just make sure your code is worth its merit.
 ## General
-Please don't push your changes to the `master` branch, unless you know what you are doing! Use the `untested` branch instead.
+Please don't push your changes to the `master` branch, unless you know what you
+are doing! Use the `untested` branch instead. Or you can create your own
+branch.
+## Documentation Style
+Make sure each line doesn’t exceed eighty characters, for maintainability.
+Markdown will concatenate each “block” of text not separated by a blank line
+into one big line, anyways.
 ## Code Style
 - tabs instead of spaces with a tabstop of eight.
 - no trailing whitespace
