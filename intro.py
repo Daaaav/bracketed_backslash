@@ -149,6 +149,10 @@ cmds = [
 				'short': 'Gives a user the `No TTS` role.',
 				'extra': t['accepts_user']
 			},
+			'noreact': {
+				'short': 'Gives a user the `No Reactions` role.',
+				'extra': t['accepts_user']
+			},
 			'nonick': {
 				'short': 'Removes from a user the `tOLPer` role, and gives them the `tOLPer who can’t change nickname` role.',
 				'extra': t['accepts_user']
@@ -596,7 +600,7 @@ async def on_message(message):
 
 		content = ':no_entry: <@{}> has been softbanned.'.format(targetmember.id)
 		await reply(message, content)
-	elif command == 'nononly' or command == 'nogenmen' or command == 'nocedule' or command == 'notts':
+	elif command == 'nononly' or command == 'nogenmen' or command == 'nocedule' or command == 'notts' or command == 'noreact':
 		if not is_mod(message.author):
 			content = t['mod_only']
 			print('[info] {} attempted by {}#{} (uuid {}) at {} utc but failed'.format(command, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
@@ -610,13 +614,15 @@ async def on_message(message):
 			'nononly': '173240966575161344',
 			'nogenmen': '216647716531339264',
 			'nocedule': '222046096216686592',
-			'notts': '215954720555139073'
+			'notts': '215954720555139073',
+			'noreact': '241183168269516800',
 		}
 		rolelabel = {
 			'nononly': 'Nonsense-Only',
 			'nogenmen': 'No General Mentions',
 			'nocedule': 'No Custom Emotes/Direct Uploads/Link Embeds',
-			'notts': 'No TTS'
+			'notts': 'No TTS',
+			'noreact': 'No Reactions',
 		}
 		try:
 			targetmember = get_member_input(message.server, arguments)
