@@ -188,7 +188,7 @@ cmds = [
 meme_cmds = [
 	{
 		'cat_name': 'Meme Commands',
-		'commands': {
+		'commands': [
 			{
 				'name': '',
 				'short': 'Mentions you.',
@@ -234,7 +234,7 @@ meme_cmds = [
 				'short': 'This is going to give my bot cancer.',
 				'extra': t['its_meme']
 			},
-		}
+		]
 	}
 ]
 
