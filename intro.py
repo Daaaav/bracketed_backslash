@@ -70,98 +70,118 @@ t = {
 cmds = [
 	{
 		'cat_name': 'General Commands',
-		'commands': {
-			'help': {
+		'commands': [
+			{
+				'name': 'help',
 				'short': 'Lists commands and their descriptions.',
 				'extra': 'Any arguments passed to `\help` will make `\help` try to look up more in-depth description of the command.'
 			},
-			'source': {
+			{
+				'name': 'source',
 				'short': 'Gives the link to the source code to the bot.',
 				'extra': 'It’s hosted on __https://gitgud.io/__.'
 			},
-			'echo': {
+			{
+				'name': 'echo',
 				'short': 'Echoes your input.',
 				'extra': 'Now, you could say that the bot echoed your input already, but it’s still better to have a dedicated echo command.'
 			},
-			'info': {
+			{
+				'name': 'info',
 				'short': 'Gives information about a user.',
 				'extra': ''
 			},
-			'findu': {
+			{
+				'name': 'findu',
 				'short': 'Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever.',
 				'extrafull': 'Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator.'
 			},
-			'findup': {
+			{
+				'name': 'findup',
 				'short': 'Same as `\\findu`, but also pings the user.',
 				'extrafull': 'Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator. Warning: This pings the user.'
 			},
-			'hangman': {
+			{
+				'name': 'hangman',
 				'short': 'Initiate a game of hangman. Send via private message with a custom word. Use `\stophangman` to stop.',
 				'extra': 'Ported from DavBot!'
 			},
-			'stophangman': {
+			{
+				'name': 'stophangman',
 				'short': 'Stop the current game of hangman.',
 				'extra': 'Can only be done by the one who started the game or a moderator.'
 			},
-		}
+		]
 	},
 	{
 		'cat_name': 'Bot Commands',
-		'commands': {
-			'botok': {
+		'commands': [
+			{
+				'name': 'botok',
 				'short': 'Pings the bot.',
 				'extra': 'If the bot is okay, the bot will respond with “Bot is okay”.'
 			},
-			'uptime': {
+			{
+				'name': 'uptime',
 				'short': 'Prints the time the bot was booted.',
 				'extra': 'Doesn’t yet give the amount of time between the boot and now, but does give those timestamps.'
 			},
-			'restart': {
+			{
+				'name': 'restart',
 				'short': 'Restarts the bot.',
 				'extra': ''
 			},
-			'kill': {
+			{
+				'name': 'kill',
 				'short': 'Kills the bot. This method does not kill it cleanly.',
 				'extra': ''
 			},
-		}
+		]
 	},
 	{
 		'cat_name': 'Moderation Commands',
-		'commands': {
-			'softban': {
+		'commands': [
+			{
+				'name': 'softban',
 				'short': 'Gives a user the `Banned` role.',
 				'extra': t['accepts_user']
 			},
-			'nononly': {
+			{
+				'name': 'nononly',
 				'short': 'Gives a user the `Nonsense-Only` role.',
 				'extra': t['accepts_user']
 			},
-			'nogenmen': {
+			{
+				'name': 'nogenmen',
 				'short': 'Gives a user the `No General Mentions` role.',
 				'extra': t['accepts_user']
 			},
-			'nocedule': {
+			{
+				'name': 'nocedule',
 				'short': 'Gives a user the `No CE/DU/LE` role.',
 				'extra': t['accepts_user']
 			},
-			'notts': {
+			{
+				'name': 'notts',
 				'short': 'Gives a user the `No TTS` role.',
 				'extra': t['accepts_user']
 			},
-			'noreact': {
+			{
+				'name': 'noreact',
 				'short': 'Gives a user the `No Reactions` role.',
 				'extra': t['accepts_user']
 			},
-			'nonick': {
+			{
+				'name': 'nonick',
 				'short': 'Removes from a user the `tOLPer` role, and gives them the `tOLPer who can’t change nickname` role.',
 				'extra': t['accepts_user']
 			},
-			'rolerst': {
+			{
+				'name': 'rolerst',
 				'short': 'Resets the roles for a user back to the normal state.',
 				'extra': 'Removes all restrictive roles from a user, and gives back the `tOLPer` role if necessary.\n' + t['accepts_user']
 			},
-		}
+		]
 	},
 ]
 
@@ -169,39 +189,48 @@ meme_cmds = [
 	{
 		'cat_name': 'Meme Commands',
 		'commands': {
-			'': {
+			{
+				'name': '',
 				'short': 'Mentions you.',
 				'extra': 'Don’t type this command in if you don’t want to be mentioned.'
 			},
-			'teddy': {
+			{
+				'name': 'teddy',
 				'short': 'The obvious counterpart to `\info`.',
 				'extra': t['its_meme']
 			},
-			'samar': {
+			{
+				'name': 'samar',
 				'short': 'The true name.',
 				'extra': t['its_meme']
 			},
-			'lui': {
+			{
+				'name': 'lui',
 				'short': 'Obligatory “pretty cool guy” meme.',
 				'extra': t['its_meme']
 			},
-			'shiny': {
+			{
+				'name': 'shiny',
 				'short': 'He’s a shiny trinket.',
 				'extra': t['its_meme']
 			},
-			'tainy': {
+			{
+				'name': 'tainy',
 				'short': 'Unobtaining is his name.',
 				'extra': t['its_meme']
 			},
-			'kys': {
+			{
+				'name': 'kys',
 				'short': 'Will the bot listen?',
 				'extra': t['its_meme']
 			},
-			'*formatting*': {
+			{
+				'name': '*formatting*',
 				'short': 'This is an example of italicized formatting.',
 				'extra': t['its_meme']
 			},
-			'/r/undertale': {
+			{
+				'name': '/r/undertale',
 				'short': 'This is going to give my bot cancer.',
 				'extra': t['its_meme']
 			},
@@ -387,11 +416,11 @@ async def on_message(message):
 			for i in range(0,2):
 				for cat in (cmds if i == 0 else meme_cmds): # Good enough replacement to union
 					for cmd in cat['commands']: # Maybe have a nested try-except KeyError instead of looping through every command
-						if arguments == cmd:
+						if arguments == cmd['name']:
 							try:
-								content = '`\{}` – {}'.format(cmd, cat['commands'][cmd]['extrafull'])
+								content = '`\{}` – {}'.format(cmd['name'], cmd['extrafull'])
 							except KeyError:
-								content = '`\{}` – {}\n{}'.format(cmd, cat['commands'][cmd]['short'], cat['commands'][cmd]['extra'])
+								content = '`\{}` – {}\n{}'.format(cmd['name'], cmd['short'], cmd['extra'])
 							matched = True
 							break
 					if matched:
@@ -1134,7 +1163,7 @@ def helplist(cats):
 	for cat in cats:
 		returnage += '\n__`{}:`__'.format(cat['cat_name'])
 		for cmd in cat['commands']:
-			returnage += '\n`\{}` – {}'.format(cmd, cat['commands'][cmd]['short'])
+			returnage += '\n`\{}` – {}'.format(cmd['name'], cmd['short'])
 	return returnage
 
 def hangmanworddisp(theword):
