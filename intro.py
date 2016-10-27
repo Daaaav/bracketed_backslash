@@ -674,6 +674,7 @@ async def on_message(message):
 				discord.utils.get(message.server.roles, id='215954720555139073'), # no tts
 				discord.utils.get(message.server.roles, id='220643748508467220'), # banned
 				discord.utils.get(message.server.roles, id='236925451216355338'), # tolper who cant change nickname
+				discord.utils.get(message.server.roles, id='241183168269516800'), # no reactions
 			)
 			if not is_bot(targetmember):
 				await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
