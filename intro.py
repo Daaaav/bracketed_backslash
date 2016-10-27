@@ -55,7 +55,7 @@ botschannel = discord.Object(id='201130047736643584')
 productionserver = '153368829160849408'
 server = client.get_server(productionserver) # defines all server.* commands
 
-client.max_messages = 1000000
+client.max_messages = None
 
 t = {
 	'op_only': 'Permission denied. This command can only be used by Info Teddy or Dav999.',
