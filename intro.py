@@ -625,6 +625,8 @@ async def on_message(message):
 				discord.utils.get(message.server.roles, id='216647716531339264'), # no general mentions
 				discord.utils.get(message.server.roles, id='222046096216686592'), # no cedule
 				discord.utils.get(message.server.roles, id='215954720555139073'), # no tts
+				discord.utils.get(message.server.roles, id='241183168269516800'), # no reactions
+				discord.utils.get(message.server.roles, id='241612664143347712'), # voice mute
 			)
 			await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='220643748508467220')) # The banned role
 		except(AttributeError,TypeError):
