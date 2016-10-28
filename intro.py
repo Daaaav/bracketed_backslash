@@ -177,6 +177,11 @@ cmds = [
 				'extra': t['accepts_user']
 			},
 			{
+				'name': 'voicemute',
+				'short': 'Gives a user the `Voice Muted` role.',
+				'extra': t['accepts_user']
+			},
+			{
 				'name': 'rolerst',
 				'short': 'Resets the roles for a user back to the normal state.',
 				'extra': 'Removes all restrictive roles from a user, and gives back the `tOLPer` role if necessary.\n' + t['accepts_user']
@@ -629,7 +634,7 @@ async def on_message(message):
 
 		content = ':no_entry: <@{}> has been softbanned.'.format(targetmember.id)
 		await reply(message, content)
-	elif command == 'nononly' or command == 'nogenmen' or command == 'nocedule' or command == 'notts' or command == 'noreact':
+	elif command == 'nononly' or command == 'nogenmen' or command == 'nocedule' or command == 'notts' or command == 'noreact' or command == 'voicemute':
 		if not is_mod(message.author):
 			content = t['mod_only']
 			print('[info] {} attempted by {}#{} (uuid {}) at {} utc but failed'.format(command, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
@@ -645,6 +650,7 @@ async def on_message(message):
 			'nocedule': '222046096216686592',
 			'notts': '215954720555139073',
 			'noreact': '241183168269516800',
+			'voicemute': '241612664143347712',
 		}
 		rolelabel = {
 			'nononly': 'Nonsense-Only',
@@ -652,6 +658,7 @@ async def on_message(message):
 			'nocedule': 'No Custom Emotes/Direct Uploads/Link Embeds',
 			'notts': 'No TTS',
 			'noreact': 'No Reactions',
+			'voicemute': 'Voice Muted',
 		}
 		try:
 			targetmember = get_member_input(message.server, arguments)
@@ -704,6 +711,7 @@ async def on_message(message):
 				discord.utils.get(message.server.roles, id='220643748508467220'), # banned
 				discord.utils.get(message.server.roles, id='236925451216355338'), # tolper who cant change nickname
 				discord.utils.get(message.server.roles, id='241183168269516800'), # no reactions
+				discord.utils.get(message.server.roles, id='241612664143347712'), # voice muted
 			)
 			if not is_bot(targetmember):
 				await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
