@@ -866,6 +866,19 @@ async def on_message_delete(message): # when a message gets deleted
 
 @client.async_event
 async def on_message_edit(before, after): # when a message gets edited
+	if before.pinned != after.pinned:
+		if before.pinned == False and after.pinned == True: # if the message was pinned
+			msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC pinned`'.format(before.id, mdspecialchars(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp)
+			if before.server.id != productionserver:
+				await client.send_message(before.channel, msg_start)
+			else:
+				await client.send_message(specialchannel, msg_start)
+		if before.pinned == True and after.pinned == False: # if the message was unpinned
+			msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC unpinned`'.format(after.id, mdspecialchars(after.author.name), after.author.discriminator, after.author.id, after.channel.id, after.timestamp)
+			if after.server.id != productionserver:
+				await client.send_message(after.channel, msg_start)
+			else:
+				await client.send_message(specialchannel, msg_start)
 	# preliminary checkings
 	if before.content == after.content:
 		return # must be the message being pinned and/or embed(s) displaying
