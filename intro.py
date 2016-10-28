@@ -55,6 +55,8 @@ botschannel = discord.Object(id='201130047736643584')
 productionserver = '153368829160849408'
 server = client.get_server(productionserver) # defines all server.* commands
 
+client.max_messages = None
+
 t = {
 	'op_only': 'Permission denied. This command can only be used by Info Teddy or Dav999.',
 	'mod_only': 'Permission denied. This command can only be used by a moderator or administrator.',
@@ -68,138 +70,176 @@ t = {
 cmds = [
 	{
 		'cat_name': 'General Commands',
-		'commands': {
-			'help': {
+		'commands': [
+			{
+				'name': 'help',
 				'short': 'Lists commands and their descriptions.',
 				'extra': 'Any arguments passed to `\help` will make `\help` try to look up more in-depth description of the command.'
 			},
-			'source': {
+			{
+				'name': 'source',
 				'short': 'Gives the link to the source code to the bot.',
 				'extra': 'It’s hosted on __https://gitgud.io/__.'
 			},
-			'echo': {
+			{
+				'name': 'echo',
 				'short': 'Echoes your input.',
 				'extra': 'Now, you could say that the bot echoed your input already, but it’s still better to have a dedicated echo command.'
 			},
-			'info': {
+			{
+				'name': 'info',
 				'short': 'Gives information about a user.',
 				'extra': ''
 			},
-			'findu': {
+			{
+				'name': 'findu',
 				'short': 'Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever.',
 				'extrafull': 'Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator.'
 			},
-			'findup': {
+			{
+				'name': 'findup',
 				'short': 'Same as `\\findu`, but also pings the user.',
 				'extrafull': 'Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator. Warning: This pings the user.'
 			},
-			'hangman': {
+			{
+				'name': 'hangman',
 				'short': 'Initiate a game of hangman. Send via private message with a custom word. Use `\stophangman` to stop.',
 				'extra': 'Ported from DavBot!'
 			},
-			'stophangman': {
+			{
+				'name': 'stophangman',
 				'short': 'Stop the current game of hangman.',
 				'extra': 'Can only be done by the one who started the game or a moderator.'
 			},
-		}
+		]
 	},
 	{
 		'cat_name': 'Bot Commands',
-		'commands': {
-			'botok': {
+		'commands': [
+			{
+				'name': 'botok',
 				'short': 'Pings the bot.',
 				'extra': 'If the bot is okay, the bot will respond with “Bot is okay”.'
 			},
-			'uptime': {
+			{
+				'name': 'uptime',
 				'short': 'Prints the time the bot was booted.',
 				'extra': 'Doesn’t yet give the amount of time between the boot and now, but does give those timestamps.'
 			},
-			'restart': {
+			{
+				'name': 'restart',
 				'short': 'Restarts the bot.',
 				'extra': ''
 			},
-			'kill': {
+			{
+				'name': 'kill',
 				'short': 'Kills the bot. This method does not kill it cleanly.',
 				'extra': ''
 			},
-		}
+		]
 	},
 	{
 		'cat_name': 'Moderation Commands',
-		'commands': {
-			'softban': {
+		'commands': [
+			{
+				'name': 'softban',
 				'short': 'Gives a user the `Banned` role.',
 				'extra': t['accepts_user']
 			},
-			'nononly': {
+			{
+				'name': 'nononly',
 				'short': 'Gives a user the `Nonsense-Only` role.',
 				'extra': t['accepts_user']
 			},
-			'nogenmen': {
+			{
+				'name': 'nogenmen',
 				'short': 'Gives a user the `No General Mentions` role.',
 				'extra': t['accepts_user']
 			},
-			'nocedule': {
+			{
+				'name': 'nocedule',
 				'short': 'Gives a user the `No CE/DU/LE` role.',
 				'extra': t['accepts_user']
 			},
-			'notts': {
+			{
+				'name': 'notts',
 				'short': 'Gives a user the `No TTS` role.',
 				'extra': t['accepts_user']
 			},
-			'nonick': {
+			{
+				'name': 'noreact',
+				'short': 'Gives a user the `No Reactions` role.',
+				'extra': t['accepts_user']
+			},
+			{
+				'name': 'nonick',
 				'short': 'Removes from a user the `tOLPer` role, and gives them the `tOLPer who can’t change nickname` role.',
 				'extra': t['accepts_user']
 			},
-			'rolerst': {
+			{
+				'name': 'voicemute',
+				'short': 'Gives a user the `Voice Muted` role.',
+				'extra': t['accepts_user']
+			},
+			{
+				'name': 'rolerst',
 				'short': 'Resets the roles for a user back to the normal state.',
 				'extra': 'Removes all restrictive roles from a user, and gives back the `tOLPer` role if necessary.\n' + t['accepts_user']
 			},
-		}
+		]
 	},
 ]
 
 meme_cmds = [
 	{
 		'cat_name': 'Meme Commands',
-		'commands': {
-			'': {
+		'commands': [
+			{
+				'name': '',
 				'short': 'Mentions you.',
 				'extra': 'Don’t type this command in if you don’t want to be mentioned.'
 			},
-			'teddy': {
+			{
+				'name': 'teddy',
 				'short': 'The obvious counterpart to `\info`.',
 				'extra': t['its_meme']
 			},
-			'samar': {
+			{
+				'name': 'samar',
 				'short': 'The true name.',
 				'extra': t['its_meme']
 			},
-			'lui': {
+			{
+				'name': 'lui',
 				'short': 'Obligatory “pretty cool guy” meme.',
 				'extra': t['its_meme']
 			},
-			'shiny': {
+			{
+				'name': 'shiny',
 				'short': 'He’s a shiny trinket.',
 				'extra': t['its_meme']
 			},
-			'tainy': {
+			{
+				'name': 'tainy',
 				'short': 'Unobtaining is his name.',
 				'extra': t['its_meme']
 			},
-			'kys': {
+			{
+				'name': 'kys',
 				'short': 'Will the bot listen?',
 				'extra': t['its_meme']
 			},
-			'*formatting*': {
+			{
+				'name': '*formatting*',
 				'short': 'This is an example of italicized formatting.',
 				'extra': t['its_meme']
 			},
-			'/r/undertale': {
+			{
+				'name': '/r/undertale',
 				'short': 'This is going to give my bot cancer.',
 				'extra': t['its_meme']
 			},
-		}
+		]
 	}
 ]
 
@@ -251,7 +291,7 @@ async def on_message(message):
 		return
 
 	if isprivate:
-		invokesymbol = 'P'
+		invokesymbol = '@'
 	elif is_mod(message.author):
 		invokesymbol = '#'
 	else:
@@ -381,11 +421,11 @@ async def on_message(message):
 			for i in range(0,2):
 				for cat in (cmds if i == 0 else meme_cmds): # Good enough replacement to union
 					for cmd in cat['commands']: # Maybe have a nested try-except KeyError instead of looping through every command
-						if arguments == cmd:
+						if arguments == cmd['name']:
 							try:
-								content = '`\{}` – {}'.format(cmd, cat['commands'][cmd]['extrafull'])
+								content = '`\{}` – {}'.format(cmd['name'], cmd['extrafull'])
 							except KeyError:
-								content = '`\{}` – {}\n{}'.format(cmd, cat['commands'][cmd]['short'], cat['commands'][cmd]['extra'])
+								content = '`\{}` – {}\n{}'.format(cmd['name'], cmd['short'], cmd['extra'])
 							matched = True
 							break
 					if matched:
@@ -482,7 +522,7 @@ async def on_message(message):
 		hangmanactive = True
 		hangmanstarter = message.author
 		guessedletters = [False]*26
-		msg_start = '**`>`**``{}``**`{}`**``{} {}``\n'.format(mdspecialchars(message.author.name), invokesymbol, mdspecialchars(command.split(' ')[0]), '*'*len(hangmanchosenword)) # you will never have mod/admin perms in private messages (probably), where the hangman will be started from, so for now theres no mod/admin check to make the input display different
+		msg_start = '**`>`**``{}``**`{}`**``\{} {}``\n'.format(mdspecialchars(message.author.name), invokesymbol, mdspecialchars(command.split(' ')[0]), '*'*len(hangmanchosenword)) # you will never have mod/admin perms in private messages (probably), where the hangman will be started from, so for now theres no mod/admin check to make the input display different
 		content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "{}" followed by the letter (for example {}a) or the word. {} attempts left.\n{}'.format(hangmanstarter.id, hangmaninvoker, hangmaninvoker, hangmanattempts, hangmanworddisp(hangmanchosenword))
 		msg = msg_start + content
 		await client.send_message(botschannel, msg)
@@ -594,7 +634,7 @@ async def on_message(message):
 
 		content = ':no_entry: <@{}> has been softbanned.'.format(targetmember.id)
 		await reply(message, content)
-	elif command == 'nononly' or command == 'nogenmen' or command == 'nocedule' or command == 'notts':
+	elif command == 'nononly' or command == 'nogenmen' or command == 'nocedule' or command == 'notts' or command == 'noreact' or command == 'voicemute':
 		if not is_mod(message.author):
 			content = t['mod_only']
 			print('[info] {} attempted by {}#{} (uuid {}) at {} utc but failed'.format(command, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
@@ -608,13 +648,17 @@ async def on_message(message):
 			'nononly': '173240966575161344',
 			'nogenmen': '216647716531339264',
 			'nocedule': '222046096216686592',
-			'notts': '215954720555139073'
+			'notts': '215954720555139073',
+			'noreact': '241183168269516800',
+			'voicemute': '241612664143347712',
 		}
 		rolelabel = {
 			'nononly': 'Nonsense-Only',
 			'nogenmen': 'No General Mentions',
 			'nocedule': 'No Custom Emotes/Direct Uploads/Link Embeds',
-			'notts': 'No TTS'
+			'notts': 'No TTS',
+			'noreact': 'No Reactions',
+			'voicemute': 'Voice Muted',
 		}
 		try:
 			targetmember = get_member_input(message.server, arguments)
@@ -666,6 +710,8 @@ async def on_message(message):
 				discord.utils.get(message.server.roles, id='215954720555139073'), # no tts
 				discord.utils.get(message.server.roles, id='220643748508467220'), # banned
 				discord.utils.get(message.server.roles, id='236925451216355338'), # tolper who cant change nickname
+				discord.utils.get(message.server.roles, id='241183168269516800'), # no reactions
+				discord.utils.get(message.server.roles, id='241612664143347712'), # voice muted
 			)
 			if not is_bot(targetmember):
 				await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
@@ -828,6 +874,19 @@ async def on_message_delete(message): # when a message gets deleted
 
 @client.async_event
 async def on_message_edit(before, after): # when a message gets edited
+	if before.pinned != after.pinned:
+		if before.pinned == False and after.pinned == True: # if the message was pinned
+			msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC pinned`'.format(before.id, mdspecialchars(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp)
+			if before.server.id != productionserver:
+				await client.send_message(before.channel, msg_start)
+			else:
+				await client.send_message(specialchannel, msg_start)
+		if before.pinned == True and after.pinned == False: # if the message was unpinned
+			msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC unpinned`'.format(after.id, mdspecialchars(after.author.name), after.author.discriminator, after.author.id, after.channel.id, after.timestamp)
+			if after.server.id != productionserver:
+				await client.send_message(after.channel, msg_start)
+			else:
+				await client.send_message(specialchannel, msg_start)
 	# preliminary checkings
 	if before.content == after.content:
 		return # must be the message being pinned and/or embed(s) displaying
@@ -1125,7 +1184,7 @@ def helplist(cats):
 	for cat in cats:
 		returnage += '\n__`{}:`__'.format(cat['cat_name'])
 		for cmd in cat['commands']:
-			returnage += '\n`\{}` – {}'.format(cmd, cat['commands'][cmd]['short'])
+			returnage += '\n`\{}` – {}'.format(cmd['name'], cmd['short'])
 	return returnage
 
 def hangmanworddisp(theword):
