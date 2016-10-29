@@ -26,6 +26,7 @@ import warnings
 import random
 import re
 import time
+import json
 
 client = discord.Client() # defines all client.* commands
 
@@ -186,6 +187,11 @@ cmds = [
 				'short': 'Resets the roles for a user back to the normal state.',
 				'extra': 'Removes all restrictive roles from a user, and gives back the `tOLPer` role if necessary.\n' + t['accepts_user']
 			},
+			{
+				'name': 'rolesync',
+				'short': 'Re-syncs the roles cache with the current roles everyone has, if the bot missed role additions/removals',
+				'extra': 'Does not remove members from the cache who have left the server.'
+			},
 		]
 	},
 ]
@@ -247,6 +253,35 @@ meme_cmds = [
 async def on_ready():
 	print('[info] logged in as {} with id {}'.format(client.user.name, client.user.id))
 	await client.change_presence(game=discord.Game(name='​')) # the game name is u+200b
+
+	await client.send_message(specialchannel, '**`>`**`Bot started up.`')
+
+	try:
+		with open('members.json', 'r') as infile:
+			memberroles = json.load(infile)
+
+		# Now look what I've woken up to.
+		warnings = ''
+
+		for mem in server.members: # server: production server obviously
+			if not str(mem.id) in memberroles:
+				warnings += '\nUser {}#{} ({}) is now suddenly in the server but wasn\'t when I last checked! Adding their roles to the cache now.'
+				memberroles[str(mem.id)] = list(rolelist(mem.roles)) # Possibly redundant list() tbh, just making sure since I can't test and I don't know python well enough to know whether it's redundant
+				continue
+			if set(memberroles[str(mem.id)]) != set(rolelist(mem.roles)):
+				warnings += '\nUser {}#{} ({}) doesn\'t have the same roles they had when I last checked! Maybe you want to correct things.' # TODO: List the roles from server and from cache
+		if warnings != '':
+			warnings = '**User role cache warning**' + warnings
+			await client.send_message(specialchannel, warnings)
+
+	except FileNotFoundError:
+		print('[info] members file doesn\'t exist yet! Creating it now...')
+		memberroles = {}
+
+		with open('members.json', 'w') as outfile:
+			json.dump(memberroles, outfile)
+
+		await client.send_message(specialchannel, 'Members file didn\'t yet exist, created a new one. Please run `\\rolesync` to sync up the roles cache.')
 
 @client.async_event
 async def on_message(message):
@@ -723,6 +758,21 @@ async def on_message(message):
 			return
 		content = 'Reset roles for <@{}> back to normal.'.format(targetmember.id)
 		await reply(message, content)
+	elif command == 'rolesync':
+		if not is_mod(message.author):
+			content = t['mod_only']
+			print('[info] rolesync attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			await reply(message, content)
+			return
+		elif message.server.id != productionserver:
+			content = t['production_only']
+			await reply(message, content)
+			return
+
+		for mem in server.members:
+			updaterolecache(mem)
+
+		rolecachesave()
 	elif command == 'info':
 		persontocheck = get_member_input(message.server, arguments)
 		yesperm = ':ballot_box_with_check:'
@@ -983,6 +1033,8 @@ async def on_member_update(before, after):
 				await client.send_message(after.server.default_channel, msg_start)
 			else:
 				await client.send_message(specialchannel, msg_start)
+		updaterolecache(after)
+		rolecachesave()
 	if before.name != after.name:
 		msg_start = '**`>`**:regional_indicator_u::pager:`user {} changed username`\n'.format(before.id)
 		content = '_`The older username is:`_\n**``{}``**\n_`The older discriminator is:`_ `#{}`'.format(mdspecialchars(before.name), before.discriminator)
@@ -1024,11 +1076,11 @@ async def on_member_join(member):
 		if is_bot(member):
 			await client.add_roles(member, discord.utils.get(member.server.roles, id='201129507967598592')) # bot role
 			return
-		# TODO: Look up that member in our database, to see if this user should get a restrictive group again.
-		# If someone is just a tOLPer, they won't be in the database.
-		if False:
+		# Are they in our database of members which had roles before?
+		if str(member.id) in memberroles:
 			# They're found in the database! Give them the groups they should have
-			pass
+			for rid in memberroles[str(member.id)]:
+				await client.add_roles(member, discord.utils.get(member.server.roles, id=rid)) # TODO make this less iterative and add multiple roles at once
 		else:
 			# Not found, so they're just a tOLPer.
 			await client.add_roles(member, discord.utils.get(member.server.roles, id='231644869351833600')) # The tOLPer role
@@ -1218,5 +1270,22 @@ def hangmanworddisp(theword):
 	theoutput += ')'
 
 	return theoutput
+
+def rolelist(roles):
+	rlist = []
+	for role in roles:
+		rlist.append(role.id)
+
+	return rlist
+
+def updaterolecache(member):
+	global memberroles
+	memberroles[str(member.id)] = list(rolelist(member.roles))
+
+def rolecachesave()
+	global memberroles
+
+	with open('members.json', 'w') as outfile:
+		json.dump(memberroles, outfile)
 
 client.run(token)
