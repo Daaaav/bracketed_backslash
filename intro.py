@@ -56,6 +56,8 @@ botschannel = discord.Object(id='201130047736643584')
 productionserver = '153368829160849408'
 server = client.get_server(productionserver) # defines all server.* commands
 
+memberroles = {}
+
 client.max_messages = None
 
 t = {
@@ -272,7 +274,7 @@ async def on_ready():
 				warnings += '\nUser {}#{} ({}) doesn\'t have the same roles they had when I last checked! Maybe you want to correct things.' # TODO: List the roles from server and from cache
 		if warnings != '':
 			warnings = '**User role cache warning**' + warnings
-			await client.send_message(specialchannel, warnings)
+			await client.send_message(specialchannel, warnings[:1900])
 
 	except FileNotFoundError:
 		print('[info] members file doesn\'t exist yet! Creating it now...')
