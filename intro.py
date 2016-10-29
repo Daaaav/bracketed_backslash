@@ -285,7 +285,7 @@ async def on_ready():
 
 @client.async_event
 async def on_message(message):
-	global msg_start, hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, hangmanstarter, guessedletters, algeraden
+	global msg_start, hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, hangmanstarter, guessedletters, algeraden, memberroles
 
 	if message.author == client.user: # is the message sent by the bot
 		return # do nothing
