@@ -253,6 +253,8 @@ meme_cmds = [
 
 @client.async_event
 async def on_ready():
+	global memberroles
+
 	print('[info] logged in as {} with id {}'.format(client.user.name, client.user.id))
 	await client.change_presence(game=discord.Game(name='​')) # the game name is u+200b
 
@@ -261,8 +263,6 @@ async def on_ready():
 	try:
 		with open('members.json', 'r') as infile:
 			memberroles = json.load(infile)
-
-		print('!!!! {}'.format(len(memberroles)))
 
 		# Now look what I've woken up to.
 		warnings = ''
@@ -278,7 +278,6 @@ async def on_ready():
 			warnings = '**User role cache warning**' + warnings
 			await client.send_message(specialchannel, warnings[:1900])
 
-		print('!!!! {}'.format(len(memberroles)))
 	except FileNotFoundError:
 		print('[info] members file doesn\'t exist yet! Creating it now...')
 		memberroles = {}
@@ -287,8 +286,6 @@ async def on_ready():
 			json.dump(memberroles, outfile)
 
 		await client.send_message(specialchannel, 'Members file didn\'t yet exist, created a new one. Please run `\\rolesync` to sync up the roles cache.')
-
-	print('!!!! {}'.format(len(memberroles)))
 
 @client.async_event
 async def on_message(message):
