@@ -190,6 +190,11 @@ cmds = [
 				'extra': 'Removes all restrictive roles from a user, and gives back the `tOLPer` role if necessary.\n' + t['accepts_user']
 			},
 			{
+				'name': 'rolecacherst',
+				'short': 'Removes a member who has left the server from the role cache.',
+				'extra': 'Only accepts a user ID!'
+			},
+			{
 				'name': 'rolesync',
 				'short': 'Re-syncs the roles cache with the current roles everyone has, if the bot missed role additions/removals',
 				'extra': 'Does not remove members from the cache who have left the server.'
@@ -762,6 +767,28 @@ async def on_message(message):
 			return
 		content = 'Reset roles for <@{}> back to normal.'.format(targetmember.id)
 		await reply(message, content)
+	elif command == 'rolecacherst':
+		if not is_mod(message.author):
+			content = t['mod_only']
+			print('[info] rolecacherst attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			await reply(message, content)
+			return
+		elif message.server.id != productionserver:
+			content = t['production_only']
+			await reply(message, content)
+			return
+		elif get_member_input(message.server, arguments) != None:
+			content = 'That member is apparently still on this server! Not removing from the cache.'
+			await reply(message, content)
+			return
+
+		if removerolecache(arguments):
+			content = 'Member {} successfully removed from role cache.'.format(arguments)
+			await reply(message, content)
+			rolecachesave()
+		else:
+			content = 'Member {} cannot be found in the role cache. Please note you have to enter an ID, not any form of name!'.format(arguments)
+			await reply(message, content)
 	elif command == 'rolesync':
 		if not is_mod(message.author):
 			content = t['mod_only']
@@ -1291,6 +1318,15 @@ def rolelist(roles):
 def updaterolecache(member):
 	global memberroles
 	memberroles[str(member.id)] = list(rolelist(member.roles))
+
+def removerolecache(memberid):
+	global memberroles
+	try:
+		memberroles.remove(memberid)
+	except KeyError:
+		return False
+
+	return True
 
 def rolecachesave():
 	global memberroles
