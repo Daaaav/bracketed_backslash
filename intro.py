@@ -769,10 +769,13 @@ async def on_message(message):
 			await reply(message, content)
 			return
 
-		for mem in server.members:
+		for mem in message.server.members:
 			updaterolecache(mem)
 
 		rolecachesave()
+
+		content = 'Synced roles.'
+		await reply(message, content)
 	elif command == 'info':
 		persontocheck = get_member_input(message.server, arguments)
 		yesperm = ':ballot_box_with_check:'
