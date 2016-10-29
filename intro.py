@@ -263,7 +263,7 @@ async def on_ready():
 		# Now look what I've woken up to.
 		warnings = ''
 
-		for mem in server.members: # server: production server obviously
+		for mem in client.get_server(productionserver).members:
 			if not str(mem.id) in memberroles:
 				warnings += '\nUser {}#{} ({}) is now suddenly in the server but wasn\'t when I last checked! Adding their roles to the cache now.'
 				memberroles[str(mem.id)] = list(rolelist(mem.roles)) # Possibly redundant list() tbh, just making sure since I can't test and I don't know python well enough to know whether it's redundant
