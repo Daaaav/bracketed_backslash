@@ -267,11 +267,11 @@ async def on_ready():
 
 		for mem in client.get_server(productionserver).members:
 			if not str(mem.id) in memberroles:
-				warnings += '\nUser {}#{} ({}) is now suddenly in the server but wasn\'t when I last checked! Adding their roles to the cache now.'
+				warnings += '\nUser {}#{} ({}) is now suddenly in the server but wasn\'t when I last checked! Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
 				memberroles[str(mem.id)] = list(rolelist(mem.roles)) # Possibly redundant list() tbh, just making sure since I can't test and I don't know python well enough to know whether it's redundant
 				continue
 			if set(memberroles[str(mem.id)]) != set(rolelist(mem.roles)):
-				warnings += '\nUser {}#{} ({}) doesn\'t have the same roles they had when I last checked! Maybe you want to correct things.' # TODO: List the roles from server and from cache
+				warnings += '\nUser {}#{} ({}) doesn\'t have the same roles they had when I last checked! Maybe you want to correct things.'.format(mem.name, mem.discriminator, mem.id) # TODO: List the roles from server and from cache
 		if warnings != '':
 			warnings = '**User role cache warning**' + warnings
 			await client.send_message(specialchannel, warnings[:1900])
