@@ -1282,7 +1282,7 @@ def updaterolecache(member):
 	global memberroles
 	memberroles[str(member.id)] = list(rolelist(member.roles))
 
-def rolecachesave()
+def rolecachesave():
 	global memberroles
 
 	with open('members.json', 'w') as outfile:
