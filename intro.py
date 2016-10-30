@@ -316,7 +316,7 @@ async def on_message(message):
 		content = '_`The attachment is:`_\n' + message.attachments[0]['url']
 		msg = msg_start + content
 		if message.server.id != productionserver:
-			await client.send_message(message.channel, msg)
+			return
 		else:
 			await client.send_message(specialchannel, msg)
 
