@@ -1069,8 +1069,10 @@ async def on_member_update(before, after):
 				await client.send_message(after.server.default_channel, msg_start)
 			else:
 				await client.send_message(specialchannel, msg_start)
-		updaterolecache(after)
-		rolecachesave()
+
+		if before.server.id == productionserver:
+			updaterolecache(after)
+			rolecachesave()
 	if before.name != after.name:
 		msg_start = '**`>`**:regional_indicator_u::pager:`user {} changed username`\n'.format(before.id)
 		content = '_`The older username is:`_\n**``{}``**\n_`The older discriminator is:`_ `#{}`'.format(mdspecialchars(before.name), before.discriminator)
