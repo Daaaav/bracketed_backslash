@@ -1157,6 +1157,22 @@ async def on_typing(channel, user, when):
 	else:
 		return # practically unnecessary, but this is for if we want to do things when members type later
 
+@client.async_event
+async def on_server_role_create(role):
+	msg = '**`>`**`role` **``{}``** `({}) was created in server` **``{}``** `({}) at {}`'.format(mdspecialchars(role.name), role.id, mdspecialchars(role.server.name), role.server.id, role.created_at)
+	if role.server.id != productionserver:
+		await client.send_message(role.server.default_channel, msg)
+	else:
+		await client.send_message(specialchannel, msg)
+
+@client.async_event
+async def on_server_role_delete(role):
+	msg = '**`>`**`role` **``{}``** `({}) was deleted in server` **``{}``** `({}) originally created at {}`'.format(mdspecialchars(role.name), role.id, mdspecialchars(role.server.name), role.server.id, role.created_at)
+	if role.server.id != productionserver:
+		await client.send_message(role.server.default_channel, msg)
+	else:
+		await client.send_message(specialchannel, msg)
+
 def is_admin(member):
 	try:
 		perms = member.server_permissions
