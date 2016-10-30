@@ -1094,7 +1094,7 @@ async def on_member_update(before, after):
 			await client.send_message(before.server.default_channel, msg)
 		else:
 			await client.send_message(specialchannel, msg)
-		msg_start = '**`>`**`user` **``{}``**`#{}` `changed avatar`\n'.format(mdspecialchars(after.name), after.discriminator, after.id)
+		msg_start = '**`>`**`user` **``{}``**`#{}` `({}) changed avatar`\n'.format(mdspecialchars(after.name), after.discriminator, after.id)
 		content = '_`The newer avatar URL is:`_ ' + after.avatar_url
 		msg = msg_start + content
 		if after.server.id != productionserver:
