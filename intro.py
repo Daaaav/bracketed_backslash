@@ -57,6 +57,7 @@ productionserver = '153368829160849408'
 server = client.get_server(productionserver) # defines all server.* commands
 
 memberroles = {}
+minutemessageedits = {}
 
 client.max_messages = None
 
@@ -1030,6 +1031,38 @@ async def on_message_edit(before, after): # when a message gets edited
 			await client.send_message(after.channel, msg)
 		else:
 			await client.send_message(specialchannel, msg)
+
+	# Delete a message if it has been edited more than 5 times in 30 seconds
+	if not after.id in minutemessageedits:
+		minutemessageedits[after.id] = [int(time.time())]
+	else:
+		edittime = int(time.time())
+		while True:
+			if edittime in minutemessageedits[after.id]:
+				edittime += 0.1
+			else:
+				minutemessageedits[after.id].append(edittime)
+				break
+		if len(minutemessageedits[after.id]) >= 5:
+			for i in minutemessageedits[after.id][:]: # [:] because we may be removing elements from here
+				if i < (int(time.time())-30):
+					minutemessageedits[after.id].remove(i)
+			if len(minutemessageedits[after.id]) >= 5:
+				# Ok, that's enough editing.
+				client.delete_message(after)
+				msg = '**`>`**:pencil::pencil::pencil::pencil::pencil:`Message {} was edited too many times.`'.format(after.id)
+				if after.server.id != productionserver:
+					await client.send_message(after.channel, msg)
+				else:
+					await client.send_message(specialchannel, msg)
+		# While we're at it, also clean up other messages.
+		for k in minutemessageedits[:]: # [:] because we may be removing elements from here [2]
+			if k != after.id:
+				for i in minutemessageedits[k][:]:
+					if i < (int(time.time())-30):
+						minutemessageedits[k].remove(i)
+				if len(minutemessageedits[k]) == 0:
+					minutemessageedits.remove(k)
 
 @client.async_event
 async def on_member_update(before, after):
