@@ -1055,6 +1055,8 @@ async def on_message_edit(before, after): # when a message gets edited
 					await client.send_message(after.channel, msg)
 				else:
 					await client.send_message(specialchannel, msg)
+				# Also actually reply
+				await client.send_message(after.channel, 'Were you going to stop editing that message?')
 		# While we're at it, also clean up other messages.
 		for k in minutemessageedits.copy(): # Copying because we may be removing elements from here [2]
 			if k != after.id:
