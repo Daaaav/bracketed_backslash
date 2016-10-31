@@ -1049,14 +1049,14 @@ async def on_message_edit(before, after): # when a message gets edited
 					minutemessageedits[after.id].remove(i)
 			if len(minutemessageedits[after.id]) >= 5:
 				# Ok, that's enough editing.
-				client.delete_message(after)
+				await client.delete_message(after)
 				msg = '**`>`**:pencil::pencil::pencil::pencil::pencil:`Message {} was edited too many times.`'.format(after.id)
 				if after.server.id != productionserver:
 					await client.send_message(after.channel, msg)
 				else:
 					await client.send_message(specialchannel, msg)
 		# While we're at it, also clean up other messages.
-		for k in minutemessageedits[:]: # [:] because we may be removing elements from here [2]
+		for k in minutemessageedits.copy(): # Copying because we may be removing elements from here [2]
 			if k != after.id:
 				for i in minutemessageedits[k][:]:
 					if i < (int(time.time())-30):
