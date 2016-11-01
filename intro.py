@@ -313,6 +313,8 @@ async def on_message(message):
 		pass
 
 	if message.attachments != []:
+		# TODO: actually cache the attachments xd
+		# with aiohttp
 		msg_start = '**`>`**📎`user` **``{}``**`#{}` `({}) attached a file to message {} in channel` <#{}> `at {} UTC`\n'.format(mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
 		content = '_`The attachment is:`_\n' + message.attachments[0]['url']
 		msg = msg_start + content
