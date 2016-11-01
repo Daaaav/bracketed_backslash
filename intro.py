@@ -305,7 +305,7 @@ async def on_message(message):
 	isprivate = isprivatemessage(message.server) # cant use isprivatemessage = isprivatemessage(), otherwise python will think "holy fuck a variable was referenced before assignment"
 
 	if not isprivate and str(message.author.status) == 'offline':
-		msg_start = '**`>`**:ghost:`user` **``{}``**`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
+		msg_start = '**`>`**👻`user` **``{}``**`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
 		if message.server.id != productionserver:
 			await client.send_message(message.channel, msg_start)
 		else:
@@ -313,7 +313,7 @@ async def on_message(message):
 		pass
 
 	if message.attachments != []:
-		msg_start = '**`>`**:paperclip:`user` **``{}``**`#{}` `({}) attached a file to message {} in channel` <#{}> `at {} UTC`\n'.format(mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
+		msg_start = '**`>`**📎`user` **``{}``**`#{}` `({}) attached a file to message {} in channel` <#{}> `at {} UTC`\n'.format(mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
 		content = '_`The attachment is:`_\n' + message.attachments[0]['url']
 		msg = msg_start + content
 		if message.server.id != productionserver:
@@ -812,8 +812,8 @@ async def on_message(message):
 		await reply(message, str(len(memberroles)))
 	elif command == 'info':
 		persontocheck = get_member_input(message.server, arguments)
-		yesperm = ':ballot_box_with_check:'
-		noperm = ':negative_squared_cross_mark:'
+		yesperm = '☑'
+		noperm = '❎'
 		try:
 			perms = discord.Channel.permissions_for(message.channel, persontocheck)
 		except AttributeError:
@@ -929,7 +929,7 @@ async def on_message_delete(message): # when a message gets deleted
 		return
 	if message.content == '' and message.attachments == []:
 		return
-	msg_start = '**`>`**:no_entry_sign:`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC deleted`\n'.format(message.id, mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.channel.id, message.timestamp)
+	msg_start = '**`>`**🚫`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC deleted`\n'.format(message.id, mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.channel.id, message.timestamp)
 	content = '_`The original content is:`_\n' + message.content
 	msg = msg_start + content
 	if len(msg) >= 2000:
@@ -983,7 +983,7 @@ async def on_message_edit(before, after): # when a message gets edited
 		warnings.warn('this is the bots own message and the bot doesnt edit messages\nid of before: {}\nid of after: {}'.format(before.id, after.id))
 		return
 	# checks succeeded
-	msg_start = '**`>`**:pencil:`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC edited`\n'.format(before.id, mdspecialchars(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp)
+	msg_start = '**`>`**📝`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC edited`\n'.format(before.id, mdspecialchars(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp)
 	content = '_`The older content is:`_\n' + before.content
 	msg = msg_start + content
 	if len(msg) >= 2000:
@@ -1050,7 +1050,7 @@ async def on_message_edit(before, after): # when a message gets edited
 			if len(minutemessageedits[after.id]) >= 5:
 				# Ok, that's enough editing.
 				await client.delete_message(after)
-				msg = '**`>`**:pencil::pencil::pencil::pencil::pencil:`Message {} was edited too many times.`'.format(after.id)
+				msg = '**`>`**📝`Message {} was edited too many times.`'.format(after.id)
 				if after.server.id != productionserver:
 					await client.send_message(after.channel, msg)
 				else:
@@ -1069,7 +1069,7 @@ async def on_message_edit(before, after): # when a message gets edited
 @client.async_event
 async def on_member_update(before, after):
 	if before.nick != after.nick:
-		msg_start = '**`>`**:regional_indicator_n::pager:`user` **``{}``**`#{}` `({}) changed nickname`\n'.format(mdspecialchars(before.name), before.discriminator, before.id)
+		msg_start = '**`>`**🇳📟`user` **``{}``**`#{}` `({}) changed nickname`\n'.format(mdspecialchars(before.name), before.discriminator, before.id)
 		if before.nick == None:
 			content = '_`The older nickname is:`_ `(none)`'
 		else:
@@ -1109,7 +1109,7 @@ async def on_member_update(before, after):
 			updaterolecache(after)
 			rolecachesave()
 	if before.name != after.name:
-		msg_start = '**`>`**:regional_indicator_u::pager:`user {} changed username`\n'.format(before.id)
+		msg_start = '**`>`**🇺📟user {} changed username`\n'.format(before.id)
 		content = '_`The older username is:`_\n**``{}``**\n_`The older discriminator is:`_ `#{}`'.format(mdspecialchars(before.name), before.discriminator)
 		msg = msg_start + content
 		if before.server.id != productionserver:
@@ -1124,7 +1124,7 @@ async def on_member_update(before, after):
 		else:
 			await client.send_message(specialchannel, msg)
 	if before.avatar_url != after.avatar_url and before.id != '141769689406636032' and before.id != '88575421972516864' and before.id != '196574963673595904': # isn't 35, 42 or beta 42
-		msg_start = '**`>`**:busts_in_silhouette:`user` **``{}``**`#{}` `({}) changed avatar`\n'.format(mdspecialchars(before.name), before.discriminator, before.id)
+		msg_start = '**`>`**👥`user` **``{}``**`#{}` `({}) changed avatar`\n'.format(mdspecialchars(before.name), before.discriminator, before.id)
 		content = '_`The older avatar URL is:`_ ' + before.avatar_url
 		msg = msg_start + content
 		if before.server.id != productionserver:
@@ -1141,7 +1141,7 @@ async def on_member_update(before, after):
 
 @client.async_event
 async def on_member_join(member):
-	msg = '**`>`**:arrow_right:`user` **``{}``**`#{}` `({}) joined server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
+	msg = '**`>`**➡`user` **``{}``**`#{}` `({}) joined server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	if member.server.id != productionserver:
 		await client.send_message(member.server.default_channel, msg)
 	else:
@@ -1161,7 +1161,7 @@ async def on_member_join(member):
 
 @client.async_event
 async def on_member_remove(member):
-	msg = '**`>`**:door:`user` **``{}``**`#{}` `({}) removed from server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
+	msg = '**`>`**🚪`user` **``{}``**`#{}` `({}) removed from server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	if member.server.id != productionserver:
 		await client.send_message(member.server.default_channel, msg)
 	else:
@@ -1169,7 +1169,7 @@ async def on_member_remove(member):
 
 @client.async_event
 async def on_member_ban(member):
-	msg = '**`>`**:mans_shoe::door::no_entry:`user` **``{}``**`#{}` `({}) banned from server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
+	msg = '**`>`**👞🚪⛔`user` **``{}``**`#{}` `({}) banned from server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	if member.server.id != productionserver:
 		await client.send_message(member.server.default_channel, msg)
 	else:
@@ -1186,7 +1186,7 @@ async def on_member_unban(server, user):
 @client.async_event
 async def on_typing(channel, user, when):
 	if str(user.status) == 'offline':
-		msg = '**`>`**:ghost:`user` **``{}``**`#{}` `({}) was invisible while typing in channel` <#{}> `at {}`'.format(mdspecialchars(user.name), user.discriminator, user.id, channel.id, when)
+		msg = '**`>`**👻`user` **``{}``**`#{}` `({}) was invisible while typing in channel` <#{}> `at {}`'.format(mdspecialchars(user.name), user.discriminator, user.id, channel.id, when)
 		if user.server.id != productionserver:
 			await client.send_message(channel, msg)
 		else:
