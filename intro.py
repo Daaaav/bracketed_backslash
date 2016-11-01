@@ -1402,7 +1402,7 @@ def listroles_id(lijst):
 	for role in lijst:
 		if returnage != '':
 			returnage += ', '
-		returnage += '{} ({})'.format(discord.utils.get(client.get_server(productionserver).roles, id=role), role)
+		returnage += '{} ({})'.format(discord.utils.get(client.get_server('158091122747506688').roles, id=role), role)
 	return returnage
 
 client.run(token)
