@@ -279,7 +279,7 @@ async def on_ready():
 				memberroles[str(mem.id)] = list(rolelist(mem.roles)) # Possibly redundant list() tbh, just making sure since I can't test and I don't know python well enough to know whether it's redundant
 				continue
 			if set(memberroles[str(mem.id)]) != set(rolelist(mem.roles)):
-				warnings += '\nUser {}#{} ({}) doesn\'t have the same roles they had when I last checked! Maybe you want to correct things.'.format(mem.name, mem.discriminator, mem.id) # TODO: List the roles from server and from cache
+				warnings += '\nUser {}#{} ({}) doesn\'t have the same roles they had when I last checked! Maybe you want to correct things.\n    Cached: {}\nSeen: {}'.format(mem.name, mem.discriminator, mem.id, listroles_id(memberroles[str(mem.id)]), listroles(mem.roles))
 		if warnings != '':
 			warnings = '**User role cache warning**' + warnings
 			await client.send_message(specialchannel, warnings[:1900])
@@ -1386,5 +1386,20 @@ def rolecachesave():
 
 	with open('members.json', 'w') as outfile:
 		json.dump(memberroles, outfile)
+		
+def listroles(lijst):
+	returnage = ''
+	for role in lijst:
+		if returnage != '':
+			returnage += ', '
+		returnage += '{} ({})'.format(role.name, role.id)
+	return returnage
+
+def listroles_id(lijst):
+	returnage = ''
+	for role in lijst:
+		if returnage != '':
+			returnage += ', '
+		returnage += '{} ({})'.format(discord.utils.get(client.get_server(productionserver).roles, id=role), role)
 
 client.run(token)
