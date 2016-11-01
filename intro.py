@@ -1111,7 +1111,7 @@ async def on_member_update(before, after):
 			updaterolecache(after)
 			rolecachesave()
 	if before.name != after.name:
-		msg_start = '**`>`**🇺📟user {} changed username`\n'.format(before.id)
+		msg_start = '**`>`**🇺📟`user {} changed username`\n'.format(before.id)
 		content = '_`The older username is:`_\n**``{}``**\n_`The older discriminator is:`_ `#{}`'.format(mdspecialchars(before.name), before.discriminator)
 		msg = msg_start + content
 		if before.server.id != productionserver:
