@@ -1027,7 +1027,7 @@ async def on_message_edit(before, after): # when a message gets edited
 			if len(minutemessageedits[after.id]) >= 5:
 				# Ok, that's enough editing.
 				await client.delete_message(after)
-				msg = '**`>`**📝📝📝📝📝`Message {} was editedtoo many times.`'.format(after.id)
+				msg = '**`>`**📝📝📝📝📝`Message {} was e ditedtoo many times.`'.format(after.id)
 				await client.send_message(specialchannel, msg)
 				# Also actually reply
 				await client.send_message(after.channel, 'Were you going to stop editing that message?')
