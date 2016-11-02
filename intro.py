@@ -1097,18 +1097,18 @@ async def on_member_join(member):
 	
 	msg = '**`>`**➡`user` **``{}``**`#{}` `({}) joined server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	await client.send_message(specialchannel, msg)
-		if is_bot(member):
-			await client.add_roles(member, discord.utils.get(member.server.roles, id='201129507967598592')) # bot role
-			return
-		# Are they in our database of members which had roles before?
-		if str(member.id) in memberroles:
-			# They're found in the database! Give them the groups they should have
-			for rid in memberroles[str(member.id)]:
-				await client.add_roles(member, discord.utils.get(member.server.roles, id=rid)) # TODO make this less iterative and add multiple roles at once
-			await client.send_message(specialchannel, '{}#{} ({}) is in the roles database! Given them back the roles they had.'.format(member.name, member.discriminator, member.id)) # TODO make it show the roles that were added
-		else:
-			# Not found, so they're just a tOLPer.
-			await client.add_roles(member, discord.utils.get(member.server.roles, id='231644869351833600')) # The tOLPer role
+	if is_bot(member):
+		await client.add_roles(member, discord.utils.get(member.server.roles, id='201129507967598592')) # bot role
+		return
+	# Are they in our database of members which had roles before?
+	if str(member.id) in memberroles:
+		# They're found in the database! Give them the groups they should have
+		for rid in memberroles[str(member.id)]:
+			await client.add_roles(member, discord.utils.get(member.server.roles, id=rid)) # TODO make this less iterative and add multiple roles at once
+		await client.send_message(specialchannel, '{}#{} ({}) is in the roles database! Given them back the roles they had.'.format(member.name, member.discriminator, member.id)) # TODO make it show the roles that were added
+	else:
+		# Not found, so they're just a tOLPer.
+		await client.add_roles(member, discord.utils.get(member.server.roles, id='231644869351833600')) # The tOLPer role
 
 @client.async_event
 async def on_member_remove(member):
