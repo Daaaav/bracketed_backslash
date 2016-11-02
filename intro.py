@@ -1322,7 +1322,7 @@ def updaterolecache(member):
 def removerolecache(memberid):
 	global memberroles
 	try:
-		memberroles.remove(memberid)
+		del memberroles[memberid]
 	except KeyError:
 		return False
 
