@@ -300,7 +300,7 @@ async def on_message(message):
 
 	if message.author == client.user: # is the message sent by the bot
 		return # do nothing
-		
+
 	specialchannel = getspecialchannel_reply(message)
 
 	displaymessagecontent = ('``{}``**`…`**'.format(mdspecialchars(message.content[:100]))) if len(message.content) > 100 else '``{}``'.format(mdspecialchars(message.content))
@@ -931,9 +931,9 @@ async def on_message_delete(message): # when a message gets deleted
 		return
 	if message.content == '' and message.attachments == []:
 		return
-		
+
 	specialchannel = getspecialchannel_reply(message)
-		
+
 	msg_start = '**`>`**🚫`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC deleted`\n'.format(message.id, mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.channel.id, message.timestamp)
 	content = '_`The original content is:`_\n' + message.content
 	msg = msg_start + content
@@ -959,7 +959,7 @@ async def on_message_delete(message): # when a message gets deleted
 @client.async_event
 async def on_message_edit(before, after): # when a message gets edited
 	specialchannel = getspecialchannel_reply(after)
-	
+
 	if before.pinned != after.pinned:
 		if before.pinned == False and after.pinned == True: # if the message was pinned
 			msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC pinned`'.format(before.id, mdspecialchars(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp)
@@ -1043,7 +1043,7 @@ async def on_message_edit(before, after): # when a message gets edited
 @client.async_event
 async def on_member_update(before, after):
 	specialchannel = getspecialchannel(after.server)
-	
+
 	if before.nick != after.nick:
 		msg_start = '**`>`**🇳📟`user` **``{}``**`#{}` `({}) changed nickname`\n'.format(mdspecialchars(before.name), before.discriminator, before.id)
 		if before.nick == None:
@@ -1094,7 +1094,7 @@ async def on_member_update(before, after):
 @client.async_event
 async def on_member_join(member):
 	specialchannel = getspecialchannel(member.server)
-	
+
 	msg = '**`>`**➡`user` **``{}``**`#{}` `({}) joined server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	await client.send_message(specialchannel, msg)
 	if member.server.id == productionserver:
@@ -1114,14 +1114,14 @@ async def on_member_join(member):
 @client.async_event
 async def on_member_remove(member):
 	specialchannel = getspecialchannel(member.server)
-	
+
 	msg = '**`>`**🚪`user` **``{}``**`#{}` `({}) removed from server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	await client.send_message(specialchannel, msg)
 
 @client.async_event
 async def on_member_ban(member):
 	specialchannel = getspecialchannel(member.server)
-	
+
 	msg = '**`>`**👞🚪⛔`user` **``{}``**`#{}` `({}) banned from server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	await client.send_message(specialchannel, msg)
 
@@ -1344,7 +1344,7 @@ def listroles_id(lijst):
 			returnage += ', '
 		returnage += '{} ({})'.format(discord.utils.get(client.get_server('158091122747506688').roles, id=role), role)
 	return returnage
-	
+
 def getspecialchannel(server):
 	if server.id == '153368829160849408':
 		return specialchannel_prod
@@ -1352,7 +1352,7 @@ def getspecialchannel(server):
 		return specialchannel_aperture
 	else:
 		return server.default_channel
-		
+
 def getspecialchannel_reply(message):
 	specialchannel = getspecialchannel(message.server)
 	if specialchannel == message.server.default_channel:
