@@ -1098,6 +1098,7 @@ async def on_member_join(member):
 	msg = '**`>`**➡`user` **``{}``**`#{}` `({}) joined server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	await client.send_message(specialchannel, msg)
 	if member.server.id == productionserver:
+		print('{} joined production server!'.format(member.name))
 		if is_bot(member):
 			await client.add_roles(member, discord.utils.get(member.server.roles, id='201129507967598592')) # bot role
 			return
@@ -1110,6 +1111,8 @@ async def on_member_join(member):
 		else:
 			# Not found, so they're just a tOLPer.
 			await client.add_roles(member, discord.utils.get(member.server.roles, id='231644869351833600')) # The tOLPer role
+	else:
+		print('{} joined a server that is NOT the production server!'.format(member.name))
 
 @client.async_event
 async def on_member_remove(member):
@@ -1133,7 +1136,9 @@ async def on_member_unban(server, user):
 
 @client.async_event
 async def on_typing(channel, user, when):
-	specialchannel = getspecialchannel_reply(channel.server)
+	specialchannel = getspecialchannel(channel.server)
+	if specialchannel.id == channel.server.default_channel.id:
+		specialchannel = channel
 	if str(user.status) == 'offline':
 		msg = '**`>`**👻`user` **``{}``**`#{}` `({}) was invisible while typing in channel` <#{}> `at {}`'.format(mdspecialchars(user.name), user.discriminator, user.id, channel.id, when)
 		await client.send_message(specialchannel, msg)
