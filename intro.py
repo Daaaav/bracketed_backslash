@@ -821,7 +821,7 @@ async def on_message(message):
 			await reply(message, content)
 			return
 			
-		content = 'perms.send_messages: {}\nperms[\'send_messages\']: {}'.format('TRUE' if perms.send_messages else 'FALSE', 'TRUE' if perms['send_messages'] else 'FALSE')
+		content = '`perms.kick_members`: {}\n`getattr(perms, \'kick_members\')`: {}'.format('TRUE' if perms.kick_members else 'FALSE', 'TRUE' if getattr(perms, 'kick_members') else 'FALSE')
 		await reply(message, content)
 	elif command == 'info':
 		persontocheck = get_member_input(message.server, arguments)
