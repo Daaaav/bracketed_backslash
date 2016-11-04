@@ -812,6 +812,17 @@ async def on_message(message):
 		await reply(message, content)
 	elif command == 'temptest':
 		await reply(message, str(len(memberroles)))
+	elif command == 'tempinfo-removethiscommandpleasexd':
+		persontocheck = get_member_input(message.server, arguments)
+		try:
+			perms = discord.Channel.permissions_for(message.channel, persontocheck)
+		except AttributeError:
+			content = t['specify_user']
+			await reply(message, content)
+			return
+			
+		content = 'perms.send_messages: {}\nperms[\'send_messages\']: {}'.format('TRUE' if perms.send_messages else 'FALSE', 'TRUE' if perms['send_messages'] else 'FALSE')
+		await reply(message, content)
 	elif command == 'info':
 		persontocheck = get_member_input(message.server, arguments)
 		yesperm = '☑'
