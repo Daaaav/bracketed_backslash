@@ -812,7 +812,7 @@ async def on_message(message):
 		await reply(message, content)
 	elif command == 'temptest':
 		await reply(message, str(len(memberroles)))
-	elif command == 'tempinfo-removethiscommandpleasexd':
+	elif command == 'tempinfo-removethiscommandpleasexd2':
 		persontocheck = get_member_input(message.server, arguments)
 		try:
 			perms = discord.Channel.permissions_for(message.channel, persontocheck)
@@ -821,7 +821,9 @@ async def on_message(message):
 			await reply(message, content)
 			return
 			
-		content = '`perms.kick_members`: {}\n`getattr(perms, \'kick_members\')`: {}'.format('TRUE' if perms.kick_members else 'FALSE', 'TRUE' if getattr(perms, 'kick_members') else 'FALSE')
+		content = ''
+		for p in iter(perms):
+			content += '`' + p + '` '
 		await reply(message, content)
 	elif command == 'info':
 		persontocheck = get_member_input(message.server, arguments)
