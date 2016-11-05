@@ -849,13 +849,13 @@ async def on_message(message):
 			content = t['specify_user']
 			await reply(message, content)
 			return
-			
+
 		leftover = []
 		for detected_p in iter(perms):
 			leftover.append(detected_p[0])
-			
+
 		content = 'Permissions for **``{}``**`#{}` in <#{}>:\n**`Server Owner:`** {}'.format(persontocheck.name, persontocheck.discriminator, message.channel.id, yesperm if persontocheck == persontocheck.server.owner else noperm)
-		
+
 		for stored_p in permissionlabels:
 			if not stored_p[0] in leftover:
 				content += '\n**`{}:`** NOT USED'.format(stored_p[1])
@@ -866,11 +866,11 @@ async def on_message(message):
 				content += '\nNothing more needs to be said.'
 				await reply(message, content)
 				return
-		
+
 		for left_p in leftover:
 			# Apparently these permissions are new
 			content += '\n`{}:` {}'.format(left_p, yesperm if getattr(perms, left_p) else noperm)
-		
+
 		await reply(message, content)
 	elif command == 'teddy':
 		content = 'xd'
