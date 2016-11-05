@@ -863,7 +863,7 @@ async def on_message(message):
 				content += '\n**`{}:`** {}'.format(stored_p[1], yesperm if getattr(perms, stored_p[0]) else noperm)
 				leftover.remove(stored_p[0])
 			if perms.administrator:
-				content += 'Nothing more needs to be said.'
+				content += '\nNothing more needs to be said.'
 				await reply(message, content)
 				return
 		
