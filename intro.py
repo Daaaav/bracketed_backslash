@@ -869,7 +869,7 @@ async def on_message(message):
 		
 		for left_p in leftover:
 			# Apparently these permissions are new
-			content += '\n`{}:` {}'.format(left_p[0], yesperm if left_p[1] else noperm)
+			content += '\n`{}:` {}'.format(left_p, yesperm if getattr(perms, left_p) else noperm)
 		
 		await reply(message, content)
 	elif command == 'teddy':
