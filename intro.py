@@ -820,7 +820,7 @@ async def on_message(message):
 			content = t['specify_user']
 			await reply(message, content)
 			return
-			
+
 		content = ''
 		for p in iter(perms):
 			content += '`' + p[0] + ':' + ("TROO" if p[1] else "FALES") + '` '
