@@ -258,6 +258,33 @@ meme_cmds = [
 	}
 ]
 
+permissionlabels = [
+	['administrator', 'Administrator'],
+	['manage_server', 'Manage Server'],
+	['manage_channels', 'Manage Channels'],
+	['manage_roles', 'Manage Roles'],
+	['ban_members', 'Ban Members'],
+	['kick_members', 'Kick Members'],
+	['move_members', 'Move Members'],
+	['deafen_members', 'Deafen Members'],
+	['mute_members', 'Mute Members'],
+	['manage_webhooks', 'Manage Webhooks'],
+	['manage_nicknames', 'Manage Nicknames'],
+	['manage_emojis', 'Manage Custom Emotes'],
+	['change_nickname', 'Change Nickname'],
+	['mention_everyone', 'Mention General Mentions'],
+	['external_emojis', 'Use Custom Emotes'],
+	['attach_files', 'Upload Direct Uploads'],
+	['embed_links', 'Embed Link Embeds'],
+	['send_tts_messages', 'Use Text-to-Speech'],
+	['read_message_history', 'Read Message History'],
+	['send_messages', 'Send Messages'],
+	['read_messages', 'Read Messages'],
+	['use_voice_activation', 'Use Voice Activity'],
+	['speak', 'Speak'],
+	['connect', 'Connect'],
+]
+
 @client.async_event
 async def on_ready():
 	global memberroles
@@ -812,19 +839,6 @@ async def on_message(message):
 		await reply(message, content)
 	elif command == 'temptest':
 		await reply(message, str(len(memberroles)))
-	elif command == 'tempinfo-removethiscommandpleasexd2':
-		persontocheck = get_member_input(message.server, arguments)
-		try:
-			perms = discord.Channel.permissions_for(message.channel, persontocheck)
-		except AttributeError:
-			content = t['specify_user']
-			await reply(message, content)
-			return
-			
-		content = ''
-		for p in iter(perms):
-			content += '`' + p[0] + ':' + ("TROO" if p[1] else "FALES") + '` '
-		await reply(message, content)
 	elif command == 'info':
 		persontocheck = get_member_input(message.server, arguments)
 		yesperm = '☑'
@@ -835,66 +849,28 @@ async def on_message(message):
 			content = t['specify_user']
 			await reply(message, content)
 			return
-		content = ( # i wonder if this parenthesis is important
-				'Permissions for **``{}``**`#{}` in <#{}>:\n'
-				'**`Server Owner:`** {owner}\n'
-				'**`Administrator:`** {admin}\n'
-				# idea: mayb just stop right there if theyre an admin, why bother listing the rest
-				'**`Manage Server:`** {server}\n'
-				'**`Manage Channels:`** {channels}\n'
-				'**`Manage Roles:`** {roles}\n'
-				'**`Ban Members:`** {ban}\n'
-				'**`Kick Members:`** {kick}\n'
-				'**`Move Members:`** {move}\n'
-				'**`Deafen Members:`** {deafen}\n'
-				'**`Mute Members:`** {mute}\n'
-				'**`Manage Webhooks:`** {webhooks}\n' # for some reason manage_webhooks isnt an attribute of a Permissions object yet?
-				'**`Manage Nicknames:`** {nicks}\n'
-				'**`Manage Custom Emotes:`** {emotes}\n'
-				'**`Change Nickname:`** {nick}\n'
-				'**`Mention General Mentions:`** {genmen}\n'
-				'**`Use Custom Emotes:`** {emote}\n'
-				'**`Upload Direct Uploads:`** {upload}\n'
-				'**`Embed Link Embeds:`** {embed}\n'
-				'**`Use Text-to-Speech:`** {tts}\n'
-				'**`Read Message History:`** {history}\n'
-				'**`Send Messages:`** {send}\n'
-				'**`Read Messages:`** {read}\n'
-				'**`Use Voice Activity:`** {voiceact}\n'
-				'**`Speak:`** {speak}\n'
-				'**`Connect:`** {connect}'
-			).format(
-					# TODO: for loop or something to make this look less like a "cs graduates" thread
-					# but idk how also im lazy
-					# (apparently not lazy enough to do more work than i need to)
-					persontocheck.name, persontocheck.discriminator, message.channel.id,
-					owner = yesperm if persontocheck == persontocheck.server.owner else noperm,
-					admin = yesperm if perms.administrator else noperm,
-					server = yesperm if perms.manage_server else noperm,
-					channels = yesperm if perms.manage_channels else noperm,
-					roles = yesperm if perms.manage_roles else noperm,
-					ban = yesperm if perms.ban_members else noperm,
-					kick = yesperm if perms.kick_members else noperm,
-					move = yesperm if perms.move_members else noperm,
-					deafen = yesperm if perms.deafen_members else noperm,
-					mute = yesperm if perms.mute_members else noperm,
-#					webhooks = yesperm if perms.manage_webhooks else noperm,
-					webhooks = '`manage_webhooks` isnt a `Permissions` attribute apparently?',
-					nicks = yesperm if perms.manage_nicknames else noperm,
-					emotes = yesperm if perms.manage_emojis else noperm,
-					nick = yesperm if perms.change_nickname else noperm,
-					genmen = yesperm if perms.mention_everyone else noperm,
-					emote = yesperm if perms.external_emojis else noperm,
-					upload = yesperm if perms.attach_files else noperm,
-					embed = yesperm if perms.embed_links else noperm,
-					tts = yesperm if perms.send_tts_messages else noperm,
-					history = yesperm if perms.read_message_history else noperm,
-					send = yesperm if perms.send_messages else noperm,
-					read = yesperm if perms.read_messages else noperm,
-					voiceact = yesperm if perms.use_voice_activation else noperm,
-					speak = yesperm if perms.speak else noperm,
-					connect = yesperm if perms.connect else noperm,
-				)
+			
+		leftover = []
+		for detected_p in iter(perms):
+			leftover.append(detected_p[0])
+			
+		content = 'Permissions for **``{}``**`#{}` in <#{}>:\n**`Server Owner:`** {}'.format(persontocheck.name, persontocheck.discriminator, message.channel.id, yesperm if persontocheck == persontocheck.server.owner else noperm)
+		
+		for stored_p in permissionlabels:
+			if not stored_p[0] in leftover:
+				content += '\n**`{}:`** NOT USED'.format(stored_p[1])
+			else:
+				content += '\n**`{}:`** {}'.format(stored_p[1], yesperm if getattr(perms, stored_p[0]) else noperm)
+				leftover.remove(stored_p[0])
+			if perms.administrator:
+				content += 'Nothing more needs to be said.'
+				await reply(message, content)
+				return
+		
+		for left_p in leftover:
+			# Apparently these permissions are new
+			content += '\n`{}:` {}'.format(left_p[0], yesperm if left_p[1] else noperm)
+		
 		await reply(message, content)
 	elif command == 'teddy':
 		content = 'xd'
