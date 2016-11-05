@@ -823,7 +823,7 @@ async def on_message(message):
 			
 		content = ''
 		for p in iter(perms):
-			content += '`' + p + '` '
+			content += '`' + p[0] + ':' + ("TROO" if p[1] else "FALES") + '` '
 		await reply(message, content)
 	elif command == 'info':
 		persontocheck = get_member_input(message.server, arguments)
