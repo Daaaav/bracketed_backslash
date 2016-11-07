@@ -20,8 +20,9 @@
 import discord
 import asyncio
 import os
+import os.path
 import sys
-import urllib
+import urllib.request
 import warnings
 import random
 import re
@@ -35,6 +36,9 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 client = discord.Client() # defines all client.* commands
+
+cachelocation = './.cache'
+attachcache = cachelocation + '/' + 'attach' # define attachment caching location
 
 invoker = '\\' # command invoker
 altinvoker = 'ok glass, ' # alt command invoker
@@ -350,15 +354,19 @@ async def on_message(message):
 		pass
 
 	if message.attachments != []:
-		# TODO: actually cache the attachments xd
-		# with aiohttp
 		msg_start = '**`>`**📎`user` **``{}``**`#{}` `({}) attached a file to message {} in channel` <#{}> `at {} UTC`\n'.format(mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
-		content = '_`The attachment is:`_\n' + message.attachments[0]['url']
-		msg = msg_start + content
-		if message.server.id != productionserver:
-			return
-		else:
-			await client.send_message(specialchannel, msg)
+		attachtoretrieve = urllib.request.Request(
+			message.attachments[0]['url'],
+			data=None,
+			headers={
+				'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
+			}
+		)
+		actuallyretrieving = urllib.request.urlopen(attachtoretrieve)
+		with open(attachcache + '/' + message.attachments[0]['id'] + '_' + message.attachments[0]['filename'], 'wb') as f:
+			f.write(actuallyretrieving.read())
+			f.close()
+		actuallyretrieving.close()
 
 	if message.content.startswith(invoker): # does the message start with command invoker
 		altinvokeractive = False
@@ -947,9 +955,15 @@ async def on_message_delete(message): # when a message gets deleted
 	else:
 		await client.send_message(specialchannel, msg)
 	if message.attachments != []:
-		content = '_`The original attachment is:`_\n' + str(message.attachments)
-		msg = msg_start + content
-		await client.send_message(specialchannel, msg)
+		if os.path.isfile(attachcache + '/' + message.attachments[0]['id'] + '_' + message.attachments[0]['filename']):
+			content = '_📎`The original attachment is attached.`_'
+			msg = msg_start + content
+			filetoattach = attachcache + '/' + message.attachments[0]['id'] + '_' + message.attachments[0]['filename']
+			await client.send_file(destination=specialchannel, content=msg, fp=filetoattach)
+		else:
+			content = '_`The attachment is not in the message attachments cache.`_'
+			msg = msg_start + content
+			await client.send_message(specialchannel, msg)
 
 @client.async_event
 async def on_message_edit(before, after): # when a message gets edited

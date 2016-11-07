@@ -20,7 +20,7 @@ If you’re willing to let Info Teddy be lazy and do the work that he’s suppos
 to do (and he’ll convince you by saying he has homework to do and a life), you
 can add all of this.
 ## v1.0
-- [ ] actually cache message attachments
+- [x] actually cache message attachments
 - [ ] make `\info` show when the member was last seen (and do it well)
 - [ ] make `\restart` restart the bot in place such that everything is reloaded
 but the `Client.messages` cache isnt cleared
@@ -42,7 +42,7 @@ but the `Client.messages` cache isnt cleared
 	- [x] `\rolerst`
 - [ ] give roles
 	- [x] give roles upon a new member joining
-	- [ ] remember roles so members cant circumvent softbans/other
+	- [x] remember roles so members cant circumvent softbans/other
 	restrictive roles and ofc give them back upon joining
 
 # Ideas
