@@ -370,6 +370,10 @@ async def on_message(message):
 		msg_start = '**`>`**👻`user` **``{}``**`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
 		await client.send_message(specialchannel, msg_start)
 
+	if not isprivate and message.tts:
+		msg_start = '**`>`**:microphone2:`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `was sent with TTS.`\n{}'.format(message.id, mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.channel.id, message.content)
+		await client.send_message(specialchannel, msg_start[0:1998]) # Just be very certain that the message isn't too long
+
 	if message.attachments != []:
 		attachtoretrieve = urllib.request.Request(
 				message.attachments[0]['url'],
@@ -548,7 +552,7 @@ async def on_message(message):
 			logging.info('bot restart tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			await reply(message, content)
 			return
-		content = 'Restarting.'
+		content = 'Restarting. Uptime was {}.'.format(reltime(boottimeunix, True))
 		logging.info('bot restart called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 		await reply(message, content)
 		await os.execl(__file__, '')
