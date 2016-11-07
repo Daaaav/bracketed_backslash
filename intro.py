@@ -920,8 +920,6 @@ async def on_message(message):
 	elif command == '/r/undertale':
 		content = 'They banned someone for posting an honest review of Undertale. Seriously, don’t go there if you don’t want to be censored.'
 		await reply(message, content)
-	elif command == 'amazetempfetch':
-		urllib.request.urlretrieve(arguments, 'this')
 	else:
 		if altinvokeractive:
 			return # do not print error message if command is invalid
