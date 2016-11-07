@@ -309,7 +309,7 @@ async def on_ready():
 	logging.info('logged in as {} with id {}'.format(client.user.name, client.user.id))
 	await client.change_presence(game=discord.Game(name='​')) # the game name is u+200b
 
-	await client.send_message(specialchannel_prod, '**`>`**:electric_plug:`Bot connected. (startup time is {})`'.format(reltime(boottimeunix)))
+	await client.send_message(specialchannel_prod, '**`>`**🔌`Bot connected. (startup time is {})`'.format(reltime(boottimeunix)))
 
 	try:
 		with open('members.json', 'r') as infile:
