@@ -27,6 +27,12 @@ import random
 import re
 import time
 import json
+import logging
+
+# sets up logging
+# level can be logging.DEBUG, logging.WARNING, et cetera
+# see https://docs.python.org/3/library/logging.html for more info
+logging.basicConfig(level=logging.INFO)
 
 client = discord.Client() # defines all client.* commands
 
