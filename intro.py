@@ -870,6 +870,7 @@ async def on_message(message):
 		await reply(message, content)
 	elif command == 'timestamptemptest':
 		content = 'Message ts: {}\ntime.time: {}'.format(time.mktime(message.timestamp.timetuple()), time.time())
+		await reply(message, content)
 	elif command == 'info':
 		persontocheck = get_member_input(message.server, arguments)
 		yesperm = '☑'
