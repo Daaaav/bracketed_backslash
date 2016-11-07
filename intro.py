@@ -277,6 +277,7 @@ permissionlabels = [
 	['manage_webhooks', 'Manage Webhooks'],
 	['manage_nicknames', 'Manage Nicknames'],
 	['manage_emojis', 'Manage Custom Emotes'],
+	['manage_messages', 'Manage Messages'],
 	['change_nickname', 'Change Nickname'],
 	['mention_everyone', 'Mention General Mentions'],
 	['external_emojis', 'Use Custom Emotes'],
@@ -285,10 +286,12 @@ permissionlabels = [
 	['send_tts_messages', 'Use Text-to-Speech'],
 	['read_message_history', 'Read Message History'],
 	['send_messages', 'Send Messages'],
+	['add_reactions', 'Add Reactions'],
 	['read_messages', 'Read Messages'],
 	['use_voice_activation', 'Use Voice Activity'],
 	['speak', 'Speak'],
 	['connect', 'Connect'],
+	['create_instant_invite', 'Instant Invite'],
 ]
 
 @client.async_event
