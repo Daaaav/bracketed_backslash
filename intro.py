@@ -56,6 +56,7 @@ algeraden = False
 
 timeformat = '%Y-%m-%d %H:%M:%S (%Z)'
 boottime = time.strftime(timeformat)
+boottimeunix = time.time()
 
 token_config = open('bot_token.conf', 'r')
 
@@ -923,7 +924,7 @@ async def on_message(message):
 		content = 'Bot is okay.'
 		await reply(message, content)
 	elif command == 'uptime':
-		content = '**`Boot time:`**        `{}`\n**`Current time:`** `{}`'.format(boottime, time.strftime(timeformat))
+		content = '**`Boot time:`**        `{}`\n**`Current time:`** `{}`\n**`Uptime:`**              `{}`'.format(boottime, time.strftime(timeformat), reltime(boottimeunix, True))
 		await reply(message, content)
 	elif command == '*formatting*':
 		content = 'That’s italicized formatting.'
@@ -1058,7 +1059,7 @@ async def on_message_edit(before, after): # when a message gets edited
 					if i < (int(time.time())-30):
 						minutemessageedits[k].remove(i)
 				if len(minutemessageedits[k]) == 0:
-					minutemessageedits.remove(k)
+					del minutemessageedits[k]
 
 @client.async_event
 async def on_member_update(before, after):
@@ -1383,5 +1384,34 @@ def getspecialchannel_reply(message):
 	if specialchannel == message.server.default_channel:
 		return message.channel
 	return specialchannel
+
+def reltime(timestamp, noago=False):
+	now = time.time()
+	sdt = now - timestamp
+	dt = math.fabs(sdt)
+
+	if dt == 0:
+		return 'now'
+	elif dt < 60:
+		solong = '{}s'.format(dt)
+	elif dt < 60*60:
+		dm = math.floor(dt/60)
+		ds = dt-dm*60
+		solong = '{}m{}s'.format(dm, ds)
+	elif dt < 24*60*60:
+		dh = math.floor(dt/3600)
+		dm = math.floor((dt-dh*3600)/60)
+		#ds = dt-dh*3600-dm*60
+		solong = '{}h{}m'.format(dh, dm)
+	else:
+		dd = math.floor(dt/86400)
+		dh = math.floor((dt-dd*86400)/3600)
+		solong = '{}d{}h'.format(dd, dh)
+	
+	if sdt < 0:
+		if noago:
+			return solong
+		return '{} ago'.format(solong)
+	return '{} in the future'.format(solong)
 
 client.run(token)
