@@ -885,11 +885,10 @@ async def on_message(message):
 		content = 'moar liek shittykitty amirite'
 		await reply(message, content)
 	elif command == 'tainy':
-		rngint = random.randint(0,1)
-		if rngint == 0:
-			content = 'moar liek stainy amirite'
-		else:
-			content = 'moar like painy amirite'
+		content = random.choice([
+			'moar liek stainy amirite',
+			'moar like painy amirite',
+		])
 		await reply(message, content)
 	elif command == 'kys':
 		content = 'nah'
