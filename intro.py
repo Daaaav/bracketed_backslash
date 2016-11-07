@@ -322,10 +322,23 @@ async def on_ready():
 				memberroles[str(mem.id)] = list(rolelist(mem.roles)) # Possibly redundant list() tbh, just making sure since I can't test and I don't know python well enough to know whether it's redundant
 				continue
 			if set(memberroles[str(mem.id)]) != set(rolelist(mem.roles)):
-				warnings += '\nUser {}#{} ({}) has different roles than in the cache! Maybe you want to correct things.\n    **`Cached:`** {}\n    **`Seen:`** {}'.format(mem.name, mem.discriminator, mem.id, listroles_id(memberroles[str(mem.id)]), listroles(mem.roles))
+				warnings += (
+					'\n'
+					'User {}#{} ({}) has different roles than in the cache! Maybe you want to correct things.\n'
+					'    **`Cached:`** {}\n'
+					'    **`Seen:`** {}'
+				).format(
+					mem.name, mem.discriminator, mem.id,
+					listroles_id(memberroles[str(mem.id)]),
+					listroles(mem.roles),
+				)
 		if warnings != '':
 			logging.warn(warnings)
-			warnings = '**User role cache warning.**\nFull warning output has been sent to the terminal.' + warnings
+			warnings = (
+				'**User role cache warning.**\n'
+				'Full warning output has been sent to the terminal.\n'
+				+ warnings
+			)
 			await client.send_message(specialchannel_prod, warnings[:1900])
 
 	except FileNotFoundError:
@@ -335,7 +348,7 @@ async def on_ready():
 		with open('members.json', 'w') as outfile:
 			json.dump(memberroles, outfile)
 
-		await client.send_message(specialchannel_prod, 'Members file didn\'t yet exist, created a new one. Please run `\\rolesync` to sync up the roles cache.')
+		await client.send_message(specialchannel_prod, 'Members file didn’t yet exist, created a new one. Please run `\\rolesync` to sync up the roles cache.')
 
 @client.async_event
 async def on_message(message):
@@ -345,24 +358,21 @@ async def on_message(message):
 		return # do nothing
 
 	specialchannel = getspecialchannel_reply(message)
-
 	displaymessagecontent = ('``{}``**`…`**'.format(mdspecialchars(message.content[:100]))) if len(message.content) > 100 else '``{}``'.format(mdspecialchars(message.content))
-
 	isprivate = isprivatemessage(message.server) # cant use isprivatemessage = isprivatemessage(), otherwise python will think "holy fuck a variable was referenced before assignment"
 
 	if not isprivate and str(message.author.status) == 'offline':
 		msg_start = '**`>`**👻`user` **``{}``**`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
 		await client.send_message(specialchannel, msg_start)
-		pass
 
 	if message.attachments != []:
 		attachtoretrieve = urllib.request.Request(
-			message.attachments[0]['url'],
-			data=None,
-			headers={
-				'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
-			}
-		)
+				message.attachments[0]['url'],
+				data = None,
+				headers = {
+					'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
+				}
+			)
 		actuallyretrieving = urllib.request.urlopen(attachtoretrieve)
 		with open(attachcache + '/' + message.attachments[0]['id'] + '_' + message.attachments[0]['filename'], 'wb') as f:
 			f.write(actuallyretrieving.read())
