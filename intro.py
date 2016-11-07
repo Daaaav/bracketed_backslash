@@ -30,6 +30,7 @@ import time
 import json
 import logging
 import math
+import subprocess
 
 # sets up logging
 # level can be logging.DEBUG, logging.WARNING, et cetera
@@ -928,14 +929,17 @@ async def on_message(message):
 		content = 'Bot is okay.'
 		await reply(message, content)
 	elif command == 'uptime':
+		hostuptime = subprocess.Popen(['uptime'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
 		content = (
 			'**`Boot time:`**        `{}`\n'
 			'**`Current time:`** `{}`\n'
-			'**`Uptime:`**               `{}`'
+			'**`Bot Uptime:`**      `{}`\n'
+			'**`Host Uptime:`**   `{}`'
 		).format(
 			boottime,
 			time.strftime(timeformat),
 			reltime(boottimeunix, True),
+			hostuptime.decode('utf-8'),
 		)
 		await reply(message, content)
 	elif command == '*formatting*':
