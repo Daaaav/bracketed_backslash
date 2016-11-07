@@ -844,8 +844,6 @@ async def on_message(message):
 
 		content = 'Synced roles.'
 		await reply(message, content)
-	elif command == 'temptest':
-		await reply(message, str(len(memberroles)))
 	elif command == 'info':
 		persontocheck = get_member_input(message.server, arguments)
 		yesperm = '☑'
