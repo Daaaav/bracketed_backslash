@@ -931,7 +931,15 @@ async def on_message(message):
 		content = 'Bot is okay.'
 		await reply(message, content)
 	elif command == 'uptime':
-		content = '**`Boot time:`**        `{}`\n**`Current time:`** `{}`\n**`Uptime:`**               `{}`'.format(boottime, time.strftime(timeformat), reltime(boottimeunix, True))
+		content = (
+			'**`Boot time:`**        `{}`\n'
+			'**`Current time:`** `{}`\n'
+			'**`Uptime:`**               `{}`'
+		).format(
+			boottime,
+			time.strftime(timeformat),
+			reltime(boottimeunix, True),
+		)
 		await reply(message, content)
 	elif command == '*formatting*':
 		content = 'That’s italicized formatting.'
