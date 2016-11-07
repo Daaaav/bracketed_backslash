@@ -42,7 +42,7 @@ but the `Client.messages` cache isnt cleared
 	- [x] `\rolerst`
 - [ ] give roles
 	- [x] give roles upon a new member joining
-	- [ ] remember roles so members cant circumvent softbans/other
+	- [x] remember roles so members cant circumvent softbans/other
 	restrictive roles and ofc give them back upon joining
 
 # Ideas
