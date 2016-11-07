@@ -970,7 +970,7 @@ async def on_message_delete(message): # when a message gets deleted
 			content = '_📎`The original attachment is attached.`_'
 			msg = msg_start + content
 			filetoattach = attachcache + '/' + message.attachments[0]['id'] + '_' + message.attachments[0]['filename']
-			await client.send_file(destination=specialchannel, content=msg, fp=filetoattach)
+			await client.send_file(destination=specialchannel, content=msg, fp=filetoattach, filename=message.attachments[0]['filename'])
 		else:
 			content = '_`The attachment is not in the message attachments cache.`_'
 			msg = msg_start + content
