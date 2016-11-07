@@ -1387,18 +1387,19 @@ def getspecialchannel_reply(message):
 	return specialchannel
 
 def reltime(timestamp, noago=False):
-	now = time.time()
+	timestamp = int(timestamp)
+	now = int(time.time())
 	sdt = now - timestamp
 	dt = math.fabs(sdt)
 
 	if dt == 0:
 		return 'now'
 	elif dt < 60:
-		solong = '{}s'.format(dt)
+		solong = '{}s'.format(int(dt))
 	elif dt < 60*60:
 		dm = math.floor(dt/60)
 		ds = dt-dm*60
-		solong = '{}m{}s'.format(dm, ds)
+		solong = '{}m{}s'.format(dm, int(ds))
 	elif dt < 24*60*60:
 		dh = math.floor(dt/3600)
 		dm = math.floor((dt-dh*3600)/60)
@@ -1409,7 +1410,7 @@ def reltime(timestamp, noago=False):
 		dh = math.floor((dt-dd*86400)/3600)
 		solong = '{}d{}h'.format(dd, dh)
 
-	if sdt < 0:
+	if sdt >= 0:
 		if noago:
 			return solong
 		return '{} ago'.format(solong)
