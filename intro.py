@@ -1407,7 +1407,7 @@ def reltime(timestamp, noago=False):
 		dd = math.floor(dt/86400)
 		dh = math.floor((dt-dd*86400)/3600)
 		solong = '{}d{}h'.format(dd, dh)
-	
+
 	if sdt < 0:
 		if noago:
 			return solong
