@@ -61,6 +61,8 @@ token_config = open('bot_token.conf', 'r')
 
 token = token_config.readline(60).split('\n')[0] # read sixty characters also FUCKING NEWLINES
 
+token_config.close() # this is probably a good idea i should do
+
 specialchannel_prod = discord.Object(id='234185735266238464')
 specialchannel_aperture = discord.Object(id='243176655101755392')
 botschannel = discord.Object(id='201130047736643584')
