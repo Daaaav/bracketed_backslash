@@ -55,6 +55,9 @@ hangmanstarter = None
 guessedletters = [False]*26
 algeraden = False
 
+os.environ['TZ'] = 'UTC'
+time.tzset()
+
 timeformat = '%Y-%m-%d %H:%M:%S (%Z)'
 boottime = time.strftime(timeformat)
 boottimeunix = time.time()
