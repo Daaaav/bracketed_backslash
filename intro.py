@@ -356,7 +356,6 @@ async def on_message(message):
 		pass
 
 	if message.attachments != []:
-		msg_start = '**`>`**📎`user` **``{}``**`#{}` `({}) attached a file to message {} in channel` <#{}> `at {} UTC`\n'.format(mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
 		attachtoretrieve = urllib.request.Request(
 			message.attachments[0]['url'],
 			data=None,
