@@ -295,7 +295,7 @@ permissionlabels = [
 async def on_ready():
 	global memberroles
 
-	print('[info] logged in as {} with id {}'.format(client.user.name, client.user.id))
+	logging.info('logged in as {} with id {}'.format(client.user.name, client.user.id))
 	await client.change_presence(game=discord.Game(name='​')) # the game name is u+200b
 
 	await client.send_message(specialchannel_prod, '**`>`**`Bot connected. (startup time is {})`'.format(boottime))
@@ -320,7 +320,7 @@ async def on_ready():
 			await client.send_message(specialchannel_prod, warnings[:1900])
 
 	except FileNotFoundError:
-		print('[info] members file doesn\'t exist yet! Creating it now...')
+		logging.info('members file does not exist yet so creating it now')
 		memberroles = {}
 
 		with open('members.json', 'w') as outfile:
@@ -518,21 +518,21 @@ async def on_message(message):
 	elif command == 'restart':
 		if message.author.id != '146814960574398464' and message.author.id != '159793749604433921':
 			content = t['op_only']
-			print('[info] bot restart tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			logging.info('bot restart tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			await reply(message, content)
 			return
 		content = 'Restarting.'
-		print('[info] bot restart called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+		logging.info('bot restart called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 		await reply(message, content)
 		await os.execl(__file__, '')
 	elif command == 'kill':
 		if message.author.id != '146814960574398464' and message.author.id != '159793749604433921':
 			content = t['op_only']
-			print('[info] bot kill tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			logging.info('bot kill tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			await reply(message, content)
 			return
 		content = 'Killing.'
-		print('[info] bot kill called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+		logging.info('bot kill called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 		await reply(message, content)
 		await sys.exit()
 	elif command == 'echo':
@@ -691,7 +691,7 @@ async def on_message(message):
 	elif command == 'softban':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			print('[info] softban attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			logging.info('softban attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
@@ -720,7 +720,7 @@ async def on_message(message):
 	elif command == 'nononly' or command == 'nogenmen' or command == 'nocedule' or command == 'notts' or command == 'noreact' or command == 'voicemute':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			print('[info] {} attempted by {}#{} (uuid {}) at {} utc but failed'.format(command, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			logging.info('{} attempted by {}#{} (uuid {}) at {} utc but failed'.format(command, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
@@ -755,7 +755,7 @@ async def on_message(message):
 	elif command == 'nonick':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			print('[info] nonick attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			logging.info('nonick attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
@@ -776,7 +776,7 @@ async def on_message(message):
 	elif command == 'rolerst':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			print('[info] rolerst attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			logging.info('rolerst attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
@@ -807,7 +807,7 @@ async def on_message(message):
 	elif command == 'rolecacherst':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			print('[info] rolecacherst attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			logging.info('rolecacherst attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
@@ -829,7 +829,7 @@ async def on_message(message):
 	elif command == 'rolesync':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			print('[info] rolesync attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			logging.info('rolesync attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
@@ -966,7 +966,7 @@ async def on_message_edit(before, after): # when a message gets edited
 	if before.content == after.content:
 		return # must be the message being pinned and/or embed(s) displaying
 	if before.author == client.user or after.author == client.user: # the bot doesnt edits its own messages, so throw a warning
-		warnings.warn('this is the bots own message and the bot doesnt edit messages\nid of before: {}\nid of after: {}'.format(before.id, after.id))
+		logging.warn('this is the bots own message and the bot doesnt edit messages\nid of before: {}\nid of after: {}'.format(before.id, after.id))
 		return
 	# checks succeeded
 	msg_start = '**`>`**📝`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC edited`\n'.format(before.id, mdspecialchars(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp)
