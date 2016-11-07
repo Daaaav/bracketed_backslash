@@ -309,13 +309,14 @@ async def on_ready():
 
 		for mem in client.get_server(productionserver).members:
 			if not str(mem.id) in memberroles:
-				warnings += '\nUser {}#{} ({}) is now suddenly in the server but wasn\'t when I last checked! Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
+				warnings += '\nUser {}#{} ({}) is not in the cache! Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
 				memberroles[str(mem.id)] = list(rolelist(mem.roles)) # Possibly redundant list() tbh, just making sure since I can't test and I don't know python well enough to know whether it's redundant
 				continue
 			if set(memberroles[str(mem.id)]) != set(rolelist(mem.roles)):
-				warnings += '\nUser {}#{} ({}) doesn\'t have the same roles they had when I last checked! Maybe you want to correct things.\n    Cached: {}\n    Seen: {}'.format(mem.name, mem.discriminator, mem.id, listroles_id(memberroles[str(mem.id)]), listroles(mem.roles))
+				warnings += '\nUser {}#{} ({}) has different roles than in the cache! Maybe you want to correct things.\n    **`Cached:`** {}\n    **`Seen:`** {}'.format(mem.name, mem.discriminator, mem.id, listroles_id(memberroles[str(mem.id)]), listroles(mem.roles))
 		if warnings != '':
-			warnings = '**User role cache warning**' + warnings
+			logging.warn(warnings)
+			warnings = '**User role cache warning.**\nFull warning output has been sent to the terminal.' + warnings
 			await client.send_message(specialchannel_prod, warnings[:1900])
 
 	except FileNotFoundError:
