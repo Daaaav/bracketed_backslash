@@ -1135,7 +1135,6 @@ async def on_member_join(member):
 	msg = '**`>`**➡`user` **``{}``**`#{}` `({}) joined server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	await client.send_message(specialchannel, msg)
 	if member.server.id == productionserver:
-		print('{} joined production server!'.format(member.name))
 		if is_bot(member):
 			await client.add_roles(member, discord.utils.get(member.server.roles, id='201129507967598592')) # bot role
 			return
