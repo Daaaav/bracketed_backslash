@@ -868,6 +868,8 @@ async def on_message(message):
 
 		content = 'Synced roles.'
 		await reply(message, content)
+	elif command == 'timestamptemptest':
+		content = 'Message ts: {}\ntime.time: {}'.format(int(message.timestamp), time.time())
 	elif command == 'info':
 		persontocheck = get_member_input(message.server, arguments)
 		yesperm = '☑'
