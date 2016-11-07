@@ -372,7 +372,7 @@ async def on_message(message):
 		await client.send_message(specialchannel, msg_start)
 
 	if not isprivate and message.tts:
-		msg_start = '**`>`**:microphone2:`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `was sent with TTS.`\n{}'.format(message.id, mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.channel.id, message.content)
+		msg_start = '**`>`**`🎙message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `was sent with TTS.`\n{}'.format(message.id, mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.channel.id, message.content)
 		await client.send_message(specialchannel, msg_start[0:1998]) # Just be very certain that the message isn't too long
 
 	if message.attachments != []:
