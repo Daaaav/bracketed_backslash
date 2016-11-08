@@ -1015,7 +1015,7 @@ async def on_message_edit(before, after): # when a message gets edited
 		logging.warn('this is the bots own message and the bot doesnt edit messages\nid of before: {}\nid of after: {}'.format(before.id, after.id))
 		return
 	# checks succeeded
-	msg_start = '**`>`**📝`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) edited`\n'.format(before.id, mdspecialchars(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp, reltime(time.mktime(message.timestamp.timetuple())))
+	msg_start = '**`>`**📝`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) edited`\n'.format(before.id, mdspecialchars(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp, reltime(time.mktime(before.timestamp.timetuple())))
 	content = '_`The older content is:`_\n' + before.content
 	msg = msg_start + content
 	if len(msg) >= 2000:
@@ -1032,7 +1032,7 @@ async def on_message_edit(before, after): # when a message gets edited
 		await client.send_message(specialchannel, msg2)
 	else:
 		await client.send_message(specialchannel, msg)
-	msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) edited`\n'.format(after.id, mdspecialchars(after.author.name), after.author.discriminator, after.author.id, after.channel.id, after.timestamp, reltime(time.mktime(message.timestamp.timetuple())))
+	msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) edited`\n'.format(after.id, mdspecialchars(after.author.name), after.author.discriminator, after.author.id, after.channel.id, after.timestamp, reltime(time.mktime(after.timestamp.timetuple())))
 	content = '_`The newer content is:`_\n' + after.content
 	msg = msg_start + content
 	if len(msg) >= 2000:
