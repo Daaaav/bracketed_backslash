@@ -1003,10 +1003,10 @@ async def on_message_edit(before, after): # when a message gets edited
 
 	if before.pinned != after.pinned:
 		if before.pinned == False and after.pinned == True: # if the message was pinned
-			msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) pinned`'.format(before.id, mdspecialchars(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp, reltime(time.mktime(message.timestamp.timetuple())))
+			msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) pinned`'.format(before.id, mdspecialchars(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp, reltime(time.mktime(before.timestamp.timetuple())))
 			await client.send_message(specialchannel, msg_start)
 		if before.pinned == True and after.pinned == False: # if the message was unpinned
-			msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) unpinned`'.format(after.id, mdspecialchars(after.author.name), after.author.discriminator, after.author.id, after.channel.id, after.timestamp, reltime(time.mktime(message.timestamp.timetuple())))
+			msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) unpinned`'.format(after.id, mdspecialchars(after.author.name), after.author.discriminator, after.author.id, after.channel.id, after.timestamp, reltime(time.mktime(after.timestamp.timetuple())))
 			await client.send_message(specialchannel, msg_start)
 	# preliminary checkings
 	if before.content == after.content:
