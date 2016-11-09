@@ -29,6 +29,8 @@ import re
 import time
 import json
 import logging
+import math
+import subprocess
 
 # sets up logging
 # level can be logging.DEBUG, logging.WARNING, et cetera
@@ -54,8 +56,12 @@ hangmanstarter = None
 guessedletters = [False]*26
 algeraden = False
 
+os.environ['TZ'] = 'UTC'
+time.tzset()
+
 timeformat = '%Y-%m-%d %H:%M:%S (%Z)'
 boottime = time.strftime(timeformat)
+boottimeunix = time.time()
 
 token_config = open('bot_token.conf', 'r')
 
@@ -307,7 +313,7 @@ async def on_ready():
 	logging.info('logged in as {} with id {}'.format(client.user.name, client.user.id))
 	await client.change_presence(game=discord.Game(name='​')) # the game name is u+200b
 
-	await client.send_message(specialchannel_prod, '**`>`**`Bot connected. (startup time is {})`'.format(boottime))
+	await client.send_message(specialchannel_prod, '**`>`**🔌`Bot connected. (startup time is {})`'.format(reltime(boottimeunix)))
 
 	try:
 		with open('members.json', 'r') as infile:
@@ -364,6 +370,10 @@ async def on_message(message):
 	if not isprivate and str(message.author.status) == 'offline':
 		msg_start = '**`>`**👻`user` **``{}``**`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
 		await client.send_message(specialchannel, msg_start)
+
+	if not isprivate and message.tts:
+		msg_start = '**`>`**`🎙message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `was sent with TTS.`\n{}'.format(message.id, mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.channel.id, message.content)
+		await client.send_message(specialchannel, msg_start[0:1998]) # Just be very certain that the message isn't too long
 
 	if message.attachments != []:
 		attachtoretrieve = urllib.request.Request(
@@ -543,7 +553,7 @@ async def on_message(message):
 			logging.info('bot restart tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			await reply(message, content)
 			return
-		content = 'Restarting.'
+		content = 'Restarting. Uptime was {}.'.format(reltime(boottimeunix, True))
 		logging.info('bot restart called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 		await reply(message, content)
 		await os.execl(__file__, '')
@@ -923,7 +933,18 @@ async def on_message(message):
 		content = 'Bot is okay.'
 		await reply(message, content)
 	elif command == 'uptime':
-		content = '**`Boot time:`**        `{}`\n**`Current time:`** `{}`'.format(boottime, time.strftime(timeformat))
+		hostuptime = subprocess.Popen(['uptime'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+		content = (
+			'**`Boot time:`**        `{}`\n'
+			'**`Current time:`** `{}`\n'
+			'**`Bot Uptime:`**      `{}`\n'
+			'**`Host Uptime:`**   `{}`'
+		).format(
+			boottime,
+			time.strftime(timeformat),
+			reltime(boottimeunix, True),
+			hostuptime.decode('utf-8'),
+		)
 		await reply(message, content)
 	elif command == '*formatting*':
 		content = 'That’s italicized formatting.'
@@ -948,7 +969,7 @@ async def on_message_delete(message): # when a message gets deleted
 
 	specialchannel = getspecialchannel_reply(message)
 
-	msg_start = '**`>`**🚫`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC deleted`\n'.format(message.id, mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.channel.id, message.timestamp)
+	msg_start = '**`>`**🚫`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) deleted`\n'.format(message.id, mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.channel.id, message.timestamp, reltime(time.mktime(message.timestamp.timetuple())))
 	content = '_`The original content is:`_\n' + message.content
 	msg = msg_start + content
 	if len(msg) >= 2000:
@@ -982,10 +1003,10 @@ async def on_message_edit(before, after): # when a message gets edited
 
 	if before.pinned != after.pinned:
 		if before.pinned == False and after.pinned == True: # if the message was pinned
-			msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC pinned`'.format(before.id, mdspecialchars(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp)
+			msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) pinned`'.format(before.id, mdspecialchars(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp, reltime(time.mktime(before.timestamp.timetuple())))
 			await client.send_message(specialchannel, msg_start)
 		if before.pinned == True and after.pinned == False: # if the message was unpinned
-			msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC unpinned`'.format(after.id, mdspecialchars(after.author.name), after.author.discriminator, after.author.id, after.channel.id, after.timestamp)
+			msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) unpinned`'.format(after.id, mdspecialchars(after.author.name), after.author.discriminator, after.author.id, after.channel.id, after.timestamp, reltime(time.mktime(after.timestamp.timetuple())))
 			await client.send_message(specialchannel, msg_start)
 	# preliminary checkings
 	if before.content == after.content:
@@ -994,7 +1015,7 @@ async def on_message_edit(before, after): # when a message gets edited
 		logging.warn('this is the bots own message and the bot doesnt edit messages\nid of before: {}\nid of after: {}'.format(before.id, after.id))
 		return
 	# checks succeeded
-	msg_start = '**`>`**📝`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC edited`\n'.format(before.id, mdspecialchars(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp)
+	msg_start = '**`>`**📝`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) edited`\n'.format(before.id, mdspecialchars(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp, reltime(time.mktime(before.timestamp.timetuple())))
 	content = '_`The older content is:`_\n' + before.content
 	msg = msg_start + content
 	if len(msg) >= 2000:
@@ -1011,7 +1032,7 @@ async def on_message_edit(before, after): # when a message gets edited
 		await client.send_message(specialchannel, msg2)
 	else:
 		await client.send_message(specialchannel, msg)
-	msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC edited`\n'.format(after.id, mdspecialchars(after.author.name), after.author.discriminator, after.author.id, after.channel.id, after.timestamp)
+	msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) edited`\n'.format(after.id, mdspecialchars(after.author.name), after.author.discriminator, after.author.id, after.channel.id, after.timestamp, reltime(time.mktime(after.timestamp.timetuple())))
 	content = '_`The newer content is:`_\n' + after.content
 	msg = msg_start + content
 	if len(msg) >= 2000:
@@ -1058,7 +1079,7 @@ async def on_message_edit(before, after): # when a message gets edited
 					if i < (int(time.time())-30):
 						minutemessageedits[k].remove(i)
 				if len(minutemessageedits[k]) == 0:
-					minutemessageedits.remove(k)
+					del minutemessageedits[k]
 
 @client.async_event
 async def on_member_update(before, after):
@@ -1100,6 +1121,8 @@ async def on_member_update(before, after):
 		msg_start = '**`>`**`user {} changed username`\n'.format(after.id)
 		content = '_`The newer username is:`_\n**``{}``**\n_`The newer discriminator is:`_ `#{}`'.format(mdspecialchars(after.name), after.discriminator)
 		msg = msg_start + content
+		if before.discriminator != after.discriminator:
+			msg += '🔸'
 		await client.send_message(specialchannel, msg)
 	if before.avatar_url != after.avatar_url and before.id != '141769689406636032' and before.id != '88575421972516864' and before.id != '196574963673595904': # isn't 35, 42 or beta 42
 		msg_start = '**`>`**👥`user` **``{}``**`#{}` `({}) changed avatar`\n'.format(mdspecialchars(before.name), before.discriminator, before.id)
@@ -1118,7 +1141,6 @@ async def on_member_join(member):
 	msg = '**`>`**➡`user` **``{}``**`#{}` `({}) joined server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	await client.send_message(specialchannel, msg)
 	if member.server.id == productionserver:
-		print('{} joined production server!'.format(member.name))
 		if is_bot(member):
 			await client.add_roles(member, discord.utils.get(member.server.roles, id='201129507967598592')) # bot role
 			return
@@ -1383,5 +1405,35 @@ def getspecialchannel_reply(message):
 	if specialchannel == message.server.default_channel:
 		return message.channel
 	return specialchannel
+
+def reltime(timestamp, noago=False):
+	timestamp = int(timestamp)
+	now = int(time.time())
+	sdt = now - timestamp
+	dt = math.fabs(sdt)
+
+	if dt == 0:
+		return 'now'
+	elif dt < 60:
+		solong = '{}s'.format(int(dt))
+	elif dt < 60*60:
+		dm = math.floor(dt/60)
+		ds = dt-dm*60
+		solong = '{}m{}s'.format(dm, int(ds))
+	elif dt < 24*60*60:
+		dh = math.floor(dt/3600)
+		dm = math.floor((dt-dh*3600)/60)
+		#ds = dt-dh*3600-dm*60
+		solong = '{}h{}m'.format(dh, dm)
+	else:
+		dd = math.floor(dt/86400)
+		dh = math.floor((dt-dd*86400)/3600)
+		solong = '{}d{}h'.format(dd, dh)
+
+	if sdt >= 0:
+		if noago:
+			return solong
+		return '{} ago'.format(solong)
+	return '{} in the future'.format(solong)
 
 client.run(token)
