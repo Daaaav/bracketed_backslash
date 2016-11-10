@@ -520,8 +520,10 @@ async def on_message(message):
 	if command == 'help':
 		content = (
 			'`[\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server.\n'
-			'To get accepted into the developer team, you have to be accepted by every one of the current members of the team.'
-			+ helplist(cmds)
+			'To get accepted into the developer team, you have to be accepted by eighty-percent of the current members of the team.'
+			+ helplist(cmds) + '\n'
+			'**`tOLP Discord`** – the server it’s built for. Join at __https://discord.gg/0r76El7PzkPMhSBF__.\n'
+			'**`Aperture Science`** – the bot’s testing server. Join at __https://discord.gg/0skUn2HYSEHxw9Dg__.'
 			)
 
 		# General
@@ -1197,6 +1199,38 @@ async def on_server_role_create(role):
 async def on_server_role_delete(role):
 	specialchannel = getspecialchannel(role.server)
 	msg = '**`>`**`role` **``{}``** `({}) was deleted in server` **``{}``** `({}) originally created at {}`'.format(mdspecialchars(role.name), role.id, mdspecialchars(role.server.name), role.server.id, role.created_at)
+	await client.send_message(specialchannel, msg)
+
+@client.async_event
+async def on_reaction_add(reaction, user):
+	specialchannel = getspecialchannel(reaction.message.server)
+	try:
+		iscustomemote = True
+		emotename = reaction.emoji.name
+	except AttributeError:
+		iscustomemote = False
+		emotename = reaction.emoji
+	msg = '**`>`**`user` **``{}``**`#{}` `({}) added reaction` {} `{} to message {}'.format(mdspecialchars(user.name), user.discriminator, user.id, emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', reaction.message.id)
+	if str(user.status) == 'offline':
+		msg += ' and was invisible while doing so`'
+	else:
+		msg += '`'
+	await client.send_message(specialchannel, msg)
+
+@client.async_event
+async def on_reaction_remove(reaction, user):
+	specialchannel = getspecialchannel(reaction.message.server)
+	try:
+		iscustomemote = True
+		emotename = reaction.emoji.name
+	except AttributeError:
+		iscustomemote = False
+		emotename = reaction.emoji
+	msg = '**`>`**`user` **``{}``**`#{}` `({}) removed reaction` {} `{} from message {}'.format(mdspecialchars(user.name), user.discriminator, user.id, emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', reaction.message.id)
+	if str(user.status) == 'offline':
+		msg += ' and was invisible while doing so`'
+	else:
+		msg += '`'
 	await client.send_message(specialchannel, msg)
 
 def is_admin(member):
