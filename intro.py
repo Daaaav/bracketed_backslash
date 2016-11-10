@@ -272,6 +272,11 @@ meme_cmds = [
 				'short': 'This is going to give my bot cancer.',
 				'extra': t['its_meme']
 			},
+			{
+				'name': 'invite',
+				'short': 'Use this link to get [\\] on your servers!',
+				'extra': t['its_meme']
+			}
 		]
 	}
 ]
@@ -953,6 +958,12 @@ async def on_message(message):
 		await reply(message, content)
 	elif command == '/r/undertale':
 		content = 'They banned someone for posting an honest review of Undertale. Seriously, don’t go there if you don’t want to be censored.'
+		await reply(message, content)
+	elif command == 'invite':
+		content = (
+			'Use this link to add [\\] to your servers!\n'
+			'__https://discordapp.com/oauth2/authorize?client_id={}&scope=bot&permissions=8__'
+		).format(client.user.id)
 		await reply(message, content)
 	else:
 		if altinvokeractive:
