@@ -1208,7 +1208,11 @@ async def on_reaction_add(reaction, user):
 	except AttributeError:
 		iscustomemote = False
 		emotename = reaction.emoji
-	msg = '**`>`**`user` **``{}``**`#{}` `({}) added reaction` {} `{} to message {}`'.format(mdspecialchars(user.name), user.discriminator, user.id, emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', reaction.message.id)
+	msg = '**`>`**`user` **``{}``**`#{}` `({}) added reaction` {} `{} to message {}'.format(mdspecialchars(user.name), user.discriminator, user.id, emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', reaction.message.id)
+	if str(user.status) == 'offline':
+		msg += ' and was invisible while doing so`'
+	else:
+		msg += '`'
 	await client.send_message(specialchannel, msg)
 
 @client.async_event
@@ -1220,7 +1224,11 @@ async def on_reaction_remove(reaction, user):
 	except AttributeError:
 		iscustomemote = False
 		emotename = reaction.emoji
-	msg = '**`>`**`user` **``{}``**`#{}` `({}) removed reaction` {} `{} from message {}`'.format(mdspecialchars(user.name), user.discriminator, user.id, emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', reaction.message.id)
+	msg = '**`>`**`user` **``{}``**`#{}` `({}) removed reaction` {} `{} from message {}'.format(mdspecialchars(user.name), user.discriminator, user.id, emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', reaction.message.id)
+	if str(user.status) == 'offline':
+		msg += ' and was invisible while doing so`'
+	else:
+		msg += '`'
 	await client.send_message(specialchannel, msg)
 
 def is_admin(member):
