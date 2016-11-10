@@ -1199,6 +1199,30 @@ async def on_server_role_delete(role):
 	msg = '**`>`**`role` **``{}``** `({}) was deleted in server` **``{}``** `({}) originally created at {}`'.format(mdspecialchars(role.name), role.id, mdspecialchars(role.server.name), role.server.id, role.created_at)
 	await client.send_message(specialchannel, msg)
 
+@client.async_event
+async def on_reaction_add(reaction, user):
+	specialchannel = getspecialchannel(reaction.message.server)
+	try:
+		iscustomemote = True
+		emotename = reaction.emoji.name
+	except AttributeError:
+		iscustomemote = False
+		emotename = reaction.emoji
+	msg = '**`>`**`user` **``{}``**`#{}` `({}) added reaction` {} `{} to message {}`'.format(mdspecialchars(user.name), user.discriminator, user.id, emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', reaction.message.id)
+	await client.send_message(specialchannel, msg)
+
+@client.async_event
+async def on_reaction_remove(reaction, user):
+	specialchannel = getspecialchannel(reaction.message.server)
+	try:
+		iscustomemote = True
+		emotename = reaction.emoji.name
+	except AttributeError:
+		iscustomemote = False
+		emotename = reaction.emoji
+	msg = '**`>`**`user` **``{}``**`#{}` `({}) removed reaction` {} `{} from message {}`'.format(mdspecialchars(user.name), user.discriminator, user.id, emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', reaction.message.id)
+	await client.send_message(specialchannel, msg)
+
 def is_admin(member):
 	try:
 		perms = member.server_permissions
