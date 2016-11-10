@@ -520,8 +520,10 @@ async def on_message(message):
 	if command == 'help':
 		content = (
 			'`[\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server.\n'
-			'To get accepted into the developer team, you have to be accepted by every one of the current members of the team.'
-			+ helplist(cmds)
+			'To get accepted into the developer team, you have to be accepted by eighty-percent of the current members of the team.'
+			+ helplist(cmds) + '\n'
+			'**`tOLP Discord`** – the server it’s built for. Join at __https://discord.gg/0r76El7PzkPMhSBF__.\n'
+			'**`Aperture Science`** – the bot’s testing server. Join at __https://discord.gg/0skUn2HYSEHxw9Dg__.'
 			)
 
 		# General
