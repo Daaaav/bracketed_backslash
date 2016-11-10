@@ -1167,8 +1167,6 @@ async def on_member_join(member):
 		else:
 			# Not found, so they're just a tOLPer.
 			await client.add_roles(member, discord.utils.get(member.server.roles, id='231644869351833600')) # The tOLPer role
-	else:
-		print('{} joined a server that is NOT the production server!'.format(member.name))
 
 @client.async_event
 async def on_member_remove(member):
