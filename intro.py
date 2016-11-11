@@ -134,6 +134,11 @@ cmds = [
 				'short': 'Stop the current game of hangman.',
 				'extra': 'Can only be done by the one who started the game or a moderator.'
 			},
+			{
+				'name': 'invite',
+				'short': 'Links to the servers `[\]` can be used on.',
+				'extra': '`[\]` can only be used on these servers.'
+			}
 		]
 	},
 	{
@@ -272,11 +277,6 @@ meme_cmds = [
 				'short': 'This is going to give my bot cancer.',
 				'extra': t['its_meme']
 			},
-			{
-				'name': 'invite',
-				'short': 'Use this link to get [\\] on your servers!',
-				'extra': t['its_meme']
-			}
 		]
 	}
 ]
@@ -526,9 +526,7 @@ async def on_message(message):
 		content = (
 			'`[\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server.\n'
 			'To get accepted into the developer team, you have to be accepted by eighty-percent of the current members of the team.'
-			+ helplist(cmds) + '\n'
-			'**`tOLP Discord`** – the server it’s built for. Join at __https://discord.gg/0r76El7PzkPMhSBF__.\n'
-			'**`Aperture Science`** – the bot’s testing server. Join at __https://discord.gg/0skUn2HYSEHxw9Dg__.'
+			+ helplist(cmds)
 			)
 
 		# General
@@ -961,9 +959,9 @@ async def on_message(message):
 		await reply(message, content)
 	elif command == 'invite':
 		content = (
-			'Use this link to add [\\] to your servers!\n'
-			'__https://discordapp.com/oauth2/authorize?client_id={}&scope=bot&permissions=8__'
-		).format(client.user.id)
+			'**`tOLP Discord`** – the server it’s built for. Join at __https://discord.gg/0r76El7PzkPMhSBF__.\n'
+			'**`Aperture Science`** – the bot’s testing server. Join at __https://discord.gg/0skUn2HYSEHxw9Dg__.'
+		)
 		await reply(message, content)
 	else:
 		if altinvokeractive:
