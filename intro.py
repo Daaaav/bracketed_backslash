@@ -928,7 +928,7 @@ async def on_message(message):
 			content = 'Rules:\n**1.** I am always right.\n**2.** If I am not right, rule 1 applies.'
 			await reply(message, content)
 			return
-		if message.server.id not in rules:
+		if not message.server.id in rules:
 			content = 'Rules are not (yet) set for this server.'
 			await reply(message, content)
 			return
@@ -959,7 +959,7 @@ async def on_message(message):
 			content = 'I\'m not going to think up any rules by myself.'
 			await reply(message, content)
 			return
-		in message.server.id not in rules:
+		if not message.server.id in rules:
 			rules[message.server.id] = []
 
 		splitargs = arguments.split(' ', 1)
@@ -982,7 +982,7 @@ async def on_message(message):
 			content = 'This command expects you to enter some more info, maybe read its help entry.'
 			await reply(message, content)
 			return
-		if message.server.id not in rules:
+		if not message.server.id in rules:
 			content = 'No rules to edit.'
 			await reply(message, content)
 			return
@@ -1014,7 +1014,7 @@ async def on_message(message):
 			content = 'This command expects you to enter some more info, maybe read its help entry.'
 			await reply(message, content)
 			return
-		if message.server.id not in rules:
+		if not message.server.id in rules:
 			content = 'No rules to move.'
 			await reply(message, content)
 			return
@@ -1049,7 +1049,7 @@ async def on_message(message):
 			content = 'This command expects you to enter some more info, maybe read its help entry.'
 			await reply(message, content)
 			return
-		if message.server.id not in rules:
+		if not message.server.id in rules:
 			content = 'No rules to delete.'
 			await reply(message, content)
 			return
