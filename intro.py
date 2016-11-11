@@ -345,7 +345,7 @@ permissionlabels = [
 
 @client.async_event
 async def on_ready():
-	global memberroles
+	global memberroles, rules
 
 	logging.info('logged in as {} with id {}'.format(client.user.name, client.user.id))
 	await client.change_presence(game=discord.Game(name='​')) # the game name is u+200b
@@ -1032,7 +1032,7 @@ async def on_message(message):
 				return
 
 			rulecontent = rules[message.server.id][int(splitargs[0])-1]
-			rules[message.server.id].remove(int(splitargs[0])-1)
+			rules[message.server.id].remove(rules[message.server.id][int(splitargs[0])-1])
 			rules[message.server.id].insert(int(splitargs[1])-1, rulecontent)
 			rulesave()
 			
@@ -1066,7 +1066,7 @@ async def on_message(message):
 
 			content = 'Rule {} successfully removed:\n{}.'.format(int(arguments), rules[message.server.id][int(arguments)-1])
 
-			rules[message.server.id].remove(int(arguments)-1)
+			rules[message.server.id].remove(rules[message.server.id][int(arguments)-1])
 			rulesave()
 		else:
 			content = 'Invalid rule number given, just check the help entry.'
