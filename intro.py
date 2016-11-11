@@ -138,7 +138,7 @@ cmds = [
 				'name': 'invite',
 				'short': 'Links to the servers `[\]` can be used on.',
 				'extra': '`[\]` can only be used on these servers.'
-			}
+			},
 		]
 	},
 	{
@@ -223,6 +223,36 @@ cmds = [
 				'name': 'rolesync',
 				'short': 'Re-syncs the roles cache with the current roles everyone has, if the bot missed role additions/removals',
 				'extra': 'Does not remove members from the cache who have left the server.'
+			},
+		]
+	},
+	{
+		'cat_name': 'Rules Commands',
+		'commands': [
+			{
+				'name': 'rules',
+				'short': 'View the rules.',
+				'extra': 'Rules can be different for each server the bot runs on.',
+			},
+			{
+				'name': 'ruleadd',
+				'short': 'Insert a given rule string (2) to position (1). If no position is given, it\'s added at the end.',
+				'extra': 'Examples:\n`\\ruleadd No trolling`\n`\\ruleadd 1 The most important rule is not to follow this rule.`'
+			},
+			{
+				'name': 'ruleedit',
+				'short': 'Edit a given rule.',
+				'extra': 'Example:\n`\\ruleedit 2 No trolling`'
+			},
+			{
+				'name': 'rulemove',
+				'short': 'Move a given rule to a different slot. (nothing gets overwritten)',
+				'extra': 'Example:\n`\\rulemove 2 4`'
+			},
+			{
+				'name': 'ruleremove',
+				'short': 'Remove a given rule.',
+				'extra': 'Example:\n`\\ruleremove 2`'
 			},
 		]
 	},
@@ -329,7 +359,7 @@ async def on_ready():
 
 		for mem in client.get_server(productionserver).members:
 			if not str(mem.id) in memberroles:
-				warnings += '\nUser {}#{} ({}) is not in the cache! Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
+				warnings += '\nUser {}#{} ({}) is not in the cache! (They\'re suddenly in the server.) Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
 				memberroles[str(mem.id)] = list(rolelist(mem.roles)) # Possibly redundant list() tbh, just making sure since I can't test and I don't know python well enough to know whether it's redundant
 				continue
 			if set(memberroles[str(mem.id)]) != set(rolelist(mem.roles)):
@@ -360,6 +390,18 @@ async def on_ready():
 			json.dump(memberroles, outfile)
 
 		await client.send_message(specialchannel_prod, 'Members file didn’t yet exist, created a new one. Please run `\\rolesync` to sync up the roles cache.')
+	
+	try:
+		with open('rules.json', 'r') as infile:
+			rules = json.load(infile)
+	except FileNotFoundError:
+		logging.info('rules file does not exist yet so creating it now')
+		rules = {}
+
+		with open('rules.json', 'w') as outfile:
+			json.dump(rules, outfile)
+
+		await client.send_message(specialchannel_prod, 'Rules file didn\'t exist yet, created a new one.')
 
 @client.async_event
 async def on_message(message):
@@ -880,6 +922,152 @@ async def on_message(message):
 		rolecachesave()
 
 		content = 'Synced roles.'
+		await reply(message, content)
+	elif command == 'rules' or command == 'rule':
+		if isprivatemessage(message.server):
+			content = 'Rules:\n**1.** I am always right.\n**2.** If I am not right, rule 1 applies.'
+			await reply(message, content)
+			return
+		if message.server.id not in rules:
+			content = 'Rules are not (yet) set for this server.'
+			await reply(message, content)
+			return
+		if arguments != None and arguments.isdigit():
+			try:
+				rules[message.server.id][int(arguments)-1]
+
+				# Oh, we survived this? That means the given specific rule exists!
+				content = 'Rule **{}** for server `{}`:\n{}'.format(int(arguments), mdspecialchars(message.server.name), rules[message.server.id][int(arguments)-1])
+				await reply(message, content)
+				return
+			except IndexError:
+				pass
+		n = 1
+		content = 'Rules for server `{}`:'.format(mdspecialchars(message.server.name))
+		for rule in rules[message.server.id]:
+			content += '\n**{}.** {}'.format(n, rule)
+			n += 1
+		await reply(message, content)
+	elif command == 'ruleadd' or command == 'addrule':
+		if not is_mod(message.author):
+			content = t['mod_only']
+			logging.info('ruleadd yada yada')
+
+			await reply(message, content)
+			return
+		if arguments == None:
+			content = 'I\'m not going to think up any rules by myself.'
+			await reply(message, content)
+			return
+		in message.server.id not in rules:
+			rules[message.server.id] = []
+
+		splitargs = arguments.split(' ', 1)
+		if splitargs[0].isdigit():
+			rules[message.server.id].insert(int(splitargs[0])-1, splitargs[1])
+			content = 'New rule {} inserted:\n{}'.format(int(splitargs[0]), splitargs[1])       # Yes, this one is "inserted"...
+		else:
+			rules[message.server.id].append(arguments)
+			content = 'New rule {} added:\n{}'.format(len(rules[message.server.id]), arguments) # ...and this one is "added". That is on purpose, not an inconsistency.
+		rulesave()
+		await reply(message, content)
+	elif command == 'ruleedit' or command == 'editrule':
+		if not is_mod(message.author):
+			content = t['mod_only']
+			logging.info('ruleedit yada yada')
+
+			await reply(message, content)
+			return
+		if arguments == None:
+			content = 'This command expects you to enter some more info, maybe read its help entry.'
+			await reply(message, content)
+			return
+		if message.server.id not in rules:
+			content = 'No rules to edit.'
+			await reply(message, content)
+			return
+
+		splitargs = arguments.split(' ', 1)
+		if splitargs[0].isdigit():
+			try:
+				rules[message.server.id][int(splitargs[0])-1]
+			except IndexError:
+				content = 'Rule {} does not appear to exist.'.format(int(splitargs[0]))
+				await reply(message, content)
+				return
+
+			content = 'Rule {} successfully edited from:\n{}\nTo:\n{}'.format(int(splitargs[0]), rules[message.server.id][int(splitargs[0])-1], splitargs[1])
+
+			rules[message.server.id][int(splitargs[0])-1] = splitargs[1]
+			rulesave()
+		else:
+			content = 'Invalid rule number given, just check the help entry.'
+		await reply(message, content)
+	elif command == 'rulemove' or command == 'moverule':
+		if not is_mod(message.author):
+			content = t['mod_only']
+			logging.info('rulemove yada yada')
+
+			await reply(message, content)
+			return
+		if arguments == None:
+			content = 'This command expects you to enter some more info, maybe read its help entry.'
+			await reply(message, content)
+			return
+		if message.server.id not in rules:
+			content = 'No rules to move.'
+			await reply(message, content)
+			return
+
+		splitargs = arguments.split(' ', 1)
+		if splitargs[0].isdigit() and splitargs[1].isdigit():
+			try:
+				rules[message.server.id][int(splitargs[0])-1]
+				rules[message.server.id][int(splitargs[1])-1]
+			except IndexError:
+				content = 'Either rule {} does not exist or {} is not a slot it can be moved to.'.format(int(splitargs[0]), int(splitargs[1]))
+				await reply(message, content)
+				return
+
+			rulecontent = rules[message.server.id][int(splitargs[0])-1]
+			rules[message.server.id].remove(int(splitargs[0])-1)
+			rules[message.server.id].insert(int(splitargs[1])-1, rulecontent)
+			rulesave()
+			
+			content = 'Rule {} successfully moved to number {}.'.format(int(splitargs[0]), int(splitargs[1]))
+		else:
+			content = 'Invalid rule number(s) given, just check the help entry.'
+		await reply(message, content)
+	elif command == 'ruleremove' or command == 'removerule':
+		if not is_mod(message.author):
+			content = t['mod_only']
+			logging.info('ruleremove yada yada')
+
+			await reply(message, content)
+			return
+		if arguments == None:
+			content = 'This command expects you to enter some more info, maybe read its help entry.'
+			await reply(message, content)
+			return
+		if message.server.id not in rules:
+			content = 'No rules to delete.'
+			await reply(message, content)
+			return
+
+		if arguments.isdigit():
+			try:
+				rules[message.server.id][int(arguments)-1]
+			except IndexError:
+				content = 'Rule {} does not appear to exist.'.format(int(arguments))
+				await reply(message, content)
+				return
+
+			content = 'Rule {} successfully removed:\n{}.'.format(int(arguments), rules[message.server.id][int(arguments)-1])
+
+			rules[message.server.id].remove(int(arguments)-1)
+			rulesave()
+		else:
+			content = 'Invalid rule number given, just check the help entry.'
 		await reply(message, content)
 	elif command == 'info':
 		persontocheck = get_member_input(message.server, arguments)
@@ -1417,6 +1605,12 @@ def rolecachesave():
 
 	with open('members.json', 'w') as outfile:
 		json.dump(memberroles, outfile)
+
+def rulesave():
+	global rules
+
+	with open('rules.json', 'w') as outfile:
+		json.dump(rules, outfile)
 
 def listroles(lijst):
 	returnage = ''
