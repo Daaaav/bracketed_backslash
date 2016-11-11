@@ -78,6 +78,8 @@ server = client.get_server(productionserver) # defines all server.* commands
 memberroles = {}
 minutemessageedits = {}
 
+rules = {}
+
 client.max_messages = None
 
 t = {
