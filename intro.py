@@ -1445,6 +1445,8 @@ def getspecialchannel(server):
 		return server.default_channel
 
 def getspecialchannel_reply(message):
+	if message.server == None:
+		return message.channel
 	specialchannel = getspecialchannel(message.server)
 	if specialchannel == message.server.default_channel:
 		return message.channel
