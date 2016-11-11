@@ -1,3 +1,4 @@
 *.conf
 members.json
+rules.json
 .cache
