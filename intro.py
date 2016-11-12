@@ -1480,11 +1480,7 @@ async def on_reaction_remove(reaction, user):
 	except AttributeError:
 		iscustomemote = False
 		emotename = reaction.emoji
-	msg = '**`>`**`user` **``{}``**`#{}` `({}) removed reaction` {} `{} from message {}'.format(mdspecialchars(user.name), user.discriminator, user.id, emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', reaction.message.id)
-	if str(user.status) == 'offline':
-		msg += ' and was invisible while doing so`'
-	else:
-		msg += '`'
+	msg = '**`>`**`reaction` {} `{} by user` **``{}``**`#{}` `from message {} removed`'.format(emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', mdspecialchars(user.name), user.discriminator, user.id, reaction.message.id)
 	await client.send_message(specialchannel, msg)
 
 @client.async_event
