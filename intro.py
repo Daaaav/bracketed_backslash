@@ -1485,13 +1485,27 @@ async def on_reaction_remove(reaction, user):
 
 @client.async_event
 async def on_server_update(before, after):
-	specialchannel = getspecialchannel(before)
-	if before.icon != after.icon: # only looking for icon changes right now
+	specialchannel = getspecialchannel(after)
+	if before.icon != after.icon:
 		msg_start = '**`>`**`server` **``{}``** `({}) changed icon`\n'.format(mdspecialchars(before.name), before.id)
 		content = '_`The older icon URL is:`_ ' + before.icon_url
 		msg = msg_start + content
 		await client.send_message(specialchannel, msg)
 		content = '_`The newer icon URL is:`_ ' + after.icon_url
+		msg = msg_start + content
+		await client.send_message(specialchannel, msg)
+	if before.name != after.name:
+		msg_start = '**`>`**`server {} changed name`\n'.format(before.id)
+		content = (
+			'_`The older name is:`_\n'
+			'**``{}``**'
+		).format(mdspecialchars(before.name))
+		msg = msg_start + content
+		await client.send_message(specialchannel, msg)
+		content = (
+			'_`The newer name is:`_\n'
+			'**``{}``**'
+		).format(mdspecialchars(after.name))
 		msg = msg_start + content
 		await client.send_message(specialchannel, msg)
 
