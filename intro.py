@@ -1210,7 +1210,7 @@ async def on_message(message):
 			'**`discord.py`** – {}'
 		).format(
 			botversion,
-			time.strftime(timeformat, gmtime(max(modificationtimes))),
+			time.strftime(timeformat, time.gmtime(max(modificationtimes))),
 			discord.__version__,
 		)
 		await reply(message, content)
