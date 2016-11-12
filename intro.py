@@ -32,6 +32,9 @@ import logging
 import math
 import subprocess
 
+# set bot version
+botversion = '1.0'
+
 # sets up logging
 # level can be logging.DEBUG, logging.WARNING, et cetera
 # see https://docs.python.org/3/library/logging.html for more info
@@ -1193,6 +1196,14 @@ async def on_message(message):
 			'**`Aperture Science`** – the bot’s testing server. Join at __https://discord.gg/0skUn2HYSEHxw9Dg__.'
 		)
 		await reply(message, content)
+	elif command == 'version':
+		content = (
+			'**`[\]`** – {}\n'
+			'**`discord.py`** – {}'
+		).format(
+			botversion,
+			discord.__version__,
+		)
 	else:
 		if altinvokeractive:
 			return # do not print error message if command is invalid
