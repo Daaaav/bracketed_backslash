@@ -1209,6 +1209,7 @@ async def on_message(message):
 			botversion,
 			discord.__version__,
 		)
+		await reply(message, content)
 	else:
 		if altinvokeractive:
 			return # do not print error message if command is invalid
