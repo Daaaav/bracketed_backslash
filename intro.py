@@ -1487,6 +1487,19 @@ async def on_reaction_remove(reaction, user):
 		msg += '`'
 	await client.send_message(specialchannel, msg)
 
+@client.async_event
+async def on_server_update(before, after):
+	specialchannel = getspecialchannel(before)
+	if before.icon != after.icon: # only looking for icon changes right now
+		msg_start = '**`>`**`server` **``{}``** `({}) changed icon`\n'.format(mdspecialchars(before.name), before.id)
+		content = '_`The older icon URL is:`_ ' + before.icon_url
+		msg = msg_start + content
+		await client.send_message(specialchannel, msg)
+		content = '_`The newer icon URL is:`_ ' + after.icon_url
+		msg = msg_start + content
+		await client.send_message(specialchannel, msg)
+
+# every function below here is custom-defined and not a part of discord.py
 def is_admin(member):
 	try:
 		perms = member.server_permissions
