@@ -1576,8 +1576,8 @@ async def reply(messageobject, message):
 		content = msg_start + message
 		contentlines = content.split('\n')
 		cut = floor(len(contentlines)/2)
-		await client.send_message(messageobject.channel, '\n'.join(contentlines[:cut])
-		await client.send_message(messageobject.channel, '\n'.join(contentlines[cut:])
+		await client.send_message(messageobject.channel, '\n'.join(contentlines[:cut]))
+		await client.send_message(messageobject.channel, '\n'.join(contentlines[cut:]))
 		return
 	await client.send_message(messageobject.channel, msg_start + message)
 
