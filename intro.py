@@ -156,6 +156,11 @@ cmds = [
 				'extra': 'If the bot is okay, the bot will respond with “Bot is okay”.'
 			},
 			{
+				'name': 'version',
+				'short': 'Gives the bot version and `discord.py` version',
+				'extra': ''
+			},
+			{
 				'name': 'uptime',
 				'short': 'Prints the time the bot was booted.',
 				'extra': 'Doesn’t yet give the amount of time between the boot and now, but does give those timestamps.'
