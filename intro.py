@@ -398,7 +398,7 @@ async def on_ready():
 			json.dump(memberroles, outfile)
 
 		await client.send_message(specialchannel_prod, 'Members file didn’t yet exist, created a new one. Please run `\\rolesync` to sync up the roles cache.')
-	
+
 	try:
 		with open('rules.json', 'r') as infile:
 			rules = json.load(infile)
@@ -410,7 +410,7 @@ async def on_ready():
 			json.dump(rules, outfile)
 
 		await client.send_message(specialchannel_prod, 'Rules file didn\'t exist yet, created a new one.')
-	
+
 	try:
 		with open('disabledrules.json', 'r') as infile:
 			disabledrules = json.load(infile)
@@ -1057,7 +1057,7 @@ async def on_message(message):
 			rules[message.server.id].remove(rules[message.server.id][int(splitargs[0])-1])
 			rules[message.server.id].insert(int(splitargs[1])-1, rulecontent)
 			rulesave()
-			
+
 			content = 'Rule {} successfully moved to number {}.'.format(int(splitargs[0]), int(splitargs[1]))
 		else:
 			content = 'Invalid rule number(s) given, just check the help entry.'
