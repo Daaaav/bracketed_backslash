@@ -614,7 +614,7 @@ async def on_message(message):
 						break
 
 			if not matched:
-				content = 'Invalid arguments passed. Input `\help` for a list of valid commands to pass as arguments.'
+				content = 'Invalid arguments passed, or the command is not in the help list. Input `\help` for a list of valid commands to pass as arguments.'
 		await reply(message, content)
 	elif command == 'restart':
 		if message.author.id != '146814960574398464' and message.author.id != '159793749604433921':
