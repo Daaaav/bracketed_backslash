@@ -235,7 +235,7 @@ cmds = [
 			{
 				'name': 'rules',
 				'short': 'View the rules.',
-				'extra': 'Rules can be different for each server the bot runs on.',
+				'extra': 'Rules can be different for each server the bot runs on. You can get a specific rule by its number with `\\rule X`.',
 			},
 			{
 				'name': 'ruleadd',
