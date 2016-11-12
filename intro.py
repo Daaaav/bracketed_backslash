@@ -1202,11 +1202,15 @@ async def on_message(message):
 		)
 		await reply(message, content)
 	elif command == 'version':
+		modificationtimes = [
+			os.path.getmtime('intro.py'),
+		]
 		content = (
-			'**`[\]`** – {}\n'
+			'**`[\]`** – {}, last updated {}\n'
 			'**`discord.py`** – {}'
 		).format(
 			botversion,
+			time.strftime(timeformat, gmtime(max(modificationtimes))),
 			discord.__version__,
 		)
 		await reply(message, content)
