@@ -1388,7 +1388,7 @@ async def on_member_join(member):
 			# They're found in the database! Give them the groups they should have
 			for rid in memberroles[str(member.id)]:
 				await client.add_roles(member, discord.utils.get(member.server.roles, id=rid)) # TODO make this less iterative and add multiple roles at once
-			msg = '**`>`**`user` **``{}``**`#{}` `({}) found in the role cache'.format(mdspecialchars(member.name), member.discriminator, member.id)
+			msg = '**`>`**`user` **``{}``**`#{}` `({}) found in the role cache`'.format(mdspecialchars(member.name), member.discriminator, member.id)
 			await client.send_message(specialchannel, msg)
 		else:
 			# Not found, so they're just a tOLPer.
