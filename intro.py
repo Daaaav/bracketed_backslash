@@ -1571,6 +1571,14 @@ def get_member_input(server, input):
 @client.async_event
 async def reply(messageobject, message):
 	# Removes the need for adding msg_start manually every time
+	if len(msg_start + message) >= 2000:
+		# We can at least try in a totally not failsafe and kinda ugly way
+		content = msg_start + message
+		contentlines = content.split('\n')
+		cut = floor(len(contentlines)/2)
+		await client.send_message(messageobject.channel, '\n'.join(contentlines[:cut])
+		await client.send_message(messageobject.channel, '\n'.join(contentlines[cut:])
+		return
 	await client.send_message(messageobject.channel, msg_start + message)
 
 def mdspecialchars(string):
