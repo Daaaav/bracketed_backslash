@@ -967,7 +967,7 @@ async def on_message(message):
 			except IndexError:
 				pass
 		n = 1
-		content = 'Rules for server `{}`:{}'.format(mdspecialchars(message.server.name), ' (Disabled)' if message.server.id in rules else '')
+		content = 'Rules for server `{}`:{}'.format(mdspecialchars(message.server.name), ' (Disabled)' if message.server.id in disabledrules else '')
 		for rule in rules[message.server.id]:
 			content += '\n**{}.** {}'.format(n, rule)
 			n += 1
