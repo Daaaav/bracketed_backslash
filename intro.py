@@ -948,7 +948,7 @@ async def on_message(message):
 			content = 'Rules:\n**1.** I am always right.\n**2.** If I am not right, rule 1 applies.'
 			await reply(message, content)
 			return
-		if message.server.id in disabledrules:
+		if message.server.id in disabledrules and not is_mod(message.author):
 			content = 'The rules system is currently disabled for this server.'
 			await reply(message, content)
 			return
