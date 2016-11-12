@@ -79,6 +79,7 @@ memberroles = {}
 minutemessageedits = {}
 
 rules = {}
+disabledrules = []
 
 client.max_messages = None
 
@@ -256,6 +257,11 @@ cmds = [
 				'short': 'Remove a given rule.',
 				'extra': 'Example:\n`\\ruleremove 2`'
 			},
+			{
+				'name': 'rulemaint',
+				'short': 'Enable/Disable the rules system for this server.',
+				'extra': ''
+			},
 		]
 	},
 ]
@@ -345,7 +351,7 @@ permissionlabels = [
 
 @client.async_event
 async def on_ready():
-	global memberroles, rules
+	global memberroles, rules, disabledrules
 
 	logging.info('logged in as {} with id {}'.format(client.user.name, client.user.id))
 	await client.change_presence(game=discord.Game(name='​')) # the game name is u+200b
@@ -404,10 +410,22 @@ async def on_ready():
 			json.dump(rules, outfile)
 
 		await client.send_message(specialchannel_prod, 'Rules file didn\'t exist yet, created a new one.')
+	
+	try:
+		with open('disabledrules.json', 'r') as infile:
+			disabledrules = json.load(infile)
+	except FileNotFoundError:
+		logging.info('disabledrules file does not exist yet so creating it now')
+		disabledrules = []
+
+		with open('disabledrules.json', 'w') as outfile:
+			json.dump(disabledrules, outfile)
+
+		await client.send_message(specialchannel_prod, 'Disabledrules file didn\'t exist yet, created a new one.')
 
 @client.async_event
 async def on_message(message):
-	global msg_start, hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, hangmanstarter, guessedletters, algeraden, memberroles, rules
+	global msg_start, hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, hangmanstarter, guessedletters, algeraden, memberroles, rules, disabledrules
 
 	if message.author == client.user: # is the message sent by the bot
 		return # do nothing
@@ -930,6 +948,10 @@ async def on_message(message):
 			content = 'Rules:\n**1.** I am always right.\n**2.** If I am not right, rule 1 applies.'
 			await reply(message, content)
 			return
+		if message.server.id in disabledrules:
+			content = 'The rules system is currently disabled for this server.'
+			await reply(message, content)
+			return
 		if not message.server.id in rules:
 			content = 'Rules are not (yet) set for this server.'
 			await reply(message, content)
@@ -1070,6 +1092,22 @@ async def on_message(message):
 			rulesave()
 		else:
 			content = 'Invalid rule number given, just check the help entry.'
+		await reply(message, content)
+	elif command == 'rulemaint':
+		if not is_mod(message.author):
+			content = t['mod_only']
+			logging.info('rulemaint yada yada')
+
+			await reply(message, content)
+			return
+		if message.server.id in disabledrules:
+			disabledrules.remove(message.server.id)
+			content = 'Rules system enabled for this server.'
+		else:
+			disabledrules.append(message.server.id)
+			content = 'Rules system disabled for this server.'
+		with open('disabledrules.json', 'w') as outfile:
+			json.dump(disabledrules, outfile)
 		await reply(message, content)
 	elif command == 'info':
 		persontocheck = get_member_input(message.server, arguments)
