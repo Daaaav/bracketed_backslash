@@ -1527,6 +1527,18 @@ async def on_server_role_delete(role):
 	await client.send_message(specialchannel, msg)
 
 @client.async_event
+async def on_server_role_update(before, after):
+	specialchannel = getspecialchannel(before.server)
+	if before.name != after.name: # if the name changed
+		msg_start = '**`>`**`role {} has name changed`\n'.format(before.id)
+		content = '_`The older name is:`_\n**``{}``**'.format(mdspecialchars(before.name))
+		msg = msg_start + content
+		await client.send_message(specialchannel, msg)
+		content = '_`The newer name is:`_\n**``{}``**'.format(mdspecialchars(after.name))
+		msg = msg_start + content
+		await client.send_message(specialchannel, msg)
+
+@client.async_event
 async def on_reaction_add(reaction, user):
 	specialchannel = getspecialchannel(reaction.message.server)
 	try:
