@@ -1551,6 +1551,14 @@ async def on_server_role_update(before, after):
 		if before.mentionable == 1 and after.mentionable == 0: # if the role is no longer mentionable
 			msg = '**`>`**`role` **``{}``** `({}) is no longer mentionable`'.format(mdspecialchars(after.name), after.id)
 			await client.send_message(specialchannel, msg)
+	if before.position != after.position: # if the role has been moved up or down in the hierarchy
+		if before.position > after.position: # the role has been moved down
+			msg = '**`>`**`role` **``{}``** `({}) has been moved down by {} roles ({} to {})`'.format(mdspecialchars(after.name), after.id, before.position - after.position, before.position, after.position)
+			await client.send_message(specialchannel, msg)
+		if before.position < after.position: # the role has been moved up
+			msg = '**`>`**`role` **``{}``** `({}) has been moved up by {} roles ({} to {})`'.format(mdspecialchars(after.name), after.id, after.position - before.position, before.position, after.position)
+			await client.send_message(specialchannel, msg)
+
 
 @client.async_event
 async def on_reaction_add(reaction, user):
