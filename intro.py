@@ -235,6 +235,15 @@ cmds = [
 				'short': 'Re-syncs the roles cache with the current roles everyone has, if the bot missed role additions/removals',
 				'extra': 'Does not remove members from the cache who have left the server.'
 			},
+			{
+				'name': 'getrawmessagecontent',
+				'short': 'Gets the raw content of a message.',
+				'extra': (
+					'Syntax: `\getrawmessagecontent CHANNEL MESSAGEID`\n'
+					'`CHANNEL` must be in `<#ID>` form, i.e. a highlighted channel link.\n'
+					'`MESSAGEID` must be the ID of the message.'
+				)
+			}
 		]
 	},
 	{
@@ -1213,6 +1222,30 @@ async def on_message(message):
 			time.strftime(timeformat, time.gmtime(max(modificationtimes))),
 			discord.__version__,
 		)
+		await reply(message, content)
+	elif command == 'getrawmessagecontent':
+		if not is_mod(message.author):
+			logging.info('getrawmessagecontent attempted by {}#{} at {} utc but failed').format(message.author.name, message.author.id, message.timestamp)
+			content = t['mod_only']
+			await reply(message, content)
+			return
+		argsplit = arguments.split(' ', 1)
+		try:
+			arg0 = argsplit[0]
+			arg1 = argsplit[1]
+		except IndexError:
+			content = 'Invalid amount of arguments passed. Input `{invoker}{command}` for more information.'.format(invoker=invoker, command=command)
+			await reply(message, content)
+			return
+		channelid = arg0[2:-1]
+		getchannel = discord.Object(id=channelid)
+		try:
+			getmessage = await client.get_message(getchannel, arg1)
+		except discord.errors.HTTPException:
+			content = 'Invalid arguments passed. Input `{invoker}{command}` for more information.'.format(invoker=invoker, command=command)
+			await reply(message, content)
+			return
+		content = '``{}``'.format(mdspecialchars(getmessage.content[:1900]))
 		await reply(message, content)
 	else:
 		if altinvokeractive:
