@@ -157,7 +157,7 @@ cmds = [
 			},
 			{
 				'name': 'version',
-				'short': 'Gives the bot version and `discord.py` version',
+				'short': 'Gives the bot version and `discord.py` version.',
 				'extra': ''
 			},
 			{
