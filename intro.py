@@ -90,6 +90,7 @@ t = {
 	'op_only': 'Permission denied. This command can only be used by Info Teddy or Dav999.',
 	'mod_only': 'Permission denied. This command can only be used by a moderator or administrator.',
 	'specify_user': 'Please specify a user ID, a username, a username and discriminator, or a nickname.',
+	'no_permission': 'There are missing permissions required to execute this.',
 	'accepts_user': 'Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.',
 	'production_only': 'Production server only!',
 	'noprivate': 'This command cannot be run inside a private conversation! You can probably guess why.',
@@ -217,7 +218,12 @@ cmds = [
 			},
 			{
 				'name': 'voicemute',
-				'short': 'Gives a user the `Voice Muted` role.',
+				'short': 'Mutes a user in a voice channel.',
+				'extra': t['accepts_user']
+			},
+			{
+				'name': 'voiceunmute',
+				'short': 'Unmutes a user in a voice channel.',
 				'extra': t['accepts_user']
 			},
 			{
@@ -835,7 +841,7 @@ async def on_message(message):
 
 		content = ':no_entry: <@{}> has been softbanned.'.format(targetmember.id)
 		await reply(message, content)
-	elif command == 'nononly' or command == 'nogenmen' or command == 'nocedule' or command == 'notts' or command == 'noreact' or command == 'voicemute':
+	elif command == 'nononly' or command == 'nogenmen' or command == 'nocedule' or command == 'notts' or command == 'noreact':
 		if not is_mod(message.author):
 			content = t['mod_only']
 			logging.info('{} attempted by {}#{} (uuid {}) at {} utc but failed'.format(command, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
@@ -851,7 +857,6 @@ async def on_message(message):
 			'nocedule': '222046096216686592',
 			'notts': '215954720555139073',
 			'noreact': '241183168269516800',
-			'voicemute': '241612664143347712',
 		}
 		rolelabel = {
 			'nononly': 'Nonsense-Only',
@@ -859,7 +864,6 @@ async def on_message(message):
 			'nocedule': 'No Custom Emotes/Direct Uploads/Link Embeds',
 			'notts': 'No TTS',
 			'noreact': 'No Reactions',
-			'voicemute': 'Voice Muted',
 		}
 		try:
 			targetmember = get_member_input(message.server, arguments)
@@ -891,6 +895,35 @@ async def on_message(message):
 		content = 'Gave <@{}> the tOLPer who can’t change nickname role, and removed the tOLPer role from them.'.format(targetmember.id)
 		await reply(message, content)
 		return
+	elif command == 'voicemute' or command == 'voiceunmute':
+		if not is_mod(message.author):
+			content = t['mod_only']
+			logging.info('voicemute attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			await reply(message, content)
+			return
+		targetmember = get_member_input(message.server, arguments)
+		try:
+			if targetmember.voice.voice_channel == None:
+				content = 'User is not in a voice channel.'
+				await reply(message, content)
+				return
+			if command == 'voicemute':
+				await client.server_voice_state(targetmember, mute=1)
+			elif command == 'voiceunmute':
+				await client.server_voice_state(targetmember, mute=0)
+		except AttributeError:
+			content = t['specify_user']
+			await reply(message, content)
+			return
+		except discord.errors.Forbidden:
+			content = t['no_permission']
+			await reply(message, content)
+			return
+		if command == 'voicemute':
+			content = 'Voice muted <@{}>.'.format(targetmember.id)
+		elif command == 'voiceunmute':
+			content = 'Voice unmuted <@{}>.'.format(targetmember.id)
+		await reply(message, content)
 	elif command == 'rolerst':
 		if not is_mod(message.author):
 			content = t['mod_only']
