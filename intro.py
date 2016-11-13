@@ -1544,6 +1544,13 @@ async def on_server_role_update(before, after):
 		if before.hoist == 1 and after.hoist == 0: # if the role has been lowered
 			msg = '**`>`**`role` **``{}``** `({}) has been lowered`'.format(mdspecialchars(after.name), after.id)
 			await client.send_message(specialchannel, msg)
+	if before.mentionable != after.mentionable: # if "allow everyone to mention this role" changed
+		if before.mentionable == 0 and after.mentionable == 1: # if the role is now mentionable
+			msg = '**`>`**`role` **``{}``** `({}) is now mentionable`'.format(mdspecialchars(after.name), after.id)
+			await client.send_message(specialchannel, msg)
+		if before.mentionable == 1 and after.mentionable == 0: # if the role is no longer mentionable
+			msg = '**`>`**`role` **``{}``** `({}) is no longer mentionable`'.format(mdspecialchars(after.name), after.id)
+			await client.send_message(specialchannel, msg)
 
 @client.async_event
 async def on_reaction_add(reaction, user):
