@@ -1138,7 +1138,7 @@ async def on_message(message):
 				await reply(message, content)
 				return
 
-			content = 'Rule {} successfully removed:\n{}.'.format(int(arguments), rules[message.server.id][int(arguments)-1])
+			content = 'Rule {} successfully removed:\n{}'.format(int(arguments), rules[message.server.id][int(arguments)-1])
 
 			rules[message.server.id].remove(rules[message.server.id][int(arguments)-1])
 			rulesave()
