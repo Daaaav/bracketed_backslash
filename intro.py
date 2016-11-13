@@ -84,6 +84,11 @@ minutemessageedits = {}
 rules = {}
 disabledrules = []
 
+modificationtimes = [
+	os.path.getmtime('intro.py'),
+]
+modificationtimecache = time.strftime(timeformat, time.gmtime(max(modificationtimes)))
+
 client.max_messages = None
 
 t = {
@@ -1244,15 +1249,12 @@ async def on_message(message):
 		)
 		await reply(message, content)
 	elif command == 'version':
-		modificationtimes = [
-			os.path.getmtime('intro.py'),
-		]
 		content = (
 			'**`[\]`** – {}, last updated {}\n'
 			'**`discord.py`** – {}'
 		).format(
 			botversion,
-			time.strftime(timeformat, time.gmtime(max(modificationtimes))),
+			modificationtimecache,
 			discord.__version__,
 		)
 		await reply(message, content)
