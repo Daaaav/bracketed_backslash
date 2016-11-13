@@ -1537,6 +1537,13 @@ async def on_server_role_update(before, after):
 		content = '_`The newer name is:`_\n**``{}``**'.format(mdspecialchars(after.name))
 		msg = msg_start + content
 		await client.send_message(specialchannel, msg)
+	if before.hoist != after.hoist: # if "display online members separately" changed
+		if before.hoist == 0 and after.hoist == 1: # if the role has been hoisted
+			msg = '**`>`**`role` **``{}``** `({}) has been hoisted`'.format(mdspecialchars(after.name), after.id)
+			await client.send_message(specialchannel, msg)
+		if before.hoist == 1 and after.hoist == 0: # if the role has been lowered
+			msg = '**`>`**`role` **``{}``** `({}) has been lowered`'.format(mdspecialchars(after.name), after.id)
+			await client.send_message(specialchannel, msg)
 
 @client.async_event
 async def on_reaction_add(reaction, user):
