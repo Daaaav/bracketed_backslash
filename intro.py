@@ -31,6 +31,7 @@ import json
 import logging
 import math
 import subprocess
+from past.builtins import execfile
 
 # set bot version
 botversion = '1.0'
@@ -1618,6 +1619,6 @@ async def on_server_update(before, after):
 		msg = msg_start + content
 		await client.send_message(specialchannel, msg)
 
-from functions import *
+execfile('functions.py')
 
 client.run(token)
