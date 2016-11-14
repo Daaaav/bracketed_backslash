@@ -1,4 +1,7 @@
+# encoding=utf-8
+
 # every function below here is custom-defined and not a part of discord.py
+
 def is_admin(member):
 	try:
 		perms = member.server_permissions
