@@ -1,1 +1,5 @@
 *.conf
+members.json
+rules.json
+disabledrules.json
+.cache

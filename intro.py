@@ -20,14 +20,30 @@
 import discord
 import asyncio
 import os
+import os.path
 import sys
-import urllib
+import urllib.request
 import warnings
 import random
 import re
 import time
+import json
+import logging
+import math
+import subprocess
+
+# set bot version
+botversion = '1.0'
+
+# sets up logging
+# level can be logging.DEBUG, logging.WARNING, et cetera
+# see https://docs.python.org/3/library/logging.html for more info
+logging.basicConfig(level=logging.INFO)
 
 client = discord.Client() # defines all client.* commands
+
+cachelocation = './.cache'
+attachcache = cachelocation + '/' + 'attach' # define attachment caching location
 
 invoker = '\\' # command invoker
 altinvoker = 'ok glass, ' # alt command invoker
@@ -43,22 +59,43 @@ hangmanstarter = None
 guessedletters = [False]*26
 algeraden = False
 
+os.environ['TZ'] = 'UTC'
+time.tzset()
+
 timeformat = '%Y-%m-%d %H:%M:%S (%Z)'
 boottime = time.strftime(timeformat)
+boottimeunix = time.time()
 
 token_config = open('bot_token.conf', 'r')
 
 token = token_config.readline(60).split('\n')[0] # read sixty characters also FUCKING NEWLINES
 
-specialchannel = discord.Object(id='234185735266238464')
+token_config.close() # this is probably a good idea i should do
+
+specialchannel_prod = discord.Object(id='234185735266238464')
+specialchannel_aperture = discord.Object(id='243176655101755392')
 botschannel = discord.Object(id='201130047736643584')
 productionserver = '153368829160849408'
 server = client.get_server(productionserver) # defines all server.* commands
+
+memberroles = {}
+minutemessageedits = {}
+
+rules = {}
+disabledrules = []
+
+modificationtimes = [
+	os.path.getmtime('intro.py'),
+]
+modificationtimecache = time.strftime(timeformat, time.gmtime(max(modificationtimes)))
+
+client.max_messages = None
 
 t = {
 	'op_only': 'Permission denied. This command can only be used by Info Teddy or Dav999.',
 	'mod_only': 'Permission denied. This command can only be used by a moderator or administrator.',
 	'specify_user': 'Please specify a user ID, a username, a username and discriminator, or a nickname.',
+	'no_permission': 'There are missing permissions required to execute this.',
 	'accepts_user': 'Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.',
 	'production_only': 'Production server only!',
 	'noprivate': 'This command cannot be run inside a private conversation! You can probably guess why.',
@@ -68,173 +105,386 @@ t = {
 cmds = [
 	{
 		'cat_name': 'General Commands',
-		'commands': {
-			'help': {
+		'commands': [
+			{
+				'name': 'help',
 				'short': 'Lists commands and their descriptions.',
 				'extra': 'Any arguments passed to `\help` will make `\help` try to look up more in-depth description of the command.'
 			},
-			'source': {
+			{
+				'name': 'source',
 				'short': 'Gives the link to the source code to the bot.',
 				'extra': 'It’s hosted on __https://gitgud.io/__.'
 			},
-			'echo': {
+			{
+				'name': 'echo',
 				'short': 'Echoes your input.',
 				'extra': 'Now, you could say that the bot echoed your input already, but it’s still better to have a dedicated echo command.'
 			},
-			'info': {
+			{
+				'name': 'info',
 				'short': 'Gives information about a user.',
 				'extra': ''
 			},
-			'findu': {
+			{
+				'name': 'findu',
 				'short': 'Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever.',
 				'extrafull': 'Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator.'
 			},
-			'findup': {
+			{
+				'name': 'findup',
 				'short': 'Same as `\\findu`, but also pings the user.',
 				'extrafull': 'Find a user by (part of) their nickname/username case-insensitively, or their discriminator, or whatever. Shows ID, nickname, username, and discriminator. Warning: This pings the user.'
 			},
-			'hangman': {
+			{
+				'name': 'hangman',
 				'short': 'Initiate a game of hangman. Send via private message with a custom word. Use `\stophangman` to stop.',
 				'extra': 'Ported from DavBot!'
 			},
-			'stophangman': {
+			{
+				'name': 'stophangman',
 				'short': 'Stop the current game of hangman.',
 				'extra': 'Can only be done by the one who started the game or a moderator.'
 			},
-		}
+			{
+				'name': 'invite',
+				'short': 'Links to the servers `[\]` can be used on.',
+				'extra': '`[\]` can only be used on these servers.'
+			},
+		]
 	},
 	{
 		'cat_name': 'Bot Commands',
-		'commands': {
-			'botok': {
+		'commands': [
+			{
+				'name': 'botok',
 				'short': 'Pings the bot.',
 				'extra': 'If the bot is okay, the bot will respond with “Bot is okay”.'
 			},
-			'uptime': {
+			{
+				'name': 'version',
+				'short': 'Gives the bot version and `discord.py` version.',
+				'extra': ''
+			},
+			{
+				'name': 'uptime',
 				'short': 'Prints the time the bot was booted.',
 				'extra': 'Doesn’t yet give the amount of time between the boot and now, but does give those timestamps.'
 			},
-			'restart': {
+			{
+				'name': 'restart',
 				'short': 'Restarts the bot.',
 				'extra': ''
 			},
-			'kill': {
+			{
+				'name': 'kill',
 				'short': 'Kills the bot. This method does not kill it cleanly.',
 				'extra': ''
 			},
-		}
+		]
 	},
 	{
 		'cat_name': 'Moderation Commands',
-		'commands': {
-			'softban': {
+		'commands': [
+			{
+				'name': 'softban',
 				'short': 'Gives a user the `Banned` role.',
 				'extra': t['accepts_user']
 			},
-			'nononly': {
+			{
+				'name': 'nononly',
 				'short': 'Gives a user the `Nonsense-Only` role.',
 				'extra': t['accepts_user']
 			},
-			'nogenmen': {
+			{
+				'name': 'nogenmen',
 				'short': 'Gives a user the `No General Mentions` role.',
 				'extra': t['accepts_user']
 			},
-			'nocedule': {
+			{
+				'name': 'nocedule',
 				'short': 'Gives a user the `No CE/DU/LE` role.',
 				'extra': t['accepts_user']
 			},
-			'notts': {
+			{
+				'name': 'notts',
 				'short': 'Gives a user the `No TTS` role.',
 				'extra': t['accepts_user']
 			},
-			'nonick': {
+			{
+				'name': 'noreact',
+				'short': 'Gives a user the `No Reactions` role.',
+				'extra': t['accepts_user']
+			},
+			{
+				'name': 'nonick',
 				'short': 'Removes from a user the `tOLPer` role, and gives them the `tOLPer who can’t change nickname` role.',
 				'extra': t['accepts_user']
 			},
-			'rolerst': {
+			{
+				'name': 'voicemute',
+				'short': 'Mutes a user in a voice channel.',
+				'extra': t['accepts_user']
+			},
+			{
+				'name': 'voiceunmute',
+				'short': 'Unmutes a user in a voice channel.',
+				'extra': t['accepts_user']
+			},
+			{
+				'name': 'rolerst',
 				'short': 'Resets the roles for a user back to the normal state.',
 				'extra': 'Removes all restrictive roles from a user, and gives back the `tOLPer` role if necessary.\n' + t['accepts_user']
 			},
-		}
+			{
+				'name': 'rolecacherst',
+				'short': 'Removes a member who has left the server from the role cache.',
+				'extra': 'Only accepts a user ID!'
+			},
+			{
+				'name': 'rolesync',
+				'short': 'Re-syncs the roles cache with the current roles everyone has, if the bot missed role additions/removals',
+				'extra': 'Does not remove members from the cache who have left the server.'
+			},
+			{
+				'name': 'getrawmessagecontent',
+				'short': 'Gets the raw content of a message.',
+				'extra': (
+					'Syntax: `\getrawmessagecontent CHANNEL MESSAGEID`\n'
+					'`CHANNEL` must be in `<#ID>` form, i.e. a highlighted channel link.\n'
+					'`MESSAGEID` must be the ID of the message.'
+				)
+			}
+		]
+	},
+	{
+		'cat_name': 'Rules Commands',
+		'commands': [
+			{
+				'name': 'rules',
+				'short': 'View the rules.',
+				'extra': 'Rules can be different for each server the bot runs on. You can get a specific rule by its number with `\\rule X`.',
+			},
+			{
+				'name': 'ruleadd',
+				'short': 'Insert a given rule string (2) to position (1). If no position is given, it\'s added at the end.',
+				'extra': 'Examples:\n`\\ruleadd No trolling`\n`\\ruleadd 1 The most important rule is not to follow this rule.`'
+			},
+			{
+				'name': 'ruleedit',
+				'short': 'Edit a given rule.',
+				'extra': 'Example:\n`\\ruleedit 2 No trolling`'
+			},
+			{
+				'name': 'rulemove',
+				'short': 'Move a given rule to a different slot. (nothing gets overwritten)',
+				'extra': 'Example:\n`\\rulemove 2 4`'
+			},
+			{
+				'name': 'ruleremove',
+				'short': 'Remove a given rule.',
+				'extra': 'Example:\n`\\ruleremove 2`'
+			},
+			{
+				'name': 'rulemaint',
+				'short': 'Enable/Disable the rules system for this server.',
+				'extra': ''
+			},
+		]
 	},
 ]
 
 meme_cmds = [
 	{
 		'cat_name': 'Meme Commands',
-		'commands': {
-			'': {
+		'commands': [
+			{
+				'name': '',
 				'short': 'Mentions you.',
 				'extra': 'Don’t type this command in if you don’t want to be mentioned.'
 			},
-			'teddy': {
+			{
+				'name': 'teddy',
 				'short': 'The obvious counterpart to `\info`.',
 				'extra': t['its_meme']
 			},
-			'samar': {
+			{
+				'name': 'samar',
 				'short': 'The true name.',
 				'extra': t['its_meme']
 			},
-			'lui': {
+			{
+				'name': 'lui',
 				'short': 'Obligatory “pretty cool guy” meme.',
 				'extra': t['its_meme']
 			},
-			'shiny': {
+			{
+				'name': 'shiny',
 				'short': 'He’s a shiny trinket.',
 				'extra': t['its_meme']
 			},
-			'tainy': {
+			{
+				'name': 'tainy',
 				'short': 'Unobtaining is his name.',
 				'extra': t['its_meme']
 			},
-			'kys': {
+			{
+				'name': 'kys',
 				'short': 'Will the bot listen?',
 				'extra': t['its_meme']
 			},
-			'*formatting*': {
+			{
+				'name': '*formatting*',
 				'short': 'This is an example of italicized formatting.',
 				'extra': t['its_meme']
 			},
-			'/r/undertale': {
+			{
+				'name': '/r/undertale',
 				'short': 'This is going to give my bot cancer.',
 				'extra': t['its_meme']
 			},
-		}
+		]
 	}
+]
+
+permissionlabels = [
+	['administrator', 'Administrator'],
+	['manage_server', 'Manage Server'],
+	['manage_channels', 'Manage Channels'],
+	['manage_roles', 'Manage Roles'],
+	['ban_members', 'Ban Members'],
+	['kick_members', 'Kick Members'],
+	['move_members', 'Move Members'],
+	['deafen_members', 'Deafen Members'],
+	['mute_members', 'Mute Members'],
+	['manage_webhooks', 'Manage Webhooks'],
+	['manage_nicknames', 'Manage Nicknames'],
+	['manage_emojis', 'Manage Custom Emotes'],
+	['manage_messages', 'Manage Messages'],
+	['change_nickname', 'Change Nickname'],
+	['mention_everyone', 'Mention General Mentions'],
+	['external_emojis', 'Use Custom Emotes'],
+	['attach_files', 'Upload Direct Uploads'],
+	['embed_links', 'Embed Link Embeds'],
+	['send_tts_messages', 'Use Text-to-Speech'],
+	['read_message_history', 'Read Message History'],
+	['send_messages', 'Send Messages'],
+	['add_reactions', 'Add Reactions'],
+	['read_messages', 'Read Messages'],
+	['use_voice_activation', 'Use Voice Activity'],
+	['speak', 'Speak'],
+	['connect', 'Connect'],
+	['create_instant_invite', 'Instant Invite'],
 ]
 
 @client.async_event
 async def on_ready():
-	print('[info] logged in as {} with id {}'.format(client.user.name, client.user.id))
+	global memberroles, rules, disabledrules
+
+	logging.info('logged in as {} with id {}'.format(client.user.name, client.user.id))
 	await client.change_presence(game=discord.Game(name='​')) # the game name is u+200b
+
+	await client.send_message(specialchannel_prod, '**`>`**🔌`Bot connected. (startup time is {})`'.format(reltime(boottimeunix)))
+
+	try:
+		with open('members.json', 'r') as infile:
+			memberroles = json.load(infile)
+
+		# Now look what I've woken up to.
+		warnings = ''
+
+		for mem in client.get_server(productionserver).members:
+			if not str(mem.id) in memberroles:
+				warnings += '\nUser {}#{} ({}) is not in the cache! (They\'re suddenly in the server.) Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
+				memberroles[str(mem.id)] = list(rolelist(mem.roles)) # Possibly redundant list() tbh, just making sure since I can't test and I don't know python well enough to know whether it's redundant
+				continue
+			if set(memberroles[str(mem.id)]) != set(rolelist(mem.roles)):
+				warnings += (
+					'\n'
+					'User {}#{} ({}) has different roles than in the cache! Maybe you want to correct things.\n'
+					'    **`Cached:`** {}\n'
+					'    **`Seen:`** {}'
+				).format(
+					mem.name, mem.discriminator, mem.id,
+					listroles_id(memberroles[str(mem.id)]),
+					listroles(mem.roles),
+				)
+		if warnings != '':
+			logging.warn(warnings)
+			warnings = (
+				'**User role cache warning.**\n'
+				'Full warning output has been sent to the terminal.\n'
+				+ warnings
+			)
+			await client.send_message(specialchannel_prod, warnings[:1900])
+
+	except FileNotFoundError:
+		logging.info('members file does not exist yet so creating it now')
+		memberroles = {}
+
+		with open('members.json', 'w') as outfile:
+			json.dump(memberroles, outfile)
+
+		await client.send_message(specialchannel_prod, 'Members file didn’t yet exist, created a new one. Please run `\\rolesync` to sync up the roles cache.')
+
+	try:
+		with open('rules.json', 'r') as infile:
+			rules = json.load(infile)
+	except FileNotFoundError:
+		logging.info('rules file does not exist yet so creating it now')
+		rules = {}
+
+		with open('rules.json', 'w') as outfile:
+			json.dump(rules, outfile)
+
+		await client.send_message(specialchannel_prod, 'Rules file didn\'t exist yet, created a new one.')
+
+	try:
+		with open('disabledrules.json', 'r') as infile:
+			disabledrules = json.load(infile)
+	except FileNotFoundError:
+		logging.info('disabledrules file does not exist yet so creating it now')
+		disabledrules = []
+
+		with open('disabledrules.json', 'w') as outfile:
+			json.dump(disabledrules, outfile)
+
+		await client.send_message(specialchannel_prod, 'Disabledrules file didn\'t exist yet, created a new one.')
 
 @client.async_event
 async def on_message(message):
-	global msg_start, hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, hangmanstarter, guessedletters, algeraden
+	global msg_start, hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, hangmanstarter, guessedletters, algeraden, memberroles, rules, disabledrules
 
 	if message.author == client.user: # is the message sent by the bot
 		return # do nothing
 
-	displaymessagecontent = ('``{}``**`…`**'.format(mdspecialchars(message.content[:100]))) if len(message.content) > 100 else '``{}``'.format(mdspecialchars(message.content))
-
+	specialchannel = getspecialchannel_reply(message)
+	displaymessagecontent = ('``{}``**`…`**'.format(mdspecialchars(message.content[:100]))) if len(message.content) > 100 else '``{}``'.format(mdspecialchars(message.content)).replace('\n', '``**`\\n`**``​')
+	if displaymessagecontent[-12:] == '``**`\\n`**``​':
+		displaymessagecontent += '``'
 	isprivate = isprivatemessage(message.server) # cant use isprivatemessage = isprivatemessage(), otherwise python will think "holy fuck a variable was referenced before assignment"
 
 	if not isprivate and str(message.author.status) == 'offline':
-		msg_start = '**`>`**:ghost:`user` **``{}``**`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
-		if message.server.id != productionserver:
-			await client.send_message(message.channel, msg_start)
-		else:
-			await client.send_message(specialchannel, msg_start)
-		pass
+		msg_start = '**`>`**👻`user` **``{}``**`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
+		await client.send_message(specialchannel, msg_start)
+
+	if not isprivate and message.tts:
+		msg_start = '**`>`**`🎙message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `was sent with TTS.`\n{}'.format(message.id, mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.channel.id, message.content)
+		await client.send_message(specialchannel, msg_start[0:1998]) # Just be very certain that the message isn't too long
 
 	if message.attachments != []:
-		msg_start = '**`>`**:paperclip:`user` **``{}``**`#{}` `({}) attached a file to message {} in channel` <#{}> `at {} UTC`\n'.format(mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
-		content = '_`The attachment is:`_\n' + message.attachments[0]['url']
-		msg = msg_start + content
-		if message.server.id != productionserver:
-			await client.send_message(message.channel, msg)
-		else:
-			await client.send_message(specialchannel, msg)
+		attachtoretrieve = urllib.request.Request(
+				message.attachments[0]['url'],
+				data = None,
+				headers = {
+					'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
+				}
+			)
+		actuallyretrieving = urllib.request.urlopen(attachtoretrieve)
+		with open(attachcache + '/' + message.attachments[0]['id'] + '_' + message.attachments[0]['filename'], 'wb') as f:
+			f.write(actuallyretrieving.read())
+			f.close()
+		actuallyretrieving.close()
 
 	if message.content.startswith(invoker): # does the message start with command invoker
 		altinvokeractive = False
@@ -249,6 +499,13 @@ async def on_message(message):
 		pass
 	else:
 		return
+
+	if isprivate:
+		invokesymbol = '@'
+	elif is_mod(message.author):
+		invokesymbol = '#'
+	else:
+		invokesymbol = '$'
 	if hangmaninvokeractive:
 		if not hangmanactive:
 			return
@@ -288,8 +545,7 @@ async def on_message(message):
 				if algeraden:
 					hangmanactive = False
 					content = 'You guessed the word correctly! You made {} mistakes in total.'.format(hangmantotalattempts-hangmanattempts)
-					msg = msg_start + content
-					await client.send_message(message.channel, msg)
+					await client.send_message(message.channel, content)
 					return
 			else:
 				# Set the guessed letter correctly, and it has to be a letter
@@ -345,16 +601,10 @@ async def on_message(message):
 
 	elif altinvokeractive:
 		command = message.content.split(altinvoker, 1)[1]
-		if is_mod(message.author):
-			msg_start = '**`>`**``{}``**`#`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
-		else:
-			msg_start = '**`>`**``{}``**`$`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent) # shows what the user put in, without main invoker
+		msg_start = '**`>`**``{}``**`{}`**{}\n'.format(mdspecialchars(message.author.name), invokesymbol, displaymessagecontent) # shows what the user put in, without main invoker
 	else:
 		command = message.content.split(invoker, 1)[1] # removes invoker from the message
-		if is_mod(message.author):
-			msg_start = '**`>`**``{}``**`#`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
-		else:
-			msg_start = '**`>`**``{}``**`$`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent) # shows what the user put in
+		msg_start = '**`>`**``{}``**`{}`**{}\n'.format(mdspecialchars(message.author.name), invokesymbol, displaymessagecontent) # shows what the user put in
 
 	# Prevent access to those who aren't supposed to send messages
 	if not isprivate and not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver and not (is_dev(message.author) and message.channel.id == '238423391571279872'):
@@ -367,7 +617,9 @@ async def on_message(message):
 	if command == 'help':
 		content = (
 			'`[\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server.\n'
-			'To get accepted into the developer team, you have to be accepted by every one of the current members of the team.'
+			'To get accepted into the developer team, you have to be accepted by eighty-percent of the current members of the team.\n'
+			'Special thanks to Format for making the current icon for the bot.\n'
+			'The bot is currently hosted on Info Teddy’s personal computer.'
 			+ helplist(cmds)
 			)
 
@@ -381,37 +633,37 @@ async def on_message(message):
 			for i in range(0,2):
 				for cat in (cmds if i == 0 else meme_cmds): # Good enough replacement to union
 					for cmd in cat['commands']: # Maybe have a nested try-except KeyError instead of looping through every command
-						if arguments == cmd:
+						if arguments == cmd['name']:
 							try:
-								content = '`\{}` – {}'.format(cmd, cat['commands'][cmd]['extrafull'])
+								content = '`\{}` – {}'.format(cmd['name'], cmd['extrafull'])
 							except KeyError:
-								content = '`\{}` – {}\n{}'.format(cmd, cat['commands'][cmd]['short'], cat['commands'][cmd]['extra'])
+								content = '`\{}` – {}\n{}'.format(cmd['name'], cmd['short'], cmd['extra'])
 							matched = True
 							break
 					if matched:
 						break
 
 			if not matched:
-				content = 'Invalid arguments passed. Input `\help` for a list of valid commands to pass as arguments.'
+				content = 'Invalid arguments passed, or the command is not in the help list. Input `\help` for a list of valid commands to pass as arguments.'
 		await reply(message, content)
 	elif command == 'restart':
 		if message.author.id != '146814960574398464' and message.author.id != '159793749604433921':
 			content = t['op_only']
-			print('[info] bot restart tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			logging.info('bot restart tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			await reply(message, content)
 			return
-		content = 'Restarting.'
-		print('[info] bot restart called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+		content = 'Restarting. Uptime was {}.'.format(reltime(boottimeunix, True))
+		logging.info('bot restart called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 		await reply(message, content)
 		await os.execl(__file__, '')
 	elif command == 'kill':
 		if message.author.id != '146814960574398464' and message.author.id != '159793749604433921':
 			content = t['op_only']
-			print('[info] bot kill tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			logging.info('bot kill tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			await reply(message, content)
 			return
 		content = 'Killing.'
-		print('[info] bot kill called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+		logging.info('bot kill called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 		await reply(message, content)
 		await sys.exit()
 	elif command == 'echo':
@@ -482,7 +734,7 @@ async def on_message(message):
 		hangmanactive = True
 		hangmanstarter = message.author
 		guessedletters = [False]*26
-		msg_start = '**`>`**``{}``**`$`**``{}``\n'.format(mdspecialchars(message.author.name), mdspecialchars(command.split(' ')[0])) # you will never have mod/admin perms in private messages (probably), where the hangman will be started from, so for now theres no mod/admin check to make the input display different
+		msg_start = '**`>`**``{}``**`{}`**``\{} {}``\n'.format(mdspecialchars(message.author.name), invokesymbol, mdspecialchars(command.split(' ')[0]), '*'*len(hangmanchosenword)) # you will never have mod/admin perms in private messages (probably), where the hangman will be started from, so for now theres no mod/admin check to make the input display different
 		content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "{}" followed by the letter (for example {}a) or the word. {} attempts left.\n{}'.format(hangmanstarter.id, hangmaninvoker, hangmaninvoker, hangmanattempts, hangmanworddisp(hangmanchosenword))
 		msg = msg_start + content
 		await client.send_message(botschannel, msg)
@@ -570,7 +822,7 @@ async def on_message(message):
 	elif command == 'softban':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			print('[info] softban attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			logging.info('softban attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
@@ -585,6 +837,8 @@ async def on_message(message):
 				discord.utils.get(message.server.roles, id='216647716531339264'), # no general mentions
 				discord.utils.get(message.server.roles, id='222046096216686592'), # no cedule
 				discord.utils.get(message.server.roles, id='215954720555139073'), # no tts
+				discord.utils.get(message.server.roles, id='241183168269516800'), # no reactions
+				discord.utils.get(message.server.roles, id='241612664143347712'), # voice mute
 			)
 			await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='220643748508467220')) # The banned role
 		except(AttributeError,TypeError):
@@ -594,10 +848,10 @@ async def on_message(message):
 
 		content = ':no_entry: <@{}> has been softbanned.'.format(targetmember.id)
 		await reply(message, content)
-	elif command == 'nononly' or command == 'nogenmen' or command == 'nocedule' or command == 'notts':
+	elif command == 'nononly' or command == 'nogenmen' or command == 'nocedule' or command == 'notts' or command == 'noreact':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			print('[info] {} attempted by {}#{} (uuid {}) at {} utc but failed'.format(command, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			logging.info('{} attempted by {}#{} (uuid {}) at {} utc but failed'.format(command, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
@@ -608,13 +862,15 @@ async def on_message(message):
 			'nononly': '173240966575161344',
 			'nogenmen': '216647716531339264',
 			'nocedule': '222046096216686592',
-			'notts': '215954720555139073'
+			'notts': '215954720555139073',
+			'noreact': '241183168269516800',
 		}
 		rolelabel = {
 			'nononly': 'Nonsense-Only',
 			'nogenmen': 'No General Mentions',
 			'nocedule': 'No Custom Emotes/Direct Uploads/Link Embeds',
-			'notts': 'No TTS'
+			'notts': 'No TTS',
+			'noreact': 'No Reactions',
 		}
 		try:
 			targetmember = get_member_input(message.server, arguments)
@@ -628,7 +884,7 @@ async def on_message(message):
 	elif command == 'nonick':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			print('[info] nonick attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			logging.info('nonick attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
@@ -646,10 +902,39 @@ async def on_message(message):
 		content = 'Gave <@{}> the tOLPer who can’t change nickname role, and removed the tOLPer role from them.'.format(targetmember.id)
 		await reply(message, content)
 		return
+	elif command == 'voicemute' or command == 'voiceunmute':
+		if not is_mod(message.author):
+			content = t['mod_only']
+			logging.info('voicemute attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			await reply(message, content)
+			return
+		targetmember = get_member_input(message.server, arguments)
+		try:
+			if targetmember.voice.voice_channel == None:
+				content = 'User is not in a voice channel.'
+				await reply(message, content)
+				return
+			if command == 'voicemute':
+				await client.server_voice_state(targetmember, mute=1)
+			elif command == 'voiceunmute':
+				await client.server_voice_state(targetmember, mute=0)
+		except AttributeError:
+			content = t['specify_user']
+			await reply(message, content)
+			return
+		except discord.errors.Forbidden:
+			content = t['no_permission']
+			await reply(message, content)
+			return
+		if command == 'voicemute':
+			content = 'Voice muted <@{}>.'.format(targetmember.id)
+		elif command == 'voiceunmute':
+			content = 'Voice unmuted <@{}>.'.format(targetmember.id)
+		await reply(message, content)
 	elif command == 'rolerst':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			print('[info] rolerst attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			logging.info('rolerst attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
@@ -666,6 +951,8 @@ async def on_message(message):
 				discord.utils.get(message.server.roles, id='215954720555139073'), # no tts
 				discord.utils.get(message.server.roles, id='220643748508467220'), # banned
 				discord.utils.get(message.server.roles, id='236925451216355338'), # tolper who cant change nickname
+				discord.utils.get(message.server.roles, id='241183168269516800'), # no reactions
+				discord.utils.get(message.server.roles, id='241612664143347712'), # voice muted
 			)
 			if not is_bot(targetmember):
 				await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
@@ -675,76 +962,243 @@ async def on_message(message):
 			return
 		content = 'Reset roles for <@{}> back to normal.'.format(targetmember.id)
 		await reply(message, content)
+	elif command == 'rolecacherst':
+		if not is_mod(message.author):
+			content = t['mod_only']
+			logging.info('rolecacherst attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			await reply(message, content)
+			return
+		elif message.server.id != productionserver:
+			content = t['production_only']
+			await reply(message, content)
+			return
+		elif get_member_input(message.server, arguments) != None:
+			content = 'That member is apparently still on this server! Not removing from the cache.'
+			await reply(message, content)
+			return
+
+		if removerolecache(arguments):
+			content = 'Member {} successfully removed from role cache.'.format(arguments)
+			await reply(message, content)
+			rolecachesave()
+		else:
+			content = 'Member {} cannot be found in the role cache. Please note you have to enter an ID, not any form of name!'.format(arguments)
+			await reply(message, content)
+	elif command == 'rolesync':
+		if not is_mod(message.author):
+			content = t['mod_only']
+			logging.info('rolesync attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			await reply(message, content)
+			return
+		elif message.server.id != productionserver:
+			content = t['production_only']
+			await reply(message, content)
+			return
+
+		for mem in message.server.members:
+			updaterolecache(mem)
+
+		rolecachesave()
+
+		content = 'Synced roles.'
+		await reply(message, content)
+	elif command == 'rules' or command == 'rule':
+		if isprivatemessage(message.server):
+			content = 'Rules:\n**1.** I am always right.\n**2.** If I am not right, rule 1 applies.'
+			await reply(message, content)
+			return
+		if message.server.id in disabledrules and not is_mod(message.author):
+			content = 'The rules system is currently disabled for this server.'
+			await reply(message, content)
+			return
+		if not message.server.id in rules:
+			content = 'Rules are not (yet) set for this server.'
+			await reply(message, content)
+			return
+		if arguments != None and arguments.isdigit():
+			try:
+				rules[message.server.id][int(arguments)-1]
+
+				# Oh, we survived this? That means the given specific rule exists!
+				content = 'Rule **{}** for server `{}`:\n{}'.format(int(arguments), mdspecialchars(message.server.name), rules[message.server.id][int(arguments)-1])
+				await reply(message, content)
+				return
+			except IndexError:
+				pass
+		n = 1
+		content = 'Rules for server `{}`:{}'.format(mdspecialchars(message.server.name), ' (Disabled)' if message.server.id in disabledrules else '')
+		for rule in rules[message.server.id]:
+			content += '\n**{}.** {}'.format(n, rule)
+			n += 1
+		await reply(message, content)
+	elif command == 'ruleadd' or command == 'addrule':
+		if not is_mod(message.author):
+			content = t['mod_only']
+			logging.info('ruleadd yada yada')
+
+			await reply(message, content)
+			return
+		if arguments == None:
+			content = 'I\'m not going to think up any rules by myself.'
+			await reply(message, content)
+			return
+		if not message.server.id in rules:
+			rules[message.server.id] = []
+
+		splitargs = arguments.split(' ', 1)
+		if splitargs[0].isdigit():
+			rules[message.server.id].insert(int(splitargs[0])-1, splitargs[1])
+			content = 'New rule {} inserted:\n{}'.format(int(splitargs[0]), splitargs[1])       # Yes, this one is "inserted"...
+		else:
+			rules[message.server.id].append(arguments)
+			content = 'New rule {} added:\n{}'.format(len(rules[message.server.id]), arguments) # ...and this one is "added". That is on purpose, not an inconsistency.
+		rulesave()
+		await reply(message, content)
+	elif command == 'ruleedit' or command == 'editrule':
+		if not is_mod(message.author):
+			content = t['mod_only']
+			logging.info('ruleedit yada yada')
+
+			await reply(message, content)
+			return
+		if arguments == None:
+			content = 'This command expects you to enter some more info, maybe read its help entry.'
+			await reply(message, content)
+			return
+		if not message.server.id in rules:
+			content = 'No rules to edit.'
+			await reply(message, content)
+			return
+
+		splitargs = arguments.split(' ', 1)
+		if splitargs[0].isdigit():
+			try:
+				rules[message.server.id][int(splitargs[0])-1]
+			except IndexError:
+				content = 'Rule {} does not appear to exist.'.format(int(splitargs[0]))
+				await reply(message, content)
+				return
+
+			content = 'Rule {} successfully edited from:\n{}\nTo:\n{}'.format(int(splitargs[0]), rules[message.server.id][int(splitargs[0])-1], splitargs[1])
+
+			rules[message.server.id][int(splitargs[0])-1] = splitargs[1]
+			rulesave()
+		else:
+			content = 'Invalid rule number given, just check the help entry.'
+		await reply(message, content)
+	elif command == 'rulemove' or command == 'moverule':
+		if not is_mod(message.author):
+			content = t['mod_only']
+			logging.info('rulemove yada yada')
+
+			await reply(message, content)
+			return
+		if arguments == None:
+			content = 'This command expects you to enter some more info, maybe read its help entry.'
+			await reply(message, content)
+			return
+		if not message.server.id in rules:
+			content = 'No rules to move.'
+			await reply(message, content)
+			return
+
+		splitargs = arguments.split(' ', 1)
+		if splitargs[0].isdigit() and splitargs[1].isdigit():
+			try:
+				rules[message.server.id][int(splitargs[0])-1]
+				rules[message.server.id][int(splitargs[1])-1]
+			except IndexError:
+				content = 'Either rule {} does not exist or {} is not a slot it can be moved to.'.format(int(splitargs[0]), int(splitargs[1]))
+				await reply(message, content)
+				return
+
+			rulecontent = rules[message.server.id][int(splitargs[0])-1]
+			rules[message.server.id].remove(rules[message.server.id][int(splitargs[0])-1])
+			rules[message.server.id].insert(int(splitargs[1])-1, rulecontent)
+			rulesave()
+
+			content = 'Rule {} successfully moved to number {}.'.format(int(splitargs[0]), int(splitargs[1]))
+		else:
+			content = 'Invalid rule number(s) given, just check the help entry.'
+		await reply(message, content)
+	elif command == 'ruleremove' or command == 'removerule':
+		if not is_mod(message.author):
+			content = t['mod_only']
+			logging.info('ruleremove yada yada')
+
+			await reply(message, content)
+			return
+		if arguments == None:
+			content = 'This command expects you to enter some more info, maybe read its help entry.'
+			await reply(message, content)
+			return
+		if not message.server.id in rules:
+			content = 'No rules to delete.'
+			await reply(message, content)
+			return
+
+		if arguments.isdigit():
+			try:
+				rules[message.server.id][int(arguments)-1]
+			except IndexError:
+				content = 'Rule {} does not appear to exist.'.format(int(arguments))
+				await reply(message, content)
+				return
+
+			content = 'Rule {} successfully removed:\n{}'.format(int(arguments), rules[message.server.id][int(arguments)-1])
+
+			rules[message.server.id].remove(rules[message.server.id][int(arguments)-1])
+			rulesave()
+		else:
+			content = 'Invalid rule number given, just check the help entry.'
+		await reply(message, content)
+	elif command == 'rulemaint':
+		if not is_mod(message.author):
+			content = t['mod_only']
+			logging.info('rulemaint yada yada')
+
+			await reply(message, content)
+			return
+		if message.server.id in disabledrules:
+			disabledrules.remove(message.server.id)
+			content = 'Rules system enabled for this server.'
+		else:
+			disabledrules.append(message.server.id)
+			content = 'Rules system disabled for this server.'
+		with open('disabledrules.json', 'w') as outfile:
+			json.dump(disabledrules, outfile)
+		await reply(message, content)
 	elif command == 'info':
 		persontocheck = get_member_input(message.server, arguments)
-		yesperm = ':ballot_box_with_check:'
-		noperm = ':negative_squared_cross_mark:'
+		yesperm = '☑'
+		noperm = '❎'
 		try:
 			perms = discord.Channel.permissions_for(message.channel, persontocheck)
 		except AttributeError:
 			content = t['specify_user']
 			await reply(message, content)
 			return
-		content = ( # i wonder if this parenthesis is important
-				'Permissions for **``{}``**`#{}` in <#{}>:\n'
-				'**`Server Owner:`** {owner}\n'
-				'**`Administrator:`** {admin}\n'
-				# idea: mayb just stop right there if theyre an admin, why bother listing the rest
-				'**`Manage Server:`** {server}\n'
-				'**`Manage Channels:`** {channels}\n'
-				'**`Manage Roles:`** {roles}\n'
-				'**`Ban Members:`** {ban}\n'
-				'**`Kick Members:`** {kick}\n'
-				'**`Move Members:`** {move}\n'
-				'**`Deafen Members:`** {deafen}\n'
-				'**`Mute Members:`** {mute}\n'
-				'**`Manage Webhooks:`** {webhooks}\n' # for some reason manage_webhooks isnt an attribute of a Permissions object yet?
-				'**`Manage Nicknames:`** {nicks}\n'
-				'**`Manage Custom Emotes:`** {emotes}\n'
-				'**`Change Nickname:`** {nick}\n'
-				'**`Mention General Mentions:`** {genmen}\n'
-				'**`Use Custom Emotes:`** {emote}\n'
-				'**`Upload Direct Uploads:`** {upload}\n'
-				'**`Embed Link Embeds:`** {embed}\n'
-				'**`Use Text-to-Speech:`** {tts}\n'
-				'**`Read Message History:`** {history}\n'
-				'**`Send Messages:`** {send}\n'
-				'**`Read Messages:`** {read}\n'
-				'**`Use Voice Activity:`** {voiceact}\n'
-				'**`Speak:`** {speak}\n'
-				'**`Connect:`** {connect}'
-			).format(
-					# TODO: for loop or something to make this look less like a "cs graduates" thread
-					# but idk how also im lazy
-					# (apparently not lazy enough to do more work than i need to)
-					persontocheck.name, persontocheck.discriminator, message.channel.id,
-					owner = yesperm if persontocheck == persontocheck.server.owner else noperm,
-					admin = yesperm if perms.administrator else noperm,
-					server = yesperm if perms.manage_server else noperm,
-					channels = yesperm if perms.manage_channels else noperm,
-					roles = yesperm if perms.manage_roles else noperm,
-					ban = yesperm if perms.ban_members else noperm,
-					kick = yesperm if perms.kick_members else noperm,
-					move = yesperm if perms.move_members else noperm,
-					deafen = yesperm if perms.deafen_members else noperm,
-					mute = yesperm if perms.mute_members else noperm,
-#					webhooks = yesperm if perms.manage_webhooks else noperm,
-					webhooks = '`manage_webhooks` isnt a `Permissions` attribute apparently?',
-					nicks = yesperm if perms.manage_nicknames else noperm,
-					emotes = yesperm if perms.manage_emojis else noperm,
-					nick = yesperm if perms.change_nickname else noperm,
-					genmen = yesperm if perms.mention_everyone else noperm,
-					emote = yesperm if perms.external_emojis else noperm,
-					upload = yesperm if perms.attach_files else noperm,
-					embed = yesperm if perms.embed_links else noperm,
-					tts = yesperm if perms.send_tts_messages else noperm,
-					history = yesperm if perms.read_message_history else noperm,
-					send = yesperm if perms.send_messages else noperm,
-					read = yesperm if perms.read_messages else noperm,
-					voiceact = yesperm if perms.use_voice_activation else noperm,
-					speak = yesperm if perms.speak else noperm,
-					connect = yesperm if perms.connect else noperm,
-				)
+
+		leftover = []
+		for detected_p in iter(perms):
+			leftover.append(detected_p[0])
+
+		content = 'Permissions for **``{}``**`#{}` in <#{}>:\n**`Server Owner:`** {}'.format(persontocheck.name, persontocheck.discriminator, message.channel.id, yesperm if persontocheck == persontocheck.server.owner else noperm)
+
+		for stored_p in permissionlabels:
+			if not stored_p[0] in leftover:
+				content += '\n**`{}:`** NOT USED'.format(stored_p[1])
+			else:
+				content += '\n**`{}:`** {}'.format(stored_p[1], yesperm if getattr(perms, stored_p[0]) else noperm)
+				leftover.remove(stored_p[0])
+			if perms.administrator:
+				await reply(message, content)
+				return
+
+		for left_p in leftover:
+			# Apparently these permissions are new
+			content += '\n`{}:` {}'.format(left_p, yesperm if getattr(perms, left_p) else noperm)
+
 		await reply(message, content)
 	elif command == 'teddy':
 		content = 'xd'
@@ -759,11 +1213,10 @@ async def on_message(message):
 		content = 'moar liek shittykitty amirite'
 		await reply(message, content)
 	elif command == 'tainy':
-		rngint = random.randint(0,1)
-		if rngint == 0:
-			content = 'moar liek stainy amirite'
-		else:
-			content = 'moar like painy amirite'
+		content = random.choice([
+			'moar liek stainy amirite',
+			'moar like painy amirite',
+		])
 		await reply(message, content)
 	elif command == 'kys':
 		content = 'nah'
@@ -772,13 +1225,64 @@ async def on_message(message):
 		content = 'Bot is okay.'
 		await reply(message, content)
 	elif command == 'uptime':
-		content = 'Boot time:       `{}`\nCurrent time: `{}`'.format(boottime, time.strftime(timeformat))
+		hostuptime = subprocess.Popen(['uptime'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+		content = (
+			'**`Boot time:`**        `{}`\n'
+			'**`Current time:`** `{}`\n'
+			'**`Bot Uptime:`**      `{}`\n'
+			'**`Host Uptime:`**   `{}`'
+		).format(
+			boottime,
+			time.strftime(timeformat),
+			reltime(boottimeunix, True),
+			hostuptime.decode('utf-8'),
+		)
 		await reply(message, content)
 	elif command == '*formatting*':
 		content = 'That’s italicized formatting.'
 		await reply(message, content)
 	elif command == '/r/undertale':
 		content = 'They banned someone for posting an honest review of Undertale. Seriously, don’t go there if you don’t want to be censored.'
+		await reply(message, content)
+	elif command == 'invite':
+		content = (
+			'**`tOLP Discord`** – the server it’s built for. Join at __https://discord.gg/0r76El7PzkPMhSBF__.\n'
+			'**`Aperture Science`** – the bot’s testing server. Join at __https://discord.gg/0skUn2HYSEHxw9Dg__.'
+		)
+		await reply(message, content)
+	elif command == 'version':
+		content = (
+			'**`[\]`** – {}, last updated {}\n'
+			'**`discord.py`** – {}'
+		).format(
+			botversion,
+			modificationtimecache,
+			discord.__version__,
+		)
+		await reply(message, content)
+	elif command == 'getrawmessagecontent':
+		if not is_mod(message.author):
+			logging.info('getrawmessagecontent attempted by {}#{} at {} utc but failed').format(message.author.name, message.author.id, message.timestamp)
+			content = t['mod_only']
+			await reply(message, content)
+			return
+		argsplit = arguments.split(' ', 1)
+		try:
+			arg0 = argsplit[0]
+			arg1 = argsplit[1]
+		except IndexError:
+			content = 'Invalid amount of arguments passed. Input `{invoker}{command}` for more information.'.format(invoker=invoker, command=command)
+			await reply(message, content)
+			return
+		channelid = arg0[2:-1]
+		getchannel = discord.Object(id=channelid)
+		try:
+			getmessage = await client.get_message(getchannel, arg1)
+		except discord.errors.HTTPException:
+			content = 'Invalid arguments passed. Input `{invoker}{command}` for more information.'.format(invoker=invoker, command=command)
+			await reply(message, content)
+			return
+		content = '``{}``'.format(mdspecialchars(getmessage.content[:1900]))
 		await reply(message, content)
 	else:
 		if altinvokeractive:
@@ -790,11 +1294,14 @@ async def on_message(message):
 @client.async_event
 async def on_message_delete(message): # when a message gets deleted
 	if message.author == client.user: # is the deleted message originally sent by the bot
-		print('bot message {} by user {}#{} ({}) in channel {} ({}) at {} utc deleted, original content is \n{}'.format(message.id, message.author.name, message.author.discriminator, message.author.id, message.channel.id, message.channel.name, message.timestamp, message.content))
+		logging.info('bot message {} by user {}#{} ({}) in channel {} ({}) at {} utc deleted, original content is \n{}'.format(message.id, message.author.name, message.author.discriminator, message.author.id, message.channel.id, message.channel.name, message.timestamp, message.content))
 		return
 	if message.content == '' and message.attachments == []:
 		return
-	msg_start = '**`>`**:no_entry_sign:`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC deleted`\n'.format(message.id, mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.channel.id, message.timestamp)
+
+	specialchannel = getspecialchannel_reply(message)
+
+	msg_start = '**`>`**🚫`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) deleted`\n'.format(message.id, mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.channel.id, message.timestamp, reltime(time.mktime(message.timestamp.timetuple())))
 	content = '_`The original content is:`_\n' + message.content
 	msg = msg_start + content
 	if len(msg) >= 2000:
@@ -807,35 +1314,40 @@ async def on_message_delete(message): # when a message gets deleted
 		content2 = '_`The original content is (part 2):`_\n' + msg_split[1]
 		msg1 = content1
 		msg2 = msg_start + content2
-		if message.server.id != productionserver:
-			await client.send_message(message.channel, msg1)
-			await client.send_message(message.channel, msg2)
-		else:
-			await client.send_message(specialchannel, msg1)
-			await client.send_message(specialchannel, msg2)
+		await client.send_message(specialchannel, msg1)
+		await client.send_message(specialchannel, msg2)
 	else:
-		if message.server.id != productionserver:
-			await client.send_message(message.channel, msg)
-		else:
-			await client.send_message(specialchannel, msg)
+		await client.send_message(specialchannel, msg)
 	if message.attachments != []:
-		content = '_`The original attachment is:`_\n' + str(message.attachments)
-		msg = msg_start + content
-		if message.server.id != productionserver:
-			await client.send_message(message.channel, msg)
+		if os.path.isfile(attachcache + '/' + message.attachments[0]['id'] + '_' + message.attachments[0]['filename']):
+			content = '_📎`The original attachment is attached.`_'
+			msg = msg_start + content
+			filetoattach = attachcache + '/' + message.attachments[0]['id'] + '_' + message.attachments[0]['filename']
+			await client.send_file(destination=specialchannel, content=msg, fp=filetoattach, filename=message.attachments[0]['filename'])
 		else:
+			content = '_`The attachment is not in the message attachments cache.`_'
+			msg = msg_start + content
 			await client.send_message(specialchannel, msg)
 
 @client.async_event
 async def on_message_edit(before, after): # when a message gets edited
+	specialchannel = getspecialchannel_reply(after)
+
+	if before.pinned != after.pinned:
+		if before.pinned == False and after.pinned == True: # if the message was pinned
+			msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) pinned`'.format(before.id, mdspecialchars(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp, reltime(time.mktime(before.timestamp.timetuple())))
+			await client.send_message(specialchannel, msg_start)
+		if before.pinned == True and after.pinned == False: # if the message was unpinned
+			msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) unpinned`'.format(after.id, mdspecialchars(after.author.name), after.author.discriminator, after.author.id, after.channel.id, after.timestamp, reltime(time.mktime(after.timestamp.timetuple())))
+			await client.send_message(specialchannel, msg_start)
 	# preliminary checkings
 	if before.content == after.content:
 		return # must be the message being pinned and/or embed(s) displaying
 	if before.author == client.user or after.author == client.user: # the bot doesnt edits its own messages, so throw a warning
-		warnings.warn('this is the bots own message and the bot doesnt edit messages\nid of before: {}\nid of after: {}'.format(before.id, after.id))
+		logging.warn('this is the bots own message and the bot doesnt edit messages\nid of before: {}\nid of after: {}'.format(before.id, after.id))
 		return
 	# checks succeeded
-	msg_start = '**`>`**:pencil:`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC edited`\n'.format(before.id, mdspecialchars(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp)
+	msg_start = '**`>`**📝`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) edited`\n'.format(before.id, mdspecialchars(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp, reltime(time.mktime(before.timestamp.timetuple())))
 	content = '_`The older content is:`_\n' + before.content
 	msg = msg_start + content
 	if len(msg) >= 2000:
@@ -848,18 +1360,11 @@ async def on_message_edit(before, after): # when a message gets edited
 		content2 = '_`The older content is (part 2):`_\n' + msg_split[1]
 		msg1 = content1
 		msg2 = msg_start + content2
-		if before.server.id != productionserver:
-			await client.send_message(before.channel, msg1)
-			await client.send_message(before.channel, msg2)
-		else:
-			await client.send_message(specialchannel, msg1)
-			await client.send_message(specialchannel, msg2)
+		await client.send_message(specialchannel, msg1)
+		await client.send_message(specialchannel, msg2)
 	else:
-		if before.server.id != productionserver:
-			await client.send_message(before.channel, msg)
-		else:
-			await client.send_message(specialchannel, msg)
-	msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC edited`\n'.format(after.id, mdspecialchars(after.author.name), after.author.discriminator, after.author.id, after.channel.id, after.timestamp)
+		await client.send_message(specialchannel, msg)
+	msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) edited`\n'.format(after.id, mdspecialchars(after.author.name), after.author.discriminator, after.author.id, after.channel.id, after.timestamp, reltime(time.mktime(after.timestamp.timetuple())))
 	content = '_`The newer content is:`_\n' + after.content
 	msg = msg_start + content
 	if len(msg) >= 2000:
@@ -872,141 +1377,248 @@ async def on_message_edit(before, after): # when a message gets edited
 		content2 = '_`The newer content is (part 2):`_\n' + msg_split[1]
 		msg1 = content1
 		msg2 = msg_start + content2
-		if after.server.id != productionserver:
-			await client.send_message(after.channel, msg1)
-			await client.send_message(after.channel, msg2)
-		else:
-			await client.send_message(specialchannel, msg1)
-			await client.send_message(specialchannel, msg2)
+		await client.send_message(specialchannel, msg1)
+		await client.send_message(specialchannel, msg2)
 	else:
-		if after.server.id != productionserver:
-			await client.send_message(after.channel, msg)
-		else:
-			await client.send_message(specialchannel, msg)
+		await client.send_message(specialchannel, msg)
+
+	# Delete a message if it has been edited more than 5 times in 30 seconds
+	if not after.id in minutemessageedits:
+		minutemessageedits[after.id] = [int(time.time())]
+	else:
+		edittime = int(time.time())
+		while True:
+			if edittime in minutemessageedits[after.id]:
+				edittime += 0.1
+			else:
+				minutemessageedits[after.id].append(edittime)
+				break
+		if len(minutemessageedits[after.id]) >= 5:
+			for i in minutemessageedits[after.id][:]: # [:] because we may be removing elements from here
+				if i < (int(time.time())-30):
+					minutemessageedits[after.id].remove(i)
+			if len(minutemessageedits[after.id]) >= 5:
+				# Ok, that's enough editing.
+				await client.delete_message(after)
+				msg = '**`>`**📝📝📝📝📝`Message {} was edited too many times.`'.format(after.id)
+				await client.send_message(specialchannel, msg)
+				# Also actually reply
+				await client.send_message(after.channel, 'Were you going to stop editing that message?')
+		# While we're at it, also clean up other messages.
+		for k in minutemessageedits.copy(): # Copying because we may be removing elements from here [2]
+			if k != after.id:
+				for i in minutemessageedits[k][:]:
+					if i < (int(time.time())-30):
+						minutemessageedits[k].remove(i)
+				if len(minutemessageedits[k]) == 0:
+					del minutemessageedits[k]
 
 @client.async_event
 async def on_member_update(before, after):
+	specialchannel = getspecialchannel(after.server)
+
 	if before.nick != after.nick:
-		msg_start = '**`>`**:regional_indicator_n::pager:`user` **``{}``**`#{}` `({}) changed nickname`\n'.format(mdspecialchars(before.name), before.discriminator, before.id)
+		msg_start = '**`>`**🇳📟`user` **``{}``**`#{}` `({}) changed nickname`\n'.format(mdspecialchars(before.name), before.discriminator, before.id)
 		if before.nick == None:
 			content = '_`The older nickname is:`_ `(none)`'
 		else:
 			content = '_`The older nickname is:`_\n``{}``'.format(mdspecialchars(before.nick))
 		msg = msg_start + content
-		if before.server.id != productionserver:
-			await client.send_message(before.server.default_channel, msg)
-		else:
-			await client.send_message(specialchannel, msg)
+		await client.send_message(specialchannel, msg)
 		msg_start = '**`>`**`user` **``{}``**`#{}` `({}) changed nickname`\n'.format(after.name, after.discriminator, after.id)
 		if after.nick == None:
 			content = '_`The newer nickname is:`_ `(none)`'
 		else:
 			content = '_`The newer nickname is:`_\n``{}``'.format(mdspecialchars(after.nick))
 		msg = msg_start + content
-		if after.server.id != productionserver:
-			await client.send_message(after.server.default_channel, msg)
-		else:
-			await client.send_message(specialchannel, msg)
+		await client.send_message(specialchannel, msg)
 	if before.roles != after.roles:
 		if len(before.roles) > len(after.roles): # if a role has been removed
 			roleremoved = list(set(before.roles).symmetric_difference(set(after.roles)))[0]
-			msg_start = '**`>`**`user` **``{}``**`#{}` `({}) has role {} ({}) removed`'.format(mdspecialchars(before.name), before.discriminator, before.id, roleremoved.name, roleremoved.id)
-			if before.server.id != productionserver:
-				await client.send_message(before.server.default_channel, msg_start)
-			else:
-				await client.send_message(specialchannel, msg_start)
+			msg_start = '**`>`**`user` **``{}``**`#{}` `({}) has role` **``{}``** `({}) removed`'.format(mdspecialchars(before.name), before.discriminator, before.id, mdspecialchars(roleremoved.name), roleremoved.id)
+			await client.send_message(specialchannel, msg_start)
 		if len(before.roles) < len(after.roles): # if a role has been added
 			roleadded = list(set(after.roles).symmetric_difference(set(before.roles)))[0]
-			msg_start = '**`>`**`user` **``{}``**`#{}` `({}) has role {} ({}) added`'.format(after.name, after.discriminator, after.id, roleadded.name, roleadded.id)
-			if after.server.id != productionserver:
-				await client.send_message(after.server.default_channel, msg_start)
-			else:
-				await client.send_message(specialchannel, msg_start)
+			msg_start = '**`>`**`user` **``{}``**`#{}` `({}) has role` **``{}``** `({}) added`'.format(after.name, after.discriminator, after.id, mdspecialchars(roleadded.name), roleadded.id)
+			await client.send_message(specialchannel, msg_start)
+
+		if before.server.id == productionserver:
+			updaterolecache(after)
+			rolecachesave()
 	if before.name != after.name:
-		msg_start = '**`>`**:regional_indicator_u::pager:`user {} changed username`\n'.format(before.id)
+		msg_start = '**`>`**🇺📟`user {} changed username`\n'.format(before.id)
 		content = '_`The older username is:`_\n**``{}``**\n_`The older discriminator is:`_ `#{}`'.format(mdspecialchars(before.name), before.discriminator)
 		msg = msg_start + content
-		if before.server.id != productionserver:
-			await client.send_message(before.server.default_channel, msg)
-		else:
-			await client.send_message(specialchannel, msg)
+		await client.send_message(specialchannel, msg)
 		msg_start = '**`>`**`user {} changed username`\n'.format(after.id)
 		content = '_`The newer username is:`_\n**``{}``**\n_`The newer discriminator is:`_ `#{}`'.format(mdspecialchars(after.name), after.discriminator)
 		msg = msg_start + content
-		if after.server.id != productionserver:
-			await client.send_message(after.server.default_channel, msg)
-		else:
-			await client.send_message(specialchannel, msg)
+		if before.discriminator != after.discriminator:
+			msg += '🔸'
+		await client.send_message(specialchannel, msg)
 	if before.avatar_url != after.avatar_url and before.id != '141769689406636032' and before.id != '88575421972516864' and before.id != '196574963673595904': # isn't 35, 42 or beta 42
-		msg_start = '**`>`**:busts_in_silhouette:`user` **``{}``**`#{}` `({}) changed avatar`\n'.format(mdspecialchars(before.name), before.discriminator, before.id)
+		msg_start = '**`>`**👥`user` **``{}``**`#{}` `({}) changed avatar`\n'.format(mdspecialchars(before.name), before.discriminator, before.id)
 		content = '_`The older avatar URL is:`_ ' + before.avatar_url
 		msg = msg_start + content
-		if before.server.id != productionserver:
-			await client.send_message(before.server.default_channel, msg)
-		else:
-			await client.send_message(specialchannel, msg)
-		msg_start = '**`>`**`user` **``{}``**`#{}` `changed avatar`\n'.format(mdspecialchars(after.name), after.discriminator, after.id)
+		await client.send_message(specialchannel, msg)
+		msg_start = '**`>`**`user` **``{}``**`#{}` `({}) changed avatar`\n'.format(mdspecialchars(after.name), after.discriminator, after.id)
 		content = '_`The newer avatar URL is:`_ ' + after.avatar_url
 		msg = msg_start + content
-		if after.server.id != productionserver:
-			await client.send_message(after.server.default_channel, msg)
-		else:
-			await client.send_message(specialchannel, msg)
+		await client.send_message(specialchannel, msg)
 
 @client.async_event
 async def on_member_join(member):
-	msg = '**`>`**:arrow_right:`user` **``{}``**`#{}` `({}) joined server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
-	if member.server.id != productionserver:
-		await client.send_message(member.server.default_channel, msg)
-	else:
-		await client.send_message(specialchannel, msg)
+	specialchannel = getspecialchannel(member.server)
+
+	msg = '**`>`**➡`user` **``{}``**`#{}` `({}) joined server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
+	await client.send_message(specialchannel, msg)
+	if member.server.id == productionserver:
 		if is_bot(member):
 			await client.add_roles(member, discord.utils.get(member.server.roles, id='201129507967598592')) # bot role
 			return
-		# TODO: Look up that member in our database, to see if this user should get a restrictive group again.
-		# If someone is just a tOLPer, they won't be in the database.
-		if False:
+		# Are they in our database of members which had roles before?
+		if str(member.id) in memberroles:
 			# They're found in the database! Give them the groups they should have
-			pass
+			for rid in memberroles[str(member.id)]:
+				await client.add_roles(member, discord.utils.get(member.server.roles, id=rid)) # TODO make this less iterative and add multiple roles at once
+			msg = '**`>`**`user` **``{}``**`#{}` `({}) found in the role cache`'.format(mdspecialchars(member.name), member.discriminator, member.id)
+			await client.send_message(specialchannel, msg)
 		else:
 			# Not found, so they're just a tOLPer.
 			await client.add_roles(member, discord.utils.get(member.server.roles, id='231644869351833600')) # The tOLPer role
 
 @client.async_event
 async def on_member_remove(member):
-	msg = '**`>`**:door:`user` **``{}``**`#{}` `({}) removed from server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
-	if member.server.id != productionserver:
-		await client.send_message(member.server.default_channel, msg)
-	else:
-		await client.send_message(specialchannel, msg)
+	specialchannel = getspecialchannel(member.server)
+
+	msg = '**`>`**🚪`user` **``{}``**`#{}` `({}) removed from server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
+	await client.send_message(specialchannel, msg)
 
 @client.async_event
 async def on_member_ban(member):
-	msg = '**`>`**:mans_shoe::door::no_entry:`user` **``{}``**`#{}` `({}) banned from server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
-	if member.server.id != productionserver:
-		await client.send_message(member.server.default_channel, msg)
-	else:
-		await client.send_message(specialchannel, msg)
+	specialchannel = getspecialchannel(member.server)
+
+	msg = '**`>`**👞🚪⛔`user` **``{}``**`#{}` `({}) banned from server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
+	await client.send_message(specialchannel, msg)
 
 @client.async_event
 async def on_member_unban(server, user):
+	specialchannel = getspecialchannel(server)
 	msg = '**`>`**<:doormat:239361673532669953>`user` **``{}``**`#{}` `({}) unbanned from server {} ({})`'.format(mdspecialchars(user.name), user.discriminator, user.id, server.name, server.id)
-	if server.id != productionserver:
-		await client.send_message(server.default_channel, msg)
-	else:
-		await client.send_message(specialchannel, msg)
+	await client.send_message(specialchannel, msg)
 
 @client.async_event
 async def on_typing(channel, user, when):
+	specialchannel = getspecialchannel(channel.server)
+	if specialchannel.id == channel.server.default_channel.id:
+		specialchannel = channel
 	if str(user.status) == 'offline':
-		msg = '**`>`**:ghost:`user` **``{}``**`#{}` `({}) was invisible while typing in channel` <#{}> `at {}`'.format(mdspecialchars(user.name), user.discriminator, user.id, channel.id, when)
-		if user.server.id != productionserver:
-			await client.send_message(channel, msg)
-		else:
-			await client.send_message(specialchannel, msg)
+		msg = '**`>`**👻`user` **``{}``**`#{}` `({}) was invisible while typing in channel` <#{}> `at {}`'.format(mdspecialchars(user.name), user.discriminator, user.id, channel.id, when)
+		await client.send_message(specialchannel, msg)
 	else:
 		return # practically unnecessary, but this is for if we want to do things when members type later
 
+@client.async_event
+async def on_server_role_create(role):
+	specialchannel = getspecialchannel(role.server)
+	msg = '**`>`**`role` **``{}``** `({}) was created in server` **``{}``** `({}) at {}`'.format(mdspecialchars(role.name), role.id, mdspecialchars(role.server.name), role.server.id, role.created_at)
+	await client.send_message(specialchannel, msg)
+
+@client.async_event
+async def on_server_role_delete(role):
+	specialchannel = getspecialchannel(role.server)
+	msg = '**`>`**`role` **``{}``** `({}) was deleted in server` **``{}``** `({}) originally created at {}`'.format(mdspecialchars(role.name), role.id, mdspecialchars(role.server.name), role.server.id, role.created_at)
+	await client.send_message(specialchannel, msg)
+
+@client.async_event
+async def on_server_role_update(before, after):
+	specialchannel = getspecialchannel(before.server)
+	if before.name != after.name: # if the name changed
+		msg_start = '**`>`**`role {} has name changed`\n'.format(before.id)
+		content = '_`The older name is:`_\n**``{}``**'.format(mdspecialchars(before.name))
+		msg = msg_start + content
+		await client.send_message(specialchannel, msg)
+		content = '_`The newer name is:`_\n**``{}``**'.format(mdspecialchars(after.name))
+		msg = msg_start + content
+		await client.send_message(specialchannel, msg)
+	if before.hoist != after.hoist: # if "display online members separately" changed
+		if before.hoist == 0 and after.hoist == 1: # if the role has been hoisted
+			msg = '**`>`**`role` **``{}``** `({}) has been hoisted`'.format(mdspecialchars(after.name), after.id)
+			await client.send_message(specialchannel, msg)
+		if before.hoist == 1 and after.hoist == 0: # if the role has been lowered
+			msg = '**`>`**`role` **``{}``** `({}) has been lowered`'.format(mdspecialchars(after.name), after.id)
+			await client.send_message(specialchannel, msg)
+	if before.mentionable != after.mentionable: # if "allow everyone to mention this role" changed
+		if before.mentionable == 0 and after.mentionable == 1: # if the role is now mentionable
+			msg = '**`>`**`role` **``{}``** `({}) is now mentionable`'.format(mdspecialchars(after.name), after.id)
+			await client.send_message(specialchannel, msg)
+		if before.mentionable == 1 and after.mentionable == 0: # if the role is no longer mentionable
+			msg = '**`>`**`role` **``{}``** `({}) is no longer mentionable`'.format(mdspecialchars(after.name), after.id)
+			await client.send_message(specialchannel, msg)
+	if before.position != after.position: # if the role has been moved up or down in the hierarchy
+		if before.position > after.position: # the role has been moved down
+			msg = '**`>`**`role` **``{}``** `({}) has been moved down by {} roles ({} to {})`'.format(mdspecialchars(after.name), after.id, before.position - after.position, before.position, after.position)
+			await client.send_message(specialchannel, msg)
+		if before.position < after.position: # the role has been moved up
+			msg = '**`>`**`role` **``{}``** `({}) has been moved up by {} roles ({} to {})`'.format(mdspecialchars(after.name), after.id, after.position - before.position, before.position, after.position)
+			await client.send_message(specialchannel, msg)
+
+
+@client.async_event
+async def on_reaction_add(reaction, user):
+	specialchannel = getspecialchannel(reaction.message.server)
+	try:
+		iscustomemote = True
+		emotename = reaction.emoji.name
+	except AttributeError:
+		iscustomemote = False
+		emotename = reaction.emoji
+	msg = '**`>`**`user` **``{}``**`#{}` `({}) added reaction` {} `{} to message {}'.format(mdspecialchars(user.name), user.discriminator, user.id, emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', reaction.message.id)
+	if str(user.status) == 'offline':
+		msg += ' and was invisible while doing so`'
+	else:
+		msg += '`'
+	await client.send_message(specialchannel, msg)
+
+@client.async_event
+async def on_reaction_remove(reaction, user):
+	specialchannel = getspecialchannel(reaction.message.server)
+	try:
+		iscustomemote = True
+		emotename = reaction.emoji.name
+	except AttributeError:
+		iscustomemote = False
+		emotename = reaction.emoji
+	msg = '**`>`**`reaction` {} `{} by user` **``{}``**`#{}` `from message {} removed`'.format(emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', mdspecialchars(user.name), user.discriminator, user.id, reaction.message.id)
+	await client.send_message(specialchannel, msg)
+
+@client.async_event
+async def on_server_update(before, after):
+	specialchannel = getspecialchannel(after)
+	if before.icon != after.icon:
+		msg_start = '**`>`**`server` **``{}``** `({}) changed icon`\n'.format(mdspecialchars(before.name), before.id)
+		content = '_`The older icon URL is:`_ ' + before.icon_url
+		msg = msg_start + content
+		await client.send_message(specialchannel, msg)
+		content = '_`The newer icon URL is:`_ ' + after.icon_url
+		msg = msg_start + content
+		await client.send_message(specialchannel, msg)
+	if before.name != after.name:
+		msg_start = '**`>`**`server {} changed name`\n'.format(before.id)
+		content = (
+			'_`The older name is:`_\n'
+			'**``{}``**'
+		).format(mdspecialchars(before.name))
+		msg = msg_start + content
+		await client.send_message(specialchannel, msg)
+		content = (
+			'_`The newer name is:`_\n'
+			'**``{}``**'
+		).format(mdspecialchars(after.name))
+		msg = msg_start + content
+		await client.send_message(specialchannel, msg)
+
+# every function below here is custom-defined and not a part of discord.py
 def is_admin(member):
 	try:
 		perms = member.server_permissions
@@ -1109,6 +1721,14 @@ def get_member_input(server, input):
 @client.async_event
 async def reply(messageobject, message):
 	# Removes the need for adding msg_start manually every time
+	if len(msg_start + message) >= 2000:
+		# We can at least try in a totally not failsafe and kinda ugly way
+		content = msg_start + message
+		contentlines = content.split('\n')
+		cut = math.floor(len(contentlines)/2)
+		await client.send_message(messageobject.channel, '\n'.join(contentlines[:cut]))
+		await client.send_message(messageobject.channel, '\n'.join(contentlines[cut:]))
+		return
 	await client.send_message(messageobject.channel, msg_start + message)
 
 def mdspecialchars(string):
@@ -1125,7 +1745,7 @@ def helplist(cats):
 	for cat in cats:
 		returnage += '\n__`{}:`__'.format(cat['cat_name'])
 		for cmd in cat['commands']:
-			returnage += '\n`\{}` – {}'.format(cmd, cat['commands'][cmd]['short'])
+			returnage += '\n`\{}` – {}'.format(cmd['name'], cmd['short'])
 	return returnage
 
 def hangmanworddisp(theword):
@@ -1157,5 +1777,99 @@ def hangmanworddisp(theword):
 	theoutput += ')'
 
 	return theoutput
+
+def rolelist(roles):
+	rlist = []
+	for role in roles:
+		rlist.append(role.id)
+
+	return rlist
+
+def updaterolecache(member):
+	global memberroles
+	memberroles[str(member.id)] = list(rolelist(member.roles))
+
+def removerolecache(memberid):
+	global memberroles
+	try:
+		del memberroles[memberid]
+	except KeyError:
+		return False
+
+	return True
+
+def rolecachesave():
+	global memberroles
+
+	with open('members.json', 'w') as outfile:
+		json.dump(memberroles, outfile)
+
+def rulesave():
+	global rules
+
+	with open('rules.json', 'w') as outfile:
+		json.dump(rules, outfile)
+
+def listroles(lijst):
+	returnage = ''
+	for role in lijst:
+		if returnage != '':
+			returnage += ', '
+		returnage += '{} ({})'.format(role.name, role.id)
+	return returnage
+
+def listroles_id(lijst):
+	returnage = ''
+	for role in lijst:
+		if returnage != '':
+			returnage += ', '
+		returnage += '{} ({})'.format(discord.utils.get(client.get_server('158091122747506688').roles, id=role), role)
+	return returnage
+
+def getspecialchannel(server):
+	if server.id == '153368829160849408':
+		return specialchannel_prod
+	elif server.id == '158091122747506688':
+		return specialchannel_aperture
+	else:
+		return server.default_channel
+
+def getspecialchannel_reply(message):
+	if message.server == None:
+		return message.channel
+	specialchannel = getspecialchannel(message.server)
+	if specialchannel == message.server.default_channel:
+		return message.channel
+	return specialchannel
+
+def reltime(timestamp, noago=False):
+	timestamp = int(timestamp)
+	now = int(time.time())
+	sdt = now - timestamp
+	dt = math.fabs(sdt)
+
+	if dt == 0:
+		return 'now'
+	elif dt < 60:
+		solong = '{}s'.format(int(dt))
+	elif dt < 60*60:
+		dm = math.floor(dt/60)
+		ds = dt-dm*60
+		solong = '{}m{}s'.format(dm, int(ds))
+	elif dt < 24*60*60:
+		dh = math.floor(dt/3600)
+		dm = math.floor((dt-dh*3600)/60)
+		#ds = dt-dh*3600-dm*60
+		solong = '{}h{}m'.format(dh, dm)
+	else:
+		dd = math.floor(dt/86400)
+		dh = math.floor((dt-dd*86400)/3600)
+		solong = '{}d{}h'.format(dd, dh)
+
+	if sdt >= 0:
+		if noago:
+			return solong
+		return '{} ago'.format(solong)
+	return '{} in the future'.format(solong)
 
 client.run(token)

@@ -1,7 +1,13 @@
 # Contributing
 Just make sure your code is worth its merit.
 ## General
-Please don't push your changes to the `master` branch, unless you know what you are doing! Use the `untested` branch instead.
+Please don’t push your changes to the `master` branch, unless you know what you
+are doing! Use the `untested` branch instead. Or you can create your own
+branch.
+## Documentation Style
+Make sure each line doesn’t exceed eighty characters, for maintainability.
+Markdown will concatenate each “block” of text not separated by a blank line
+into one big line, anyways.
 ## Code Style
 - tabs instead of spaces with a tabstop of eight.
 - no trailing whitespace
@@ -14,10 +20,13 @@ If you’re willing to let Info Teddy be lazy and do the work that he’s suppos
 to do (and he’ll convince you by saying he has homework to do and a life), you
 can add all of this.
 ## v1.0
+- [x] actually cache message attachments
+- [ ] make `\info` show when the member was last seen (and do it well)
 - [ ] make `\restart` restart the bot in place such that everything is reloaded
 but the `Client.messages` cache isnt cleared
 - [ ] less hard-written configuration (see im lazy) and/or none at all
 - [ ] log more shit
+	- [ ] reactions
 	- [x] member avatar changes
 	- [x] member role adds/removes
 	- [x] when people are invisible for no reason
@@ -34,7 +43,7 @@ but the `Client.messages` cache isnt cleared
 	- [x] `\rolerst`
 - [ ] give roles
 	- [x] give roles upon a new member joining
-	- [ ] remember roles so members cant circumvent softbans/other
+	- [x] remember roles so members cant circumvent softbans/other
 	restrictive roles and ofc give them back upon joining
 
 # Ideas
