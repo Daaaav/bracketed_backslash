@@ -32,6 +32,9 @@ import logging
 import math
 import subprocess
 
+# set bot version
+botversion = '1.0'
+
 # sets up logging
 # level can be logging.DEBUG, logging.WARNING, et cetera
 # see https://docs.python.org/3/library/logging.html for more info
@@ -78,12 +81,21 @@ server = client.get_server(productionserver) # defines all server.* commands
 memberroles = {}
 minutemessageedits = {}
 
+rules = {}
+disabledrules = []
+
+modificationtimes = [
+	os.path.getmtime('intro.py'),
+]
+modificationtimecache = time.strftime(timeformat, time.gmtime(max(modificationtimes)))
+
 client.max_messages = None
 
 t = {
 	'op_only': 'Permission denied. This command can only be used by Info Teddy or Dav999.',
 	'mod_only': 'Permission denied. This command can only be used by a moderator or administrator.',
 	'specify_user': 'Please specify a user ID, a username, a username and discriminator, or a nickname.',
+	'no_permission': 'There are missing permissions required to execute this.',
 	'accepts_user': 'Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.',
 	'production_only': 'Production server only!',
 	'noprivate': 'This command cannot be run inside a private conversation! You can probably guess why.',
@@ -134,6 +146,11 @@ cmds = [
 				'short': 'Stop the current game of hangman.',
 				'extra': 'Can only be done by the one who started the game or a moderator.'
 			},
+			{
+				'name': 'invite',
+				'short': 'Links to the servers `[\]` can be used on.',
+				'extra': '`[\]` can only be used on these servers.'
+			},
 		]
 	},
 	{
@@ -143,6 +160,11 @@ cmds = [
 				'name': 'botok',
 				'short': 'Pings the bot.',
 				'extra': 'If the bot is okay, the bot will respond with “Bot is okay”.'
+			},
+			{
+				'name': 'version',
+				'short': 'Gives the bot version and `discord.py` version.',
+				'extra': ''
 			},
 			{
 				'name': 'uptime',
@@ -201,7 +223,12 @@ cmds = [
 			},
 			{
 				'name': 'voicemute',
-				'short': 'Gives a user the `Voice Muted` role.',
+				'short': 'Mutes a user in a voice channel.',
+				'extra': t['accepts_user']
+			},
+			{
+				'name': 'voiceunmute',
+				'short': 'Unmutes a user in a voice channel.',
 				'extra': t['accepts_user']
 			},
 			{
@@ -218,6 +245,50 @@ cmds = [
 				'name': 'rolesync',
 				'short': 'Re-syncs the roles cache with the current roles everyone has, if the bot missed role additions/removals',
 				'extra': 'Does not remove members from the cache who have left the server.'
+			},
+			{
+				'name': 'getrawmessagecontent',
+				'short': 'Gets the raw content of a message.',
+				'extra': (
+					'Syntax: `\getrawmessagecontent CHANNEL MESSAGEID`\n'
+					'`CHANNEL` must be in `<#ID>` form, i.e. a highlighted channel link.\n'
+					'`MESSAGEID` must be the ID of the message.'
+				)
+			}
+		]
+	},
+	{
+		'cat_name': 'Rules Commands',
+		'commands': [
+			{
+				'name': 'rules',
+				'short': 'View the rules.',
+				'extra': 'Rules can be different for each server the bot runs on. You can get a specific rule by its number with `\\rule X`.',
+			},
+			{
+				'name': 'ruleadd',
+				'short': 'Insert a given rule string (2) to position (1). If no position is given, it\'s added at the end.',
+				'extra': 'Examples:\n`\\ruleadd No trolling`\n`\\ruleadd 1 The most important rule is not to follow this rule.`'
+			},
+			{
+				'name': 'ruleedit',
+				'short': 'Edit a given rule.',
+				'extra': 'Example:\n`\\ruleedit 2 No trolling`'
+			},
+			{
+				'name': 'rulemove',
+				'short': 'Move a given rule to a different slot. (nothing gets overwritten)',
+				'extra': 'Example:\n`\\rulemove 2 4`'
+			},
+			{
+				'name': 'ruleremove',
+				'short': 'Remove a given rule.',
+				'extra': 'Example:\n`\\ruleremove 2`'
+			},
+			{
+				'name': 'rulemaint',
+				'short': 'Enable/Disable the rules system for this server.',
+				'extra': ''
 			},
 		]
 	},
@@ -308,7 +379,7 @@ permissionlabels = [
 
 @client.async_event
 async def on_ready():
-	global memberroles
+	global memberroles, rules, disabledrules
 
 	logging.info('logged in as {} with id {}'.format(client.user.name, client.user.id))
 	await client.change_presence(game=discord.Game(name='​')) # the game name is u+200b
@@ -324,7 +395,7 @@ async def on_ready():
 
 		for mem in client.get_server(productionserver).members:
 			if not str(mem.id) in memberroles:
-				warnings += '\nUser {}#{} ({}) is not in the cache! Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
+				warnings += '\nUser {}#{} ({}) is not in the cache! (They\'re suddenly in the server.) Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
 				memberroles[str(mem.id)] = list(rolelist(mem.roles)) # Possibly redundant list() tbh, just making sure since I can't test and I don't know python well enough to know whether it's redundant
 				continue
 			if set(memberroles[str(mem.id)]) != set(rolelist(mem.roles)):
@@ -356,15 +427,41 @@ async def on_ready():
 
 		await client.send_message(specialchannel_prod, 'Members file didn’t yet exist, created a new one. Please run `\\rolesync` to sync up the roles cache.')
 
+	try:
+		with open('rules.json', 'r') as infile:
+			rules = json.load(infile)
+	except FileNotFoundError:
+		logging.info('rules file does not exist yet so creating it now')
+		rules = {}
+
+		with open('rules.json', 'w') as outfile:
+			json.dump(rules, outfile)
+
+		await client.send_message(specialchannel_prod, 'Rules file didn\'t exist yet, created a new one.')
+
+	try:
+		with open('disabledrules.json', 'r') as infile:
+			disabledrules = json.load(infile)
+	except FileNotFoundError:
+		logging.info('disabledrules file does not exist yet so creating it now')
+		disabledrules = []
+
+		with open('disabledrules.json', 'w') as outfile:
+			json.dump(disabledrules, outfile)
+
+		await client.send_message(specialchannel_prod, 'Disabledrules file didn\'t exist yet, created a new one.')
+
 @client.async_event
 async def on_message(message):
-	global msg_start, hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, hangmanstarter, guessedletters, algeraden, memberroles
+	global msg_start, hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, hangmanstarter, guessedletters, algeraden, memberroles, rules, disabledrules
 
 	if message.author == client.user: # is the message sent by the bot
 		return # do nothing
 
 	specialchannel = getspecialchannel_reply(message)
-	displaymessagecontent = ('``{}``**`…`**'.format(mdspecialchars(message.content[:100]))) if len(message.content) > 100 else '``{}``'.format(mdspecialchars(message.content))
+	displaymessagecontent = ('``{}``**`…`**'.format(mdspecialchars(message.content[:100]))) if len(message.content) > 100 else '``{}``'.format(mdspecialchars(message.content)).replace('\n', '``**`\\n`**``​')
+	if displaymessagecontent[-12:] == '``**`\\n`**``​':
+		displaymessagecontent += '``'
 	isprivate = isprivatemessage(message.server) # cant use isprivatemessage = isprivatemessage(), otherwise python will think "holy fuck a variable was referenced before assignment"
 
 	if not isprivate and str(message.author.status) == 'offline':
@@ -520,10 +617,10 @@ async def on_message(message):
 	if command == 'help':
 		content = (
 			'`[\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server.\n'
-			'To get accepted into the developer team, you have to be accepted by eighty-percent of the current members of the team.'
-			+ helplist(cmds) + '\n'
-			'**`tOLP Discord`** – the server it’s built for. Join at __https://discord.gg/0r76El7PzkPMhSBF__.\n'
-			'**`Aperture Science`** – the bot’s testing server. Join at __https://discord.gg/0skUn2HYSEHxw9Dg__.'
+			'To get accepted into the developer team, you have to be accepted by eighty-percent of the current members of the team.\n'
+			'Special thanks to Format for making the current icon for the bot.\n'
+			'The bot is currently hosted on Info Teddy’s personal computer.'
+			+ helplist(cmds)
 			)
 
 		# General
@@ -547,7 +644,7 @@ async def on_message(message):
 						break
 
 			if not matched:
-				content = 'Invalid arguments passed. Input `\help` for a list of valid commands to pass as arguments.'
+				content = 'Invalid arguments passed, or the command is not in the help list. Input `\help` for a list of valid commands to pass as arguments.'
 		await reply(message, content)
 	elif command == 'restart':
 		if message.author.id != '146814960574398464' and message.author.id != '159793749604433921':
@@ -751,7 +848,7 @@ async def on_message(message):
 
 		content = ':no_entry: <@{}> has been softbanned.'.format(targetmember.id)
 		await reply(message, content)
-	elif command == 'nononly' or command == 'nogenmen' or command == 'nocedule' or command == 'notts' or command == 'noreact' or command == 'voicemute':
+	elif command == 'nononly' or command == 'nogenmen' or command == 'nocedule' or command == 'notts' or command == 'noreact':
 		if not is_mod(message.author):
 			content = t['mod_only']
 			logging.info('{} attempted by {}#{} (uuid {}) at {} utc but failed'.format(command, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
@@ -767,7 +864,6 @@ async def on_message(message):
 			'nocedule': '222046096216686592',
 			'notts': '215954720555139073',
 			'noreact': '241183168269516800',
-			'voicemute': '241612664143347712',
 		}
 		rolelabel = {
 			'nononly': 'Nonsense-Only',
@@ -775,7 +871,6 @@ async def on_message(message):
 			'nocedule': 'No Custom Emotes/Direct Uploads/Link Embeds',
 			'notts': 'No TTS',
 			'noreact': 'No Reactions',
-			'voicemute': 'Voice Muted',
 		}
 		try:
 			targetmember = get_member_input(message.server, arguments)
@@ -807,6 +902,35 @@ async def on_message(message):
 		content = 'Gave <@{}> the tOLPer who can’t change nickname role, and removed the tOLPer role from them.'.format(targetmember.id)
 		await reply(message, content)
 		return
+	elif command == 'voicemute' or command == 'voiceunmute':
+		if not is_mod(message.author):
+			content = t['mod_only']
+			logging.info('voicemute attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			await reply(message, content)
+			return
+		targetmember = get_member_input(message.server, arguments)
+		try:
+			if targetmember.voice.voice_channel == None:
+				content = 'User is not in a voice channel.'
+				await reply(message, content)
+				return
+			if command == 'voicemute':
+				await client.server_voice_state(targetmember, mute=1)
+			elif command == 'voiceunmute':
+				await client.server_voice_state(targetmember, mute=0)
+		except AttributeError:
+			content = t['specify_user']
+			await reply(message, content)
+			return
+		except discord.errors.Forbidden:
+			content = t['no_permission']
+			await reply(message, content)
+			return
+		if command == 'voicemute':
+			content = 'Voice muted <@{}>.'.format(targetmember.id)
+		elif command == 'voiceunmute':
+			content = 'Voice unmuted <@{}>.'.format(targetmember.id)
+		await reply(message, content)
 	elif command == 'rolerst':
 		if not is_mod(message.author):
 			content = t['mod_only']
@@ -877,6 +1001,172 @@ async def on_message(message):
 		rolecachesave()
 
 		content = 'Synced roles.'
+		await reply(message, content)
+	elif command == 'rules' or command == 'rule':
+		if isprivatemessage(message.server):
+			content = 'Rules:\n**1.** I am always right.\n**2.** If I am not right, rule 1 applies.'
+			await reply(message, content)
+			return
+		if message.server.id in disabledrules and not is_mod(message.author):
+			content = 'The rules system is currently disabled for this server.'
+			await reply(message, content)
+			return
+		if not message.server.id in rules:
+			content = 'Rules are not (yet) set for this server.'
+			await reply(message, content)
+			return
+		if arguments != None and arguments.isdigit():
+			try:
+				rules[message.server.id][int(arguments)-1]
+
+				# Oh, we survived this? That means the given specific rule exists!
+				content = 'Rule **{}** for server `{}`:\n{}'.format(int(arguments), mdspecialchars(message.server.name), rules[message.server.id][int(arguments)-1])
+				await reply(message, content)
+				return
+			except IndexError:
+				pass
+		n = 1
+		content = 'Rules for server `{}`:{}'.format(mdspecialchars(message.server.name), ' (Disabled)' if message.server.id in disabledrules else '')
+		for rule in rules[message.server.id]:
+			content += '\n**{}.** {}'.format(n, rule)
+			n += 1
+		await reply(message, content)
+	elif command == 'ruleadd' or command == 'addrule':
+		if not is_mod(message.author):
+			content = t['mod_only']
+			logging.info('ruleadd yada yada')
+
+			await reply(message, content)
+			return
+		if arguments == None:
+			content = 'I\'m not going to think up any rules by myself.'
+			await reply(message, content)
+			return
+		if not message.server.id in rules:
+			rules[message.server.id] = []
+
+		splitargs = arguments.split(' ', 1)
+		if splitargs[0].isdigit():
+			rules[message.server.id].insert(int(splitargs[0])-1, splitargs[1])
+			content = 'New rule {} inserted:\n{}'.format(int(splitargs[0]), splitargs[1])       # Yes, this one is "inserted"...
+		else:
+			rules[message.server.id].append(arguments)
+			content = 'New rule {} added:\n{}'.format(len(rules[message.server.id]), arguments) # ...and this one is "added". That is on purpose, not an inconsistency.
+		rulesave()
+		await reply(message, content)
+	elif command == 'ruleedit' or command == 'editrule':
+		if not is_mod(message.author):
+			content = t['mod_only']
+			logging.info('ruleedit yada yada')
+
+			await reply(message, content)
+			return
+		if arguments == None:
+			content = 'This command expects you to enter some more info, maybe read its help entry.'
+			await reply(message, content)
+			return
+		if not message.server.id in rules:
+			content = 'No rules to edit.'
+			await reply(message, content)
+			return
+
+		splitargs = arguments.split(' ', 1)
+		if splitargs[0].isdigit():
+			try:
+				rules[message.server.id][int(splitargs[0])-1]
+			except IndexError:
+				content = 'Rule {} does not appear to exist.'.format(int(splitargs[0]))
+				await reply(message, content)
+				return
+
+			content = 'Rule {} successfully edited from:\n{}\nTo:\n{}'.format(int(splitargs[0]), rules[message.server.id][int(splitargs[0])-1], splitargs[1])
+
+			rules[message.server.id][int(splitargs[0])-1] = splitargs[1]
+			rulesave()
+		else:
+			content = 'Invalid rule number given, just check the help entry.'
+		await reply(message, content)
+	elif command == 'rulemove' or command == 'moverule':
+		if not is_mod(message.author):
+			content = t['mod_only']
+			logging.info('rulemove yada yada')
+
+			await reply(message, content)
+			return
+		if arguments == None:
+			content = 'This command expects you to enter some more info, maybe read its help entry.'
+			await reply(message, content)
+			return
+		if not message.server.id in rules:
+			content = 'No rules to move.'
+			await reply(message, content)
+			return
+
+		splitargs = arguments.split(' ', 1)
+		if splitargs[0].isdigit() and splitargs[1].isdigit():
+			try:
+				rules[message.server.id][int(splitargs[0])-1]
+				rules[message.server.id][int(splitargs[1])-1]
+			except IndexError:
+				content = 'Either rule {} does not exist or {} is not a slot it can be moved to.'.format(int(splitargs[0]), int(splitargs[1]))
+				await reply(message, content)
+				return
+
+			rulecontent = rules[message.server.id][int(splitargs[0])-1]
+			rules[message.server.id].remove(rules[message.server.id][int(splitargs[0])-1])
+			rules[message.server.id].insert(int(splitargs[1])-1, rulecontent)
+			rulesave()
+
+			content = 'Rule {} successfully moved to number {}.'.format(int(splitargs[0]), int(splitargs[1]))
+		else:
+			content = 'Invalid rule number(s) given, just check the help entry.'
+		await reply(message, content)
+	elif command == 'ruleremove' or command == 'removerule':
+		if not is_mod(message.author):
+			content = t['mod_only']
+			logging.info('ruleremove yada yada')
+
+			await reply(message, content)
+			return
+		if arguments == None:
+			content = 'This command expects you to enter some more info, maybe read its help entry.'
+			await reply(message, content)
+			return
+		if not message.server.id in rules:
+			content = 'No rules to delete.'
+			await reply(message, content)
+			return
+
+		if arguments.isdigit():
+			try:
+				rules[message.server.id][int(arguments)-1]
+			except IndexError:
+				content = 'Rule {} does not appear to exist.'.format(int(arguments))
+				await reply(message, content)
+				return
+
+			content = 'Rule {} successfully removed:\n{}'.format(int(arguments), rules[message.server.id][int(arguments)-1])
+
+			rules[message.server.id].remove(rules[message.server.id][int(arguments)-1])
+			rulesave()
+		else:
+			content = 'Invalid rule number given, just check the help entry.'
+		await reply(message, content)
+	elif command == 'rulemaint':
+		if not is_mod(message.author):
+			content = t['mod_only']
+			logging.info('rulemaint yada yada')
+
+			await reply(message, content)
+			return
+		if message.server.id in disabledrules:
+			disabledrules.remove(message.server.id)
+			content = 'Rules system enabled for this server.'
+		else:
+			disabledrules.append(message.server.id)
+			content = 'Rules system disabled for this server.'
+		with open('disabledrules.json', 'w') as outfile:
+			json.dump(disabledrules, outfile)
 		await reply(message, content)
 	elif command == 'info':
 		persontocheck = get_member_input(message.server, arguments)
@@ -954,6 +1244,46 @@ async def on_message(message):
 	elif command == '/r/undertale':
 		content = 'They banned someone for posting an honest review of Undertale. Seriously, don’t go there if you don’t want to be censored.'
 		await reply(message, content)
+	elif command == 'invite':
+		content = (
+			'**`tOLP Discord`** – the server it’s built for. Join at __https://discord.gg/0r76El7PzkPMhSBF__.\n'
+			'**`Aperture Science`** – the bot’s testing server. Join at __https://discord.gg/0skUn2HYSEHxw9Dg__.'
+		)
+		await reply(message, content)
+	elif command == 'version':
+		content = (
+			'**`[\]`** – {}, last updated {}\n'
+			'**`discord.py`** – {}'
+		).format(
+			botversion,
+			modificationtimecache,
+			discord.__version__,
+		)
+		await reply(message, content)
+	elif command == 'getrawmessagecontent':
+		if not is_mod(message.author):
+			logging.info('getrawmessagecontent attempted by {}#{} at {} utc but failed').format(message.author.name, message.author.id, message.timestamp)
+			content = t['mod_only']
+			await reply(message, content)
+			return
+		argsplit = arguments.split(' ', 1)
+		try:
+			arg0 = argsplit[0]
+			arg1 = argsplit[1]
+		except IndexError:
+			content = 'Invalid amount of arguments passed. Input `{invoker}{command}` for more information.'.format(invoker=invoker, command=command)
+			await reply(message, content)
+			return
+		channelid = arg0[2:-1]
+		getchannel = discord.Object(id=channelid)
+		try:
+			getmessage = await client.get_message(getchannel, arg1)
+		except discord.errors.HTTPException:
+			content = 'Invalid arguments passed. Input `{invoker}{command}` for more information.'.format(invoker=invoker, command=command)
+			await reply(message, content)
+			return
+		content = '``{}``'.format(mdspecialchars(getmessage.content[:1900]))
+		await reply(message, content)
 	else:
 		if altinvokeractive:
 			return # do not print error message if command is invalid
@@ -964,7 +1294,7 @@ async def on_message(message):
 @client.async_event
 async def on_message_delete(message): # when a message gets deleted
 	if message.author == client.user: # is the deleted message originally sent by the bot
-		print('bot message {} by user {}#{} ({}) in channel {} ({}) at {} utc deleted, original content is \n{}'.format(message.id, message.author.name, message.author.discriminator, message.author.id, message.channel.id, message.channel.name, message.timestamp, message.content))
+		logging.info('bot message {} by user {}#{} ({}) in channel {} ({}) at {} utc deleted, original content is \n{}'.format(message.id, message.author.name, message.author.discriminator, message.author.id, message.channel.id, message.channel.name, message.timestamp, message.content))
 		return
 	if message.content == '' and message.attachments == []:
 		return
@@ -1105,11 +1435,11 @@ async def on_member_update(before, after):
 	if before.roles != after.roles:
 		if len(before.roles) > len(after.roles): # if a role has been removed
 			roleremoved = list(set(before.roles).symmetric_difference(set(after.roles)))[0]
-			msg_start = '**`>`**`user` **``{}``**`#{}` `({}) has role {} ({}) removed`'.format(mdspecialchars(before.name), before.discriminator, before.id, roleremoved.name, roleremoved.id)
+			msg_start = '**`>`**`user` **``{}``**`#{}` `({}) has role` **``{}``** `({}) removed`'.format(mdspecialchars(before.name), before.discriminator, before.id, mdspecialchars(roleremoved.name), roleremoved.id)
 			await client.send_message(specialchannel, msg_start)
 		if len(before.roles) < len(after.roles): # if a role has been added
 			roleadded = list(set(after.roles).symmetric_difference(set(before.roles)))[0]
-			msg_start = '**`>`**`user` **``{}``**`#{}` `({}) has role {} ({}) added`'.format(after.name, after.discriminator, after.id, roleadded.name, roleadded.id)
+			msg_start = '**`>`**`user` **``{}``**`#{}` `({}) has role` **``{}``** `({}) added`'.format(after.name, after.discriminator, after.id, mdspecialchars(roleadded.name), roleadded.id)
 			await client.send_message(specialchannel, msg_start)
 
 		if before.server.id == productionserver:
@@ -1151,12 +1481,11 @@ async def on_member_join(member):
 			# They're found in the database! Give them the groups they should have
 			for rid in memberroles[str(member.id)]:
 				await client.add_roles(member, discord.utils.get(member.server.roles, id=rid)) # TODO make this less iterative and add multiple roles at once
-			await client.send_message(specialchannel, '{}#{} ({}) is in the roles database! Given them back the roles they had.'.format(member.name, member.discriminator, member.id)) # TODO make it show the roles that were added
+			msg = '**`>`**`user` **``{}``**`#{}` `({}) found in the role cache`'.format(mdspecialchars(member.name), member.discriminator, member.id)
+			await client.send_message(specialchannel, msg)
 		else:
 			# Not found, so they're just a tOLPer.
 			await client.add_roles(member, discord.utils.get(member.server.roles, id='231644869351833600')) # The tOLPer role
-	else:
-		print('{} joined a server that is NOT the production server!'.format(member.name))
 
 @client.async_event
 async def on_member_remove(member):
@@ -1202,6 +1531,40 @@ async def on_server_role_delete(role):
 	await client.send_message(specialchannel, msg)
 
 @client.async_event
+async def on_server_role_update(before, after):
+	specialchannel = getspecialchannel(before.server)
+	if before.name != after.name: # if the name changed
+		msg_start = '**`>`**`role {} has name changed`\n'.format(before.id)
+		content = '_`The older name is:`_\n**``{}``**'.format(mdspecialchars(before.name))
+		msg = msg_start + content
+		await client.send_message(specialchannel, msg)
+		content = '_`The newer name is:`_\n**``{}``**'.format(mdspecialchars(after.name))
+		msg = msg_start + content
+		await client.send_message(specialchannel, msg)
+	if before.hoist != after.hoist: # if "display online members separately" changed
+		if before.hoist == 0 and after.hoist == 1: # if the role has been hoisted
+			msg = '**`>`**`role` **``{}``** `({}) has been hoisted`'.format(mdspecialchars(after.name), after.id)
+			await client.send_message(specialchannel, msg)
+		if before.hoist == 1 and after.hoist == 0: # if the role has been lowered
+			msg = '**`>`**`role` **``{}``** `({}) has been lowered`'.format(mdspecialchars(after.name), after.id)
+			await client.send_message(specialchannel, msg)
+	if before.mentionable != after.mentionable: # if "allow everyone to mention this role" changed
+		if before.mentionable == 0 and after.mentionable == 1: # if the role is now mentionable
+			msg = '**`>`**`role` **``{}``** `({}) is now mentionable`'.format(mdspecialchars(after.name), after.id)
+			await client.send_message(specialchannel, msg)
+		if before.mentionable == 1 and after.mentionable == 0: # if the role is no longer mentionable
+			msg = '**`>`**`role` **``{}``** `({}) is no longer mentionable`'.format(mdspecialchars(after.name), after.id)
+			await client.send_message(specialchannel, msg)
+	if before.position != after.position: # if the role has been moved up or down in the hierarchy
+		if before.position > after.position: # the role has been moved down
+			msg = '**`>`**`role` **``{}``** `({}) has been moved down by {} roles ({} to {})`'.format(mdspecialchars(after.name), after.id, before.position - after.position, before.position, after.position)
+			await client.send_message(specialchannel, msg)
+		if before.position < after.position: # the role has been moved up
+			msg = '**`>`**`role` **``{}``** `({}) has been moved up by {} roles ({} to {})`'.format(mdspecialchars(after.name), after.id, after.position - before.position, before.position, after.position)
+			await client.send_message(specialchannel, msg)
+
+
+@client.async_event
 async def on_reaction_add(reaction, user):
 	specialchannel = getspecialchannel(reaction.message.server)
 	try:
@@ -1226,13 +1589,36 @@ async def on_reaction_remove(reaction, user):
 	except AttributeError:
 		iscustomemote = False
 		emotename = reaction.emoji
-	msg = '**`>`**`user` **``{}``**`#{}` `({}) removed reaction` {} `{} from message {}'.format(mdspecialchars(user.name), user.discriminator, user.id, emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', reaction.message.id)
-	if str(user.status) == 'offline':
-		msg += ' and was invisible while doing so`'
-	else:
-		msg += '`'
+	msg = '**`>`**`reaction` {} `{} by user` **``{}``**`#{}` `from message {} removed`'.format(emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', mdspecialchars(user.name), user.discriminator, user.id, reaction.message.id)
 	await client.send_message(specialchannel, msg)
 
+@client.async_event
+async def on_server_update(before, after):
+	specialchannel = getspecialchannel(after)
+	if before.icon != after.icon:
+		msg_start = '**`>`**`server` **``{}``** `({}) changed icon`\n'.format(mdspecialchars(before.name), before.id)
+		content = '_`The older icon URL is:`_ ' + before.icon_url
+		msg = msg_start + content
+		await client.send_message(specialchannel, msg)
+		content = '_`The newer icon URL is:`_ ' + after.icon_url
+		msg = msg_start + content
+		await client.send_message(specialchannel, msg)
+	if before.name != after.name:
+		msg_start = '**`>`**`server {} changed name`\n'.format(before.id)
+		content = (
+			'_`The older name is:`_\n'
+			'**``{}``**'
+		).format(mdspecialchars(before.name))
+		msg = msg_start + content
+		await client.send_message(specialchannel, msg)
+		content = (
+			'_`The newer name is:`_\n'
+			'**``{}``**'
+		).format(mdspecialchars(after.name))
+		msg = msg_start + content
+		await client.send_message(specialchannel, msg)
+
+# every function below here is custom-defined and not a part of discord.py
 def is_admin(member):
 	try:
 		perms = member.server_permissions
@@ -1335,6 +1721,14 @@ def get_member_input(server, input):
 @client.async_event
 async def reply(messageobject, message):
 	# Removes the need for adding msg_start manually every time
+	if len(msg_start + message) >= 2000:
+		# We can at least try in a totally not failsafe and kinda ugly way
+		content = msg_start + message
+		contentlines = content.split('\n')
+		cut = math.floor(len(contentlines)/2)
+		await client.send_message(messageobject.channel, '\n'.join(contentlines[:cut]))
+		await client.send_message(messageobject.channel, '\n'.join(contentlines[cut:]))
+		return
 	await client.send_message(messageobject.channel, msg_start + message)
 
 def mdspecialchars(string):
@@ -1410,6 +1804,12 @@ def rolecachesave():
 	with open('members.json', 'w') as outfile:
 		json.dump(memberroles, outfile)
 
+def rulesave():
+	global rules
+
+	with open('rules.json', 'w') as outfile:
+		json.dump(rules, outfile)
+
 def listroles(lijst):
 	returnage = ''
 	for role in lijst:
@@ -1435,6 +1835,8 @@ def getspecialchannel(server):
 		return server.default_channel
 
 def getspecialchannel_reply(message):
+	if message.server == None:
+		return message.channel
 	specialchannel = getspecialchannel(message.server)
 	if specialchannel == message.server.default_channel:
 		return message.channel
