@@ -1,5 +1,7 @@
 # encoding=utf-8
 
+client = discord.Client()
+
 # every function below here is custom-defined and not a part of discord.py
 
 def is_admin(member):

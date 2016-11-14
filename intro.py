@@ -32,6 +32,8 @@ import logging
 import math
 import subprocess
 
+from functions import *
+
 # set bot version
 botversion = '1.0'
 
@@ -1617,12 +1619,5 @@ async def on_server_update(before, after):
 		).format(mdspecialchars(after.name))
 		msg = msg_start + content
 		await client.send_message(specialchannel, msg)
-
-
-# Could this possibly be more ugly? It could.
-def execfile(file):
-	exec(compile(open(file).read()))
-
-execfile('functions.py')
 
 client.run(token)
