@@ -3,3 +3,4 @@ members.json
 rules.json
 disabledrules.json
 .cache
+__pycache__
