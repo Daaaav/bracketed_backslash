@@ -613,7 +613,7 @@ async def on_message(message):
 		arguments = command.split(' ', 1)[1]
 	except IndexError:
 		arguments = None
-	command = command.split(' ', 1)[0]
+	command = command.split(' ', 1)[0].lower()
 	if command == 'help':
 		content = (
 			'`[\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server.\n'
