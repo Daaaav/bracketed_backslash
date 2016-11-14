@@ -32,8 +32,6 @@ import logging
 import math
 import subprocess
 
-from functions import *
-
 # set bot version
 botversion = '1.0'
 
@@ -1619,5 +1617,7 @@ async def on_server_update(before, after):
 		).format(mdspecialchars(after.name))
 		msg = msg_start + content
 		await client.send_message(specialchannel, msg)
+
+exec(compile(open("functions.py", "rb").read(), "functions.py", 'exec'))
 
 client.run(token)
