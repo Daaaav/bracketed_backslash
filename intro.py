@@ -707,7 +707,7 @@ async def on_message(message):
 			'Luigi: don\'t you mean ...\\\n'
 			'ShinyWolf07: ...\n'
 			'ShinyWolf07: sigh\n'
-			'Luigi: 10/10 would watch again```\n'
+			'Luigi: 10/10 would watch again```'
 			).format(message.author.id)
 		await reply(message, content)
 	elif command == 'hangman':
