@@ -32,6 +32,10 @@ import logging
 import math
 import subprocess
 
+import config
+
+config.load()
+
 # set bot version
 botversion = '1.0'
 
@@ -647,7 +651,7 @@ async def on_message(message):
 				content = 'Invalid arguments passed, or the command is not in the help list. Input `\help` for a list of valid commands to pass as arguments.'
 		await reply(message, content)
 	elif command == 'restart':
-		if message.author.id != '146814960574398464' and message.author.id != '159793749604433921':
+		if not is_operator(message.author):
 			content = t['op_only']
 			logging.info('bot restart tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			await reply(message, content)
@@ -657,7 +661,7 @@ async def on_message(message):
 		await reply(message, content)
 		await os.execl(__file__, '')
 	elif command == 'kill':
-		if message.author.id != '146814960574398464' and message.author.id != '159793749604433921':
+		if not is_operator(message.author):
 			content = t['op_only']
 			logging.info('bot kill tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			await reply(message, content)
@@ -666,6 +670,16 @@ async def on_message(message):
 		logging.info('bot kill called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 		await reply(message, content)
 		await sys.exit()
+	elif command == 'configtest':
+		if not is_operator(message.author):
+			content = t['op_only']
+			logging.info('[CONFIG TEMP TEST] tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			await reply(message, content)
+			return
+		content = 'Current value is: {}, incrementing by one'.format(config.s['test'])
+		config.s['test'] += 1
+		config.saveconfig()
+		await reply(message, content)
 	elif command == 'echo':
 		if arguments == None:
 			arguments = ''
