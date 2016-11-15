@@ -128,7 +128,7 @@ def helplist(cats):
 	for cat in cats:
 		returnage += '\n__`{}:`__'.format(cat['cat_name'])
 		for cmd in cat['commands']:
-			returnage += '\n`\{}` ? {}'.format(cmd['name'], cmd['short'])
+			returnage += '\n`\{}` – {}'.format(cmd['name'], cmd['short'])
 	return returnage
 
 def hangmanworddisp(theword):
