@@ -670,16 +670,6 @@ async def on_message(message):
 		logging.info('bot kill called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 		await reply(message, content)
 		await sys.exit()
-	elif command == 'configtest':
-		if not is_operator(message.author):
-			content = t['op_only']
-			logging.info('[CONFIG TEMP TEST] tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-			await reply(message, content)
-			return
-		content = 'Current value is: {}, incrementing by one'.format(config.s['test'])
-		config.s['test'] += 1
-		config.saveconfig()
-		await reply(message, content)
 	elif command == 'echo':
 		if arguments == None:
 			arguments = ''
