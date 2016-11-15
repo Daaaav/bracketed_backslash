@@ -1,6 +1,4 @@
 *.conf
-members.json
-rules.json
-disabledrules.json
+*.json
 .cache
 __pycache__
