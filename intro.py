@@ -66,7 +66,7 @@ algeraden = False
 os.environ['TZ'] = 'UTC'
 time.tzset()
 
-timeformat = '%Y-%m-%d %H:%M:%S (%Z)'
+timeformat = config.s['timeformat']
 boottime = time.strftime(timeformat)
 boottimeunix = time.time()
 
@@ -670,6 +670,50 @@ async def on_message(message):
 		logging.info('bot kill called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 		await reply(message, content)
 		await sys.exit()
+	elif command == 'config':
+		if not is_operator(message.author):
+			content = t['op_only']
+			logging.info('');
+			await reply(message, content)
+			return
+		if arguments == None:
+			content = 'Try `\config list`'
+			await reply(message, content)
+			return
+		elif arguments == 'list':
+			content = '```css\n'
+			for c in config.s:
+				content += '{} [{}] = {}\n'.format(c, config.configs[c]['type'], config.s[c])
+			content += '```'
+			await reply(message, content)
+			return
+
+		splitargs = arguments.split(' ', 1)
+
+		if splitargs[1] == 'set':
+			if config.configs[c]['type'] == 'arr': # Not that arrays exist yet
+				content = 'That doesn\'t work for an array'
+				await reply(message, content)
+				return
+			splitsubargs = splitargs[2].split(' ', 1)
+			if not splitsubargs[1] in config.s:
+				content = 'That setting does not exist'
+				await reply(message, content)
+				return
+			config.s[splitsubargs[1]] = splitsubargs[2]
+			saveconfig()
+			content = 'Set `{}` to `{}`'.format(splitsubargs[1], mdspecialchars(splitsubargs[2]))
+			await reply(message, content)
+		elif splitargs[1] == 'default':
+			splitsubargs = splitargs[2].split(' ', 1)
+			if not splitsubargs[1] in config.s:
+				content = 'That setting does not exist'
+				await reply(message, content)
+				return
+			config.s[splitsubargs[1]] = config.configs[splitsubargs[1]]['default']
+			saveconfig()
+			content = 'Set `{}` back to default value of `{}`'.format(splitsubargs[1], mdspecialchars(config.configs[splitsubargs[1]]['default']))
+			await reply(message, content)
 	elif command == 'echo':
 		if arguments == None:
 			arguments = ''

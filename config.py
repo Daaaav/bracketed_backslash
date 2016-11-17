@@ -2,12 +2,18 @@
 
 import json
 
+# types can be int/str/arr
 configs = {
 	'test': {
 		'default': 2,
 		'type': 'int',
 		'expl': 'A testing setting to see whether everything works'
-	}
+	},
+	'timeformat': {
+		'default': '%Y-%m-%d %H:%M:%S (%Z)',
+		'type': 'str',
+		'expl': 'The date format used in messages.'
+	},
 }
 
 s = {}
