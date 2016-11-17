@@ -691,7 +691,7 @@ async def on_message(message):
 		splitargs = arguments.split(' ', 1)
 
 		if splitargs[0] == 'set':
-			if config.configs[c]['type'] == 'arr': # Not that arrays exist yet
+			if config.configs[splitargs[0]]['type'] == 'arr': # Not that arrays exist yet
 				content = 'That doesn\'t work for an array'
 				await reply(message, content)
 				return
