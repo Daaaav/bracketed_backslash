@@ -714,6 +714,9 @@ async def on_message(message):
 			saveconfig()
 			content = 'Set `{}` back to default value of `{}`'.format(splitsubargs[1], mdspecialchars(config.configs[splitsubargs[1]]['default']))
 			await reply(message, content)
+		else
+			content = '`{}` was not recognized'.format(splitargs[1])
+			await reply(message, content)
 	elif command == 'echo':
 		if arguments == None:
 			arguments = ''
