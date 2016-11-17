@@ -690,32 +690,32 @@ async def on_message(message):
 
 		splitargs = arguments.split(' ', 1)
 
-		if splitargs[1] == 'set':
+		if splitargs[0] == 'set':
 			if config.configs[c]['type'] == 'arr': # Not that arrays exist yet
 				content = 'That doesn\'t work for an array'
 				await reply(message, content)
 				return
-			splitsubargs = splitargs[2].split(' ', 1)
-			if not splitsubargs[1] in config.s:
+			splitsubargs = splitargs[1].split(' ', 1)
+			if not splitsubargs[0] in config.s:
 				content = 'That setting does not exist'
 				await reply(message, content)
 				return
-			config.s[splitsubargs[1]] = splitsubargs[2]
+			config.s[splitsubargs[0]] = splitsubargs[1]
 			saveconfig()
-			content = 'Set `{}` to `{}`'.format(splitsubargs[1], mdspecialchars(splitsubargs[2]))
+			content = 'Set `{}` to `{}`'.format(splitsubargs[0], mdspecialchars(splitsubargs[1]))
 			await reply(message, content)
-		elif splitargs[1] == 'default':
-			splitsubargs = splitargs[2].split(' ', 1)
-			if not splitsubargs[1] in config.s:
+		elif splitargs[0] == 'default':
+			splitsubargs = splitargs[1].split(' ', 1)
+			if not splitsubargs[0] in config.s:
 				content = 'That setting does not exist'
 				await reply(message, content)
 				return
-			config.s[splitsubargs[1]] = config.configs[splitsubargs[1]]['default']
+			config.s[splitsubargs[0]] = config.configs[splitsubargs[0]]['default']
 			saveconfig()
-			content = 'Set `{}` back to default value of `{}`'.format(splitsubargs[1], mdspecialchars(config.configs[splitsubargs[1]]['default']))
+			content = 'Set `{}` back to default value of `{}`'.format(splitsubargs[0], mdspecialchars(config.configs[splitsubargs[0]]['default']))
 			await reply(message, content)
 		else:
-			content = '`{}` was not recognized'.format(splitargs[1])
+			content = '`{}` was not recognized'.format(splitargs[0])
 			await reply(message, content)
 	elif command == 'echo':
 		if arguments == None:
