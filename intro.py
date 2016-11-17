@@ -701,7 +701,7 @@ async def on_message(message):
 				await reply(message, content)
 				return
 			config.s[splitsubargs[0]] = splitsubargs[1]
-			saveconfig()
+			config.saveconfig()
 			content = 'Set `{}` to `{}`'.format(splitsubargs[0], mdspecialchars(splitsubargs[1]))
 			await reply(message, content)
 		elif splitargs[0] == 'default':
@@ -711,7 +711,7 @@ async def on_message(message):
 				await reply(message, content)
 				return
 			config.s[splitsubargs[0]] = config.configs[splitsubargs[0]]['default']
-			saveconfig()
+			config.saveconfig()
 			content = 'Set `{}` back to default value of `{}`'.format(splitsubargs[0], mdspecialchars(config.configs[splitsubargs[0]]['default']))
 			await reply(message, content)
 		else:
