@@ -1098,8 +1098,12 @@ async def on_message(message):
 
 		splitargs = arguments.split(' ', 1)
 		if splitargs[0].isdigit():
+			if int(splitargs[0]) > len(rules[message.server.id]):
+				content = 'Why are you mentioning the number if you\'re adding this at the end?\n'
+			else:
+				content = ''
 			rules[message.server.id].insert(int(splitargs[0])-1, splitargs[1])
-			content = 'New rule {} inserted:\n{}'.format(int(splitargs[0]), splitargs[1])       # Yes, this one is "inserted"...
+			content += 'New rule {} inserted:\n{}'.format(int(splitargs[0]), splitargs[1])       # Yes, this one is "inserted"...
 		else:
 			rules[message.server.id].append(arguments)
 			content = 'New rule {} added:\n{}'.format(len(rules[message.server.id]), arguments) # ...and this one is "added". That is on purpose, not an inconsistency.
