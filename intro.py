@@ -66,8 +66,7 @@ algeraden = False
 os.environ['TZ'] = 'UTC'
 time.tzset()
 
-timeformat = config.s['timeformat']
-boottime = time.strftime(timeformat)
+boottime = time.strftime(config.get_s('timeformat'))
 boottimeunix = time.time()
 
 token_config = open('bot_token.conf', 'r')
@@ -91,7 +90,7 @@ disabledrules = []
 modificationtimes = [
 	os.path.getmtime('intro.py'),
 ]
-modificationtimecache = time.strftime(timeformat, time.gmtime(max(modificationtimes)))
+modificationtimecache = time.strftime(config.get_s('timeformat'), time.gmtime(max(modificationtimes)))
 
 client.max_messages = None
 
@@ -681,10 +680,12 @@ async def on_message(message):
 			await reply(message, content)
 			return
 		elif arguments == 'list':
-			content = '```css\n'
+			content = '```css'
 			for c in config.s:
-				content += '{} [{}] = {}\n'.format(c, config.configs[c]['type'], config.s[c])
-			content += '```'
+				content += '\n{} [{}] = {}'.format(c, config.configs[c]['type'], config.get_s(c, message.server.id))
+				if config.is_detached(c, message.server.id):
+					content += ' (local value)'
+			content += '\n```'
 			await reply(message, content)
 			return
 
@@ -700,7 +701,7 @@ async def on_message(message):
 				content = 'That setting does not exist'
 				await reply(message, content)
 				return
-			config.s[splitsubargs[0]] = splitsubargs[1]
+			config.set_s(splitsubargs[0], splitsubargs[1], message.server.id)
 			config.saveconfig()
 			content = 'Set `{}` to `{}`'.format(splitsubargs[0], mdspecialchars(splitsubargs[1]))
 			await reply(message, content)
@@ -710,7 +711,7 @@ async def on_message(message):
 				content = 'That setting does not exist'
 				await reply(message, content)
 				return
-			config.s[splitsubargs[0]] = config.configs[splitsubargs[0]]['default']
+			config.set_s(splitsubargs[0], config.configs[splitsubargs[0]]['default'], message.server.id)
 			config.saveconfig()
 			content = 'Set `{}` back to default value of `{}`'.format(splitsubargs[0], mdspecialchars(config.configs[splitsubargs[0]]['default']))
 			await reply(message, content)
@@ -1288,7 +1289,7 @@ async def on_message(message):
 			'**`Host Uptime:`**   `{}`'
 		).format(
 			boottime,
-			time.strftime(timeformat),
+			time.strftime(config.get_s('timeformat', message.server.id)),
 			reltime(boottimeunix, True),
 			hostuptime.decode('utf-8'),
 		)
