@@ -41,6 +41,7 @@ def saveconfig():
 
 def loaddefaultsettings():
 	for default in configs:
+		s[default] = {}
 		s[default]['master'] = configs[default]['default']
 
 def load():
