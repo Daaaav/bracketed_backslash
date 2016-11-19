@@ -31,7 +31,7 @@ def set_s(skey, value, serverid=None):
 	s[skey]['master'] = value
 
 def is_detached(skey, serverid):
-	if serverid in s[key]:
+	if serverid in s[skey]:
 		return True
 	return False
 
