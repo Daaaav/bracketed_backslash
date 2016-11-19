@@ -346,11 +346,6 @@ meme_cmds = [
 				'short': 'This is going to give my bot cancer.',
 				'extra': t['its_meme']
 			},
-			{
-				'name': 'cancer',
-				'short': 'Alexia IRL.',
-				'extra': t['its_meme']
-			},
 		]
 	}
 ]
@@ -1304,25 +1299,6 @@ async def on_message(message):
 		await reply(message, content)
 	elif command == '/r/undertale':
 		content = 'They banned someone for posting an honest review of Undertale. Seriously, don’t go there if you don’t want to be censored.'
-		await reply(message, content)
-	elif command == 'cancer':
-		content = (
-			'Quote from: Kiwi Alexia ♡ on 2016-08-01 10:49:42```fix\n'
-			'Determination can\'t melt hopes and dreams\n'
-			'Jet fuel can\'t melt dank memes\n'
-			'Here come dat wah!!\n'
-			'O shit waluigi time!\n'
-			'No chara is HER nut THey you DUM IDIOt\n'
-			'GRAND DAD\n'
-			'FLEENSTONES?\n'
-			'How did flinstones make fire\n'
-			'Flint+Stones\n'
-			'Brb drinking bleach\n'
-			'Holy FUCK I\'m salty\n'
-			'This discord server is a fucking salt mine\n'
-			'Sicc just leave me alone.\n'
-			'Sicc please\n'
-		)
 		await reply(message, content)
 	elif command == 'invite':
 		content = (
