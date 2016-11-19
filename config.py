@@ -21,12 +21,12 @@ configs = {
 s = {}
 
 def get_s(skey, serverid=None):
-	if serverid != None and serverid in s[key]:
+	if serverid != None and serverid in s[skey]:
 		return s[skey][serverid]
 	return s[skey]['master']
 
 def set_s(skey, value, serverid=None):
-	if serverid != None and serverid in s[key]:
+	if serverid != None and serverid in s[skey]:
 		s[skey][serverid] = value
 	s[skey]['master'] = value
 
