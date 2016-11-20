@@ -676,44 +676,110 @@ async def on_message(message):
 			await reply(message, content)
 			return
 		if arguments == None:
-			content = 'Try `\config list`'
+			content = (
+				'You can use the following options:\n'
+				'`\config list`\n'
+				'`\config get <key>`\n'
+				'`\config set <key> <value>` (not for arrays)\n'
+				'`\config insert <key> <value>` (only for arrays)\n'
+				'`\config remove <key> <value>` (only for arrays)\n'
+				'`\config detach <key>`\n'
+				'`\config reattach <key>`\n'
+				'`\config default <key>`\n'
+			)
 			await reply(message, content)
 			return
 		elif arguments == 'list':
 			content = '```css'
 			for c in config.s:
-				content += '\n{} [{}] = {}'.format(c, config.configs[c]['type'], config.get_s(c, message.server.id))
+				content += '\n{} [{}] = {}'.format(c, config.get_type(c) + ('*' if config.is_array(c) else ''), config.get_s(c, message.server.id) if not config.is_array(c) else '[{}]'.format(len(config.get_s(c, message.server.id)))
 				if config.is_detached(c, message.server.id):
 					content += ' (local value)'
 			content += '\n```'
 			await reply(message, content)
 			return
 
-		splitargs = arguments.split(' ', 1)
+		splitargs = arguments.split(' ', 2)
 
 		if splitargs[0] == 'set':
-			splitsubargs = splitargs[1].split(' ', 1)
-			if config.configs[splitsubargs[0]]['type'] == 'arr': # Not that arrays exist yet
+			if not config.exists(splitargs[1]):
+				content = 'That setting does not exist'
+				await reply(message, content)
+				return
+			if config.is_array(splitargs[1]):
 				content = 'That doesn\'t work for an array'
 				await reply(message, content)
 				return
-			if not splitsubargs[0] in config.s:
+			if config.get_type(splitargs[1]) == 'int' and not splitargs[2].isdigit():
+				content = 'Integer expected'
+				await reply(message, content)
+				return
+			config.set_s(splitargs[1], splitargs[2], message.server.id)
+			config.saveconfig()
+			content = 'Set `{}` to `{}`'.format(splitargs[1], mdspecialchars(splitargs[2]))
+			await reply(message, content)
+		elif splitargs[0] == 'get':
+			if not config.exists(splitargs[1]):
 				content = 'That setting does not exist'
 				await reply(message, content)
 				return
-			config.set_s(splitsubargs[0], splitsubargs[1], message.server.id)
+			content = 'Key: `{}`   Type: `{}`   Array: `{}`   Detachable: `{}`   Using: `{}`\n'.format(splitargs[1], config.get_type(splitargs[1]), config.is_array(splitargs[1]), config.is_detachable(splitargs[1]), ('Local value' if config.is_detached(splitargs[1], message.server.id) else 'Master value'))
+			if config.get_expl(splitargs[1]) != None:
+				content += 'Explanation: {}\n'.format(config.get_expl(splitargs[1]))
+			content += 'Value:'
+
+			if config.is_array(splitargs[1]):
+				for val in config.get_s(splitargs[1], message.server.id):
+					content += ' `{}`,'.format(val)
+			else:
+				content += ' `{}`'.format(config.get_s(splitargs[1], message.server.id))
+			await reply(message, content)
+		elif splitargs[0] == 'insert' or splitargs[0] == 'remove':
+			if not config.exists(splitargs[1]):
+				content = 'That setting does not exist'
+				await reply(message, content)
+				return
+			if not config.is_array(splitargs[1]):
+				content = 'That doesn\'t work for something that is not an array'
+				await reply(message, content)
+				return
+			if config.get_type(splitargs[1]) == 'int' and not splitargs[2].isdigit():
+				content = 'Integer expected'
+				await reply(message, content)
+				return
+			if splitargs[0] == 'insert':
+				config.insert_s(splitargs[1], splitargs[2], message.server.id)
+				content = 'Inserted `{}` into array `{}`'.format(mdspecialchars(splitargs[2]), splitargs[1])
+			else:
+				config.remove_s(splitargs[1], splitargs[2], message.server.id)
+				content = 'Removed `{}` from array `{}`'.format(mdspecialchars(splitargs[2]), splitargs[1])
 			config.saveconfig()
-			content = 'Set `{}` to `{}`'.format(splitsubargs[0], mdspecialchars(splitsubargs[1]))
+			await reply(message, content)
+		elif splitargs[0] == 'detach' or splitargs[0] == 'reattach':
+			if not config.exists(splitargs[1]):
+				content = 'That setting does not exist'
+				await reply(message, content)
+				return
+			if not config.is_detachable(splitargs[1]):
+				content = 'That setting cannot have an independent local value.'
+				await reply(message, content)
+				return
+			if splitargs[0] == 'detach':
+				config.detach(splitargs[1], message.server.id)
+				content = 'Setting `{}` now uses a local value for this server.'.format(splitargs[1])
+			else:
+				config.reattach(splitargs[1], message.server.id)
+				content = 'Setting `{}` is now using the master value again on this server.'.format(splitargs[1])
+			config.saveconfig()
 			await reply(message, content)
 		elif splitargs[0] == 'default':
-			splitsubargs = splitargs[1].split(' ', 1)
-			if not splitsubargs[0] in config.s:
+			if not config.exists(splitargs[1]):
 				content = 'That setting does not exist'
 				await reply(message, content)
 				return
-			config.set_s(splitsubargs[0], config.configs[splitsubargs[0]]['default'], message.server.id)
+			config.restore_default(splitargs[1], message.server.id)
 			config.saveconfig()
-			content = 'Set `{}` back to default value of `{}`'.format(splitsubargs[0], mdspecialchars(config.configs[splitsubargs[0]]['default']))
+			content = 'Set `{}` back to default value of `{}`'.format(splitargs[1], mdspecialchars(config.get_default(splitargs[1])))
 			await reply(message, content)
 		else:
 			content = '`{}` was not recognized'.format(splitargs[0])
