@@ -80,7 +80,7 @@ def detach(skey, serverid):
 		raise ValueError('Setting {} is not detachable'.format(skey))
 		return
 	if not is_detached(skey, serverid):
-		s[key][serverid] = get_default(skey)
+		s[skey][serverid] = get_default(skey)
 
 def reattach(skey, serverid):
 	if is_detached(skey, serverid):
