@@ -707,7 +707,7 @@ async def on_message(message):
 		elif arguments == 'list':
 			content = '```css'
 			for c in config.s:
-				content += '\n{} [{}] = {}'.format(c, config.get_type(c) + ('*' if config.is_array(c) else ''), config.get_s(c, message.server.id) if not config.is_array(c) else '[{}]'.format(len(config.get_s(c, message.server.id)))
+				content += '\n{} [{}] = {}'.format(c, config.get_type(c) + ('*' if config.is_array(c) else ''), config.get_s(c, message.server.id) if not config.is_array(c) else '[{}]'.format(len(config.get_s(c, message.server.id))))
 				if config.is_detached(c, message.server.id):
 					content += ' (local value)'
 			content += '\n```'
