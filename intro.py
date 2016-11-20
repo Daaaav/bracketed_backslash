@@ -747,7 +747,7 @@ async def on_message(message):
 				for val in config.get_s(splitargs[1], message.server.id):
 					content += ' `{}`,'.format(val)
 			else:
-				content += ' `{}`\nDefault: {}'.format(config.get_s(splitargs[1], message.server.id), config.get_default(splitargs[1]))
+				content += ' `{}`\nDefault: `{}`'.format(config.get_s(splitargs[1], message.server.id), config.get_default(splitargs[1]))
 			await reply(message, content)
 		elif splitargs[0] == 'insert' or splitargs[0] == 'remove':
 			if not config.exists(splitargs[1]):

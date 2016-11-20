@@ -53,25 +53,25 @@ def insert_s(skey, value, serverid=None):
 	if not is_array(skey):
 		raise TypeError('You cannot insert something into an option that isn\'t an array')
 		return
-	if serverid != None and serverid in s[key]:
-		s[key][serverid].append(value)
+	if serverid != None and serverid in s[skey]:
+		s[skey][serverid].append(value)
 	else:
-		s[key]['master'].append(value)
+		s[skey]['master'].append(value)
 
 def remove_s(skey, value, serverid=None):
 	if not is_array(skey):
 		raise TypeError('You cannot remove something from an option that isn\'t an array')
 		return
-	if serverid != None and serverid in s[key]:
-		s[key][serverid].remove(value)
+	if serverid != None and serverid in s[skey]:
+		s[skey][serverid].remove(value)
 	else:
-		s[key]['master'].remove(value)
+		s[skey]['master'].remove(value)
 
 def restore_default(skey, serverid=None):
-	if is_array(skey) and serverid != None and serverid in s[key]:
-		s[key][serverid] = copy.deepcopy(get_default(skey))
+	if is_array(skey) and serverid != None and serverid in s[skey]:
+		s[skey][serverid] = copy.deepcopy(get_default(skey))
 	elif is_array(skey):
-		s[key]['master'] = copy.deepcopy(get_default(skey))
+		s[skey]['master'] = copy.deepcopy(get_default(skey))
 	else:
 		set_s(skey, get_default(skey), serverid)
 
