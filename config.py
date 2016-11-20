@@ -73,7 +73,7 @@ def restore_default(skey, serverid=None):
 	elif is_array(skey):
 		s[key]['master'] = copy.deepcopy(get_default(skey))
 	else:
-		set_s(skey, config.get_default(skey), serverid)
+		set_s(skey, get_default(skey), serverid)
 
 def detach(skey, serverid):
 	if not is_detachable(skey):
