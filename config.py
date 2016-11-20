@@ -84,7 +84,7 @@ def detach(skey, serverid):
 
 def reattach(skey, serverid):
 	if is_detached(skey, serverid):
-		del s[key][serverid]
+		del s[skey][serverid]
 
 def is_detached(skey, serverid):
 	return serverid in s[skey]
