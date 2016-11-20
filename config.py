@@ -96,7 +96,7 @@ def is_array(skey):
 	return configs[skey]['is_array']
 
 def is_detachable(skey):
-	return configs[skey]['is_detachable']
+	return configs[skey]['detachable']
 
 def get_default(skey):
 	return configs[skey]['default']
