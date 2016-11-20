@@ -261,6 +261,21 @@ cmds = [
 		]
 	},
 	{
+		'cat_name': 'Contributor Moderator Commands',
+		'commands': [
+			{
+				'name': 'addcontrib',
+				'short': 'Makes a member a tOLP Contributor.',
+				'extra': t['accepts_user']
+			},
+			{
+				'name': 'removecontrib',
+				'short': 'Makes a member not a tOLP Contributor.',
+				'extra': t['accepts_user']
+			}
+		]
+	},
+	{
 		'cat_name': 'Rules Commands',
 		'commands': [
 			{
@@ -1339,6 +1354,30 @@ async def on_message(message):
 			await reply(message, content)
 			return
 		content = '``{}``'.format(mdspecialchars(getmessage.content[:1900]))
+		await reply(message, content)
+	elif command == 'addcontrib' or command == 'removecontrib':
+		if message.server.id != productionserver:
+			content = t['production_only']
+			await reply(message, content)
+			return
+		contribmodrole = discord.utils.get(message.server.roles, id='249695436812713984')
+		contribrole = discord.utils.get(message.server.roles, id='241728185937559552')
+		targetmember = get_member_input(message.server, arguments)
+		if not contribmodrole in message.author.roles:
+			content = 'Permission denied. This command can only be used by a tOLP Contributor Moderator.'
+			await reply(message, content)
+			return
+		try:
+			if command == 'addcontrib':
+				await client.add_roles(targetmember, contribrole)
+				content = 'Made <@{}> a tOLP Contributor.'.format(targetmember.id)
+			if command == 'removecontrib':
+				await client.remove_roles(targetmember, contribrole)
+				content = 'Made <@{}> not a tOLP Contributor.'.format(targetmember.id)
+		except(AttributeError,TypeError):
+			content = t['specify_user']
+			await reply(message, content)
+			return
 		await reply(message, content)
 	else:
 		if altinvokeractive:
