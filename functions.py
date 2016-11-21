@@ -144,6 +144,7 @@ def helplist(cats, onlycat=None):
 				if onlycat == None:
 					if first:
 						returnage += '\n`\{}`'.format(cmd['name'])
+						first = False
 					else:
 						returnage += '   `\{}`'.format(cmd['name'])
 				else:
