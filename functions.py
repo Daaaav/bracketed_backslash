@@ -134,7 +134,7 @@ def helplist(cats, onlycat=None):
 	for cat in cats:
 		if (onlycat == None and cat['cat_shown']) or onlycat == cat['cat_slug']:
 			if onlycat == None:
-				returnage += '\n\n__`{}:`__  **`\help {}`**'.format(cat['cat_name'], cat['cat_slug'])
+				returnage += '\n\n__`{}:`__ — **`\help {}`**'.format(cat['cat_name'], cat['cat_slug'])
 			else:
 				if cat['cat_desc'] != '':
 					returnage += cat['cat_desc']
