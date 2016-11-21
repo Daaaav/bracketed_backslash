@@ -139,8 +139,9 @@ def helplist(cats, onlycat=None):
 				if cat['cat_desc'] != '':
 					returnage += '\n' + cat['cat_desc']
 				returnage += '\n__`{}:`__'.format(cat['cat_name'])
+
+			first = True
 			for cmd in cat['commands']:
-				first = True
 				if onlycat == None:
 					if first:
 						returnage += '\n`\{}`'.format(cmd['name'])
