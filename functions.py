@@ -121,6 +121,8 @@ async def reply(messageobject, message):
 	await client.send_message(messageobject.channel, msg_start + message)
 
 def mdspecialchars(string):
+	"""this actually only escapes backticks right now
+	also this means that any string this is used on should be placed in double backticks (like ``this``)"""
 	return string.replace('`', u'​`​')
 
 def isprivatemessage(server): # this is a function because so in the future more checks for if its a private message can ezily be added

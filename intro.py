@@ -1203,7 +1203,7 @@ async def on_message(message):
 			return
 		matched = False
 		n = 1
-		content = 'Rules for server `{}` matching `{}`:'.format(mdspecialchars(message.server.name), mdspecialchars(arguments))
+		content = 'Rules for server **``{}``** matching **``{}``**:'.format(mdspecialchars(message.server.name), mdspecialchars(arguments))
 		for rule in rules[message.server.id]:
 			if rule.lower().find(arguments.lower()) != -1:
 				content += '\n**{}.** {}'.format(n, rule)
