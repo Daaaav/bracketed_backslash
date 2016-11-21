@@ -110,7 +110,7 @@ cmds = [
 		'cat_name': 'General Commands',
 		'cat_slug': 'general',
 		'cat_desc': '',
-		'cat_hidden': True,
+		'cat_shown': True,
 		'commands': [
 			{
 				'name': 'help',
@@ -163,7 +163,7 @@ cmds = [
 		'cat_name': 'Bot Commands',
 		'cat_slug': 'bot',
 		'cat_desc': '',
-		'cat_hidden': True,
+		'cat_shown': True,
 		'commands': [
 			{
 				'name': 'botok',
@@ -196,7 +196,7 @@ cmds = [
 		'cat_name': 'Moderation Commands',
 		'cat_slug': 'mod',
 		'cat_desc': '',
-		'cat_hidden': True,
+		'cat_shown': True,
 		'commands': [
 			{
 				'name': 'softban',
@@ -273,7 +273,7 @@ cmds = [
 		'cat_name': 'Contributor Moderator Commands',
 		'cat_slug': 'contribmod',
 		'cat_desc': '',
-		'cat_hidden': True,
+		'cat_shown': True,
 		'commands': [
 			{
 				'name': 'addcontrib',
@@ -291,7 +291,7 @@ cmds = [
 		'cat_name': 'Rules Commands',
 		'cat_slug': 'rulesystem',
 		'cat_desc': '',
-		'cat_hidden': True,
+		'cat_shown': True,
 		'commands': [
 			{
 				'name': 'rules',
@@ -329,7 +329,7 @@ cmds = [
 		'cat_name': 'Meme Commands',
 		'cat_slug': 'useless',
 		'cat_desc': 'You found a secret, congratulations. The command to get this help message will change sometimes.',
-		'cat_hidden': False,
+		'cat_shown': False,
 		'commands': [
 			{
 				'name': '',
@@ -661,7 +661,7 @@ async def on_message(message):
 			pass
 		else:
 			matched = False
-			for cat in (cmds): # Good enough replacement to union
+			for cat in (cmds):
 				if arguments == cmd['cat_slug']:
 					content = helplist(cmds, arguments)
 					matched = True
