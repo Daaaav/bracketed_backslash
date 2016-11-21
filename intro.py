@@ -108,6 +108,9 @@ t = {
 cmds = [
 	{
 		'cat_name': 'General Commands',
+		'cat_slug': 'general',
+		'cat_desc': '',
+		'cat_hidden': True,
 		'commands': [
 			{
 				'name': 'help',
@@ -158,6 +161,9 @@ cmds = [
 	},
 	{
 		'cat_name': 'Bot Commands',
+		'cat_slug': 'bot',
+		'cat_desc': '',
+		'cat_hidden': True,
 		'commands': [
 			{
 				'name': 'botok',
@@ -188,6 +194,9 @@ cmds = [
 	},
 	{
 		'cat_name': 'Moderation Commands',
+		'cat_slug': 'mod',
+		'cat_desc': '',
+		'cat_hidden': True,
 		'commands': [
 			{
 				'name': 'softban',
@@ -262,6 +271,9 @@ cmds = [
 	},
 	{
 		'cat_name': 'Contributor Moderator Commands',
+		'cat_slug': 'contribmod',
+		'cat_desc': '',
+		'cat_hidden': True,
 		'commands': [
 			{
 				'name': 'addcontrib',
@@ -277,6 +289,9 @@ cmds = [
 	},
 	{
 		'cat_name': 'Rules Commands',
+		'cat_slug': 'rulesystem',
+		'cat_desc': '',
+		'cat_hidden': True,
 		'commands': [
 			{
 				'name': 'rules',
@@ -310,11 +325,11 @@ cmds = [
 			},
 		]
 	},
-]
-
-meme_cmds = [
 	{
 		'cat_name': 'Meme Commands',
+		'cat_slug': 'useless',
+		'cat_desc': 'You found a secret, congratulations. The command to get this help message will change sometimes.',
+		'cat_hidden': False,
 		'commands': [
 			{
 				'name': '',
@@ -362,7 +377,7 @@ meme_cmds = [
 				'extra': t['its_meme']
 			},
 		]
-	}
+	},
 ]
 
 permissionlabels = [
@@ -642,24 +657,26 @@ async def on_message(message):
 			)
 
 		# General
-		if arguments == 'useless':
-			content = '`useless` – You found a secret, congratulations. The command to get this help message will change sometimes.' + helplist(meme_cmds)
-		elif arguments == None:
+		if arguments == None:
 			pass
 		else:
 			matched = False
-			for i in range(0,2):
-				for cat in (cmds if i == 0 else meme_cmds): # Good enough replacement to union
-					for cmd in cat['commands']: # Maybe have a nested try-except KeyError instead of looping through every command
-						if arguments == cmd['name']:
-							try:
-								content = '`\{}` – {}'.format(cmd['name'], cmd['extrafull'])
-							except KeyError:
-								content = '`\{}` – {}\n{}'.format(cmd['name'], cmd['short'], cmd['extra'])
-							matched = True
-							break
-					if matched:
+			for cat in (cmds): # Good enough replacement to union
+				if arguments == cmd['cat_slug']:
+					content = helplist(cmds, arguments)
+					matched = True
+					break
+
+				for cmd in cat['commands']: # Maybe have a nested try-except KeyError instead of looping through every command
+					if arguments == cmd['name']:
+						try:
+							content = '`\{}` – {}'.format(cmd['name'], cmd['extrafull'])
+						except KeyError:
+							content = '`\{}` – {}\n{}'.format(cmd['name'], cmd['short'], cmd['extra'])
+						matched = True
 						break
+				if matched:
+					break
 
 			if not matched:
 				content = 'Invalid arguments passed, or the command is not in the help list. Input `\help` for a list of valid commands to pass as arguments.'

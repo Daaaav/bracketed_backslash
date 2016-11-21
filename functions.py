@@ -129,12 +129,25 @@ def isprivatemessage(server): # this is a function because so in the future more
 	else:
 		return False
 
-def helplist(cats):
+def helplist(cats, onlycat=None):
 	returnage = ''
 	for cat in cats:
-		returnage += '\n__`{}:`__'.format(cat['cat_name'])
-		for cmd in cat['commands']:
-			returnage += '\n`\{}` – {}'.format(cmd['name'], cmd['short'])
+		if (onlycat == None and cat['cat_shown']) or onlycat == cat['cat_slug']:
+			if onlycat == None:
+				returnage += '\n__`{}:`__  **`\help {}`**'.format(cat['cat_name'], cat['cat_slug'])
+			else:
+				if cat['cat_desc'] != '':
+					returnage += '\n' + cat['cat_desc']
+				returnage += '\n__`{}:`__'.format(cat['cat_name'])
+			for cmd in cat['commands']:
+				first = True
+				if onlycat == None:
+					if first:
+						returnage += '\n`\{}`'.format(cmd['name'])
+					else:
+						returnage += '   `\{}`'.format(cmd['name'])
+				else:
+					returnage += '\n`\{}` – {}'.format(cmd['name'], cmd['short'])
 	return returnage
 
 def hangmanworddisp(theword):
