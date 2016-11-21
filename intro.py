@@ -299,6 +299,11 @@ cmds = [
 				'extra': 'Rules can be different for each server the bot runs on. You can get a specific rule by its number with `\\rule X`.',
 			},
 			{
+				'name': 'rulefind',
+				'short': 'Find rules that contain a given search term.',
+				'extra': 'Example:\n`\\rulefind spam`'
+			},
+			{
 				'name': 'ruleadd',
 				'short': 'Insert a given rule string (2) to position (1). If no position is given, it\'s added at the end.',
 				'extra': 'Examples:\n`\\ruleadd No trolling`\n`\\ruleadd 1 The most important rule is not to follow this rule.`'
@@ -1178,6 +1183,34 @@ async def on_message(message):
 		for rule in rules[message.server.id]:
 			content += '\n**{}.** {}'.format(n, rule)
 			n += 1
+		await reply(message, content)
+	elif command == 'rulefind' or command == 'rulesfind':
+		if isprivatemessage(message.server):
+			content = 'Alright, this isn\'t a server, this is our private conversation. I run on multiple servers with different rules, you know.'
+			await reply(message, content)
+			return
+		if message.server.id in disabledrules and not is_mod(message.author):
+			content = 'The rules system is currently disabled for this server.'
+			await reply(message, content)
+			return
+		if not message.server.id in rules:
+			content = 'Rules are not (yet) set for this server.'
+			await reply(message, content)
+			return
+		if arguments == None:
+			content = 'Please enter a search term.'
+			await reply(message, content)
+			return
+		matched = False
+		n = 1
+		content = 'Rules for server `{}` matching `{}`:'.format(mdspecialchars(message.server.name), mdspecialchars(arguments))
+		for rule in rules[message.server.id]:
+			if rule.lower().find(arguments.lower()) != -1:
+				content += '\n**{}.** {}'.format(n, rule)
+				matched = True
+			n += 1
+		if not matched:
+			content = 'No rules on server `{}` matching `{}`.'.format(mdspecialchars(message.server.name), mdspecialchars(arguments))
 		await reply(message, content)
 	elif command == 'ruleadd' or command == 'addrule':
 		if not is_mod(message.author):
