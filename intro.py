@@ -662,7 +662,7 @@ async def on_message(message):
 		else:
 			matched = False
 			for cat in (cmds):
-				if arguments == cmd['cat_slug']:
+				if arguments == cat['cat_slug']:
 					content = helplist(cmds, arguments)
 					matched = True
 					break
