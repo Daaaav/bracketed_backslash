@@ -26,7 +26,7 @@ can add all of this.
 but the `Client.messages` cache isnt cleared
 - [ ] less hard-written configuration (see im lazy) and/or none at all
 - [ ] log more shit
-	- [ ] reactions
+	- [x] reactions
 	- [x] member avatar changes
 	- [x] member role adds/removes
 	- [x] when people are invisible for no reason
