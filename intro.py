@@ -190,6 +190,21 @@ cmds = [
 				'short': 'Kills the bot. This method does not kill it cleanly.',
 				'extra': ''
 			},
+			{
+				'name': 'config',
+				'short': 'This command is used to manage the settings in the bot.',
+				'extra': (
+					'You can use the following options:\n'
+					'`\config list` – Show all the settings and their values.\n'
+					'`\config get <key>` – Show extended information about a specific setting and how it is configured, given its key.\n'
+					'`\config set <key> <value>` – Update the value of a given non-array setting. Don\'t use quotes or anything fancy.\n'
+					'`\config insert <key> <value>` – Insert a value into an array setting.\n'
+					'`\config remove <key> <value>` – Remove a value from an array setting.\n'
+					'`\config detach <key> – No longer make this setting use the master value, and use a server-specific value instead.`\n'
+					'`\config reattach <key> – Start using the master value for this setting again.`\n'
+					'`\config default <key> – Changes the value of a given setting back to default.`\n'
+				)
+			},
 		]
 	},
 	{
