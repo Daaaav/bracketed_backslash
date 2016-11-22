@@ -430,7 +430,7 @@ permissionlabels = [
 	['create_instant_invite', 'Instant Invite'],
 ]
 
-@client.async_event
+@client.event
 async def on_ready():
 	global memberroles, rules, disabledrules
 
@@ -504,7 +504,7 @@ async def on_ready():
 
 		await client.send_message(specialchannel_prod, 'Disabledrules file didn\'t exist yet, created a new one.')
 
-@client.async_event
+@client.event
 async def on_message(message):
 	global msg_start, hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, hangmanstarter, guessedletters, algeraden, memberroles, rules, disabledrules
 
@@ -1508,7 +1508,7 @@ async def on_message(message):
 			content = 'Invalid command. Input `\help` for a list of valid commands.'
 			await reply(message, content)
 
-@client.async_event
+@client.event
 async def on_message_delete(message): # when a message gets deleted
 	if message.author == client.user: # is the deleted message originally sent by the bot
 		logging.info('bot message {} by user {}#{} ({}) in channel {} ({}) at {} utc deleted, original content is \n{}'.format(message.id, message.author.name, message.author.discriminator, message.author.id, message.channel.id, message.channel.name, message.timestamp, message.content))
@@ -1546,7 +1546,7 @@ async def on_message_delete(message): # when a message gets deleted
 			msg = msg_start + content
 			await client.send_message(specialchannel, msg)
 
-@client.async_event
+@client.event
 async def on_message_edit(before, after): # when a message gets edited
 	specialchannel = getspecialchannel_reply(after)
 
@@ -1630,7 +1630,7 @@ async def on_message_edit(before, after): # when a message gets edited
 				if len(minutemessageedits[k]) == 0:
 					del minutemessageedits[k]
 
-@client.async_event
+@client.event
 async def on_member_update(before, after):
 	specialchannel = getspecialchannel(after.server)
 
@@ -1683,7 +1683,7 @@ async def on_member_update(before, after):
 		msg = msg_start + content
 		await client.send_message(specialchannel, msg)
 
-@client.async_event
+@client.event
 async def on_member_join(member):
 	specialchannel = getspecialchannel(member.server)
 
@@ -1704,27 +1704,27 @@ async def on_member_join(member):
 			# Not found, so they're just a tOLPer.
 			await client.add_roles(member, discord.utils.get(member.server.roles, id='231644869351833600')) # The tOLPer role
 
-@client.async_event
+@client.event
 async def on_member_remove(member):
 	specialchannel = getspecialchannel(member.server)
 
 	msg = '**`>`**🚪`user` **``{}``**`#{}` `({}) removed from server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	await client.send_message(specialchannel, msg)
 
-@client.async_event
+@client.event
 async def on_member_ban(member):
 	specialchannel = getspecialchannel(member.server)
 
 	msg = '**`>`**👞🚪⛔`user` **``{}``**`#{}` `({}) banned from server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	await client.send_message(specialchannel, msg)
 
-@client.async_event
+@client.event
 async def on_member_unban(server, user):
 	specialchannel = getspecialchannel(server)
 	msg = '**`>`**<:doormat:239361673532669953>`user` **``{}``**`#{}` `({}) unbanned from server {} ({})`'.format(mdspecialchars(user.name), user.discriminator, user.id, server.name, server.id)
 	await client.send_message(specialchannel, msg)
 
-@client.async_event
+@client.event
 async def on_typing(channel, user, when):
 	specialchannel = getspecialchannel(channel.server)
 	if specialchannel.id == channel.server.default_channel.id:
@@ -1735,19 +1735,19 @@ async def on_typing(channel, user, when):
 	else:
 		return # practically unnecessary, but this is for if we want to do things when members type later
 
-@client.async_event
+@client.event
 async def on_server_role_create(role):
 	specialchannel = getspecialchannel(role.server)
 	msg = '**`>`**`role` **``{}``** `({}) was created in server` **``{}``** `({}) at {}`'.format(mdspecialchars(role.name), role.id, mdspecialchars(role.server.name), role.server.id, role.created_at)
 	await client.send_message(specialchannel, msg)
 
-@client.async_event
+@client.event
 async def on_server_role_delete(role):
 	specialchannel = getspecialchannel(role.server)
 	msg = '**`>`**`role` **``{}``** `({}) was deleted in server` **``{}``** `({}) originally created at {}`'.format(mdspecialchars(role.name), role.id, mdspecialchars(role.server.name), role.server.id, role.created_at)
 	await client.send_message(specialchannel, msg)
 
-@client.async_event
+@client.event
 async def on_server_role_update(before, after):
 	specialchannel = getspecialchannel(before.server)
 	if before.name != after.name: # if the name changed
@@ -1781,7 +1781,7 @@ async def on_server_role_update(before, after):
 			await client.send_message(specialchannel, msg)
 
 
-@client.async_event
+@client.event
 async def on_reaction_add(reaction, user):
 	specialchannel = getspecialchannel(reaction.message.server)
 	try:
@@ -1797,7 +1797,7 @@ async def on_reaction_add(reaction, user):
 		msg += '`'
 	await client.send_message(specialchannel, msg)
 
-@client.async_event
+@client.event
 async def on_reaction_remove(reaction, user):
 	specialchannel = getspecialchannel(reaction.message.server)
 	try:
@@ -1809,7 +1809,7 @@ async def on_reaction_remove(reaction, user):
 	msg = '**`>`**`reaction` {} `{} by user` **``{}``**`#{}` `from message {} removed`'.format(emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', mdspecialchars(user.name), user.discriminator, user.id, reaction.message.id)
 	await client.send_message(specialchannel, msg)
 
-@client.async_event
+@client.event
 async def on_server_update(before, after):
 	specialchannel = getspecialchannel(after)
 	if before.icon != after.icon:

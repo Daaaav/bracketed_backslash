@@ -107,7 +107,7 @@ def get_member_input(server, input):
 
 	return targetmember
 
-@client.async_event
+@client.event
 async def reply(messageobject, message):
 	# Removes the need for adding msg_start manually every time
 	if len(msg_start + message) >= 2000:
