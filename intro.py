@@ -89,6 +89,8 @@ disabledrules = []
 
 modificationtimes = [
 	os.path.getmtime('intro.py'),
+	os.path.getmtime('functions.py'),
+	os.path.getmtime('config.py'),
 ]
 modificationtimecache = time.strftime(config.get_s('timeformat'), time.gmtime(max(modificationtimes)))
 
