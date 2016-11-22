@@ -108,7 +108,7 @@ def get_member_input(server, input):
 	return targetmember
 
 @client.event
-async def reply(messageobject, message):
+async def reply(messageobject, message, emb=None):
 	# Removes the need for adding msg_start manually every time
 	if len(msg_start + message) >= 2000:
 		# We can at least try in a totally not failsafe and kinda ugly way
@@ -116,9 +116,15 @@ async def reply(messageobject, message):
 		contentlines = content.split('\n')
 		cut = math.floor(len(contentlines)/2)
 		await client.send_message(messageobject.channel, '\n'.join(contentlines[:cut]))
-		await client.send_message(messageobject.channel, '\n'.join(contentlines[cut:]))
+		if emb != None:
+			await client.send_message(messageobject.channel, '\n'.join(contentlines[cut:]), embed=emb)
+		else:
+			await client.send_message(messageobject.channel, '\n'.join(contentlines[cut:]))
 		return
-	await client.send_message(messageobject.channel, msg_start + message)
+	if emb != None:
+		await client.send_message(messageobject.channel, msg_start + message, embed=emb)
+	else:
+		await client.send_message(messageobject.channel, msg_start + message)
 
 def mdspecialchars(string):
 	"""this actually only escapes backticks right now
