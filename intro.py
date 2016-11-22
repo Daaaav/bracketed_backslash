@@ -960,8 +960,8 @@ async def on_message(message):
 		if targetmember.game == None:
 			memberhasgame = False
 			displaygamestatus = 'Not Playing'
-			displaygamename = '_(none)_'
-			displaygameurl = '_(none)_'
+			displaygamename = 'Not Playing'
+			displaygameurl = 'No Stream Link'
 			pass
 		else:
 			memberhasgame = True
@@ -972,7 +972,7 @@ async def on_message(message):
 			if targetmember.game.type == 1:
 				displaygamestatus = 'Streaming'
 			if targetmember.game.url == None:
-				displaygameurl = '(none)'
+				displaygameurl = 'No Stream Link'
 			else:
 				displaygameurl = '``{}``'
 		embed = discord.Embed(colour=targetmember.colour)
@@ -988,7 +988,7 @@ async def on_message(message):
 		embed.add_field(name='Default Avatar', value=str(targetmember.default_avatar).title())
 		embed.add_field(name='Joined Server At', value=str(targetmember.joined_at) + ' UTC')
 		embed.add_field(name='Joined Discord At', value=str(targetmember.created_at) + ' UTC')
-		embed.add_field(name='Color', value='_(none)_' if str(targetmember.colour) == '#000000' else str(targetmember.colour).upper())
+		embed.add_field(name='Color', value='_(default)_' if str(targetmember.colour) == '#000000' else str(targetmember.colour).upper())
 		# IMPORTANT: in `embed.add_field()`, `name` or `value` cannot be an empty string or you will get a 400 bad request when sending it
 		# (i learned that the hard way)
 		# (that was about twenty restarts smh)
