@@ -975,8 +975,8 @@ async def on_message(message):
 		if targetmember.game == None:
 			memberhasgame = False
 			displaygamestatus = 'Not Playing'
-			displaygamename = '_(none)_'
-			displaygameurl = '_(none)_'
+			displaygamename = 'Not Playing'
+			displaygameurl = 'No Stream Link'
 			pass
 		else:
 			memberhasgame = True
@@ -987,12 +987,12 @@ async def on_message(message):
 			if targetmember.game.type == 1:
 				displaygamestatus = 'Streaming'
 			if targetmember.game.url == None:
-				displaygameurl = '(none)'
+				displaygameurl = 'No Stream Link'
 			else:
 				displaygameurl = '``{}``'
 		embed = discord.Embed(colour=targetmember.colour)
 		embed.set_thumbnail(url=targetmember.avatar_url)
-		embed.add_field(name='Nickname' if targetmember.nick != None else 'No Nickname', value='``{}``'.format(mdspecialchars(targetmember.nick)) if targetmember.nick != None else '_(none)_')
+		embed.add_field(name='Nickname' if targetmember.nick != None else 'No Nickname', value='``{}``'.format(mdspecialchars(targetmember.nick)) if targetmember.nick != None else 'No Nickname')
 		embed.add_field(name='Username', value='``{}``'.format(mdspecialchars(targetmember.name)))
 		embed.add_field(name='Discriminator', value='#{}'.format(targetmember.discriminator))
 		embed.add_field(name='User ID', value=targetmember.id)
@@ -1003,7 +1003,7 @@ async def on_message(message):
 		embed.add_field(name='Default Avatar', value=str(targetmember.default_avatar).title())
 		embed.add_field(name='Joined Server At', value=str(targetmember.joined_at) + ' UTC')
 		embed.add_field(name='Joined Discord At', value=str(targetmember.created_at) + ' UTC')
-		embed.add_field(name='Color', value='_(none)_' if str(targetmember.colour) == '#000000' else str(targetmember.colour).upper())
+		embed.add_field(name='Color', value='_(default)_' if str(targetmember.colour) == '#000000' else str(targetmember.colour).upper())
 		# IMPORTANT: in `embed.add_field()`, `name` or `value` cannot be an empty string or you will get a 400 bad request when sending it
 		# (i learned that the hard way)
 		# (that was about twenty restarts smh)
@@ -1489,12 +1489,12 @@ async def on_message(message):
 			content = t['mod_only']
 			await reply(message, content)
 			return
-		argsplit = arguments.split(' ', 1)
 		try:
+			argsplit = arguments.split(' ', 1)
 			arg0 = argsplit[0]
 			arg1 = argsplit[1]
-		except IndexError:
-			content = 'Invalid amount of arguments passed. Input `{invoker}{command}` for more information.'.format(invoker=invoker, command=command)
+		except (AttributeError,IndexError):
+			content = 'Invalid amount of arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command)
 			await reply(message, content)
 			return
 		channelid = arg0[2:-1]
