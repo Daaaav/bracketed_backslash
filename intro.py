@@ -986,7 +986,7 @@ async def on_message(message):
 		embed.add_field(name='Default Avatar', value=str(targetmember.default_avatar).title())
 		embed.add_field(name='Joined Server At', value=str(targetmember.joined_at) + ' UTC')
 		embed.add_field(name='Joined Discord At', value=str(targetmember.created_at) + ' UTC')
-		embed.add_field(name='Color', value='(none)' if str(targetmember.colour) == '#000000' else '#' + str(targetmember.colour).upper()[1:])
+		embed.add_field(name='Color', value='(none)' if str(targetmember.colour) == '#000000' else str(targetmember.colour).upper())
 		embed.add_field(name='Avatar URL', value='(none)' if targetmember.avatar_url == '' else targetmember.avatar_url)
 		# IMPORTANT: in `embed.add_field()`, `name` or `value` cannot be an empty string or you will get a 400 bad request when sending it
 		# (i learned that the hard way)
