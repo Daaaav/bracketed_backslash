@@ -89,6 +89,8 @@ disabledrules = []
 
 modificationtimes = [
 	os.path.getmtime('intro.py'),
+	os.path.getmtime('functions.py'),
+	os.path.getmtime('config.py'),
 ]
 modificationtimecache = time.strftime(config.get_s('timeformat'), time.gmtime(max(modificationtimes)))
 
@@ -978,10 +980,7 @@ async def on_message(message):
 		# (i learned that the hard way)
 		# (that was about twenty restarts smh)
 		content = 'Matched ' + displaymatch
-		msg = msg_start + content
-		# TODO: maybe have `reply()` modified to accomodate embeds or something
-		# but dav999 made the function so im not doing it xd
-		await client.send_message(message.channel, msg, embed=embed)
+		await reply(message, content, embed)
 	elif command == 'softban':
 		if not is_mod(message.author):
 			content = t['mod_only']
