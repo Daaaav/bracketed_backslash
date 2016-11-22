@@ -200,9 +200,9 @@ cmds = [
 					'`\config set <key> <value>` – Update the value of a given non-array setting. Don\'t use quotes or anything fancy.\n'
 					'`\config insert <key> <value>` – Insert a value into an array setting.\n'
 					'`\config remove <key> <value>` – Remove a value from an array setting.\n'
-					'`\config detach <key> – No longer make this setting use the master value, and use a server-specific value instead.`\n'
-					'`\config reattach <key> – Start using the master value for this setting again.`\n'
-					'`\config default <key> – Changes the value of a given setting back to default.`\n'
+					'`\config detach <key>` – No longer make this setting use the master value, and use a server-specific value instead.\n'
+					'`\config reattach <key>` – Start using the master value for this setting again.\n'
+					'`\config default <key>` – Changes the value of a given setting back to default.\n'
 				)
 			},
 		]
