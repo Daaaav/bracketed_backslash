@@ -1474,12 +1474,12 @@ async def on_message(message):
 			content = t['mod_only']
 			await reply(message, content)
 			return
-		argsplit = arguments.split(' ', 1)
 		try:
+			argsplit = arguments.split(' ', 1)
 			arg0 = argsplit[0]
 			arg1 = argsplit[1]
-		except IndexError:
-			content = 'Invalid amount of arguments passed. Input `{invoker}{command}` for more information.'.format(invoker=invoker, command=command)
+		except (AttributeError,IndexError):
+			content = 'Invalid amount of arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command)
 			await reply(message, content)
 			return
 		channelid = arg0[2:-1]
