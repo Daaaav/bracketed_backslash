@@ -1438,11 +1438,11 @@ async def on_message(message):
 	elif command == 'version':
 		content = (
 			'**`[\]`** – {}, last updated {}\n'
-			'**`discord.py`** – {}'
+			'**`discord.py`** – {} {}'
 		).format(
 			botversion,
 			modificationtimecache,
-			discord.__version__,
+			discord.version_info.releaselevel, discord.__version__,
 		)
 		await reply(message, content)
 	elif command == 'getrawmessagecontent':
