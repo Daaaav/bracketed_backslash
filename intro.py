@@ -967,7 +967,8 @@ async def on_message(message):
 			memberhasgame = True
 		if memberhasgame:
 			if targetmember.game.type == 0 or targetmember.game.type == None:
-				displaygamestatus = '``{}``'.format(mdspecialchars(targetmember.game.name))
+				displaygamestatus = 'Playing'
+				displaygamename = '``{}``'.format(mdspecialchars(targetmember.game.name))
 			if targetmember.game.type == 1:
 				displaygamestatus = 'Streaming'
 			if targetmember.game.url == None:
@@ -980,6 +981,7 @@ async def on_message(message):
 		embed.add_field(name='Username', value='``{}``'.format(mdspecialchars(targetmember.name)))
 		embed.add_field(name='Discriminator', value='#{}'.format(targetmember.discriminator))
 		embed.add_field(name='User ID', value=targetmember.id)
+		embed.add_field(name='Bot', value='Yes' if is_bot(targetmember) else 'No')
 		embed.add_field(name=displaygamestatus, value=displaygamename)
 		embed.add_field(name='Stream Link', value=displaygameurl)
 		embed.add_field(name='Status', value='Do Not Disturb' if str(targetmember.status) == 'dnd' else str(targetmember.status).title())
@@ -987,7 +989,6 @@ async def on_message(message):
 		embed.add_field(name='Joined Server At', value=str(targetmember.joined_at) + ' UTC')
 		embed.add_field(name='Joined Discord At', value=str(targetmember.created_at) + ' UTC')
 		embed.add_field(name='Color', value='(none)' if str(targetmember.colour) == '#000000' else str(targetmember.colour).upper())
-		embed.add_field(name='Avatar URL', value='(none)' if targetmember.avatar_url == '' else targetmember.avatar_url)
 		# IMPORTANT: in `embed.add_field()`, `name` or `value` cannot be an empty string or you will get a 400 bad request when sending it
 		# (i learned that the hard way)
 		# (that was about twenty restarts smh)
