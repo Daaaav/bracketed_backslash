@@ -942,36 +942,6 @@ async def on_message(message):
 			displaymatch = '<@{}>'.format(targetmember.id)
 		else:
 			displaymatch = '__@{}__'.format(targetmember.display_name)
-		if str(targetmember.status) == 'online':
-			statuss = 'online:232230526331650058'
-		elif str(targetmember.status) == 'offline' or str(targetmember.status) == 'invisible':
-			statuss = 'invisible:232230525711024129'
-		elif str(targetmember.status) == 'idle':
-			statuss = 'idle:232230526067408896'
-		elif str(targetmember.status) == 'dnd' or str(targetmember.status) == 'do_not_disturb':
-			statuss = 'dnd:232230526109351938'
-
-#		content = (
-#			'Matched {} <:{}>\n'
-#			'**`User ID:`** `{}`\n'
-#			'{}\n'
-#			'**`Username:`** ``{}``\n'
-#			'**`Discriminator:`** `#{}`\n'
-#			'{}\n'
-#			'{}\n'
-#			'**`Default Avatar:`** `{}`\n'
-#			'**`Avatar URL:`** {}\n'
-#		).format(
-#			displaymatch, statuss,
-#			targetmember.id,
-#			displaynick,
-#			mdspecialchars(targetmember.name),
-#			targetmember.discriminator,
-#			displaygamestatus,
-#			displaygameurl,
-#			targetmember.default_avatar,
-#			targetmember.avatar_url,
-#		)
 		if targetmember.game == None:
 			memberhasgame = False
 			displaygamestatus = 'Not Playing'
