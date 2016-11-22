@@ -1779,6 +1779,14 @@ async def on_server_role_update(before, after):
 		if before.position < after.position: # the role has been moved up
 			msg = '**`>`**`role` **``{}``** `({}) has been moved up by {} roles ({} to {})`'.format(mdspecialchars(after.name), after.id, after.position - before.position, before.position, after.position)
 			await client.send_message(specialchannel, msg)
+	if before.colour != after.colour:
+		msg_start = '**`>`**`role` **``{}``** `({}) has changed color`\n'.format(mdspecialchars(after.name), after.id)
+		content = '_`The older color is:`_ `{}`'.format('(default)' if str(before.colour) == '#000000' else str(before.colour).upper())
+		msg = msg_start + content
+		await client.send_message(specialchannel, msg)
+		content = '_`The newer color is:`_ `{}`'.format('(default)' if str(after.colour) == '#000000' else str(after.colour).upper())
+		msg = msg_start + content
+		await client.send_message(specialchannel, msg)
 
 
 @client.event
