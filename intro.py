@@ -922,22 +922,6 @@ async def on_message(message):
 			displaynick = '**`No Nickname`**'
 		else:
 			displaynick = '**`Nickname:`** ``{}``'.format(mdspecialchars(targetmember.nick))
-		if targetmember.game == None:
-			memberhasgame = False
-			displaygame = '**`Not Playing`**'
-			displaygameurl = '**`No Stream Link`**'
-			pass
-		else:
-			memberhasgame = True
-		if memberhasgame:
-			if targetmember.game.type == 0 or targetmember.game.type == None:
-				displaygame = '**`Playing:`** ``{}``'.format(mdspecialchars(targetmember.game.name))
-			if targetmember.game.type == 1:
-				displaygame = '**`Streaming:`** ``{}``'.format(mdspecialchars(targetmember.game.name))
-			if targetmember.game.url == None:
-				displaygameurl = '**`No Stream Link`**'
-			else:
-				displaygameurl = '**`Stream Link:`** ``{}``'.format(mdspecialchars(targetmember.game.url))
 
 		if command == "findup":
 			displaymatch = '<@{}>'.format(targetmember.id)
@@ -952,28 +936,66 @@ async def on_message(message):
 		elif str(targetmember.status) == 'dnd' or str(targetmember.status) == 'do_not_disturb':
 			statuss = 'dnd:232230526109351938'
 
-		content = (
-			'Matched {} <:{}>\n'
-			'**`User ID:`** `{}`\n'
-			'{}\n'
-			'**`Username:`** ``{}``\n'
-			'**`Discriminator:`** `#{}`\n'
-			'{}\n'
-			'{}\n'
-			'**`Default Avatar:`** `{}`\n'
-			'**`Avatar URL:`** {}\n'
-		).format(
-			displaymatch, statuss,
-			targetmember.id,
-			displaynick,
-			mdspecialchars(targetmember.name),
-			targetmember.discriminator,
-			displaygame,
-			displaygameurl,
-			targetmember.default_avatar,
-			targetmember.avatar_url,
-		)
-		await reply(message, content)
+#		content = (
+#			'Matched {} <:{}>\n'
+#			'**`User ID:`** `{}`\n'
+#			'{}\n'
+#			'**`Username:`** ``{}``\n'
+#			'**`Discriminator:`** `#{}`\n'
+#			'{}\n'
+#			'{}\n'
+#			'**`Default Avatar:`** `{}`\n'
+#			'**`Avatar URL:`** {}\n'
+#		).format(
+#			displaymatch, statuss,
+#			targetmember.id,
+#			displaynick,
+#			mdspecialchars(targetmember.name),
+#			targetmember.discriminator,
+#			displaygamestatus,
+#			displaygameurl,
+#			targetmember.default_avatar,
+#			targetmember.avatar_url,
+#		)
+		if targetmember.game == None:
+			memberhasgame = False
+			displaygamestatus = 'Not Playing'
+			displaygamename = '(none)'
+			displaygameurl = '(none)'
+			pass
+		else:
+			memberhasgame = True
+		if memberhasgame:
+			if targetmember.game.type == 0 or targetmember.game.type == None:
+				displaygamestatus = '``{}``'.format(mdspecialchars(targetmember.game.name))
+			if targetmember.game.type == 1:
+				displaygamestatus = 'Streaming'
+			if targetmember.game.url == None:
+				displaygameurl = '(none)'
+			else:
+				displaygameurl = '``{}``'
+		embed = discord.Embed(colour=targetmember.colour)
+		embed.set_thumbnail(url=targetmember.avatar_url)
+		embed.add_field(name='Nickname' if targetmember.nick != None else 'No Nickname', value='``{}``'.format(mdspecialchars(targetmember.nick)) if targetmember.nick != None else '(none)')
+		embed.add_field(name='Username', value='``{}``'.format(mdspecialchars(targetmember.name)))
+		embed.add_field(name='Discriminator', value='#{}'.format(targetmember.discriminator))
+		embed.add_field(name='User ID', value=targetmember.id)
+		embed.add_field(name=displaygamestatus, value=displaygamename)
+		embed.add_field(name='Stream Link', value=displaygameurl)
+		embed.add_field(name='Status', value='Do Not Disturb' if str(targetmember.status) == 'dnd' else str(targetmember.status).title())
+		embed.add_field(name='Default Avatar', value=str(targetmember.default_avatar).title())
+		embed.add_field(name='Joined Server At', value=str(targetmember.joined_at) + ' UTC')
+		embed.add_field(name='Joined Discord At', value=str(targetmember.created_at) + ' UTC')
+		embed.add_field(name='Color', value='#' + str(targetmember.colour).upper()[1:])
+		embed.add_field(name='Avatar URL', value='(none)' if targetmember.avatar_url == '' else targetmember.avatar_url)
+		# IMPORTANT: in `embed.add_field()`, `name` or `value` cannot be an empty string or you will get a 400 bad request when sending it
+		# (i learned that the hard way)
+		# (that was about twenty restarts smh)
+		content = 'Matched ' + displaymatch
+		msg = msg_start + content
+		# TODO: maybe have `reply()` modified to accomodate embeds or something
+		# but dav999 made the function so im not doing it xd
+		await client.send_message(message.channel, msg, embed=embed)
 	elif command == 'softban':
 		if not is_mod(message.author):
 			content = t['mod_only']
