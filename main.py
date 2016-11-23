@@ -535,7 +535,7 @@ async def on_message(message):
 			f.write(actuallyretrieving)
 			f.close()
 
-	if message.author.id in config.get_s('blacklist', message.server.id):
+	if not isprivate and message.author.id in config.get_s('blacklist', message.server.id):
 		return
 
 	if message.content.startswith(invoker): # does the message start with command invoker
@@ -666,7 +666,7 @@ async def on_message(message):
 	except IndexError:
 		arguments = None
 	command = command.split(' ', 1)[0]
-	if command in config.get_s('disabledcommands', message.server.id):
+	if not isprivate and command in config.get_s('disabledcommands', message.server.id):
 		await reply(message, 'This command is currently disabled{}.'.format(' on this server' if config.is_detached('disabledcommands', message.server.id) else ''))
 		return
 
