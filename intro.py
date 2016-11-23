@@ -38,7 +38,7 @@ import config
 
 config.load()
 
-# set bot version
+# Set bot version
 botversion = '1.0'
 
 # sets up logging
