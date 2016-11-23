@@ -662,6 +662,10 @@ async def on_message(message):
 	except IndexError:
 		arguments = None
 	command = command.split(' ', 1)[0]
+	if command in config.get_s('disabledcommands', message.server.id):
+		await reply(message, 'This command is currently disabled{}.'.format(' on this server' if config.is_detached('disabledcommands', message.server.id) else ''))
+		return
+
 	if command == 'help':
 		content = (
 			'`[\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server.\n'

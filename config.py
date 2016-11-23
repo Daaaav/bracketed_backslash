@@ -31,6 +31,13 @@ configs = {
 		'expl': 'A list of users that will be ignored by the bot.',
 		'detachable': True
 	},
+	'disabledcommands': {
+		'default': [],
+		'type': 'str',
+		'is_array': True,
+		'expl': 'Commands that cannot be used.',
+		'detachable': True
+	},
 }
 
 s = {}
