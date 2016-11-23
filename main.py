@@ -514,6 +514,9 @@ async def on_message(message):
 	if message.author == client.user: # is the message sent by the bot
 		return # do nothing
 
+	if message.author.id in config.get_s('blacklist', message.server.id):
+		return
+
 	specialchannel = getspecialchannel_reply(message)
 	displaymessagecontent = ('``{}``**`…`**'.format(mdspecialchars(message.content[:100]))) if len(message.content) > 100 else '``{}``'.format(mdspecialchars(message.content)).replace('\n', '``**`\\n`**``​')
 	if displaymessagecontent[-12:] == '``**`\\n`**``​':
