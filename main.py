@@ -201,7 +201,7 @@ cmds = [
 					'`\config list` – Show all the settings and their values.\n'
 					'`\config reload` – Reloads the config file.\n'
 					'`\config get <key>` – Show extended information about a specific setting and how it is configured, given its key.\n'
-					'`\config set <key> <value>` – Update the value of a given non-array setting. Don\'t use quotes or anything fancy.\n'
+					'`\config set <key> <value>` – Update the value of a given non-array setting. Don’t use quotes or anything fancy.\n'
 					'`\config insert <key> <value>` – Insert a value into an array setting.\n'
 					'`\config remove <key> <value>` – Remove a value from an array setting.\n'
 					'`\config detach <key>` – No longer make this setting use the master value, and use a server-specific value instead.\n'
@@ -324,7 +324,7 @@ cmds = [
 			},
 			{
 				'name': 'ruleadd',
-				'short': 'Insert a given rule string (2) to position (1). If no position is given, it\'s added at the end.',
+				'short': 'Insert a given rule string (2) to position (1). If no position is given, it’s added at the end.',
 				'extra': 'Examples:\n`\\ruleadd No trolling`\n`\\ruleadd 1 The most important rule is not to follow this rule.`'
 			},
 			{
@@ -452,7 +452,7 @@ async def on_ready():
 
 		for mem in client.get_server(productionserver).members:
 			if not str(mem.id) in memberroles:
-				warnings += '\nUser {}#{} ({}) is not in the cache! (They\'re suddenly in the server.) Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
+				warnings += '\nUser {}#{} ({}) is not in the cache! (They’re suddenly in the server.) Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
 				memberroles[str(mem.id)] = list(rolelist(mem.roles)) # Possibly redundant list() tbh, just making sure since I can't test and I don't know python well enough to know whether it's redundant
 				continue
 			if set(memberroles[str(mem.id)]) != set(rolelist(mem.roles)):
@@ -494,7 +494,7 @@ async def on_ready():
 		with open('rules.json', 'w') as outfile:
 			json.dump(rules, outfile)
 
-		await client.send_message(specialchannel_prod, 'Rules file didn\'t exist yet, created a new one.')
+		await client.send_message(specialchannel_prod, 'Rules file didn’t exist yet, created a new one.')
 
 	try:
 		with open('disabledrules.json', 'r') as infile:
@@ -506,7 +506,7 @@ async def on_ready():
 		with open('disabledrules.json', 'w') as outfile:
 			json.dump(disabledrules, outfile)
 
-		await client.send_message(specialchannel_prod, 'Disabledrules file didn\'t exist yet, created a new one.')
+		await client.send_message(specialchannel_prod, 'Disabledrules file didn’t exist yet, created a new one.')
 
 @client.event
 async def on_message(message):
@@ -768,7 +768,7 @@ async def on_message(message):
 				await reply(message, content)
 				return
 			if config.is_array(splitargs[1]):
-				content = 'That doesn\'t work for an array'
+				content = 'That doesn’t work for an array'
 				await reply(message, content)
 				return
 			if config.get_type(splitargs[1]) == 'int' and not splitargs[2].isdigit():
@@ -801,7 +801,7 @@ async def on_message(message):
 				await reply(message, content)
 				return
 			if not config.is_array(splitargs[1]):
-				content = 'That doesn\'t work for something that is not an array'
+				content = 'That doesn’t work for something that is not an array'
 				await reply(message, content)
 				return
 			if config.get_type(splitargs[1]) == 'int' and not splitargs[2].isdigit():
@@ -1200,7 +1200,7 @@ async def on_message(message):
 		await reply(message, content)
 	elif command == 'rulefind' or command == 'rulesfind':
 		if isprivatemessage(message.server):
-			content = 'Alright, this isn\'t a server, this is our private conversation. I run on multiple servers with different rules, you know.'
+			content = 'Alright, this isn’t a server, this is our private conversation. I run on multiple servers with different rules, you know.'
 			await reply(message, content)
 			return
 		if message.server.id in disabledrules and not is_mod(message.author):
@@ -1234,7 +1234,7 @@ async def on_message(message):
 			await reply(message, content)
 			return
 		if arguments == None:
-			content = 'I\'m not going to think up any rules by myself.'
+			content = 'I’m not going to think up any rules by myself.'
 			await reply(message, content)
 			return
 		if not message.server.id in rules:
@@ -1243,7 +1243,7 @@ async def on_message(message):
 		splitargs = arguments.split(' ', 1)
 		if splitargs[0].isdigit():
 			if int(splitargs[0]) > len(rules[message.server.id]):
-				content = '**Why are you mentioning the number if you\'re adding this at the end?**\n'
+				content = '**Why are you mentioning the number if you’re adding this at the end?**\n'
 			else:
 				content = ''
 			rules[message.server.id].insert(int(splitargs[0])-1, splitargs[1])
