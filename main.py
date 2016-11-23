@@ -25,7 +25,6 @@ from aiohttp import ClientSession
 import os
 import os.path
 import sys
-import urllib.request
 import warnings
 import random
 import re
