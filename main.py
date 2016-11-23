@@ -521,9 +521,10 @@ async def on_message(message):
 		displaymessagecontent += '``'
 	isprivate = isprivatemessage(message.server) # cant use isprivatemessage = isprivatemessage(), otherwise python will think "holy fuck a variable was referenced before assignment"
 
-	if not isprivate and str(message.author.status) == 'offline':
-		msg_start = '**`>`**👻`user` **``{}``**`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
-		await client.send_message(specialchannel, msg_start)
+	if not isprivate:
+		if str(message.author.status) == 'offline': # i dont like this but i hate errors in the terminal
+			msg_start = '**`>`**👻`user` **``{}``**`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
+			await client.send_message(specialchannel, msg_start)
 
 	if not isprivate and message.tts:
 		msg_start = '**`>`**`🎙message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `was sent with TTS.`\n{}'.format(message.id, mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.channel.id, message.content)
