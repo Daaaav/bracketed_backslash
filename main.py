@@ -1739,7 +1739,6 @@ async def on_typing(channel, user, when):
 	try:
 		specialchannel = getspecialchannel(channel.server)
 	except AttributeError: # this would happen if the typing event is in a private message
-		logging.info('user {}#{} ({}) typed in their direct message to the client at {} utc'.format(user.name, user.discriminator, user.id, when))
 		return
 	if specialchannel.id == channel.server.default_channel.id:
 		specialchannel = channel
