@@ -23,11 +23,11 @@ git clone https://gitgud.io/infoteddy/bracketed_backslash.git
 With HTTPS, you will be prompted for your [gitgud.io](https://gitgud.io/)
 username and password every time, not just when cloning the repository.
 ## Setup
-Make sure to `chmod +x intro.py` if you want to make sure the bot can restart
+Make sure to `chmod +x main.py` if you want to make sure the bot can restart
 with `\restart`.
 
-After that, you start the bot by doing `./intro.py` (if you did
-`chmod +x intro.py`) or `python3.5 intro.py` or `python intro.py`.
+After that, you start the bot by doing `./intro.sh` (if you did
+`chmod +x intro.sh`) or `bash intro.sh` or `sh intro.sh`.
 # Configuration
 Since this is a private bot, the variables are pretty much hard-written into
 the bot script itself. But all of the user-specific variables (except for the
