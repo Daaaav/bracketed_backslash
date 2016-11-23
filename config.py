@@ -17,6 +17,13 @@ configs = {
 		'expl': 'A testing setting to see whether everything works',
 		'detachable': True
 	},
+	'gamestatus': {
+		'default': '​',
+		'type': 'str',
+		'is_array': False,
+		'expl': 'Sets the game status for the bot.',
+		'detachable': False
+	},
 	'timeformat': {
 		'default': '%Y-%m-%d %H:%M:%S (%Z)',
 		'type': 'str',

@@ -439,7 +439,7 @@ async def on_ready():
 	global memberroles, rules, disabledrules
 
 	logging.info('logged in as {} with id {}'.format(client.user.name, client.user.id))
-	await client.change_presence(game=discord.Game(name='​')) # the game name is u+200b
+	await client.change_presence(game=discord.Game(name=config.get_s('gamestatus')))
 
 	await client.send_message(specialchannel_prod, '**`>`**🔌`Bot connected. (startup time is {})`'.format(reltime(boottimeunix)))
 
