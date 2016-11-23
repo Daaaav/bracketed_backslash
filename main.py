@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import discord
 import asyncio
+from aiohttp import ClientSession
 import os
 import os.path
 import sys
@@ -90,7 +91,7 @@ rules = {}
 disabledrules = []
 
 modificationtimes = [
-	os.path.getmtime('intro.py'),
+	os.path.getmtime('main.py'),
 	os.path.getmtime('functions.py'),
 	os.path.getmtime('config.py'),
 ]
@@ -530,18 +531,10 @@ async def on_message(message):
 		await client.send_message(specialchannel, msg_start[0:1998]) # Just be very certain that the message isn't too long
 
 	if message.attachments != []:
-		attachtoretrieve = urllib.request.Request(
-				message.attachments[0]['url'],
-				data = None,
-				headers = {
-					'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
-				}
-			)
-		actuallyretrieving = urllib.request.urlopen(attachtoretrieve)
+		actuallyretrieving = await fetch(message.attachments[0]['url'])
 		with open(attachcache + '/' + message.attachments[0]['id'] + '_' + message.attachments[0]['filename'], 'wb') as f:
-			f.write(actuallyretrieving.read())
+			f.write(actuallyretrieving)
 			f.close()
-		actuallyretrieving.close()
 
 	if message.content.startswith(invoker): # does the message start with command invoker
 		altinvokeractive = False
@@ -1501,6 +1494,10 @@ async def on_message(message):
 			content = t['specify_user']
 			await reply(message, content)
 			return
+		await reply(message, content)
+	elif command == 'aiohttptest':
+		await fetch("http://httpbin.org/headers")
+		content = 'yay it works'
 		await reply(message, content)
 	else:
 		if altinvokeractive:

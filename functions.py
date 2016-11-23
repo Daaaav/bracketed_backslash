@@ -302,3 +302,9 @@ def reltime(timestamp, noago=False):
 			return solong
 		return '{} ago'.format(solong)
 	return '{} in the future'.format(solong)
+
+@client.event
+async def fetch(url):
+	async with ClientSession() as session:
+		async with session.get(url) as response:
+			return await response.read()
