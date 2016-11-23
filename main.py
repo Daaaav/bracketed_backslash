@@ -42,7 +42,7 @@ botversion = '1.0'
 
 # sets up logging
 # level can be logging.DEBUG, logging.WARNING, et cetera
-# see https://docs.python.org/3/library/logging.html for more info
+# see https://docs.python.org/3/library/logging.html for more info.
 logging.basicConfig(level=logging.INFO)
 
 client = discord.Client() # defines all client.* commands
