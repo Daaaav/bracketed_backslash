@@ -17,8 +17,8 @@
 #	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # colors xd
-LIGHTBLUE = '\033[1;34m'
-LIGHTCYAN = '\033[1;36m'
+LIGHTBLUE='\033[1;34m'
+LIGHTCYAN='\033[1;36m'
 
 until python main.py; do
 	echo -e "${LIGHTBLUE}bot crashed with exit code ${LIGHTCYAN}$?${LIGHTBLUE} also restarting" >&2
