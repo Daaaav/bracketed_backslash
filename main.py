@@ -199,6 +199,7 @@ cmds = [
 				'extra': (
 					'You can use the following options:\n'
 					'`\config list` – Show all the settings and their values.\n'
+					'`\config reload` – Reloads the config file.\n'
 					'`\config get <key>` – Show extended information about a specific setting and how it is configured, given its key.\n'
 					'`\config set <key> <value>` – Update the value of a given non-array setting. Don\'t use quotes or anything fancy.\n'
 					'`\config insert <key> <value>` – Insert a value into an array setting.\n'
@@ -733,6 +734,7 @@ async def on_message(message):
 			content = (
 				'You can use the following options:\n'
 				'`\config list`\n'
+				'`\config reload`\n'
 				'`\config get <key>`\n'
 				'`\config set <key> <value>` (not for arrays)\n'
 				'`\config insert <key> <value>` (only for arrays)\n'
@@ -741,6 +743,11 @@ async def on_message(message):
 				'`\config reattach <key>`\n'
 				'`\config default <key>`\n'
 			)
+			await reply(message, content)
+			return
+		elif arguments == 'reload':
+			config.load()
+			content = 'Reloaded config.'
 			await reply(message, content)
 			return
 		elif arguments == 'list':
