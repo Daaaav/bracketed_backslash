@@ -1545,6 +1545,8 @@ async def on_message(message):
 		# what kind of stupid language uses elif instead of elseif or else if?
 			try:
 				cmdbits = arguments.split() # should split it so [1] is number, [2] is operand, [3] is third number
+				if cmdbits[0] = "":
+				    raise ValueError() # They've entered nothing, raise an exception
 				cmdbits[0] = float(cmdbits[0])
 				cmdbits[2] = float(cmdbits[2])
 				# But apparently not, it's [0] / [1] / [2] instead
@@ -1564,12 +1566,12 @@ async def on_message(message):
 					if (cmdbits[2] == 0 and cmdbits[0] == 0):
 						out = "Undefined."
 					else:
-						out = cmdbits[0] ** cmdbits[2]
+						out = cmdbits[0] ** cmdbits[2] # decimal powers are allowed
 				elif cmdbits[1] == "↑↑" or cmdbits[1] == "^^": # this one's for you, Info
-					oper = cmdbits[0] # this one's the stored operand
+					oper = cmdbits[0] # this one's the stored operand, and has to be an int otherwise it won't work properly
 					#cmdbits[5] = cmdbits[0] This isn't
-					cmdbits[4] = cmdbits[0]
-					for i in range(cmdbits[2]):
+					out = cmdbits[0] # Why is this still here? Dunno, changed it
+					for i in range(int(cmdbits[2])): # decimal range isn't
 						out = out ** oper # iterate until tetration is finished
 				else: #invalid operand, we don't care what the inputs are
 				    out = "Invalid operand."
