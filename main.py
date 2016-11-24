@@ -1507,7 +1507,7 @@ async def on_message(message):
 			if command == 'removecontrib':
 				await client.remove_roles(targetmember, contribrole)
 				content = 'Made <@{}> not a tOLP Contributor.'.format(targetmember.id)
-		except(AttributeError,TypeError):
+		except AttributeError:
 			content = t['specify_user']
 		await reply(message, content)
 	elif command == 'countpins':
