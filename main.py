@@ -1486,7 +1486,7 @@ async def on_message(message):
 		try:
 			getmessage = await client.get_message(getchannel, arg1)
 		except discord.errors.HTTPException:
-			content = 'Invalid arguments passed. Input `{invoker}{command}` for more information.'.format(invoker=invoker, command=command)
+			content = 'Invalid arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command)
 			await reply(message, content)
 			return
 		content = '``{}``'.format(mdspecialchars(getmessage.content[:1900]))
