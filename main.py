@@ -1571,6 +1571,8 @@ async def on_message(message):
 					cmdbits[4] = cmdbits[0]
 					for i in range(cmdbits[2]):
 						out = out ** oper # iterate until tetration is finished
+				else: #invalid operand, we don't care what the inputs are
+				    out = "Invalid operand."
 			except:
 				out = "Exception."
 			# end
