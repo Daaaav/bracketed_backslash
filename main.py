@@ -1556,12 +1556,12 @@ async def on_message(message):
 						cmdbits[4] = cmdbits[1] / cmdbits[3]
 					else:
 						cmdbits[4] = "Division by zero."
-				elif cmdbits[2] = "^":
+				elif cmdbits[2] == "^":
 					if (cmdbits[3] == 0 and cmdbits[1] == 0):
 						cmdbits[4] = "Undefined."
 					else:
 						cmdbits[4] = cmdbits[1] ** cmdbits[3]
-				elif cmdbits[2] = "↑↑" or cmdbits[2] = "^^": # this one's for you, Info
+				elif cmdbits[2] == "↑↑" or cmdbits[2] == "^^": # this one's for you, Info
 					cmdbits[5] = cmdbits[1] # this one's the stored operand
 					cmdbits[4] = cmdbits[1]
 					for i in range(cmdbits[3]):
