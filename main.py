@@ -1545,31 +1545,36 @@ async def on_message(message):
 		# what kind of stupid language uses elif instead of elseif or else if?
 			try:
 				cmdbits = arguments.split() # should split it so [1] is number, [2] is operand, [3] is third number
-				if cmdbits[2] == "+":
-					cmdbits[4] = cmdbits[1] + cmdbits[3]
-				elif cmdbits[2] == "-":
-					cmdbits[4] = cmdbits[1] - cmdbits[3]
-				elif cmdbits[2] == "x" or cmdbits[2] == "*":
-					cmdbits[4] = cmdbits[1] * cmdbits[3]
-				elif cmdbits[2] == "÷" or cmdbits[2] == "/":
-					if cmdbits[3] != 0:
-						cmdbits[4] = cmdbits[1] / cmdbits[3]
+				for i in cmdbits:
+				    cmdbits[i] = int(cmdbits[i])
+				# But apparently not, it's [0] / [1] / [2] instead
+				out = "" # setting extra crashes
+				if cmdbits[1] == "+":
+					out = cmdbits[0] + cmdbits[2]
+				elif cmdbits[1] == "-":
+					out = cmdbits[0] - cmdbits[2]
+				elif cmdbits[1] == "x" or cmdbits[1] == "*":
+					out = cmdbits[0] * cmdbits[2]
+				elif cmdbits[1] == "÷" or cmdbits[1] == "/":
+					if cmdbits[2] != 0:
+						out = cmdbits[0] / cmdbits[2]
 					else:
-						cmdbits[4] = "Division by zero."
-				elif cmdbits[2] == "^":
-					if (cmdbits[3] == 0 and cmdbits[1] == 0):
-						cmdbits[4] = "Undefined."
+						out = "Division by zero."
+				elif cmdbits[1] == "^":
+					if (cmdbits[2] == 0 and cmdbits[0] == 0):
+						out = "Undefined."
 					else:
-						cmdbits[4] = cmdbits[1] ** cmdbits[3]
-				elif cmdbits[2] == "↑↑" or cmdbits[2] == "^^": # this one's for you, Info
-					cmdbits[5] = cmdbits[1] # this one's the stored operand
-					cmdbits[4] = cmdbits[1]
-					for i in range(cmdbits[3]):
-						cmdbits[4] = cmdbits[4] ** cmdbits[5] # iterate until tetration is finished
+						out = cmdbits[0] ** cmdbits[2]
+				elif cmdbits[1] == "↑↑" or cmdbits[1] == "^^": # this one's for you, Info
+				    oper = cmdbits[0] # this one's the stored operand
+					#cmdbits[5] = cmdbits[0] This isn't
+					cmdbits[4] = cmdbits[0]
+					for i in range(cmdbits[2]):
+						out = out ** oper # iterate until tetration is finished
 			except:
-				cmdbits[4] = "Exception."
+				out = "Exception."
 			# end
-			content = '`{} {} {} = {}`'.format(cmdbits[1], cmdbits[2], cmdbits[3], cmdbits[4])
+			content = '`{} {} {} = {}`'.format(cmdbits[0], cmdbits[1], cmdbits[2], out)
 			await reply(message, content)
 	else:
 		if altinvokeractive:
