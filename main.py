@@ -76,9 +76,9 @@ token = token_config.readline(60).split('\n')[0] # read sixty characters also FU
 
 token_config.close() # this is probably a good idea i should do
 
-specialchannel_prod = client.get_channel(id='234185735266238464')
-specialchannel_aperture = client.get_channel(id='243176655101755392')
-botschannel = client.get_channel(id='201130047736643584')
+specialchannel_prod = discord.Object(id='234185735266238464')
+specialchannel_aperture = discord.Object(id='243176655101755392')
+botschannel = discord.Object(id='201130047736643584')
 productionserver = '153368829160849408'
 server = client.get_server(productionserver) # defines all server.* commands
 
@@ -1477,19 +1477,17 @@ async def on_message(message):
 			argsplit = arguments.split(' ', 1)
 			arg0 = argsplit[0]
 			arg1 = argsplit[1]
-		except (AttributeError,IndexError):
-			content = 'Invalid amount of arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command)
-			await reply(message, content)
-			return
-		channelid = arg0[2:-1]
-		getchannel = client.get_channel(id=channelid)
-		try:
+			channelid = arg0[2:-1]
+			getchannel = client.get_channel(channelid)
 			getmessage = await client.get_message(getchannel, arg1)
+			content = '``{}``'.format(mdspecialchars(getmessage.content[:1900]))
+		except AttributeError:
+			content = 'AttributeError'
+		except IndexError:
+#			content = 'Invalid amount of arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command)
+			content = 'IndexError'
 		except discord.errors.HTTPException:
 			content = 'Invalid arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command)
-			await reply(message, content)
-			return
-		content = '``{}``'.format(mdspecialchars(getmessage.content[:1900]))
 		await reply(message, content)
 	elif command == 'addcontrib' or command == 'removecontrib':
 		if message.server.id != productionserver:
