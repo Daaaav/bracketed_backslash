@@ -1532,8 +1532,9 @@ async def on_message(message):
 			return
 		content = ''
 		for chan in message.server.channels:
-			pins = await client.pins_from(chan)
-			content += '{} – {} pins, {} remaining\n'.format(chan.mention, len(pins), 50-len(pins))
+			if str(chan.type) == 'text':
+				pins = await client.pins_from(chan)
+				content += '{} – {} pins, {} remaining\n'.format(chan.mention, len(pins), 50-len(pins))
 		await reply(message, content)
 	else:
 		if altinvokeractive:
