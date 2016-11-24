@@ -1079,33 +1079,23 @@ async def on_message(message):
 		await reply(message, content)
 		return
 	elif command == 'voicemute' or command == 'voiceunmute':
-		if not is_mod(message.author):
-			content = t['mod_only']
-			logging.info('voicemute attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-			await reply(message, content)
-			return
 		targetmember = get_member_input(message.server, arguments)
 		try:
-			if targetmember.voice.voice_channel == None:
+			if not is_mod(message.author):
+				content = t['mod_only']
+				logging.info('voicemute attempted by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			elif targetmember.voice.voice_channel == None:
 				content = 'User is not in a voice channel.'
-				await reply(message, content)
-				return
-			if command == 'voicemute':
+			elif command == 'voicemute':
 				await client.server_voice_state(targetmember, mute=1)
+				content = 'Voice muted <@{}>.'.format(targetmember.id)
 			elif command == 'voiceunmute':
 				await client.server_voice_state(targetmember, mute=0)
+				content = 'Voice unmuted <@{}>.'.format(targetmember.id)
 		except AttributeError:
 			content = t['specify_user']
-			await reply(message, content)
-			return
 		except discord.errors.Forbidden:
 			content = t['no_permission']
-			await reply(message, content)
-			return
-		if command == 'voicemute':
-			content = 'Voice muted <@{}>.'.format(targetmember.id)
-		elif command == 'voiceunmute':
-			content = 'Voice unmuted <@{}>.'.format(targetmember.id)
 		await reply(message, content)
 	elif command == 'rolerst':
 		if not is_mod(message.author):
