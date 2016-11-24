@@ -1546,7 +1546,7 @@ async def on_message(message):
 			try:
 				cmdbits = arguments.split() # should split it so [1] is number, [2] is operand, [3] is third number
 				if cmdbits[0] == "":
-				    raise ValueError() # They've entered nothing, raise an exception
+					raise ValueError() # They've entered nothing, raise an exception
 				cmdbits[0] = float(cmdbits[0])
 				cmdbits[2] = float(cmdbits[2])
 				# But apparently not, it's [0] / [1] / [2] instead
@@ -1574,7 +1574,7 @@ async def on_message(message):
 					for i in range(int(cmdbits[2])): # decimal range isn't
 						out = out ** oper # iterate until tetration is finished
 				else: #invalid operand, we don't care what the inputs are
-				    out = "Invalid operand."
+					out = "Invalid operand."
 			except:
 				out = "Exception."
 			# end
