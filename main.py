@@ -170,6 +170,11 @@ cmds = [
 				'short': 'Count the amount of pins in all channels.',
 				'extra': ''
 			},
+			{
+				'name': 'math',
+				'short': 'Does maths. What do you expect? [Must be in format `<number> <operand> <number>`.', 
+				'extra': 'Supports most maths operands that do not return a negative number.\nNo, Info, you can add complex support yourself.'
+			},
 		]
 	},
 	{
@@ -1536,6 +1541,35 @@ async def on_message(message):
 				pins = await client.pins_from(chan)
 				content += '{} – {} pins, {} remaining\n'.format(chan.mention, len(pins), 50-len(pins))
 		await reply(message, content)
+	elif command == 'math':
+		# what kind of stupid language uses elif instead of elseif or else if?
+			try:
+				cmdbits = arguments.split() # should split it so [1] is number, [2] is operand, [3] is third number
+				if cmdbits[2] == "+":
+					cmdbits[4] = cmdbits[1] + cmdbits[3]
+				elif cmdbits[2] == "-":
+					cmdbits[4] = cmdbits[1] - cmdbits[3]
+				elif cmdbits[2] == "x" or cmdbits[2] == "*":
+					cmdbits[4] = cmdbits[1] * cmdbits[3]
+				elif cmdbits[2] == "÷" or cmdbits[2] == "/":
+					if cmdbits[3] != 0:
+						cmdbits[4] = cmdbits[1] / cmdbits[3]
+					else:
+						cmdbits[4] = "Division by zero."
+				elif cmdbits[2] = "^":
+					if (cmdbits[3] == 0 and cmdbits[1] == 0):
+						cmdbits[4] = "Undefined."
+					else:
+						cmdbits[4] = cmdbits[1] ** cmdbits[3]
+				elif cmdbits[2] = "↑↑" or cmdbits[2] = "^^": # this one's for you, Info
+					cmdbits[5] = cmdbits[1] # this one's the stored operand
+					cmdbits[4] = cmdbits[1]
+					for i in range(cmdbits[3]):
+						cmdbits[4] = cmdbits[4] ** cmdbits[5] # iterate until tetration is finished
+			except:
+				cmdbits[4] = "Exception."
+			# end
+			content = '`{} {} {} = {}`'.format(cmdbits[1], cmdbits[2], cmdbits[3], cmdbits[4])
 	else:
 		if altinvokeractive:
 			return # do not print error message if command is invalid
