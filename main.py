@@ -1570,6 +1570,7 @@ async def on_message(message):
 				cmdbits[4] = "Exception."
 			# end
 			content = '`{} {} {} = {}`'.format(cmdbits[1], cmdbits[2], cmdbits[3], cmdbits[4])
+			await reply(message, content)
 	else:
 		if altinvokeractive:
 			return # do not print error message if command is invalid
