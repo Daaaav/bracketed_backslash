@@ -160,6 +160,11 @@ cmds = [
 				'short': 'Links to the servers `[\]` can be used on.',
 				'extra': '`[\]` can only be used on these servers.'
 			},
+			{
+				'name': 'countpins',
+				'short': 'Count the amount of pins in a channel.',
+				'extra': 'You can supply the channel via a channel mention, if not given it will use the current channel.'
+			},
 		]
 	},
 	{
@@ -1510,9 +1515,20 @@ async def on_message(message):
 			await reply(message, content)
 			return
 		await reply(message, content)
-	elif command == 'aiohttptest':
-		await fetch("http://httpbin.org/headers")
-		content = 'yay it works'
+	elif command == 'countpins':
+		if arguments == None:
+			getchannel = message.channel
+		else:
+			channelid = arguments[2:-1]
+			getchannel = discord.Object(id=channelid)
+			try:
+				getchannel.id
+			except AttributeError:
+				content = 'Invalid arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command)
+				await reply(message, content)
+				return
+		pins = await client.pins_from(getchannel)
+		content = '{} currently has {} pins, {} remaining.'.(getchannel.mention, len(pins), 50-len(pins))
 		await reply(message, content)
 	else:
 		if altinvokeractive:
