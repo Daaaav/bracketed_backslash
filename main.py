@@ -1502,9 +1502,17 @@ async def on_message(message):
 			return
 		try:
 			if command == 'addcontrib':
+				if contribrole in targetmember.roles:
+					content = 'The user is already a tOLP Contributor.'
+					await reply(message, content)
+					return
 				await client.add_roles(targetmember, contribrole)
 				content = 'Made <@{}> a tOLP Contributor.'.format(targetmember.id)
 			if command == 'removecontrib':
+				if contribrole not in targetmember.roles:
+					content = 'The user is already not a tOLP Contributor.'
+					await reply(message, content)
+					return
 				await client.remove_roles(targetmember, contribrole)
 				content = 'Made <@{}> not a tOLP Contributor.'.format(targetmember.id)
 		except AttributeError:
