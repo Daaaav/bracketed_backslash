@@ -1566,7 +1566,7 @@ async def on_message(message):
 					else:
 						out = cmdbits[0] ** cmdbits[2]
 				elif cmdbits[1] == "↑↑" or cmdbits[1] == "^^": # this one's for you, Info
-				    oper = cmdbits[0] # this one's the stored operand
+					oper = cmdbits[0] # this one's the stored operand
 					#cmdbits[5] = cmdbits[0] This isn't
 					cmdbits[4] = cmdbits[0]
 					for i in range(cmdbits[2]):
