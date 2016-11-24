@@ -21,7 +21,7 @@ LIGHTBLUE='\033[1;34m'
 LIGHTCYAN='\033[1;36m'
 NOCOLOR='\033[1;0m'
 
-until python load.py; do
+until python main.py; do
 	echo -e "${LIGHTBLUE}bot crashed with exit code ${LIGHTCYAN}$?${LIGHTBLUE} also restarting${NOCOLOR}" >&2
 	sleep 1 # so if the startup sequence is fucked it wont keep starting up many times a millisecond
 done
