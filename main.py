@@ -1464,7 +1464,7 @@ async def on_message(message):
 		await reply(message, content)
 	elif command == 'getrawmessagecontent':
 		if not is_mod(message.author):
-			logging.info('getrawmessagecontent attempted by {}#{} at {} utc but failed').format(message.author.name, message.author.id, message.timestamp)
+			logging.info('getrawmessagecontent attempted by {}#{} at {} utc but failed'.format(message.author.name, message.author.id, message.timestamp))
 			content = t['mod_only']
 			await reply(message, content)
 			return
