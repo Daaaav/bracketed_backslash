@@ -1482,12 +1482,11 @@ async def on_message(message):
 			getmessage = await client.get_message(getchannel, arg1)
 			content = '``{}``'.format(mdspecialchars(getmessage.content[:1900]))
 		except AttributeError:
-			content = 'AttributeError'
-		except IndexError:
-#			content = 'Invalid amount of arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command)
-			content = 'IndexError'
-		except discord.errors.HTTPException:
 			content = 'Invalid arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command)
+		except IndexError:
+			content = 'Invalid amount of arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command)
+		except discord.errors.HTTPException:
+			content = 'Invalid message ID given. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command)
 		await reply(message, content)
 	elif command == 'addcontrib' or command == 'removecontrib':
 		if message.server.id != productionserver:
