@@ -165,6 +165,11 @@ cmds = [
 				'short': 'Count the amount of pins in a channel.',
 				'extra': 'You can supply the channel via a channel mention, if not given it will use the current channel.'
 			},
+			{
+				'name': 'countallpins',
+				'short': 'Count the amount of pins in all channels.',
+				'extra': ''
+			},
 		]
 	},
 	{
@@ -1519,6 +1524,16 @@ async def on_message(message):
 			content = '{} currently has {} pins, {} remaining.'.format(getchannel.mention, len(pins), 50-len(pins))
 		except AttributeError:
 			content = 'The channel doesn’t exist, has been deleted, or it’s not a channel at all. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command)
+		await reply(message, content)
+	elif command == 'countallpins':
+		if isprivate:
+			content = 'No channels to iterate through, try `\countpins` instead'
+			await reply(message, content)
+			return
+		content = ''
+		for chan in message.server.channels:
+			pins = await client.pins_from(chan)
+			content += '{} – {} pins, {} remaining\n'.format(chan.mention, len(pins), 50-len(pins))
 		await reply(message, content)
 	else:
 		if altinvokeractive:
