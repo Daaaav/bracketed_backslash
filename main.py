@@ -1528,7 +1528,7 @@ async def on_message(message):
 				await reply(message, content)
 				return
 		pins = await client.pins_from(getchannel)
-		content = '{} currently has {} pins, {} remaining.'.(getchannel.mention, len(pins), 50-len(pins))
+		content = '{} currently has {} pins, {} remaining.'.format(getchannel.mention, len(pins), 50-len(pins))
 		await reply(message, content)
 	else:
 		if altinvokeractive:
