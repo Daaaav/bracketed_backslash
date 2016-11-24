@@ -1509,8 +1509,6 @@ async def on_message(message):
 				content = 'Made <@{}> not a tOLP Contributor.'.format(targetmember.id)
 		except(AttributeError,TypeError):
 			content = t['specify_user']
-			await reply(message, content)
-			return
 		await reply(message, content)
 	elif command == 'countpins':
 		if arguments == None:
