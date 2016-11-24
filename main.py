@@ -1521,19 +1521,13 @@ async def on_message(message):
 		else:
 			channelid = arguments[2:-1]
 			getchannel = discord.Object(id=channelid)
-			try:
-				getchannel.id
-			except AttributeError:
-				content = 'Invalid arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command)
-				await reply(message, content)
-				return
 		try:
 			pins = await client.pins_from(getchannel)
+			content = '{} currently has {} pins, {} remaining.'.format(getchannel.mention, len(pins), 50-len(pins))
 		except discord.errors.HTTPException:
 			content = 'Invalid arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command)
-		except discord.errors.NotFound:
+		except(discord.errors.NotFound,AttributeError):
 			content = 'The channel doesn’t exist, has been deleted, or it’s not a channel at all. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command)
-		content = '{} currently has {} pins, {} remaining.'.format(getchannel.mention, len(pins), 50-len(pins))
 		await reply(message, content)
 	else:
 		if altinvokeractive:
