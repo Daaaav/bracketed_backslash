@@ -1546,7 +1546,7 @@ async def on_message(message):
 			try:
 				cmdbits = arguments.split() # should split it so [1] is number, [2] is operand, [3] is third number
 				for i in cmdbits:
-				    cmdbits[i] = int(cmdbits[i])
+					cmdbits[i] = int(cmdbits[i])
 				# But apparently not, it's [0] / [1] / [2] instead
 				out = "" # setting extra crashes
 				if cmdbits[1] == "+":
