@@ -9,42 +9,56 @@ import copy
 # str: string
 # did: generic Discord ID
 # uid: user/member Discord ID (members can be searched)
+# cid: channel ID (channels can be mentioned)
 configs = {
 	'test': {
 		'default': 2,
 		'type': 'int',
 		'is_array': False,
 		'expl': 'A testing setting to see whether everything works',
-		'detachable': True
+		'detachable': True,
+		'shown': True,
 	},
 	'gamestatus': {
 		'default': '​',
 		'type': 'str',
 		'is_array': False,
 		'expl': 'Sets the game status for the bot.',
-		'detachable': False
+		'detachable': False,
+		'shown': True,
 	},
 	'timeformat': {
 		'default': '%Y-%m-%d %H:%M:%S (%Z)',
 		'type': 'str',
 		'is_array': False,
 		'expl': 'The date format used in messages.',
-		'detachable': True
+		'detachable': True,
+		'shown': True,
 	},
 	'blacklist': {
 		'default': [],
 		'type': 'uid',
 		'is_array': True,
 		'expl': 'A list of users that will be ignored by the bot.',
-		'detachable': True
+		'detachable': True,
+		'shown': True,
 	},
 	'disabledcommands': {
 		'default': [],
 		'type': 'str',
 		'is_array': True,
 		'expl': 'Commands that cannot be used.',
-		'detachable': True
+		'detachable': True,
+		'shown': True,
 	},
+	'specialchannel': {
+		'default': '0',
+		'type': 'cid',
+		'is_array': False,
+		'expl': 'Log channel',
+		'detachable': True,
+		'shown': False,
+	}
 }
 
 s = {}
@@ -122,6 +136,9 @@ def get_expl(skey):
 	if configs[skey]['expl'] == None or configs[skey]['expl'] == '':
 		return None
 	return configs[skey]['expl']
+
+def get_shown(skey):
+	return configs[skey]['shown']
 
 def saveconfig():
 	with open('config.json', 'w') as outfile:

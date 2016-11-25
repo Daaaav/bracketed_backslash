@@ -77,7 +77,6 @@ token = token_config.readline(60).split('\n')[0] # read sixty characters also FU
 token_config.close() # this is probably a good idea i should do
 
 specialchannel_prod = discord.Object(id='234185735266238464')
-specialchannel_aperture = discord.Object(id='243176655101755392')
 botschannel = discord.Object(id='201130047736643584')
 productionserver = '153368829160849408'
 server = client.get_server(productionserver) # defines all server.* commands
@@ -771,6 +770,8 @@ async def on_message(message):
 		elif arguments == 'list':
 			content = '```css'
 			for c in config.s:
+				if not config.get_shown(c):
+					continue
 				content += '\n{} [{}] = {}'.format(c, config.get_type(c) + ('*' if config.is_array(c) else ''), config.get_s(c, message.server.id) if not config.is_array(c) else '[{}]'.format(len(config.get_s(c, message.server.id))))
 				if config.is_detached(c, message.server.id):
 					content += ' [local value]'

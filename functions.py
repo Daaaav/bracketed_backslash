@@ -258,10 +258,9 @@ def listroles_id(lijst):
 	return returnage
 
 def getspecialchannel(server):
-	if server.id == '153368829160849408':
-		return specialchannel_prod
-	elif server.id == '158091122747506688':
-		return specialchannel_aperture
+	theconfig = config.get_s('specialchannel', server.id)
+	if theconfig != 0:
+		return client.get_channel(id=theconfig)
 	else:
 		return server.default_channel
 
