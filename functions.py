@@ -259,7 +259,7 @@ def listroles_id(lijst):
 
 def getspecialchannel(server):
 	theconfig = config.get_s('specialchannel', server.id)
-	if theconfig != 0:
+	if theconfig != '0':
 		return client.get_channel(id=theconfig)
 	else:
 		return server.default_channel
