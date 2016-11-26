@@ -1644,8 +1644,9 @@ async def on_message(message):
 					evaluate = eval(evalstring)
 					evalfile.close()
 				elif command == 'evalawaitfile':
-					evalfile = open('eval.txt', 'r').read()
-					evalute = eval(evalfile)
+					evalfile = open('eval.txt', 'r')
+					evalstring = evalfile.read()
+					evaluate = await eval(evalstring)
 					evalfile.close()
 				content = '```py\n{}```'.format(mdspecialchars(evaluate))
 			except:
