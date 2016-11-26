@@ -307,3 +307,6 @@ async def fetch(url):
 	async with ClientSession() as session:
 		async with session.get(url) as response:
 			return await response.read()
+
+def logfailedcommand(command, message):
+	logging.info('{} attempted by {}#{} (uuid {}) at {} utc but failed'.format(command, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
