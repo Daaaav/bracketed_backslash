@@ -443,6 +443,11 @@ cmds = [
 				'short': 'This is going to give my bot cancer.',
 				'extra': t['its_meme']
 			},
+			{
+				'name': 'fuckingdense',
+				'short': 'Stop making fun of them! They have children at age 18, after all.',
+				'extra': t['its_meme']
+			},
 		]
 	},
 ]
