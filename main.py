@@ -1453,6 +1453,15 @@ async def on_message(message):
 		content = random.choice([
 			'moar liek stainy amirite',
 			'moar like painy amirite',
+			await reply(message, content)
+	elif command == 'fuckingdense':
+		content = random.choice([
+			'I cant believe you destroyed my recreation of something better than the original Back to VVVVVV. I wish it was never against the rules in the 1st place. It took me forever to make it, and as a consequence for releasing it, I get this. Hate. Hate! HATE! You never did that when Dimension Anomaly came out! Next time, you better not send hate stuff',
+			'Stop! I have children!',
+			'Well. Well well well. Welly well well well. Well well well welly well well welly. Dimension anomaly still had effort, just with 3 dimensions. VVVVVV, Open, and ZYX. You dont want me to spam again, do you? If so, then dont give hatred for a simple remodified level. FIQ made the original, I recieved permission, and I got to make it slightly better and more challenging! Why, Vultarix...? :verdigris: Why? :vitellary: WHY? :victoria: We were on our way to REAL victory... :vermillion: On our way to making up for LAST time! :vermillion: Whyd you have to SCREW IT UP? :violet: Ahahahahaha... :viridian: Is this REVENGE? :vermillion: Making me watch you act so pure and happy, while I...? :victoria: ... :victoria: No. :verdigris: NO. :vermillion: I KNOW what youre doing. :vermillion: You just wanna see what its all like. :vermillion: Before we TEAR IT AWAY from them. :vermillion: Ahahahahaha... :vermillion: Genius, Vultarix. :vermillion: Well, Ill let you mess around. :viridian: I KNOW youll come back eventually. :vermillion: And when that time comes... :vermillion: Vultarix. :viridian: Ill be waiting for you. :viridian:',
+			'Well. I guess the hate I received is critical. I never wanted hatred from everyone. Every time I do this thing, THIS. I get THIS. Hatred, hatred, everywhere! And to think Dimension Anomaly wasnt good enough! Look. Look! LOOK! Its a nightmare, I tell ya!',
+			'Well. Well well well. Welly well well well. Well well well welly well well welly. You never accepted the fact it took me a bunch of days to deal with this. I had to copy the ROOMS, not remove the SCRIPTS. ... And now Im done with your hatred for what I do and how I do it. Im telling FIQ about what you said about Back to VVVVVV II... Through PM.',
+			'THATS IT. I KNOW WHAT I MUST DO.',
 		])
 		await reply(message, content)
 	elif command == 'kys':
