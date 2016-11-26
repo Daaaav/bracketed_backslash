@@ -71,10 +71,12 @@ boottime = time.strftime(config.get_s('timeformat'))
 boottimeunix = time.time()
 
 token_config = open('bot_token.conf', 'r')
-
 token = token_config.readline(60).split('\n')[0] # read sixty characters also FUCKING NEWLINES
-
 token_config.close() # this is probably a good idea i should do
+
+ownerid_config = open('ownerid.conf', 'r')
+ownerid = ownerid_config.readline(18).split('\n')[0]
+ownerid_config.close()
 
 specialchannel_prod = discord.Object(id='234185735266238464')
 botschannel = discord.Object(id='201130047736643584')
@@ -97,6 +99,7 @@ modificationtimecache = time.strftime(config.get_s('timeformat'), time.gmtime(ma
 client.max_messages = None
 
 t = {
+	'owner_only': 'Permission denied. This command can only be used by <@!{}>'.format(ownerid),
 	'op_only': 'Permission denied. This command can only be used by Info Teddy or Dav999.',
 	'mod_only': 'Permission denied. This command can only be used by a moderator or administrator.',
 	'specify_user': 'Please specify a user ID, a username, a username and discriminator, or a nickname.',
@@ -223,6 +226,11 @@ cmds = [
 					'`\config default <key>` – Changes the value of a given setting back to default.\n'
 				)
 			},
+			{
+				'name': 'gamestatus',
+				'short': 'Sets the game status.',
+				'extra': ''
+			}
 		]
 	},
 	{
@@ -1590,6 +1598,14 @@ async def on_message(message):
 			out = "Exception."
 		# end
 		content = '`{} {} {} = {}`'.format(cmdbits[0], cmdbits[1], cmdbits[2], out)
+		await reply(message, content)
+	elif command == 'gamestatus':
+		if not is_operator(message.author):
+			logfailedcommand(command, message)
+			content = t['op_only']
+		else:
+			await client.change_presence(game=discord.Game(name=arguments))
+			content = 'Set game status to: ``{}``'.format(mdspecialchars(arguments))
 		await reply(message, content)
 	else:
 		if altinvokeractive:
