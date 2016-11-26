@@ -239,8 +239,18 @@ cmds = [
 			},
 			{
 				'name': 'evalawait',
-				'short': 'Evaluates your arguments as code, but precedes them with an `await`.',
-				'extra': 'No, this is not an intentional phonetic English pun.'
+				'short': 'Evaluates your arguments as code, but precedes them with `await`.',
+				'extra': ''
+			},
+			{
+				'name': 'evalfile',
+				'short': 'Evaluates `eval.txt` as code.',
+				'extra': ''
+			},
+			{
+				'name': 'evalawaitfile',
+				'short': 'Evaluates `eval.txt` as code, but precedes them with `await`.',
+				'extra': ''
 			}
 		]
 	},
@@ -1618,7 +1628,7 @@ async def on_message(message):
 			await client.change_presence(game=discord.Game(name=arguments))
 			content = 'Set game status to: ``{}``'.format(mdspecialchars(arguments))
 		await reply(message, content)
-	elif command == 'eval' or command == 'evalawait':
+	elif command == 'eval' or command == 'evalawait' or command == 'evalfile' or command == 'evalawaitfile':
 		if message.author.id != ownerid:
 			logfailedcommand(command, message)
 			content = t['owner_only']
@@ -1628,6 +1638,15 @@ async def on_message(message):
 					evaluate = eval(arguments)
 				elif command == 'evalawait':
 					evaluate = await eval(arguments)
+				elif command == 'evalfile':
+					evalfile = open('eval.txt', 'r')
+					evalstring = evalfile.read()
+					evaluate = eval(evalstring)
+					evalfile.close()
+				elif command == 'evalawaitfile':
+					evalfile = open('eval.txt', 'r').read()
+					evalute = eval(evalfile)
+					evalfile.close()
 				content = '```py\n{}```'.format(evaluate)
 			except:
 				content = '```py\n{}```'.format(traceback.format_exc())
