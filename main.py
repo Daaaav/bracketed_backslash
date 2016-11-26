@@ -100,7 +100,7 @@ modificationtimecache = time.strftime(config.get_s('timeformat'), time.gmtime(ma
 client.max_messages = None
 
 t = {
-	'owner_only': 'Permission denied. This command can only be used by <@!{}>'.format(ownerid),
+	'owner_only': 'Permission denied. This command can only be used by <@!{}>.'.format(ownerid),
 	'op_only': 'Permission denied. This command can only be used by Info Teddy or Dav999.',
 	'mod_only': 'Permission denied. This command can only be used by a moderator or administrator.',
 	'specify_user': 'Please specify a user ID, a username, a username and discriminator, or a nickname.',
