@@ -31,6 +31,7 @@ import time
 import json
 import logging
 import math
+import traceback
 import subprocess
 
 import config
@@ -230,6 +231,16 @@ cmds = [
 				'name': 'gamestatus',
 				'short': 'Sets the game status.',
 				'extra': ''
+			},
+			{
+				'name': 'eval',
+				'short': 'Evalutes your arguments as code.',
+				'extra': ''
+			},
+			{
+				'name': 'evalawait',
+				'short': 'Evalutes your arguments as code, but precedes them with an `await`.',
+				'extra': 'No, this is not an intentional phonetic English pun.'
 			}
 		]
 	},
@@ -1606,6 +1617,20 @@ async def on_message(message):
 		else:
 			await client.change_presence(game=discord.Game(name=arguments))
 			content = 'Set game status to: ``{}``'.format(mdspecialchars(arguments))
+		await reply(message, content)
+	elif command == 'eval' or command == 'evalawait':
+		if message.author.id != ownerid:
+			logfailedcommand(command, message)
+			content = t['owner_only']
+		else:
+			try:
+				if command == 'eval':
+					evaluate = eval(arguments)
+				elif command == 'evalawait':
+					evaluate = await eval(arguments)
+				content = '```py\n{}```'.format(evaluate)
+			except:
+				content = '```py\n{}```'.format(traceback.format_exc())
 		await reply(message, content)
 	else:
 		if altinvokeractive:
