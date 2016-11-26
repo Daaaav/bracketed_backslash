@@ -234,12 +234,12 @@ cmds = [
 			},
 			{
 				'name': 'eval',
-				'short': 'Evalutes your arguments as code.',
+				'short': 'Evaluates your arguments as code.',
 				'extra': ''
 			},
 			{
 				'name': 'evalawait',
-				'short': 'Evalutes your arguments as code, but precedes them with an `await`.',
+				'short': 'Evaluates your arguments as code, but precedes them with an `await`.',
 				'extra': 'No, this is not an intentional phonetic English pun.'
 			}
 		]
