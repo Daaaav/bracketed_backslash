@@ -1433,7 +1433,15 @@ async def on_message(message):
 		content = 'Bot is okay.'
 		await reply(message, content)
 	elif command == 'uptime':
-		hostuptime = subprocess.Popen(['uptime'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+		hostuptime = subprocess.Popen(['uptime', '-p'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+		embed = discord.Embed(colour=message.server.me.colour, timestamp=message.timestamp)
+		embed.set_author(name='Uptime Statistics', icon_url=client.user.avatar_url)
+		embed.set_thumbnail(url=client.user.avatar_url)
+		embed.set_footer(text='Uptime Statistics', icon_url=client.user.avatar_url)
+		embed.add_field(name='Boot Time', value=boottime)
+		embed.add_field(name='Current Time', value=time.strftime(config.get_s('timeformat', message.server.id)))
+		embed.add_field(name='Bot Uptime', value=reltime(boottimeunix, True))
+		embed.add_field(name='Host Uptime', value=hostuptime.decode('utf-8'))
 		content = (
 			'**`Boot time:`**        `{}`\n'
 			'**`Current time:`** `{}`\n'
@@ -1445,7 +1453,7 @@ async def on_message(message):
 			reltime(boottimeunix, True),
 			hostuptime.decode('utf-8'),
 		)
-		await reply(message, content)
+		await reply(message, None, emb=embed)
 	elif command == '*formatting*':
 		content = 'That’s italicized formatting.'
 		await reply(message, content)
