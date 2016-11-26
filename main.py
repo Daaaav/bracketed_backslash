@@ -1454,7 +1454,7 @@ async def on_message(message):
 			'moar liek stainy amirite',
 			'moar like painy amirite',
 		])
-			await reply(message, content)
+		await reply(message, content)
 	elif command == 'fuckingdense':
 		content = random.choice([
 			'I cant believe you destroyed my recreation of something better than the original Back to VVVVVV. I wish it was never against the rules in the 1st place. It took me forever to make it, and as a consequence for releasing it, I get this. Hate. Hate! HATE! You never did that when Dimension Anomaly came out! Next time, you better not send hate stuff',
