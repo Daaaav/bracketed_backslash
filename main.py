@@ -1650,7 +1650,16 @@ async def on_message(message):
 				content = '```py\n{}```'.format(mdspecialchars(evaluate))
 			except:
 				content = '```py\n{}```'.format(mdspecialchars(traceback.format_exc()))
-		await reply(message, content)
+		try:
+			await reply(message, content)
+		except discord.errors.HTTPException:
+			print((
+				'The result of your latest evaluation command is:\n'
+				'{}\n'
+				'End of results.'
+			).format(content))
+			content = 'Content too large to print. Printing to terminal instead.'
+			await reply(message, content)
 	else:
 		if altinvokeractive:
 			return # do not print error message if command is invalid
