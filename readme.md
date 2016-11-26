@@ -34,6 +34,9 @@ the bot script itself. But all of the user-specific variables (except for the
 token) are Discord IDs.
 ## Token
 The bot token should be only by itself in a file, called `bot_token.conf`, in
-the same directory as `intro.sh`.
+the same directory as `main.py`.
+## Owner ID
+The owner ID should be only by itself in a file, called `ownerid.conf`, in the
+same directory as `main.py`.
 # Contributing
 See [contributing.md](contributing.md).
