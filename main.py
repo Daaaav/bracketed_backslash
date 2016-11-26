@@ -1010,7 +1010,7 @@ async def on_message(message):
 	elif command == 'softban':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			logfailedcommand('softban', message)
+			logfailedcommand(command, message)
 			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
@@ -1071,7 +1071,7 @@ async def on_message(message):
 	elif command == 'nonick':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			logfailedcommand('nonick', message)
+			logfailedcommand(command, message)
 			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
@@ -1094,7 +1094,7 @@ async def on_message(message):
 		try:
 			if not is_mod(message.author):
 				content = t['mod_only']
-				logfailedcommand('voicemute', message)
+				logfailedcommand(command, message)
 			elif targetmember.voice.voice_channel == None:
 				content = 'User is not in a voice channel.'
 			elif command == 'voicemute':
@@ -1111,7 +1111,7 @@ async def on_message(message):
 	elif command == 'rolerst':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			logfailedcommand('rolerst', message)
+			logfailedcommand(command, message)
 			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
@@ -1141,7 +1141,7 @@ async def on_message(message):
 	elif command == 'rolecacherst':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			logfailedcommand('rolecacherst', message)
+			logfailedcommand(command, message)
 			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
@@ -1163,7 +1163,7 @@ async def on_message(message):
 	elif command == 'rolesync':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			logfailedcommand('rolesync', message)
+			logfailedcommand(command, message)
 			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
@@ -1238,7 +1238,7 @@ async def on_message(message):
 	elif command == 'ruleadd' or command == 'addrule':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			logfailedcommand('ruleadd', message)
+			logfailedcommand(command, message)
 
 			await reply(message, content)
 			return
@@ -1265,7 +1265,7 @@ async def on_message(message):
 	elif command == 'ruleedit' or command == 'editrule':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			logfailedcommand('ruleedit', message)
+			logfailedcommand(command, message)
 
 			await reply(message, content)
 			return
@@ -1297,7 +1297,7 @@ async def on_message(message):
 	elif command == 'rulemove' or command == 'moverule':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			logfailedcommand('rulemove', message)
+			logfailedcommand(command, message)
 
 			await reply(message, content)
 			return
@@ -1332,7 +1332,7 @@ async def on_message(message):
 	elif command == 'ruleremove' or command == 'removerule':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			logfailedcommand('ruleremove', message)
+			logfailedcommand(command, message)
 
 			await reply(message, content)
 			return
@@ -1363,7 +1363,7 @@ async def on_message(message):
 	elif command == 'rulemaint':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			logfailedcommand('rulemaint', message)
+			logfailedcommand(command, message)
 
 			await reply(message, content)
 			return
@@ -1470,7 +1470,7 @@ async def on_message(message):
 		await reply(message, content)
 	elif command == 'getrawmessagecontent':
 		if not is_mod(message.author):
-			logfailedcommand('getrawmessagecontent', message)
+			logfailedcommand(command, message)
 			content = t['mod_only']
 			await reply(message, content)
 			return
