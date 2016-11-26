@@ -149,7 +149,8 @@ async def reply(messageobject, message, emb=None):
 
 def mdspecialchars(string):
 	"""this actually only escapes backticks right now
-	also this means that any string this is used on should be placed in double backticks (like ``this``)"""
+	also this means that any string this is used on should be placed in double backticks (like ``this``)
+	or code blocks (like ```this```)"""
 	try:
 		return string.replace('`', u'​`​')
 	except AttributeError:
