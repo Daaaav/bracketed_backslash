@@ -1453,6 +1453,7 @@ async def on_message(message):
 		content = random.choice([
 			'moar liek stainy amirite',
 			'moar like painy amirite',
+		])
 			await reply(message, content)
 	elif command == 'fuckingdense':
 		content = random.choice([
