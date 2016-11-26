@@ -1647,9 +1647,9 @@ async def on_message(message):
 					evalfile = open('eval.txt', 'r').read()
 					evalute = eval(evalfile)
 					evalfile.close()
-				content = '```py\n{}```'.format(evaluate)
+				content = '```py\n{}```'.format(mdspecialchars(evaluate))
 			except:
-				content = '```py\n{}```'.format(traceback.format_exc())
+				content = '```py\n{}```'.format(mdspecialchars(traceback.format_exc()))
 		await reply(message, content)
 	else:
 		if altinvokeractive:
