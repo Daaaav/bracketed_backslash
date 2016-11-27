@@ -27,6 +27,7 @@ import os.path
 import sys
 import warnings
 import random
+import datetime
 import time
 import json
 import logging
@@ -1809,7 +1810,7 @@ async def on_message_edit(before, after): # when a message gets edited
 async def on_member_update(before, after):
 	specialchannel = getspecialchannel(after.server)
 	if before.nick != after.nick:
-		embed = discord.Embed(description='🇳📟<@!{id}> ({id}) changed nickname'.format(id=after.id), colour=after.colour)
+		embed = discord.Embed(description='🇳📟<@!{id}> ({id}) changed nickname'.format(id=after.id), colour=after.colour, timestamp=datetime.datetime.now())
 		embed.set_author(name=after.display_name, icon_url=after.avatar_url)
 		if before.nick == None:
 			embed.add_field(name='No Older Nickname', value='_No Older Nickname_')
@@ -1823,14 +1824,14 @@ async def on_member_update(before, after):
 	if before.roles != after.roles:
 		if len(before.roles) > len(after.roles): # if a role has been removed
 			roleremoved = list(set(before.roles).symmetric_difference(set(after.roles)))[0]
-			embed = discord.Embed(description='<@!{id}> ({id}) has role removed'.format(id=after.id), colour=roleremoved.colour)
+			embed = discord.Embed(description='<@!{id}> ({id}) has role removed'.format(id=after.id), colour=roleremoved.colour, timestamp=datetime.datetime.now())
 			embed.set_author(name=after.display_name, icon_url=after.avatar_url)
 			embed.add_field(name='Role Name', value=mdspecialchars(roleremoved.name))
 			embed.add_field(name='Role ID', value=roleremoved.id)
 			await client.send_message(specialchannel, embed=embed)
 		if len(before.roles) < len(after.roles): # if a role has been added
 			roleadded = list(set(after.roles).symmetric_difference(set(before.roles)))[0]
-			embed = discord.Embed(description='<@!{id}> ({id}) has role added'.format(id=after.id), colour=roleadded.colour)
+			embed = discord.Embed(description='<@!{id}> ({id}) has role added'.format(id=after.id), colour=roleadded.colour, timestamp=datetime.datetime.now())
 			# i am fucking TRIGGERED that i have to set these values twice
 			embed.set_author(name=after.display_name, icon_url=after.avatar_url)
 			embed.add_field(name='Role Name', value=mdspecialchars(roleadded.name))
@@ -1843,7 +1844,7 @@ async def on_member_update(before, after):
 		description = '🇺📟<@!{id}> ({id}) changed username'.format(id=after.id)
 		if before.discriminator != after.discriminator:
 			description += 'and discriminator'
-		embed = discord.Embed(description=description, colour=after.colour)
+		embed = discord.Embed(description=description, colour=after.colour, timestamp=datetime.datetime.now())
 		embed.set_author(name=after.display_name, icon_url=after.avatar_url)
 		embed.add_field(name='Older Username', value=mdspecialchars(before.name))
 		embed.add_field(name='Newer Username', value=mdspecialchars(after.name))
@@ -1852,7 +1853,7 @@ async def on_member_update(before, after):
 			embed.add_field(name='Newer Discriminator', value=after.discriminator)
 		await client.send_message(specialchannel, embed=embed)
 	if before.avatar_url != after.avatar_url and before.id != '141769689406636032' and before.id != '88575421972516864' and before.id != '196574963673595904': # isn't 35, 42 or beta 42
-		embed = discord.Embed(description='👥<@!{id}> ({id}) changed avatar'.format(id=after.id), colour=after.colour)
+		embed = discord.Embed(description='👥<@!{id}> ({id}) changed avatar'.format(id=after.id), colour=after.colour, timestamp=datetime.datetime.now())
 		embed.set_author(name=after.display_name, icon_url=after.avatar_url)
 		embed.set_thumbnail(url=before.avatar_url)
 		embed.set_image(url=after.avatar_url)
@@ -1863,7 +1864,7 @@ async def on_member_update(before, after):
 @client.event
 async def on_member_join(member):
 	specialchannel = getspecialchannel(member.server)
-	embed = discord.Embed(description='➡<@!{id}> ({id}) joined server'.format(id=member.id), colour=member.server.me.colour)
+	embed = discord.Embed(description='➡<@!{id}> ({id}) joined server'.format(id=member.id), colour=member.server.me.colour, timestamp=datetime.datetime.now())
 	embed.set_author(name=member.display_name)
 	embed.set_thumbnail(url=member.avatar_url)
 	await client.send_message(specialchannel, embed=embed)
@@ -1878,7 +1879,7 @@ async def on_member_join(member):
 			for rid in memberroles[member.id]:
 				await client.add_roles(member, discord.utils.get(member.server.roles, id=rid)) # TODO make this less iterative and add multiple roles at once
 				roles += 1
-			embed = discord.Embed(description='<@!{id}> ({id}) found in the role cache', colour=member.server.me.colour)
+			embed = discord.Embed(description='<@!{id}> ({id}) found in the role cache', colour=member.server.me.colour, timestamp=datetime.datetime.now())
 			embed.set_author(name=member.display_name)
 			embed.set_thumbnail(url=member.avatar_url)
 			value = '_{} role'.format(str(roles))
