@@ -1743,41 +1743,14 @@ async def on_message_edit(before, after): # when a message gets edited
 		logging.warn('this is the bots own message and the bot doesnt edit messages\nid of before: {}\nid of after: {}'.format(before.id, after.id))
 		return
 	# checks succeeded
-	msg_start = '**`>`**📝`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) edited`\n'.format(before.id, wrapbackticks(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp, reltime(time.mktime(before.timestamp.timetuple())))
-	content = '_`The older content is:`_\n' + before.content
-	msg = msg_start + content
-	if len(msg) >= 2000:
-		content = '_`The older content is (part 1):`_\n' + before.content
-		msg = msg_start + content
-		msg_split = [msg[i:i+2000] for i in range(0, len(msg), 2000)]
-		if len(msg_split [0]) >= 2000:
-			msg_split = [msg[i:i+2000] for i in range(0, len(msg), 2000)]
-		content1 = msg_split[0]
-		content2 = '_`The older content is (part 2):`_\n' + msg_split[1]
-		msg1 = content1
-		msg2 = msg_start + content2
-		await client.send_message(specialchannel, msg1)
-		await client.send_message(specialchannel, msg2)
-	else:
-		await client.send_message(specialchannel, msg)
-	msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) edited`\n'.format(after.id, wrapbackticks(after.author.name), after.author.discriminator, after.author.id, after.channel.id, after.timestamp, reltime(time.mktime(after.timestamp.timetuple())))
-	content = '_`The newer content is:`_\n' + after.content
-	msg = msg_start + content
-	if len(msg) >= 2000:
-		content = '_`The newer content is (part 1):`_\n' + after.content
-		msg = msg_start + content
-		msg_split = [msg[i:i+2000] for i in range(0, len(msg), 2000)]
-		if len(msg_split[0]) >= 2000:
-			msg_split = [msg[i:i+2000] for i in range(0, len(msg), 2000)]
-		content1 = msg_split [0]
-		content2 = '_`The newer content is (part 2):`_\n' + msg_split[1]
-		msg1 = content1
-		msg2 = msg_start + content2
-		await client.send_message(specialchannel, msg1)
-		await client.send_message(specialchannel, msg2)
-	else:
-		await client.send_message(specialchannel, msg)
-
+	embed = discord.Embed(title='📝Message edited in {}. The older content is:'.format(after.channel.mention), description=before.content, colour=after.author.colour, timestamp=datetime.datetime.now())
+	embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url)
+	embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=after.author.id))
+	await client.send_message(specialchannel, embed=embed)
+	embed = discord.Embed(title='📝Message edited in {}. The newer content is:'.format(after.channel.mention), description=after.content, colour=after.author.colour, timestamp=datetime.datetime.now())
+	embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url)
+	embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=after.author.id))
+	await client.send_message(specialchannel, embed=embed)
 	# Delete a message if it has been edited more than 5 times in 30 seconds
 	if not after.id in minutemessageedits:
 		minutemessageedits[after.id] = [int(time.time())]
