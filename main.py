@@ -1855,7 +1855,7 @@ async def on_member_join(member):
 			for rid in memberroles[member.id]:
 				await client.add_roles(member, discord.utils.get(member.server.roles, id=rid)) # TODO make this less iterative and add multiple roles at once
 				roles += 1
-			embed = discord.Embed(description='<@!{id}> ({id}) found in the role cache', colour=member.server.me.colour, timestamp=datetime.datetime.now())
+			embed = discord.Embed(description='<@!{id}> ({id}) found in the role cache'.format(id=member.id), colour=member.server.me.colour, timestamp=datetime.datetime.now())
 			embed.set_author(name=member.display_name)
 			embed.set_thumbnail(url=member.avatar_url)
 			value = '_{} role'.format(str(roles))
