@@ -486,11 +486,14 @@ permissionlabels = [
 @client.event
 async def on_ready():
 	global memberroles, rules, disabledrules
-
+	prodserver = discord.utils.get(client.servers, id='153368829160849408')
 	logging.info('logged in as {} with id {}'.format(client.user.name, client.user.id))
 	await client.change_presence(game=discord.Game(name=config.get_s('gamestatus')))
-
-	await client.send_message(specialchannel_prod, '**`>`**🔌`Bot connected. (startup time is {})`'.format(reltime(boottimeunix)))
+	embed = discord.Embed(description='🔌Bot connected', colour=prodserver.me.colour, timestamp=datetime.datetime.now())
+	embed.set_author(name=prodserver.me.display_name, icon_url=client.user.avatar_url)
+	embed.add_field(name='Startup Time', value=reltime(boottimeunix))
+	embed.set_footer(text='Connected', icon_url=client.user.avatar_url)
+	await client.send_message(specialchannel_prod, embed=embed)
 
 	try:
 		with open('members.json', 'r') as infile:
