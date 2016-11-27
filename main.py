@@ -1706,7 +1706,7 @@ async def on_message_delete(message): # when a message gets deleted
 	if message.content == '' and message.attachments == []:
 		return
 	specialchannel = getspecialchannel_reply(message)
-	embed = discord.Embed(title='🚫MESSAGE SENT {} DELETED IN {}'.format(reltime(time.mktime(message.timestamp.timetuple())), message.channel.mention), description=message.content, colour=message.author.colour, url=infourl('userid={}&messageid={}'.format(message.author.id, message.id))
+	embed = discord.Embed(title='🚫MESSAGE SENT {} DELETED IN {}'.format(reltime(time.mktime(message.timestamp.timetuple())), message.channel.mention), description=message.content, colour=message.author.colour, url=infourl('userid={}&messageid={}'.format(message.author.id, message.id)))
 	embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url)
 	await client.send_message(specialchannel, embed=embed)
 	if message.attachments != []:
