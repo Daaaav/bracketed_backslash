@@ -1023,7 +1023,7 @@ async def on_message(message):
 			else:
 				displaygameurl = '``{}``'
 		embed = discord.Embed(colour=targetmember.colour)
-		embed.set_thumbnail(url=targetmember.avatar_url)
+		embed.set_image(url=targetmember.avatar_url)
 		embed.add_field(name='Nickname' if targetmember.nick != None else 'No Nickname', value='``{}``'.format(mdspecialchars(targetmember.nick)) if targetmember.nick != None else 'No Nickname')
 		embed.add_field(name='Username', value='``{}``'.format(mdspecialchars(targetmember.name)))
 		embed.add_field(name='Discriminator', value='#{}'.format(targetmember.discriminator))
