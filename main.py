@@ -581,7 +581,7 @@ async def on_message(message):
 		return
 
 	if not isprivate and message.tts:
-		embed = discord.Embed(title='🎙message {} was sent with TTS in {}'.format(message.id, message.channel.mention), description=message.content, colour=message.author.colour, timestamp=message.timestamp)
+		embed = discord.Embed(title='🎙Message {} was sent with TTS in {}'.format(message.id, message.channel.mention), description=message.content, colour=message.author.colour, timestamp=message.timestamp)
 		embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url)
 		embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=message.author.id))
 		await client.send_message(specialchannel, embed=embed)
