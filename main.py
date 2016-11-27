@@ -1809,8 +1809,8 @@ async def on_message_edit(before, after): # when a message gets edited
 async def on_member_update(before, after):
 	specialchannel = getspecialchannel(after.server)
 	if before.nick != after.nick:
-		embed = discord.Embed(description='🇳📟<@!{}> changed nickname'.format(after.id), colour=after.colour)
-		embed.set_author(name=after.name, icon_url=after.avatar_url)
+		embed = discord.Embed(description='🇳📟<@!{id}> ({id}) changed nickname'.format(id=after.id), colour=after.colour)
+		embed.set_author(name=after.display_name, icon_url=after.avatar_url)
 		if before.nick == None:
 			embed.add_field(name='No Older Nickname', value='_No Older Nickname_')
 		else:
@@ -1823,14 +1823,14 @@ async def on_member_update(before, after):
 	if before.roles != after.roles:
 		if len(before.roles) > len(after.roles): # if a role has been removed
 			roleremoved = list(set(before.roles).symmetric_difference(set(after.roles)))[0]
-			embed = discord.Embed(description='<@!{}> has role removed'.format(after.id), colour=roleremoved.colour)
-			embed.set_author(name=after.name, icon_url=after.avatar_url)
+			embed = discord.Embed(description='<@!{id}> ({id}) has role removed'.format(id=after.id), colour=roleremoved.colour)
+			embed.set_author(name=after.display_name, icon_url=after.avatar_url)
 			embed.add_field(name='Role Name', value=mdspecialchars(roleremoved.name))
 			embed.add_field(name='Role ID', value=roleremoved.id)
 			await client.send_message(specialchannel, embed=embed)
 		if len(before.roles) < len(after.roles): # if a role has been added
 			roleadded = list(set(after.roles).symmetric_difference(set(before.roles)))[0]
-			embed = discord.Embed(description='<@!{}> has role added'.format(after.id), colour=roleadded.colour)
+			embed = discord.Embed(description='<@!{id}> ({id}) has role added'.format(id=after.id), colour=roleadded.colour)
 			# i am fucking TRIGGERED that i have to set these values twice
 			embed.set_author(name=after.name, icon_url=after.avatar_url)
 			embed.add_field(name='Role Name', value=mdspecialchars(roleadded.name))
@@ -1840,7 +1840,7 @@ async def on_member_update(before, after):
 			updaterolecache(after)
 			rolecachesave()
 	if before.name != after.name:
-		description = '🇺📟<@!{}> changed username'.format(after.id)
+		description = '🇺📟<@!{id}> ({id}) changed username'.format(id=after.id)
 		if before.discriminator != after.discriminator:
 			description += 'and discriminator'
 		embed = discord.Embed(description=description, colour=after.colour)
@@ -1852,7 +1852,7 @@ async def on_member_update(before, after):
 			embed.add_field(name='Newer Discriminator', value=after.discriminator)
 		await client.send_message(specialchannel, embed=embed)
 	if before.avatar_url != after.avatar_url and before.id != '141769689406636032' and before.id != '88575421972516864' and before.id != '196574963673595904': # isn't 35, 42 or beta 42
-		embed = discord.Embed(description='👥<@!{}> changed avatar'.format(after.id), colour=after.colour)
+		embed = discord.Embed(description='👥<@!{id}> ({id}) changed avatar'.format(id=after.id), colour=after.colour)
 		embed.set_author(name=after.name, icon_url=after.avatar_url)
 		embed.set_thumbnail(url=before.avatar_url)
 		embed.set_image(url=after.avatar_url)
