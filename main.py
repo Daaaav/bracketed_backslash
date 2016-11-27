@@ -573,8 +573,10 @@ async def on_message(message):
 
 	try:
 		if not isprivate and str(message.author.status) == 'offline':
-			msg_start = '**`>`**👻`user` **``{}``**`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(wrapbackticks(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
-			await client.send_message(specialchannel, msg_start)
+			embed = discord.Embed(title='👻Message {} was sent whilst invisible in {}'.format(message.id, message.channel.mention), description=message.content, colour=message.author.colour, timestamp=message.timestamp)
+			embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url)
+			embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=message.author.id))
+			await client.send_message(specialchannel, embed=embed)
 	except AttributeError:
 		return
 
@@ -1889,8 +1891,10 @@ async def on_typing(channel, user, when):
 	if specialchannel.id == channel.server.default_channel.id:
 		specialchannel = channel
 	if str(user.status) == 'offline':
-		msg = '**`>`**👻`user` **``{}``**`#{}` `({}) was invisible while typing in channel` <#{}> `at {}`'.format(wrapbackticks(user.name), user.discriminator, user.id, channel.id, when)
-		await client.send_message(specialchannel, msg)
+		embed = discord.Embed(title='👻{} was invisible while typing in {}'.format(user.display_name, channel.mention), colour=user.colour, timestamp=when)
+		embed.set_author(name=user.display_name, icon_url=user.avatar_url)
+		embed.add_field(name='Member', value='<@!{id}> ({id})'.format(id=user.id))
+		await client.send_message(specialchannel, embed=embed)
 	else:
 		return # practically unnecessary, but this is for if we want to do things when members type later
 
