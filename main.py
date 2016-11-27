@@ -1691,36 +1691,19 @@ async def on_message_delete(message): # when a message gets deleted
 		return
 	if message.content == '' and message.attachments == []:
 		return
-
 	specialchannel = getspecialchannel_reply(message)
-
-	msg_start = '**`>`**🚫`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) deleted`\n'.format(message.id, wrapbackticks(message.author.name), message.author.discriminator, message.author.id, message.channel.id, message.timestamp, reltime(time.mktime(message.timestamp.timetuple())))
-	content = '_`The original content is:`_\n' + message.content
-	msg = msg_start + content
-	if len(msg) >= 2000:
-		content = '_`The original content is (part 1):`_\n' + message.content
-		msg = msg_start + content
-		msg_split = [msg[i:i+2000] for i in range(0, len(msg), 2000)]
-		if len(msg_split [0]) >= 2000:
-			msg_split = [msg[i:i+2000] for i in range(0, len(msg), 2000)]
-		content1 = msg_split[0]
-		content2 = '_`The original content is (part 2):`_\n' + msg_split[1]
-		msg1 = content1
-		msg2 = msg_start + content2
-		await client.send_message(specialchannel, msg1)
-		await client.send_message(specialchannel, msg2)
-	else:
-		await client.send_message(specialchannel, msg)
+	embed = discord.Embed(title='🚫Message {} deleted in {}'.format(message.id, message.channel.mention), description=message.content, colour=message.author.colour, timestamp=datetime.datetime.now())
+	embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url)
+	embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=message.author.id))
+	await client.send_message(specialchannel, embed=embed)
 	if message.attachments != []:
 		if os.path.isfile(attachcache + '/' + message.attachments[0]['id'] + '_' + message.attachments[0]['filename']):
-			content = '_📎`The original attachment is attached.`_'
-			msg = msg_start + content
 			filetoattach = attachcache + '/' + message.attachments[0]['id'] + '_' + message.attachments[0]['filename']
-			await client.send_file(destination=specialchannel, content=msg, fp=filetoattach, filename=message.attachments[0]['filename'])
+			content = '_📎The attachment for message {} is attached._'.format(message.id)
+			await client.send_file(destination=specialchannel, content=content, fp=filetoattach, filename=message.attachments[0]['filename'])
 		else:
-			content = '_`The attachment is not in the message attachments cache.`_'
-			msg = msg_start + content
-			await client.send_message(specialchannel, msg)
+			content = '_The attachment for message {} was not found in the message attachments cache._'.format(message.id)
+			await client.send_message(specialchannel, content)
 
 @client.event
 async def on_message_edit(before, after): # when a message gets edited
