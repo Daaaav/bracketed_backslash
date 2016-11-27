@@ -1725,14 +1725,17 @@ async def on_message_delete(message): # when a message gets deleted
 @client.event
 async def on_message_edit(before, after): # when a message gets edited
 	specialchannel = getspecialchannel_reply(after)
-
 	if before.pinned != after.pinned:
 		if before.pinned == False and after.pinned == True: # if the message was pinned
-			msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) pinned`'.format(before.id, wrapbackticks(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp, reltime(time.mktime(before.timestamp.timetuple())))
-			await client.send_message(specialchannel, msg_start)
+			embed = discord.Embed(title='📌Message pinned in ' + after.channel.mention, description=after.content, color=after.author.colour, timestamp=datetime.datetime.now())
+			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url)
+			embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=after.author.id))
+			await client.send_message(specialchannel, embed=embed)
 		if before.pinned == True and after.pinned == False: # if the message was unpinned
-			msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) unpinned`'.format(after.id, wrapbackticks(after.author.name), after.author.discriminator, after.author.id, after.channel.id, after.timestamp, reltime(time.mktime(after.timestamp.timetuple())))
-			await client.send_message(specialchannel, msg_start)
+			embed = discord.Embed(title='📌Message unpinned in ' + after.channel.mention, description=after.content, color=after.author.colour, timestamp=datetime.datetime.now())
+			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url)
+			embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=after.author.id))
+			await client.send_message(specialchannel, embed=embed)
 	# preliminary checkings
 	if before.content == after.content:
 		return # must be the message being pinned and/or embed(s) displaying
