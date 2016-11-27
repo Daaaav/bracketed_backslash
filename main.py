@@ -579,8 +579,10 @@ async def on_message(message):
 		return
 
 	if not isprivate and message.tts:
-		msg_start = '**`>`**`🎙message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `was sent with TTS.`\n{}'.format(message.id, wrapbackticks(message.author.name), message.author.discriminator, message.author.id, message.channel.id, message.content)
-		await client.send_message(specialchannel, msg_start[0:1998]) # Just be very certain that the message isn't too long
+		embed = discord.Embed(title='🎙message {} was sent with TTS in {}'.format(message.id, message.channel.mention), description=message.content, colour=message.author.colour, timestamp=message.timestamp)
+		embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url)
+		embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=message.author.id))
+		await client.send_message(specialchannel, embed=embed)
 
 	if message.attachments != []:
 		actuallyretrieving = await fetch(message.attachments[0]['url'])
