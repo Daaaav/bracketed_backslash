@@ -1808,22 +1808,18 @@ async def on_message_edit(before, after): # when a message gets edited
 @client.event
 async def on_member_update(before, after):
 	specialchannel = getspecialchannel(after.server)
-
 	if before.nick != after.nick:
-		msg_start = '**`>`**🇳📟`user` **``{}``**`#{}` `({}) changed nickname`\n'.format(wrapbackticks(before.name), before.discriminator, before.id)
+		embed = discord.Embed(description='🇳📟<@!{}> changed nickname'.format(after.id), colour=after.colour)
+		embed.set_author(name=after.name, icon_url=after.avatar_url)
 		if before.nick == None:
-			content = '_`The older nickname is:`_ `(none)`'
+			embed.add_field(name='No Older Nickname', value='_No Older Nickname_')
 		else:
-			content = '_`The older nickname is:`_\n``{}``'.format(wrapbackticks(before.nick))
-		msg = msg_start + content
-		await client.send_message(specialchannel, msg)
-		msg_start = '**`>`**`user` **``{}``**`#{}` `({}) changed nickname`\n'.format(after.name, after.discriminator, after.id)
+			embed.add_field(name='Older Nickname', value=mdspecialchars(before.nick))
 		if after.nick == None:
-			content = '_`The newer nickname is:`_ `(none)`'
+			embed.add_field(name='No Newer Nickname', value='_No Newer Nickname_')
 		else:
-			content = '_`The newer nickname is:`_\n``{}``'.format(wrapbackticks(after.nick))
-		msg = msg_start + content
-		await client.send_message(specialchannel, msg)
+			embed.add_field(name='Newer Nickname', value=mdspecialchars(after.nick))
+		await client.send_message(specialchannel, embed=embed)
 	if before.roles != after.roles:
 		if len(before.roles) > len(after.roles): # if a role has been removed
 			roleremoved = list(set(before.roles).symmetric_difference(set(after.roles)))[0]
