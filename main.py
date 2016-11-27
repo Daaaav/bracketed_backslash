@@ -775,6 +775,7 @@ async def on_message(message):
 			await reply(message, None, emb=embed)
 			return
 		embed = discord.Embed(description='Killing.', colour=message.server.me.colour)
+		embed.add_field(name='Uptime', value=reltime(boottimeunix, True))
 		logging.info('bot kill called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 		await reply(message, None, emb=embed)
 		await sys.exit()
