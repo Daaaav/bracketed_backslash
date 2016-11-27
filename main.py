@@ -1871,9 +1871,9 @@ async def on_member_join(member):
 			await client.add_roles(member, discord.utils.get(member.server.roles, id='201129507967598592')) # bot role
 			return
 		# Are they in our database of members which had roles before?
-		if str(member.id) in memberroles:
+		if member.id in memberroles:
 			# They're found in the database! Give them the groups they should have
-			for rid in memberroles[str(member.id)]:
+			for rid in memberroles[member.id]:
 				await client.add_roles(member, discord.utils.get(member.server.roles, id=rid)) # TODO make this less iterative and add multiple roles at once
 			msg = '**`>`**`user` **``{}``**`#{}` `({}) found in the role cache. Given them back the roles they had.`'.format(wrapbackticks(member.name), member.discriminator, member.id)
 			await client.send_message(specialchannel, msg)
