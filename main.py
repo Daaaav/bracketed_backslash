@@ -1741,7 +1741,7 @@ async def on_message_edit(before, after): # when a message gets edited
 		logging.warn('this is the bots own message and the bot doesnt edit messages\nid of before: {}\nid of after: {}'.format(before.id, after.id))
 		return
 	# checks succeeded
-	embed = discord.Embed(title='📝Message{} edited in {}. The older content is:'.format(after.id, after.channel.mention), description=before.content, colour=after.author.colour, timestamp=datetime.datetime.now())
+	embed = discord.Embed(title='📝Message {} edited in {}. The older content is:'.format(after.id, after.channel.mention), description=before.content, colour=after.author.colour, timestamp=datetime.datetime.now())
 	embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url)
 	embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=after.author.id))
 	await client.send_message(specialchannel, embed=embed)
