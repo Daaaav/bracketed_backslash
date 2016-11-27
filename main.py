@@ -1863,20 +1863,28 @@ async def on_member_update(before, after):
 @client.event
 async def on_member_join(member):
 	specialchannel = getspecialchannel(member.server)
-
-	msg = '**`>`**➡`user` **``{}``**`#{}` `({}) joined server {} ({})`'.format(wrapbackticks(member.name), member.discriminator, member.id, member.server.name, member.server.id)
-	await client.send_message(specialchannel, msg)
+	embed = discord.Embed(description='➡<@!{id}> ({id}) joined server'.format(id=member.id), colour=member.server.me.colour)
+	embed.set_author(name=member.display_name)
+	embed.set_thumbnail(url=member.avatar_url)
+	await client.send_message(specialchannel, embed=embed)
 	if member.server.id == productionserver:
 		if is_bot(member):
 			await client.add_roles(member, discord.utils.get(member.server.roles, id='201129507967598592')) # bot role
 			return
 		# Are they in our database of members which had roles before?
 		if member.id in memberroles:
+			roles = 0
 			# They're found in the database! Give them the groups they should have
 			for rid in memberroles[member.id]:
 				await client.add_roles(member, discord.utils.get(member.server.roles, id=rid)) # TODO make this less iterative and add multiple roles at once
-			msg = '**`>`**`user` **``{}``**`#{}` `({}) found in the role cache. Given them back the roles they had.`'.format(wrapbackticks(member.name), member.discriminator, member.id)
-			await client.send_message(specialchannel, msg)
+				roles += 1
+			embed = discord.Embed(description='<@!{id}> ({id}) found in the role cache', colour=member.server.me.colour)
+			embed.set_author(name=member.display_name)
+			embed.set_thumbnail(url=member.avatar_url)
+			value = '_{} role'.format(str(roles))
+			value += 's_' if roles != 1 else '_'
+			embed.add_field(name='Given them back their roles', value=value)
+			await client.send_message(specialchannel, embed=embed)
 		else:
 			# Not found, so they're just a tOLPer.
 			await client.add_roles(member, discord.utils.get(member.server.roles, id='231644869351833600')) # The tOLPer role
