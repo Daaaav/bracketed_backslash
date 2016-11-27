@@ -1475,8 +1475,8 @@ async def on_message(message):
 		content = 'nah'
 		await reply(message, content)
 	elif command == 'botok':
-		content = 'Bot is okay.'
-		await reply(message, content)
+		embed = discord.Embed(description='Bot is okay.', colour=message.server.me.colour)
+		await reply(message, None, emb=embed)
 	elif command == 'uptime':
 		hostuptime = subprocess.Popen(['uptime', '-p'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
 		embed = discord.Embed(colour=message.server.me.colour, timestamp=message.timestamp)
