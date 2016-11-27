@@ -158,7 +158,7 @@ def load():
 	try:
 		with open('config.json', 'r') as infile:
 			loadedconfig = json.load(infile)
-		
+
 		for loadedsetting in loadedconfig:
 			# Overwrite the defaults piece by piece
 			s[loadedsetting] = {}
