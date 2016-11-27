@@ -481,11 +481,11 @@ permissionlabels = [
 
 @client.event
 async def on_ready():
-	global memberroles, rules, disabledrules
 	productionserver = '153368829160849408'
 	server = discord.utils.get(client.servers, id=productionserver) # defines all server.* commands
 	specialchannel_prod = discord.utils.get(server.channels, id='234185735266238464')
 	botschannel = discord.utils.get(server.channels, id='201130047736643584')
+	global memberroles, rules, disabledrules, server, specialchannel_prod, botschannel
 	logging.info('logged in as {} with id {}'.format(client.user.name, client.user.id))
 	await client.change_presence(game=discord.Game(name=config.get_s('gamestatus')))
 	embed = discord.Embed(description='🔌Bot connected', colour=server.me.colour, timestamp=datetime.datetime.now())
