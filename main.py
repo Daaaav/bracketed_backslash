@@ -758,13 +758,14 @@ async def on_message(message):
 		await reply(message, content)
 	elif command == 'restart':
 		if not is_operator(message.author):
-			content = t['op_only']
+			embed = discord.Embed(description=t['op_only'], colour=message.server.me.colour)
 			logging.info('bot restart tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-			await reply(message, content)
+			await reply(message, None, emb=embed)
 			return
-		content = 'Restarting. Uptime was {}.'.format(reltime(boottimeunix, True))
+		embed = discord.Embed(description='Restarting.', colour=message.server.me.colour)
+		embed.add_field(name='Uptime', value=reltime(boottimeunix, True))
 		logging.info('bot restart called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-		await reply(message, content)
+		await reply(message, None, emb=embed)
 		await os.execl(__file__, '')
 	elif command == 'kill':
 		if not is_operator(message.author):
