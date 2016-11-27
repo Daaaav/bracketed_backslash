@@ -80,10 +80,6 @@ ownerid_config = open('ownerid.conf', 'r')
 ownerid = ownerid_config.readline(18).split('\n')[0]
 ownerid_config.close()
 
-specialchannel_prod = discord.Object(id='234185735266238464')
-botschannel = discord.Object(id='201130047736643584')
-productionserver = '153368829160849408'
-server = client.get_server(productionserver) # defines all server.* commands
 
 memberroles = {}
 minutemessageedits = {}
@@ -486,11 +482,13 @@ permissionlabels = [
 @client.event
 async def on_ready():
 	global memberroles, rules, disabledrules
-	prodserver = discord.utils.get(client.servers, id='153368829160849408')
+	productionserver = '153368829160849408'
+	server = discord.utils.get(client.servers, id=productionserver) # defines all server.* commands
+	specialchannel_prod = discord.utils.get(server.channels, id='234185735266238464')
+	botschannel = discord.utils.get(server.channels, id='201130047736643584')
 	logging.info('logged in as {} with id {}'.format(client.user.name, client.user.id))
 	await client.change_presence(game=discord.Game(name=config.get_s('gamestatus')))
-	embed = discord.Embed(description='🔌Bot connected', colour=prodserver.me.colour, timestamp=datetime.datetime.now())
-	embed.set_author(name=prodserver.me.display_name, icon_url=client.user.avatar_url)
+	embed = discord.Embed(description='🔌Bot connected', colour=server.me.colour, timestamp=datetime.datetime.now())
 	embed.add_field(name='Startup Time', value=reltime(boottimeunix))
 	embed.set_footer(text='Connected', icon_url=client.user.avatar_url)
 	await client.send_message(specialchannel_prod, embed=embed)
