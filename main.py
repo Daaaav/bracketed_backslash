@@ -488,7 +488,7 @@ async def on_ready():
 	global memberroles, rules, disabledrules, server, specialchannel_prod, botschannel, productionserver
 	logging.info('logged in as {} with id {}'.format(client.user.name, client.user.id))
 	await client.change_presence(game=discord.Game(name=config.get_s('gamestatus')))
-	embed = discord.Embed(title='🔌Bot connected', colour=server.me.colour)
+	embed = discord.Embed(title='🔌BOT CONNECTED', colour=server.me.colour)
 	embed.add_field(name='Startup Time', value=reltime(boottimeunix))
 	await client.send_message(specialchannel_prod, embed=embed)
 
