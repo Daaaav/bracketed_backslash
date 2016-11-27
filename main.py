@@ -1823,14 +1823,20 @@ async def on_member_update(before, after):
 	if before.roles != after.roles:
 		if len(before.roles) > len(after.roles): # if a role has been removed
 			roleremoved = list(set(before.roles).symmetric_difference(set(after.roles)))[0]
-			msg_start = '**`>`**`user` **``{}``**`#{}` `({}) has role` **``{}``** `({}) removed`'.format(wrapbackticks(before.name), before.discriminator, before.id, wrapbackticks(roleremoved.name), roleremoved.id)
-			await client.send_message(specialchannel, msg_start)
+			embed = discord.Embed(description='<@!{}> has role removed'.format(after.id), colour=roleremoved.colour)
+			embed.set_author(name=after.name, icon_url=after.avatar_url)
+			embed.add_field(name='Role Name', value=mdspecialchars(roleremoved.name))
+			embed.add_field(name='Role ID', value=roleremoved.id)
+			await client.send_message(specialchannel, embed=embed)
 		if len(before.roles) < len(after.roles): # if a role has been added
 			roleadded = list(set(after.roles).symmetric_difference(set(before.roles)))[0]
-			msg_start = '**`>`**`user` **``{}``**`#{}` `({}) has role` **``{}``** `({}) added`'.format(after.name, after.discriminator, after.id, wrapbackticks(roleadded.name), roleadded.id)
-			await client.send_message(specialchannel, msg_start)
-
-		if before.server.id == productionserver:
+			embed = discord.Embed(description='<@!{}> has role added'.format(after.id), colour=roleadded.colour)
+			# i am fucking TRIGGERED that i have to set these values twice
+			embed.set_author(name=after.name, icon_url=after.avatar_url)
+			embed.add_field(name='Role Name', value=mdspecialchars(roleadded.name))
+			embed.add_field(name='Role ID', value=roleadded.id)
+			await client.send_message(specialchannel, embed=embed)
+		if after.server.id == productionserver:
 			updaterolecache(after)
 			rolecachesave()
 	if before.name != after.name:
