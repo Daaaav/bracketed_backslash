@@ -727,8 +727,13 @@ async def on_message(message):
 		arguments = None
 	command = command.split(' ', 1)[0]
 	if not isprivate and command in config.get_s('disabledcommands', message.server.id):
-		await reply(message, 'This command is currently disabled{}.'.format(' on this server' if config.is_detached('disabledcommands', message.server.id) else ''))
+		embed = discord.Embed(description='This command is currently disabled{}.'.format(' on this server' if config.is_detached('disabledcommands', message.server.id) else '', color=message.server.me.colour, timestamp=message.timestamp))
+		await reply(message, None, emb=embed)
 		return
+
+	if isprivate and command in config.get_s('disabledcommands'):
+		embed = discord.Embed(description='This command is currently disabled', color=message.server.me.colour, timestamp=message.timestamp)
+		await reply(message, None, emb=embed)
 
 	if command == 'help':
 		content = (
