@@ -769,13 +769,13 @@ async def on_message(message):
 		await os.execl(__file__, '')
 	elif command == 'kill':
 		if not is_operator(message.author):
-			content = t['op_only']
+			embed = discord.Embed(description=t['op_only'], colour=message.server.me.colour)
 			logging.info('bot kill tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-			await reply(message, content)
+			await reply(message, None, emb=embed)
 			return
-		content = 'Killing.'
+		embed = discord.Embed(description='Killing.', colour=message.server.me.colour)
 		logging.info('bot kill called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-		await reply(message, content)
+		await reply(message, None, emb=embed)
 		await sys.exit()
 	elif command == 'config':
 		if not is_operator(message.author):
