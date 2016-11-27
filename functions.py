@@ -161,6 +161,7 @@ def wrapbackticks(string, character=u'​'):
 
 def mdspecialchars(string, character='\\'):
 	"""escapes markdown formatting for use in message output to discord
+	this does not escape emojis until i figure out how to detect fucking emojis
 	its a fucking glorified for loop with some error handling
 	"""
 	specialchars = [
