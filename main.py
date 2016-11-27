@@ -1832,7 +1832,7 @@ async def on_member_update(before, after):
 			roleadded = list(set(after.roles).symmetric_difference(set(before.roles)))[0]
 			embed = discord.Embed(description='<@!{id}> ({id}) has role added'.format(id=after.id), colour=roleadded.colour)
 			# i am fucking TRIGGERED that i have to set these values twice
-			embed.set_author(name=after.name, icon_url=after.avatar_url)
+			embed.set_author(name=after.display_name, icon_url=after.avatar_url)
 			embed.add_field(name='Role Name', value=mdspecialchars(roleadded.name))
 			embed.add_field(name='Role ID', value=roleadded.id)
 			await client.send_message(specialchannel, embed=embed)
@@ -1844,7 +1844,7 @@ async def on_member_update(before, after):
 		if before.discriminator != after.discriminator:
 			description += 'and discriminator'
 		embed = discord.Embed(description=description, colour=after.colour)
-		embed.set_author(name=after.name, icon_url=after.avatar_url)
+		embed.set_author(name=after.display_name, icon_url=after.avatar_url)
 		embed.add_field(name='Older Username', value=mdspecialchars(before.name))
 		embed.add_field(name='Newer Username', value=mdspecialchars(after.name))
 		if before.discriminator != after.discriminator:
@@ -1853,7 +1853,7 @@ async def on_member_update(before, after):
 		await client.send_message(specialchannel, embed=embed)
 	if before.avatar_url != after.avatar_url and before.id != '141769689406636032' and before.id != '88575421972516864' and before.id != '196574963673595904': # isn't 35, 42 or beta 42
 		embed = discord.Embed(description='👥<@!{id}> ({id}) changed avatar'.format(id=after.id), colour=after.colour)
-		embed.set_author(name=after.name, icon_url=after.avatar_url)
+		embed.set_author(name=after.display_name, icon_url=after.avatar_url)
 		embed.set_thumbnail(url=before.avatar_url)
 		embed.set_image(url=after.avatar_url)
 		embed.add_field(name='Older Avatar URL (Thumbnail)', value=before.avatar_url)
