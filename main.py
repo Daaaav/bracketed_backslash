@@ -564,20 +564,20 @@ async def on_message(message):
 		return # do nothing
 
 	specialchannel = getspecialchannel_reply(message)
-	displaymessagecontent = ('``{}``**`…`**'.format(mdspecialchars(message.content[:100]))) if len(message.content) > 100 else '``{}``'.format(mdspecialchars(message.content)).replace('\n', '``**`\\n`**``​')
+	displaymessagecontent = ('``{}``**`…`**'.format(wrapbackticks(message.content[:100]))) if len(message.content) > 100 else '``{}``'.format(wrapbackticks(message.content)).replace('\n', '``**`\\n`**``​')
 	if displaymessagecontent[-12:] == '``**`\\n`**``​':
 		displaymessagecontent += '``'
 	isprivate = isprivatemessage(message.server) # cant use isprivatemessage = isprivatemessage(), otherwise python will think "holy fuck a variable was referenced before assignment"
 
 	try:
 		if not isprivate and str(message.author.status) == 'offline':
-			msg_start = '**`>`**👻`user` **``{}``**`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
+			msg_start = '**`>`**👻`user` **``{}``**`#{}` `({}) was invisible when sending message {} in channel` <#{}> `at {} UTC`'.format(wrapbackticks(message.author.name), message.author.discriminator, message.author.id, message.id, message.channel.id, message.timestamp)
 			await client.send_message(specialchannel, msg_start)
 	except AttributeError:
 		return
 
 	if not isprivate and message.tts:
-		msg_start = '**`>`**`🎙message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `was sent with TTS.`\n{}'.format(message.id, mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.channel.id, message.content)
+		msg_start = '**`>`**`🎙message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `was sent with TTS.`\n{}'.format(message.id, wrapbackticks(message.author.name), message.author.discriminator, message.author.id, message.channel.id, message.content)
 		await client.send_message(specialchannel, msg_start[0:1998]) # Just be very certain that the message isn't too long
 
 	if message.attachments != []:
@@ -613,9 +613,9 @@ async def on_message(message):
 		if not hangmanactive:
 			return
 		if is_mod(message.author):
-			msg_start = '**`>`**``{}``**`#`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
+			msg_start = '**`>`**``{}``**`#`**{}\n'.format(wrapbackticks(message.author.name), displaymessagecontent)
 		else:
-			msg_start = '**`>`**``{}``**`$`**{}\n'.format(mdspecialchars(message.author.name), displaymessagecontent)
+			msg_start = '**`>`**``{}``**`$`**{}\n'.format(wrapbackticks(message.author.name), displaymessagecontent)
 		if isprivate:
 			content = 'Guesses are not accepted via PM.'
 			msg = msg_start + content
@@ -627,7 +627,7 @@ async def on_message(message):
 		if len(hangmanguessed) == 1:
 			# Have we already used that letter? And is it a valid letter?
 			if alphabet.find(hangmanguessed.upper()) == -1:
-				content = 'The character ``{}`` is invalid.'.format(mdspecialchars(hangmanguessed.upper()))
+				content = 'The character ``{}`` is invalid.'.format(wrapbackticks(hangmanguessed.upper()))
 				msg = msg_start + content
 				await client.send_message(message.channel, msg)
 				return
@@ -681,7 +681,7 @@ async def on_message(message):
 					msg = msg_start + content
 					await client.send_message(message.channel, msg)
 					return
-				content = '**``{}``** isn’t even the same length as the correct word. Please try again.'.format(mdspecialchars(hangmanguessed))
+				content = '**``{}``** isn’t even the same length as the correct word. Please try again.'.format(wrapbackticks(hangmanguessed))
 				msg = msg_start + content
 				await client.send_message(message.channel, msg)
 				return
@@ -704,10 +704,10 @@ async def on_message(message):
 
 	elif altinvokeractive:
 		command = message.content.split(altinvoker, 1)[1]
-		msg_start = '**`>`**``{}``**`{}`**{}\n'.format(mdspecialchars(message.author.name), invokesymbol, displaymessagecontent) # shows what the user put in, without main invoker
+		msg_start = '**`>`**``{}``**`{}`**{}\n'.format(wrapbackticks(message.author.name), invokesymbol, displaymessagecontent) # shows what the user put in, without main invoker
 	else:
 		command = message.content.split(invoker, 1)[1] # removes invoker from the message
-		msg_start = '**`>`**``{}``**`{}`**{}\n'.format(mdspecialchars(message.author.name), invokesymbol, displaymessagecontent) # shows what the user put in
+		msg_start = '**`>`**``{}``**`{}`**{}\n'.format(wrapbackticks(message.author.name), invokesymbol, displaymessagecontent) # shows what the user put in
 
 	# Prevent access to those who aren't supposed to send messages
 	if not isprivate and not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver and not (is_dev(message.author) and message.channel.id == '238423391571279872'):
@@ -830,7 +830,7 @@ async def on_message(message):
 				return
 			config.set_s(splitargs[1], splitargs[2], message.server.id)
 			config.saveconfig()
-			content = 'Set `{}` to `{}`'.format(splitargs[1], mdspecialchars(splitargs[2]))
+			content = 'Set `{}` to `{}`'.format(splitargs[1], wrapbackticks(splitargs[2]))
 			await reply(message, content)
 		elif splitargs[0] == 'get':
 			if not config.exists(splitargs[1]):
@@ -863,10 +863,10 @@ async def on_message(message):
 				return
 			if splitargs[0] == 'insert':
 				config.insert_s(splitargs[1], splitargs[2], message.server.id)
-				content = 'Inserted `{}` into array `{}`'.format(mdspecialchars(splitargs[2]), splitargs[1])
+				content = 'Inserted `{}` into array `{}`'.format(wrapbackticks(splitargs[2]), splitargs[1])
 			else:
 				config.remove_s(splitargs[1], splitargs[2], message.server.id)
-				content = 'Removed `{}` from array `{}`'.format(mdspecialchars(splitargs[2]), splitargs[1])
+				content = 'Removed `{}` from array `{}`'.format(wrapbackticks(splitargs[2]), splitargs[1])
 			config.saveconfig()
 			await reply(message, content)
 		elif splitargs[0] == 'detach' or splitargs[0] == 'reattach':
@@ -893,7 +893,7 @@ async def on_message(message):
 				return
 			config.restore_default(splitargs[1], message.server.id)
 			config.saveconfig()
-			content = 'Set `{}` back to default value of `{}`'.format(splitargs[1], mdspecialchars(config.get_default(splitargs[1])))
+			content = 'Set `{}` back to default value of `{}`'.format(splitargs[1], wrapbackticks(config.get_default(splitargs[1])))
 			await reply(message, content)
 		else:
 			content = '`{}` was not recognized'.format(splitargs[0])
@@ -966,7 +966,7 @@ async def on_message(message):
 		hangmanactive = True
 		hangmanstarter = message.author
 		guessedletters = [False]*26
-		msg_start = '**`>`**``{}``**`{}`**``\{} {}``\n'.format(mdspecialchars(message.author.name), invokesymbol, mdspecialchars(command.split(' ')[0]), '*'*len(hangmanchosenword)) # you will never have mod/admin perms in private messages (probably), where the hangman will be started from, so for now theres no mod/admin check to make the input display different
+		msg_start = '**`>`**``{}``**`{}`**``\{} {}``\n'.format(wrapbackticks(message.author.name), invokesymbol, wrapbackticks(command.split(' ')[0]), '*'*len(hangmanchosenword)) # you will never have mod/admin perms in private messages (probably), where the hangman will be started from, so for now theres no mod/admin check to make the input display different
 		content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "{}" followed by the letter (for example {}a) or the word. {} attempts left.\n{}'.format(hangmanstarter.id, hangmaninvoker, hangmaninvoker, hangmanattempts, hangmanworddisp(hangmanchosenword))
 		msg = msg_start + content
 		await client.send_message(botschannel, msg)
@@ -998,7 +998,7 @@ async def on_message(message):
 		if targetmember.nick == None:
 			displaynick = '**`No Nickname`**'
 		else:
-			displaynick = '**`Nickname:`** ``{}``'.format(mdspecialchars(targetmember.nick))
+			displaynick = '**`Nickname:`** ``{}``'.format(wrapbackticks(targetmember.nick))
 
 		if command == "findup":
 			displaymatch = '<@{}>'.format(targetmember.id)
@@ -1015,7 +1015,7 @@ async def on_message(message):
 		if memberhasgame:
 			if targetmember.game.type == 0 or targetmember.game.type == None:
 				displaygamestatus = 'Playing'
-				displaygamename = '``{}``'.format(mdspecialchars(targetmember.game.name))
+				displaygamename = '``{}``'.format(wrapbackticks(targetmember.game.name))
 			if targetmember.game.type == 1:
 				displaygamestatus = 'Streaming'
 			if targetmember.game.url == None:
@@ -1024,8 +1024,8 @@ async def on_message(message):
 				displaygameurl = '``{}``'
 		embed = discord.Embed(colour=targetmember.colour)
 		embed.set_image(url=targetmember.avatar_url)
-		embed.add_field(name='Nickname' if targetmember.nick != None else 'No Nickname', value='``{}``'.format(mdspecialchars(targetmember.nick)) if targetmember.nick != None else 'No Nickname')
-		embed.add_field(name='Username', value='``{}``'.format(mdspecialchars(targetmember.name)))
+		embed.add_field(name='Nickname' if targetmember.nick != None else 'No Nickname', value='``{}``'.format(wrapbackticks(targetmember.nick)) if targetmember.nick != None else 'No Nickname')
+		embed.add_field(name='Username', value='``{}``'.format(wrapbackticks(targetmember.name)))
 		embed.add_field(name='Discriminator', value='#{}'.format(targetmember.discriminator))
 		embed.add_field(name='User ID', value=targetmember.id)
 		embed.add_field(name='Bot', value='Yes' if is_bot(targetmember) else 'No')
@@ -1230,13 +1230,13 @@ async def on_message(message):
 				rules[message.server.id][int(arguments)-1]
 
 				# Oh, we survived this? That means the given specific rule exists!
-				content = 'Rule **{}** for server `{}`:\n{}'.format(int(arguments), mdspecialchars(message.server.name), rules[message.server.id][int(arguments)-1])
+				content = 'Rule **{}** for server `{}`:\n{}'.format(int(arguments), wrapbackticks(message.server.name), rules[message.server.id][int(arguments)-1])
 				await reply(message, content)
 				return
 			except IndexError:
 				pass
 		n = 1
-		content = 'Rules for server `{}`:{}'.format(mdspecialchars(message.server.name), ' (Disabled)' if message.server.id in disabledrules else '')
+		content = 'Rules for server `{}`:{}'.format(wrapbackticks(message.server.name), ' (Disabled)' if message.server.id in disabledrules else '')
 		for rule in rules[message.server.id]:
 			content += '\n**{}.** {}'.format(n, rule)
 			n += 1
@@ -1260,14 +1260,14 @@ async def on_message(message):
 			return
 		matched = False
 		n = 1
-		content = 'Rules for server **``{}``** matching **``{}``**:'.format(mdspecialchars(message.server.name), mdspecialchars(arguments))
+		content = 'Rules for server **``{}``** matching **``{}``**:'.format(wrapbackticks(message.server.name), wrapbackticks(arguments))
 		for rule in rules[message.server.id]:
 			if rule.lower().find(arguments.lower()) != -1:
 				content += '\n**{}.** {}'.format(n, rule)
 				matched = True
 			n += 1
 		if not matched:
-			content = 'No rules on server `{}` matching `{}`.'.format(mdspecialchars(message.server.name), mdspecialchars(arguments))
+			content = 'No rules on server `{}` matching `{}`.'.format(wrapbackticks(message.server.name), wrapbackticks(arguments))
 		await reply(message, content)
 	elif command == 'ruleadd' or command == 'addrule':
 		if not is_mod(message.author):
@@ -1533,7 +1533,7 @@ async def on_message(message):
 			channelid = arg0[2:-1]
 			getchannel = client.get_channel(channelid)
 			getmessage = await client.get_message(getchannel, arg1)
-			content = '``{}``'.format(mdspecialchars(getmessage.content[:1900]))
+			content = '``{}``'.format(wrapbackticks(getmessage.content[:1900]))
 		except AttributeError:
 			content = 'Invalid arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command)
 		except IndexError:
@@ -1641,7 +1641,7 @@ async def on_message(message):
 			content = t['op_only']
 		else:
 			await client.change_presence(game=discord.Game(name=arguments))
-			content = 'Set game status to: ``{}``'.format(mdspecialchars(arguments))
+			content = 'Set game status to: ``{}``'.format(wrapbackticks(arguments))
 		await reply(message, content)
 	elif command == 'eval' or command == 'evalawait' or command == 'evalfile' or command == 'evalawaitfile':
 		if message.author.id != ownerid:
@@ -1663,9 +1663,9 @@ async def on_message(message):
 					evalstring = evalfile.read()
 					evaluate = await eval(evalstring)
 					evalfile.close()
-				content = '```py\n{}```'.format(mdspecialchars(evaluate))
+				content = '```py\n{}```'.format(wrapbackticks(evaluate))
 			except:
-				content = '```py\n{}```'.format(mdspecialchars(traceback.format_exc()))
+				content = '```py\n{}```'.format(wrapbackticks(traceback.format_exc()))
 		try:
 			await reply(message, content)
 		except discord.errors.HTTPException:
@@ -1693,7 +1693,7 @@ async def on_message_delete(message): # when a message gets deleted
 
 	specialchannel = getspecialchannel_reply(message)
 
-	msg_start = '**`>`**🚫`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) deleted`\n'.format(message.id, mdspecialchars(message.author.name), message.author.discriminator, message.author.id, message.channel.id, message.timestamp, reltime(time.mktime(message.timestamp.timetuple())))
+	msg_start = '**`>`**🚫`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) deleted`\n'.format(message.id, wrapbackticks(message.author.name), message.author.discriminator, message.author.id, message.channel.id, message.timestamp, reltime(time.mktime(message.timestamp.timetuple())))
 	content = '_`The original content is:`_\n' + message.content
 	msg = msg_start + content
 	if len(msg) >= 2000:
@@ -1727,10 +1727,10 @@ async def on_message_edit(before, after): # when a message gets edited
 
 	if before.pinned != after.pinned:
 		if before.pinned == False and after.pinned == True: # if the message was pinned
-			msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) pinned`'.format(before.id, mdspecialchars(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp, reltime(time.mktime(before.timestamp.timetuple())))
+			msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) pinned`'.format(before.id, wrapbackticks(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp, reltime(time.mktime(before.timestamp.timetuple())))
 			await client.send_message(specialchannel, msg_start)
 		if before.pinned == True and after.pinned == False: # if the message was unpinned
-			msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) unpinned`'.format(after.id, mdspecialchars(after.author.name), after.author.discriminator, after.author.id, after.channel.id, after.timestamp, reltime(time.mktime(after.timestamp.timetuple())))
+			msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) unpinned`'.format(after.id, wrapbackticks(after.author.name), after.author.discriminator, after.author.id, after.channel.id, after.timestamp, reltime(time.mktime(after.timestamp.timetuple())))
 			await client.send_message(specialchannel, msg_start)
 	# preliminary checkings
 	if before.content == after.content:
@@ -1739,7 +1739,7 @@ async def on_message_edit(before, after): # when a message gets edited
 		logging.warn('this is the bots own message and the bot doesnt edit messages\nid of before: {}\nid of after: {}'.format(before.id, after.id))
 		return
 	# checks succeeded
-	msg_start = '**`>`**📝`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) edited`\n'.format(before.id, mdspecialchars(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp, reltime(time.mktime(before.timestamp.timetuple())))
+	msg_start = '**`>`**📝`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) edited`\n'.format(before.id, wrapbackticks(before.author.name), before.author.discriminator, before.author.id, before.channel.id, before.timestamp, reltime(time.mktime(before.timestamp.timetuple())))
 	content = '_`The older content is:`_\n' + before.content
 	msg = msg_start + content
 	if len(msg) >= 2000:
@@ -1756,7 +1756,7 @@ async def on_message_edit(before, after): # when a message gets edited
 		await client.send_message(specialchannel, msg2)
 	else:
 		await client.send_message(specialchannel, msg)
-	msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) edited`\n'.format(after.id, mdspecialchars(after.author.name), after.author.discriminator, after.author.id, after.channel.id, after.timestamp, reltime(time.mktime(after.timestamp.timetuple())))
+	msg_start = '**`>`**`message {} by user` **``{}``**`#{}` `({}) in channel` <#{}> `at {} UTC ({}) edited`\n'.format(after.id, wrapbackticks(after.author.name), after.author.discriminator, after.author.id, after.channel.id, after.timestamp, reltime(time.mktime(after.timestamp.timetuple())))
 	content = '_`The newer content is:`_\n' + after.content
 	msg = msg_start + content
 	if len(msg) >= 2000:
@@ -1810,28 +1810,28 @@ async def on_member_update(before, after):
 	specialchannel = getspecialchannel(after.server)
 
 	if before.nick != after.nick:
-		msg_start = '**`>`**🇳📟`user` **``{}``**`#{}` `({}) changed nickname`\n'.format(mdspecialchars(before.name), before.discriminator, before.id)
+		msg_start = '**`>`**🇳📟`user` **``{}``**`#{}` `({}) changed nickname`\n'.format(wrapbackticks(before.name), before.discriminator, before.id)
 		if before.nick == None:
 			content = '_`The older nickname is:`_ `(none)`'
 		else:
-			content = '_`The older nickname is:`_\n``{}``'.format(mdspecialchars(before.nick))
+			content = '_`The older nickname is:`_\n``{}``'.format(wrapbackticks(before.nick))
 		msg = msg_start + content
 		await client.send_message(specialchannel, msg)
 		msg_start = '**`>`**`user` **``{}``**`#{}` `({}) changed nickname`\n'.format(after.name, after.discriminator, after.id)
 		if after.nick == None:
 			content = '_`The newer nickname is:`_ `(none)`'
 		else:
-			content = '_`The newer nickname is:`_\n``{}``'.format(mdspecialchars(after.nick))
+			content = '_`The newer nickname is:`_\n``{}``'.format(wrapbackticks(after.nick))
 		msg = msg_start + content
 		await client.send_message(specialchannel, msg)
 	if before.roles != after.roles:
 		if len(before.roles) > len(after.roles): # if a role has been removed
 			roleremoved = list(set(before.roles).symmetric_difference(set(after.roles)))[0]
-			msg_start = '**`>`**`user` **``{}``**`#{}` `({}) has role` **``{}``** `({}) removed`'.format(mdspecialchars(before.name), before.discriminator, before.id, mdspecialchars(roleremoved.name), roleremoved.id)
+			msg_start = '**`>`**`user` **``{}``**`#{}` `({}) has role` **``{}``** `({}) removed`'.format(wrapbackticks(before.name), before.discriminator, before.id, wrapbackticks(roleremoved.name), roleremoved.id)
 			await client.send_message(specialchannel, msg_start)
 		if len(before.roles) < len(after.roles): # if a role has been added
 			roleadded = list(set(after.roles).symmetric_difference(set(before.roles)))[0]
-			msg_start = '**`>`**`user` **``{}``**`#{}` `({}) has role` **``{}``** `({}) added`'.format(after.name, after.discriminator, after.id, mdspecialchars(roleadded.name), roleadded.id)
+			msg_start = '**`>`**`user` **``{}``**`#{}` `({}) has role` **``{}``** `({}) added`'.format(after.name, after.discriminator, after.id, wrapbackticks(roleadded.name), roleadded.id)
 			await client.send_message(specialchannel, msg_start)
 
 		if before.server.id == productionserver:
@@ -1839,21 +1839,21 @@ async def on_member_update(before, after):
 			rolecachesave()
 	if before.name != after.name:
 		msg_start = '**`>`**🇺📟`user {} changed username`\n'.format(before.id)
-		content = '_`The older username is:`_\n**``{}``**\n_`The older discriminator is:`_ `#{}`'.format(mdspecialchars(before.name), before.discriminator)
+		content = '_`The older username is:`_\n**``{}``**\n_`The older discriminator is:`_ `#{}`'.format(wrapbackticks(before.name), before.discriminator)
 		msg = msg_start + content
 		await client.send_message(specialchannel, msg)
 		msg_start = '**`>`**`user {} changed username`\n'.format(after.id)
-		content = '_`The newer username is:`_\n**``{}``**\n_`The newer discriminator is:`_ `#{}`'.format(mdspecialchars(after.name), after.discriminator)
+		content = '_`The newer username is:`_\n**``{}``**\n_`The newer discriminator is:`_ `#{}`'.format(wrapbackticks(after.name), after.discriminator)
 		msg = msg_start + content
 		if before.discriminator != after.discriminator:
 			msg += '🔸'
 		await client.send_message(specialchannel, msg)
 	if before.avatar_url != after.avatar_url and before.id != '141769689406636032' and before.id != '88575421972516864' and before.id != '196574963673595904': # isn't 35, 42 or beta 42
-		msg_start = '**`>`**👥`user` **``{}``**`#{}` `({}) changed avatar`\n'.format(mdspecialchars(before.name), before.discriminator, before.id)
+		msg_start = '**`>`**👥`user` **``{}``**`#{}` `({}) changed avatar`\n'.format(wrapbackticks(before.name), before.discriminator, before.id)
 		content = '_`The older avatar URL is:`_ ' + before.avatar_url
 		msg = msg_start + content
 		await client.send_message(specialchannel, msg)
-		msg_start = '**`>`**`user` **``{}``**`#{}` `({}) changed avatar`\n'.format(mdspecialchars(after.name), after.discriminator, after.id)
+		msg_start = '**`>`**`user` **``{}``**`#{}` `({}) changed avatar`\n'.format(wrapbackticks(after.name), after.discriminator, after.id)
 		content = '_`The newer avatar URL is:`_ ' + after.avatar_url
 		msg = msg_start + content
 		await client.send_message(specialchannel, msg)
@@ -1862,7 +1862,7 @@ async def on_member_update(before, after):
 async def on_member_join(member):
 	specialchannel = getspecialchannel(member.server)
 
-	msg = '**`>`**➡`user` **``{}``**`#{}` `({}) joined server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
+	msg = '**`>`**➡`user` **``{}``**`#{}` `({}) joined server {} ({})`'.format(wrapbackticks(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	await client.send_message(specialchannel, msg)
 	if member.server.id == productionserver:
 		if is_bot(member):
@@ -1873,7 +1873,7 @@ async def on_member_join(member):
 			# They're found in the database! Give them the groups they should have
 			for rid in memberroles[str(member.id)]:
 				await client.add_roles(member, discord.utils.get(member.server.roles, id=rid)) # TODO make this less iterative and add multiple roles at once
-			msg = '**`>`**`user` **``{}``**`#{}` `({}) found in the role cache. Given them back the roles they had.`'.format(mdspecialchars(member.name), member.discriminator, member.id)
+			msg = '**`>`**`user` **``{}``**`#{}` `({}) found in the role cache. Given them back the roles they had.`'.format(wrapbackticks(member.name), member.discriminator, member.id)
 			await client.send_message(specialchannel, msg)
 		else:
 			# Not found, so they're just a tOLPer.
@@ -1883,20 +1883,20 @@ async def on_member_join(member):
 async def on_member_remove(member):
 	specialchannel = getspecialchannel(member.server)
 
-	msg = '**`>`**🚪`user` **``{}``**`#{}` `({}) removed from server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
+	msg = '**`>`**🚪`user` **``{}``**`#{}` `({}) removed from server {} ({})`'.format(wrapbackticks(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	await client.send_message(specialchannel, msg)
 
 @client.event
 async def on_member_ban(member):
 	specialchannel = getspecialchannel(member.server)
 
-	msg = '**`>`**👞🚪⛔`user` **``{}``**`#{}` `({}) banned from server {} ({})`'.format(mdspecialchars(member.name), member.discriminator, member.id, member.server.name, member.server.id)
+	msg = '**`>`**👞🚪⛔`user` **``{}``**`#{}` `({}) banned from server {} ({})`'.format(wrapbackticks(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	await client.send_message(specialchannel, msg)
 
 @client.event
 async def on_member_unban(server, user):
 	specialchannel = getspecialchannel(server)
-	msg = '**`>`**<:doormat:239361673532669953>`user` **``{}``**`#{}` `({}) unbanned from server {} ({})`'.format(mdspecialchars(user.name), user.discriminator, user.id, server.name, server.id)
+	msg = '**`>`**<:doormat:239361673532669953>`user` **``{}``**`#{}` `({}) unbanned from server {} ({})`'.format(wrapbackticks(user.name), user.discriminator, user.id, server.name, server.id)
 	await client.send_message(specialchannel, msg)
 
 @client.event
@@ -1908,7 +1908,7 @@ async def on_typing(channel, user, when):
 	if specialchannel.id == channel.server.default_channel.id:
 		specialchannel = channel
 	if str(user.status) == 'offline':
-		msg = '**`>`**👻`user` **``{}``**`#{}` `({}) was invisible while typing in channel` <#{}> `at {}`'.format(mdspecialchars(user.name), user.discriminator, user.id, channel.id, when)
+		msg = '**`>`**👻`user` **``{}``**`#{}` `({}) was invisible while typing in channel` <#{}> `at {}`'.format(wrapbackticks(user.name), user.discriminator, user.id, channel.id, when)
 		await client.send_message(specialchannel, msg)
 	else:
 		return # practically unnecessary, but this is for if we want to do things when members type later
@@ -1916,13 +1916,13 @@ async def on_typing(channel, user, when):
 @client.event
 async def on_server_role_create(role):
 	specialchannel = getspecialchannel(role.server)
-	msg = '**`>`**`role` **``{}``** `({}) was created in server` **``{}``** `({}) at {}`'.format(mdspecialchars(role.name), role.id, mdspecialchars(role.server.name), role.server.id, role.created_at)
+	msg = '**`>`**`role` **``{}``** `({}) was created in server` **``{}``** `({}) at {}`'.format(wrapbackticks(role.name), role.id, wrapbackticks(role.server.name), role.server.id, role.created_at)
 	await client.send_message(specialchannel, msg)
 
 @client.event
 async def on_server_role_delete(role):
 	specialchannel = getspecialchannel(role.server)
-	msg = '**`>`**`role` **``{}``** `({}) was deleted in server` **``{}``** `({}) originally created at {}`'.format(mdspecialchars(role.name), role.id, mdspecialchars(role.server.name), role.server.id, role.created_at)
+	msg = '**`>`**`role` **``{}``** `({}) was deleted in server` **``{}``** `({}) originally created at {}`'.format(wrapbackticks(role.name), role.id, wrapbackticks(role.server.name), role.server.id, role.created_at)
 	await client.send_message(specialchannel, msg)
 
 @client.event
@@ -1930,35 +1930,35 @@ async def on_server_role_update(before, after):
 	specialchannel = getspecialchannel(before.server)
 	if before.name != after.name: # if the name changed
 		msg_start = '**`>`**`role {} has name changed`\n'.format(before.id)
-		content = '_`The older name is:`_\n**``{}``**'.format(mdspecialchars(before.name))
+		content = '_`The older name is:`_\n**``{}``**'.format(wrapbackticks(before.name))
 		msg = msg_start + content
 		await client.send_message(specialchannel, msg)
-		content = '_`The newer name is:`_\n**``{}``**'.format(mdspecialchars(after.name))
+		content = '_`The newer name is:`_\n**``{}``**'.format(wrapbackticks(after.name))
 		msg = msg_start + content
 		await client.send_message(specialchannel, msg)
 	if before.hoist != after.hoist: # if "display online members separately" changed
 		if before.hoist == 0 and after.hoist == 1: # if the role has been hoisted
-			msg = '**`>`**`role` **``{}``** `({}) has been hoisted`'.format(mdspecialchars(after.name), after.id)
+			msg = '**`>`**`role` **``{}``** `({}) has been hoisted`'.format(wrapbackticks(after.name), after.id)
 			await client.send_message(specialchannel, msg)
 		if before.hoist == 1 and after.hoist == 0: # if the role has been lowered
-			msg = '**`>`**`role` **``{}``** `({}) has been lowered`'.format(mdspecialchars(after.name), after.id)
+			msg = '**`>`**`role` **``{}``** `({}) has been lowered`'.format(wrapbackticks(after.name), after.id)
 			await client.send_message(specialchannel, msg)
 	if before.mentionable != after.mentionable: # if "allow everyone to mention this role" changed
 		if before.mentionable == 0 and after.mentionable == 1: # if the role is now mentionable
-			msg = '**`>`**`role` **``{}``** `({}) is now mentionable`'.format(mdspecialchars(after.name), after.id)
+			msg = '**`>`**`role` **``{}``** `({}) is now mentionable`'.format(wrapbackticks(after.name), after.id)
 			await client.send_message(specialchannel, msg)
 		if before.mentionable == 1 and after.mentionable == 0: # if the role is no longer mentionable
-			msg = '**`>`**`role` **``{}``** `({}) is no longer mentionable`'.format(mdspecialchars(after.name), after.id)
+			msg = '**`>`**`role` **``{}``** `({}) is no longer mentionable`'.format(wrapbackticks(after.name), after.id)
 			await client.send_message(specialchannel, msg)
 	if before.position != after.position: # if the role has been moved up or down in the hierarchy
 		if before.position > after.position: # the role has been moved down
-			msg = '**`>`**`role` **``{}``** `({}) has been moved down by {} roles ({} to {})`'.format(mdspecialchars(after.name), after.id, before.position - after.position, before.position, after.position)
+			msg = '**`>`**`role` **``{}``** `({}) has been moved down by {} roles ({} to {})`'.format(wrapbackticks(after.name), after.id, before.position - after.position, before.position, after.position)
 			await client.send_message(specialchannel, msg)
 		if before.position < after.position: # the role has been moved up
-			msg = '**`>`**`role` **``{}``** `({}) has been moved up by {} roles ({} to {})`'.format(mdspecialchars(after.name), after.id, after.position - before.position, before.position, after.position)
+			msg = '**`>`**`role` **``{}``** `({}) has been moved up by {} roles ({} to {})`'.format(wrapbackticks(after.name), after.id, after.position - before.position, before.position, after.position)
 			await client.send_message(specialchannel, msg)
 	if before.colour != after.colour:
-		msg_start = '**`>`**`role` **``{}``** `({}) has changed color`\n'.format(mdspecialchars(after.name), after.id)
+		msg_start = '**`>`**`role` **``{}``** `({}) has changed color`\n'.format(wrapbackticks(after.name), after.id)
 		content = '_`The older color is:`_ `{}`'.format('(default)' if str(before.colour) == '#000000' else str(before.colour).upper())
 		msg = msg_start + content
 		await client.send_message(specialchannel, msg)
@@ -1976,7 +1976,7 @@ async def on_reaction_add(reaction, user):
 	except AttributeError:
 		iscustomemote = False
 		emotename = reaction.emoji
-	msg = '**`>`**`user` **``{}``**`#{}` `({}) added reaction` {} `{} to message {}'.format(mdspecialchars(user.name), user.discriminator, user.id, emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', reaction.message.id)
+	msg = '**`>`**`user` **``{}``**`#{}` `({}) added reaction` {} `{} to message {}'.format(wrapbackticks(user.name), user.discriminator, user.id, emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', reaction.message.id)
 	if str(user.status) == 'offline':
 		msg += ' and was invisible while doing so`'
 	else:
@@ -1992,14 +1992,14 @@ async def on_reaction_remove(reaction, user):
 	except AttributeError:
 		iscustomemote = False
 		emotename = reaction.emoji
-	msg = '**`>`**`reaction` {} `{} by user` **``{}``**`#{}` `from message {} removed`'.format(emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', mdspecialchars(user.name), user.discriminator, user.id, reaction.message.id)
+	msg = '**`>`**`reaction` {} `{} by user` **``{}``**`#{}` `from message {} removed`'.format(emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', wrapbackticks(user.name), user.discriminator, user.id, reaction.message.id)
 	await client.send_message(specialchannel, msg)
 
 @client.event
 async def on_server_update(before, after):
 	specialchannel = getspecialchannel(after)
 	if before.icon != after.icon:
-		msg_start = '**`>`**`server` **``{}``** `({}) changed icon`\n'.format(mdspecialchars(before.name), before.id)
+		msg_start = '**`>`**`server` **``{}``** `({}) changed icon`\n'.format(wrapbackticks(before.name), before.id)
 		content = '_`The older icon URL is:`_ ' + before.icon_url
 		msg = msg_start + content
 		await client.send_message(specialchannel, msg)
@@ -2011,13 +2011,13 @@ async def on_server_update(before, after):
 		content = (
 			'_`The older name is:`_\n'
 			'**``{}``**'
-		).format(mdspecialchars(before.name))
+		).format(wrapbackticks(before.name))
 		msg = msg_start + content
 		await client.send_message(specialchannel, msg)
 		content = (
 			'_`The newer name is:`_\n'
 			'**``{}``**'
-		).format(mdspecialchars(after.name))
+		).format(wrapbackticks(after.name))
 		msg = msg_start + content
 		await client.send_message(specialchannel, msg)
 

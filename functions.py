@@ -147,12 +147,33 @@ async def reply(messageobject, message, emb=None):
 	else:
 		await client.send_message(messageobject.channel, msg_start + message)
 
-def mdspecialchars(string):
-	"""this actually only escapes backticks right now
-	also this means that any string this is used on should be placed in double backticks (like ``this``)
-	or code blocks (like ```this```)"""
+def wrapbackticks(string, character=u'​'):
+	"""escapes backticks for use in message output to discord
+	its a fucking glorified string.replace() command with some error handling
+	any string this is used on should be placed in either one of the following:
+	double backticks (like ``this``)
+	or code blocks (like ```this```)
+	"""
 	try:
-		return string.replace('`', u'​`​')
+		return string.replace('`', u'{character}`{character}'.format(character=character))
+	except AttributeError:
+		return string
+
+def mdspecialchars(string, character='\\'):
+	"""escapes markdown formatting for use in message output to discord
+	its a fucking glorified for loop with some error handling
+	"""
+	specialchars = [
+		'\\', # this should be first otherwise you will get undesirable output
+		'*', # italicize and bold
+		'_', # italicize [2] and underline
+		'~', # hey have you ever wanted to make a shitty joke? just wrap it in two of these on each side!
+		'`', # oh hey we escaped these earlier
+	]
+	try:
+		for char in specialchars:
+			string = string.replace(char, '\\' + char)
+		return string
 	except AttributeError:
 		return string
 
