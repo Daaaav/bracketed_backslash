@@ -593,6 +593,9 @@ async def on_message(message):
 	if not isprivate and message.author.id in config.get_s('blacklist', message.server.id):
 		return
 
+	if isprivate and message.author.id in config.get_s('blacklist'):
+		return
+
 	if message.content.startswith(invoker): # does the message start with command invoker
 		altinvokeractive = False
 		hangmaninvokeractive = False
