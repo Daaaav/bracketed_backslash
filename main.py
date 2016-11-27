@@ -1840,16 +1840,17 @@ async def on_member_update(before, after):
 			updaterolecache(after)
 			rolecachesave()
 	if before.name != after.name:
-		msg_start = '**`>`**🇺📟`user {} changed username`\n'.format(before.id)
-		content = '_`The older username is:`_\n**``{}``**\n_`The older discriminator is:`_ `#{}`'.format(wrapbackticks(before.name), before.discriminator)
-		msg = msg_start + content
-		await client.send_message(specialchannel, msg)
-		msg_start = '**`>`**`user {} changed username`\n'.format(after.id)
-		content = '_`The newer username is:`_\n**``{}``**\n_`The newer discriminator is:`_ `#{}`'.format(wrapbackticks(after.name), after.discriminator)
-		msg = msg_start + content
+		description = '🇺📟<@!{}> changed username'.format(after.id)
 		if before.discriminator != after.discriminator:
-			msg += '🔸'
-		await client.send_message(specialchannel, msg)
+			description += 'and discriminator'
+		embed = discord.Embed(description=description, colour=after.colour)
+		embed.set_author(name=after.name, icon_url=after.avatar_url)
+		embed.add_field(name='Older Username', value=mdspecialchars(before.name))
+		embed.add_field(name='Newer Username', value=mdspecialchars(after.name))
+		if before.discriminator != after.discriminator:
+			embed.add_field(name='Older Discriminator', value=before.discriminator, inline=False)
+			embed.add_field(name='Newer Discriminator', value=after.discriminator)
+		await client.send_message(specialchannel, embed=embed)
 	if before.avatar_url != after.avatar_url and before.id != '141769689406636032' and before.id != '88575421972516864' and before.id != '196574963673595904': # isn't 35, 42 or beta 42
 		msg_start = '**`>`**👥`user` **``{}``**`#{}` `({}) changed avatar`\n'.format(wrapbackticks(before.name), before.discriminator, before.id)
 		content = '_`The older avatar URL is:`_ ' + before.avatar_url
