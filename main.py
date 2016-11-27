@@ -1893,9 +1893,10 @@ async def on_member_join(member):
 @client.event
 async def on_member_remove(member):
 	specialchannel = getspecialchannel(member.server)
-
-	msg = '**`>`**🚪`user` **``{}``**`#{}` `({}) removed from server {} ({})`'.format(wrapbackticks(member.name), member.discriminator, member.id, member.server.name, member.server.id)
-	await client.send_message(specialchannel, msg)
+	embed = discord.Embed(description='🚪<@!{id}> ({id}) removed from server'.format(id=member.id), colour=member.colour, timestamp=datetime.datetime.now())
+	embed.set_author(name=member.display_name, icon_url=member.avatar_url)
+	embed.set_thumbnail(url=member.avatar_url)
+	await client.send_message(specialchannel, embed=embed)
 
 @client.event
 async def on_member_ban(member):
