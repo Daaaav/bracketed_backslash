@@ -776,18 +776,18 @@ async def on_message(message):
 			return
 		embed = discord.Embed(description='_Restarting._', colour=0x11c11e)
 		embed.add_field(name='Uptime', value=reltime(boottimeunix, True))
-		logcommand(command, message)
+		logcommand(command, arguments, message)
 		await reply(message, emb=embed)
 		await os.execl(__file__, '')
 	elif command == 'kill':
 		if not is_operator(message.author):
 			embed = discord.Embed(description=t['op_only'], colour=message.server.me.colour)
-			logfailedcommand(command, message)
+			logfailedcommand(command, arguments, message)
 			await reply(message, emb=embed)
 			return
 		embed = discord.Embed(description='_Killing._', colour=0x11c11e)
 		embed.add_field(name='Uptime', value=reltime(boottimeunix, True))
-		logcommand(command, message)
+		logcommand(command, arguments, message)
 		await reply(message, emb=embed)
 		await sys.exit()
 	elif command == 'config':
@@ -813,7 +813,7 @@ async def on_message(message):
 			return
 		elif arguments == 'reload':
 			config.load()
-			logcommand(command, message)
+			logcommand(command, arguments, message)
 			content = 'Reloaded config.'
 			await reply(message, content)
 			return
@@ -852,7 +852,7 @@ async def on_message(message):
 			except AttributeError:
 				config.set_s(splitargs[1], splitargs[2])
 			config.saveconfig()
-			logcommand(command, message)
+			logcommand(command, arguments, message)
 			content = 'Set `{}` to `{}`'.format(splitargs[1], wrapbackticks(splitargs[2]))
 			await reply(message, content)
 		elif splitargs[0] == 'get':
@@ -907,7 +907,7 @@ async def on_message(message):
 					config.remove_s(splitargs[1], splitargs[2])
 				content = 'Removed `{}` from array `{}`'.format(wrapbackticks(splitargs[2]), splitargs[1])
 			config.saveconfig()
-			logcommand(command, message)
+			logcommand(command, arguments, message)
 			await reply(message, content)
 		elif splitargs[0] == 'detach' or splitargs[0] == 'reattach':
 			if not config.exists(splitargs[1]):
@@ -931,7 +931,7 @@ async def on_message(message):
 				except AttributeError:
 					content = 'Can’t reattach values for non-servers.'
 			config.saveconfig()
-			logcommand(command, message)
+			logcommand(command, arguments, message)
 			await reply(message, content)
 		elif splitargs[0] == 'default':
 			if not config.exists(splitargs[1]):
@@ -943,7 +943,7 @@ async def on_message(message):
 			except AttributeError:
 				config.restore_default(splitargs[1])
 			config.saveconfig()
-			logcommand(message, content)
+			logcommand(command, arguments, message)
 			content = 'Set `{}` back to default value of `{}`'.format(splitargs[1], wrapbackticks(config.get_default(splitargs[1])))
 			await reply(message, content)
 		else:
@@ -1095,7 +1095,7 @@ async def on_message(message):
 	elif command == 'softban':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			logfailedcommand(command, message)
+			logfailedcommand(command, arguments, message)
 			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
@@ -1123,7 +1123,7 @@ async def on_message(message):
 	elif command == 'nononly' or command == 'nogenmen' or command == 'nocedule' or command == 'notts' or command == 'noreact':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			logfailedcommand(command, message)
+			logfailedcommand(command, arguments, message)
 			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
@@ -1156,7 +1156,7 @@ async def on_message(message):
 	elif command == 'nonick':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			logfailedcommand(command, message)
+			logfailedcommand(command, arguments, message)
 			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
@@ -1179,7 +1179,7 @@ async def on_message(message):
 		try:
 			if not is_mod(message.author):
 				content = t['mod_only']
-				logfailedcommand(command, message)
+				logfailedcommand(command, arguments, message)
 			elif targetmember.voice.voice_channel == None:
 				content = 'User is not in a voice channel.'
 			elif command == 'voicemute':
@@ -1196,7 +1196,7 @@ async def on_message(message):
 	elif command == 'rolerst':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			logfailedcommand(command, message)
+			logfailedcommand(command, arguments, message)
 			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
@@ -1226,7 +1226,7 @@ async def on_message(message):
 	elif command == 'rolecacherst':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			logfailedcommand(command, message)
+			logfailedcommand(command, arguments, message)
 			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
@@ -1248,7 +1248,7 @@ async def on_message(message):
 	elif command == 'rolesync':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			logfailedcommand(command, message)
+			logfailedcommand(command, arguments, message)
 			await reply(message, content)
 			return
 		elif message.server.id != productionserver:
@@ -1323,7 +1323,7 @@ async def on_message(message):
 	elif command == 'ruleadd' or command == 'addrule':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			logfailedcommand(command, message)
+			logfailedcommand(command, arguments, message)
 
 			await reply(message, content)
 			return
@@ -1350,7 +1350,7 @@ async def on_message(message):
 	elif command == 'ruleedit' or command == 'editrule':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			logfailedcommand(command, message)
+			logfailedcommand(command, arguments, message)
 
 			await reply(message, content)
 			return
@@ -1382,7 +1382,7 @@ async def on_message(message):
 	elif command == 'rulemove' or command == 'moverule':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			logfailedcommand(command, message)
+			logfailedcommand(command, arguments, message)
 
 			await reply(message, content)
 			return
@@ -1417,7 +1417,7 @@ async def on_message(message):
 	elif command == 'ruleremove' or command == 'removerule':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			logfailedcommand(command, message)
+			logfailedcommand(command, arguments, message)
 
 			await reply(message, content)
 			return
@@ -1448,7 +1448,7 @@ async def on_message(message):
 	elif command == 'rulemaint':
 		if not is_mod(message.author):
 			content = t['mod_only']
-			logfailedcommand(command, message)
+			logfailedcommand(command, arguments, message)
 
 			await reply(message, content)
 			return
@@ -1566,7 +1566,7 @@ async def on_message(message):
 		await reply(message, content)
 	elif command == 'getrawmessagecontent':
 		if not is_mod(message.author):
-			logfailedcommand(command, message)
+			logfailedcommand(command, arguments, message)
 			content = t['mod_only']
 			await reply(message, content)
 			return
@@ -1685,7 +1685,7 @@ async def on_message(message):
 		await reply(message, content)
 	elif command == 'gamestatus':
 		if not is_operator(message.author):
-			logfailedcommand(command, message)
+			logfailedcommand(command, arguments, message)
 			content = t['op_only']
 		else:
 			await client.change_presence(game=discord.Game(name=arguments))
@@ -1693,7 +1693,7 @@ async def on_message(message):
 		await reply(message, content)
 	elif command == 'eval' or command == 'evalawait' or command == 'evalfile' or command == 'evalawaitfile':
 		if message.author.id != ownerid:
-			logfailedcommand(command, message)
+			logfailedcommand(command, arguments, message)
 			content = t['owner_only']
 		else:
 			try:

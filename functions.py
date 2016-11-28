@@ -336,11 +336,15 @@ async def fetch(url):
 		async with session.get(url) as response:
 			return await response.read()
 
-def logfailedcommand(command, message):
-	logging.info('{} attempted by {}#{} (uuid {}) at {} utc but failed'.format(command, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+def logfailedcommand(command, arguments, message):
+	if arguments == None:
+		arguments = ''
+	logging.info('{} {} attempted by {}#{} (uuid {}) at {} utc but failed'.format(command, arguments, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 
-def logcommand(command, message):
-	logging.info('{} called by {}#{} (uuid {}) at {} utc'.format(command, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+def logcommand(command, arguments, message):
+	if arguments == None:
+		arguments = ''
+	logging.info('{} {} called by {}#{} (uuid {}) at {} utc'.format(command, arguments, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 
 def infourl(query):
 	return 'https://tolp2.nl/showdiscordinfo.php?' + query
