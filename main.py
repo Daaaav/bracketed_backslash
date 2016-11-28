@@ -789,7 +789,7 @@ async def on_message(message):
 		embed.add_field(name='Uptime', value=reltime(boottimeunix, True))
 		logcommand(command, arguments, message)
 		await reply(message, emb=embed)
-		await sys.exit()
+		await client.logout()
 	elif command == 'config':
 		if not is_operator(message.author):
 			content = t['op_only']
