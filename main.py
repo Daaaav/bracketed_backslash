@@ -1706,7 +1706,7 @@ async def on_message_delete(message): # when a message gets deleted
 	if message.content == '' and message.attachments == []:
 		return
 	specialchannel = getspecialchannel_reply(message)
-	embed = discord.Embed(title='🚫MESSAGE SENT {} DELETED IN {}'.format(reltime(time.mktime(message.timestamp.timetuple())), message.channel.mention), description=message.content, colour=message.author.colour)
+	embed = discord.Embed(title='🚫MESSAGE DELETED (SENT {} IN {})'.format(reltime(time.mktime(message.timestamp.timetuple())), message.channel.mention), description=message.content, colour=message.author.colour)
 	embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url, url=infourl('userid={}&messageid={}'.format(message.author.id, message.id)))
 	await client.send_message(specialchannel, embed=embed)
 	if message.attachments != []:
@@ -1739,13 +1739,11 @@ async def on_message_edit(before, after): # when a message gets edited
 		logging.warn('this is the bots own message and the bot doesnt edit messages\nid of before: {}\nid of after: {}'.format(before.id, after.id))
 		return
 	# checks succeeded
-	embed = discord.Embed(title='📝Message {} edited in {}. The older content is:'.format(after.id, after.channel.mention), description=before.content, colour=after.author.colour, timestamp=datetime.datetime.now())
-	embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url)
-	embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=after.author.id))
+	embed = discord.Embed(title='📝MESSAGE EDITED (SENT {} IN {}). The older content is:'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), description=before.content, colour=after.author.colour)
+	embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
 	await client.send_message(specialchannel, embed=embed)
-	embed = discord.Embed(title='📝Message {} edited in {}. The newer content is:'.format(after.id, after.channel.mention), description=after.content, colour=after.author.colour, timestamp=datetime.datetime.now())
-	embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url)
-	embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=after.author.id))
+	embed = discord.Embed(title='MESSAGE EDITED (SENT {} IN {}). The newer content is:'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), description=after.content, colour=after.author.colour)
+	embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
 	await client.send_message(specialchannel, embed=embed)
 	# Delete a message if it has been edited more than 5 times in 30 seconds
 	if not after.id in minutemessageedits:
