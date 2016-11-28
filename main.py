@@ -821,9 +821,12 @@ async def on_message(message):
 			for c in config.s:
 				if not config.get_shown(c):
 					continue
-				content += '\n{} [{}] = {}'.format(c, config.get_type(c) + ('*' if config.is_array(c) else ''), config.get_s(c, message.server.id) if not config.is_array(c) else '[{}]'.format(len(config.get_s(c, message.server.id))))
-				if config.is_detached(c, message.server.id):
-					content += ' [local value]'
+				try:
+					content += '\n{} [{}] = {}'.format(c, config.get_type(c) + ('*' if config.is_array(c) else ''), config.get_s(c, message.server.id) if not config.is_array(c) else '[{}]'.format(len(config.get_s(c, message.server.id))))
+					if config.is_detached(c, message.server.id):
+						content += ' [local value]'
+				except AttributeError:
+					content += '\n{} [{}] = {}'.format(c, config.get_type(c) + ('*' if config.is_array(c) else ''), config.get_s(c) if not config.is_array(c) else '[{}]'.format(len(config.get_s(c))))
 			content += '\n```'
 			await reply(message, content)
 			return
@@ -843,7 +846,10 @@ async def on_message(message):
 				content = 'Integer expected'
 				await reply(message, content)
 				return
-			config.set_s(splitargs[1], splitargs[2], message.server.id)
+			try:
+				config.set_s(splitargs[1], splitargs[2], message.server.id)
+			except AttributeError:
+				config.set_s(splitargs[1], splitargs[2])
 			config.saveconfig()
 			content = 'Set `{}` to `{}`'.format(splitargs[1], wrapbackticks(splitargs[2]))
 			await reply(message, content)
@@ -852,16 +858,26 @@ async def on_message(message):
 				content = 'That setting does not exist'
 				await reply(message, content)
 				return
-			content = 'Key: `{}`   Type: `{}`   Array: `{}`   Detachable: `{}`   Using: `{}`\n'.format(splitargs[1], config.get_type(splitargs[1]), config.is_array(splitargs[1]), config.is_detachable(splitargs[1]), ('Local value' if config.is_detached(splitargs[1], message.server.id) else 'Master value'))
+			try:
+				content = 'Key: `{}`   Type: `{}`   Array: `{}`   Detachable: `{}`   Using: `{}`\n'.format(splitargs[1], config.get_type(splitargs[1]), config.is_array(splitargs[1]), config.is_detachable(splitargs[1]), ('Local value' if config.is_detached(splitargs[1], message.server.id) else 'Master value'))
+			except AttributeError:
+				content = 'Key: `{}`   Type: `{}`   Array: `{}`   Detachable: `{}`   Using: `{}`\n'.format(splitargs[1], config.get_type(splitargs[1]), config.is_array(splitargs[1]), config.is_detachable(splitargs[1]), 'Master value')
 			if config.get_expl(splitargs[1]) != None:
 				content += 'Explanation: {}\n'.format(config.get_expl(splitargs[1]))
 			content += 'Value:'
 
 			if config.is_array(splitargs[1]):
-				for val in config.get_s(splitargs[1], message.server.id):
-					content += ' `{}`,'.format(val)
+				try:
+					for val in config.get_s(splitargs[1], message.server.id):
+						content += ' `{}`,'.format(val)
+				except AttributeError:
+					for val in config.get_s(splitargs[1]):
+						content += ' `{}`,'.format(val)
 			else:
-				content += ' `{}`\nDefault: `{}`'.format(config.get_s(splitargs[1], message.server.id), config.get_default(splitargs[1]))
+				try:
+					content += ' `{}`\nDefault: `{}`'.format(config.get_s(splitargs[1], message.server.id), config.get_default(splitargs[1]))
+				except AttributeError:
+					content += ' `{}`\nDefault: `{}`'.format(config.get_s(splitargs[1]), config.get_default(splitargs[1]))
 			await reply(message, content)
 		elif splitargs[0] == 'insert' or splitargs[0] == 'remove':
 			if not config.exists(splitargs[1]):
@@ -877,10 +893,16 @@ async def on_message(message):
 				await reply(message, content)
 				return
 			if splitargs[0] == 'insert':
-				config.insert_s(splitargs[1], splitargs[2], message.server.id)
+				try:
+					config.insert_s(splitargs[1], splitargs[2], message.server.id)
+				except AttributeError:
+					config.insert_s(splitargs[1], splitargs[2])
 				content = 'Inserted `{}` into array `{}`'.format(wrapbackticks(splitargs[2]), splitargs[1])
 			else:
-				config.remove_s(splitargs[1], splitargs[2], message.server.id)
+				try:
+					config.remove_s(splitargs[1], splitargs[2], message.server.id)
+				except AttributeError:
+					config.remove_s(splitargs[1], splitargs[2])
 				content = 'Removed `{}` from array `{}`'.format(wrapbackticks(splitargs[2]), splitargs[1])
 			config.saveconfig()
 			await reply(message, content)
@@ -894,11 +916,17 @@ async def on_message(message):
 				await reply(message, content)
 				return
 			if splitargs[0] == 'detach':
-				config.detach(splitargs[1], message.server.id)
-				content = 'Setting `{}` now uses a local value for this server.'.format(splitargs[1])
+				try:
+					config.detach(splitargs[1], message.server.id)
+					content = 'Setting `{}` now uses a local value for this server.'.format(splitargs[1])
+				except AttributeError:
+					content = 'Can’t detach values for non-servers.'
 			else:
-				config.reattach(splitargs[1], message.server.id)
-				content = 'Setting `{}` is now using the master value again on this server.'.format(splitargs[1])
+				try:
+					config.reattach(splitargs[1], message.server.id)
+					content = 'Setting `{}` is now using the master value again on this server.'.format(splitargs[1])
+				except AttributeError:
+					content = 'Can’t reattach values for non-servers.'
 			config.saveconfig()
 			await reply(message, content)
 		elif splitargs[0] == 'default':
@@ -906,7 +934,10 @@ async def on_message(message):
 				content = 'That setting does not exist'
 				await reply(message, content)
 				return
-			config.restore_default(splitargs[1], message.server.id)
+			try:
+				config.restore_default(splitargs[1], message.server.id)
+			except AttributeError:
+				config.restore_default(splitargs[1])
 			config.saveconfig()
 			content = 'Set `{}` back to default value of `{}`'.format(splitargs[1], wrapbackticks(config.get_default(splitargs[1])))
 			await reply(message, content)
