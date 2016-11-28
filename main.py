@@ -627,9 +627,8 @@ async def on_message(message):
 		else:
 			msg_start = '**`>`**``{}``**`$`**{}\n'.format(wrapbackticks(message.author.name), displaymessagecontent)
 		if isprivate:
-			content = 'Guesses are not accepted via PM.'
-			msg = msg_start + content
-			await client.send_message(message.channel, msg)
+			embed = emb.error('Guesses are not accepted via PM.')
+			await client.send_message(message.channel, msg_start, embed=embed)
 		if message.channel.id != '201130047736643584':
 			return
 		hangmanguessed = message.content[1:]
@@ -637,14 +636,12 @@ async def on_message(message):
 		if len(hangmanguessed) == 1:
 			# Have we already used that letter? And is it a valid letter?
 			if alphabet.find(hangmanguessed.upper()) == -1:
-				content = 'The character ``{}`` is invalid.'.format(wrapbackticks(hangmanguessed.upper()))
-				msg = msg_start + content
-				await client.send_message(message.channel, msg)
+				embed = emb.error('The character ``{}`` is invalid.'.format(wrapbackticks(hangmanguessed.upper())))
+				await client.send_message(message.channel, msg_start, embed=embed)
 				return
 			if guessedletters[alphabet.find(hangmanguessed.upper())]:
-				content = 'The letter **{}** has already been used.'.format(hangmanguessed.upper())
-				msg = msg_start + content
-				await client.send_message(message.channel, msg)
+				embed = emb.error('The letter **{}** has already been used.'.format(hangmanguessed.upper()))
+				await client.send_message(message.channel, msg_start, embed=embed)
 				return
 			# Ok, so does this letter occur in the word?
 			if hangmanchosenword.upper().find(hangmanguessed.upper()) != -1:
@@ -687,13 +684,11 @@ async def on_message(message):
 			elif len(hangmanguessed) != len(hangmanchosenword):
 				# We're not even trying. It's not the same length.
 				if len(hangmanguessed) == 0: # if before was "not even trying", this is -1 trying
-					content = 'You should probably enter in a letter.'
-					msg = msg_start + content
-					await client.send_message(message.channel, msg)
+					embed = emb.error('You should probably enter in a letter.')
+					await client.send_message(message.channel, msg_start, embed=embed)
 					return
-				content = '**``{}``** isn’t even the same length as the correct word. Please try again.'.format(wrapbackticks(hangmanguessed))
-				msg = msg_start + content
-				await client.send_message(message.channel, msg)
+				embed = emb.error('**``{}``** isn’t even the same length as the correct word. Please try again.'.format(wrapbackticks(hangmanguessed)))
+				await client.send_message(message.channel, msg_start, embed=embed)
 				return
 			else:
 				hangmanattempts -= 1
@@ -728,12 +723,12 @@ async def on_message(message):
 		arguments = None
 	command = command.split(' ', 1)[0]
 	if not isprivate and command in config.get_s('disabledcommands', message.server.id):
-		embed = discord.Embed(description='This command is currently disabled{}.'.format(' on this server' if config.is_detached('disabledcommands', message.server.id) else '', color=message.server.me.colour, timestamp=message.timestamp))
+		embed = emb.error('This command is currently disabled{}.'.format(' on this server' if config.is_detached('disabledcommands', message.server.id) else ''))
 		await reply(message, emb=embed)
 		return
 
 	if isprivate and command in config.get_s('disabledcommands'):
-		embed = discord.Embed(description='This command is currently disabled', color=message.server.me.colour, timestamp=message.timestamp)
+		embed = emb_error('This command is currently disabled.')
 		await reply(message, emb=embed)
 
 	if command == 'help':
