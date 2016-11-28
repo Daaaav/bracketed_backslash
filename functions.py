@@ -339,6 +339,9 @@ async def fetch(url):
 def logfailedcommand(command, message):
 	logging.info('{} attempted by {}#{} (uuid {}) at {} utc but failed'.format(command, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 
+def logcommand(command, message):
+	logging.info('{} called by {}#{} (uuid {}) at {} utc'.format(command, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+
 def infourl(query):
 	return 'https://tolp2.nl/showdiscordinfo.php?' + query
 
