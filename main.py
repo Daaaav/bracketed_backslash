@@ -776,7 +776,7 @@ async def on_message(message):
 			logfailedcommand(message, content)
 			await reply(message, emb=embed)
 			return
-		embed = emb.success('Restarting.')
+		embed = emb.success('Restarting.', True)
 		embed.add_field(name='Uptime', value=reltime(boottimeunix, True))
 		logcommand(command, arguments, message)
 		await reply(message, emb=embed)
@@ -787,7 +787,7 @@ async def on_message(message):
 			logfailedcommand(command, arguments, message)
 			await reply(message, emb=embed)
 			return
-		embed = emb.success('Killing.')
+		embed = emb.success('Killing.', True)
 		embed.add_field(name='Uptime', value=reltime(boottimeunix, True))
 		logcommand(command, arguments, message)
 		await reply(message, emb=embed)
