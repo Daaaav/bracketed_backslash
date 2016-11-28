@@ -767,7 +767,7 @@ async def on_message(message):
 		await reply(message, content)
 	elif command == 'restart':
 		if not is_operator(message.author):
-			embed = discord.Embed(description=t['op_only'], colour=message.server.me.colour)
+			embed = emb.error(t['op_only'])
 			logfailedcommand(message, content)
 			await reply(message, emb=embed)
 			return
@@ -778,7 +778,7 @@ async def on_message(message):
 		await os.execl(__file__, '')
 	elif command == 'kill':
 		if not is_operator(message.author):
-			embed = discord.Embed(description=t['op_only'], colour=message.server.me.colour)
+			embed = emb.error(t['op_only'])
 			logfailedcommand(command, arguments, message)
 			await reply(message, emb=embed)
 			return
@@ -789,9 +789,9 @@ async def on_message(message):
 		await client.logout()
 	elif command == 'config':
 		if not is_operator(message.author):
-			content = t['op_only']
-			logging.info('');
-			await reply(message, content)
+			embed = emb.error(t['op_only'])
+			logfailedcommand(message, content)
+			await reply(message, emb=embed)
 			return
 		if arguments == None:
 			content = (
@@ -811,8 +811,8 @@ async def on_message(message):
 		elif arguments == 'reload':
 			config.load()
 			logcommand(command, arguments, message)
-			content = 'Reloaded config.'
-			await reply(message, content)
+			embed = emb.success('Reloaded config.')
+			await reply(message, emb=embed)
 			return
 		elif arguments == 'list':
 			content = '```css'
@@ -833,16 +833,16 @@ async def on_message(message):
 
 		if splitargs[0] == 'set':
 			if not config.exists(splitargs[1]):
-				content = 'That setting does not exist'
-				await reply(message, content)
+				embed = emb.error('That setting does not exist')
+				await reply(message, emb=embed)
 				return
 			if config.is_array(splitargs[1]):
-				content = 'That doesn’t work for an array'
-				await reply(message, content)
+				embed = emb.error('That doesn’t work for an array')
+				await reply(message, emb=embed)
 				return
 			if config.get_type(splitargs[1]) == 'int' and not splitargs[2].isdigit():
-				content = 'Integer expected'
-				await reply(message, content)
+				embed = emb.error('Integer expected')
+				await reply(message, emb=embed)
 				return
 			try:
 				config.set_s(splitargs[1], splitargs[2], message.server.id)
@@ -850,12 +850,12 @@ async def on_message(message):
 				config.set_s(splitargs[1], splitargs[2])
 			config.saveconfig()
 			logcommand(command, arguments, message)
-			content = 'Set `{}` to `{}`'.format(splitargs[1], wrapbackticks(splitargs[2]))
-			await reply(message, content)
+			embed = emb.success('Set `{}` to `{}`'.format(splitargs[1], wrapbackticks(splitargs[2])))
+			await reply(message, emb=embed)
 		elif splitargs[0] == 'get':
 			if not config.exists(splitargs[1]):
-				content = 'That setting does not exist'
-				await reply(message, content)
+				embed = emb.error('That setting does not exist')
+				await reply(message, emb=embed)
 				return
 			try:
 				content = 'Key: `{}`   Type: `{}`   Array: `{}`   Detachable: `{}`   Using: `{}`\n'.format(splitargs[1], config.get_type(splitargs[1]), config.is_array(splitargs[1]), config.is_detachable(splitargs[1]), ('Local value' if config.is_detached(splitargs[1], message.server.id) else 'Master value'))
@@ -880,60 +880,60 @@ async def on_message(message):
 			await reply(message, content)
 		elif splitargs[0] == 'insert' or splitargs[0] == 'remove':
 			if not config.exists(splitargs[1]):
-				content = 'That setting does not exist'
-				await reply(message, content)
+				embed = emb.error('That setting does not exist')
+				await reply(message, emb=embed)
 				return
 			if not config.is_array(splitargs[1]):
-				content = 'That doesn’t work for something that is not an array'
-				await reply(message, content)
+				embed = emb.error('That doesn’t work for something that is not an array')
+				await reply(message, emb=embed)
 				return
 			if config.get_type(splitargs[1]) == 'int' and not splitargs[2].isdigit():
-				content = 'Integer expected'
-				await reply(message, content)
+				embed = emb.error('Integer expected')
+				await reply(message, emb=embed)
 				return
 			if splitargs[0] == 'insert':
 				try:
 					config.insert_s(splitargs[1], splitargs[2], message.server.id)
 				except AttributeError:
 					config.insert_s(splitargs[1], splitargs[2])
-				content = 'Inserted `{}` into array `{}`'.format(wrapbackticks(splitargs[2]), splitargs[1])
+				embed = emb.success('Inserted `{}` into array `{}`'.format(wrapbackticks(splitargs[2]), splitargs[1]))
 			else:
 				try:
 					config.remove_s(splitargs[1], splitargs[2], message.server.id)
 				except AttributeError:
 					config.remove_s(splitargs[1], splitargs[2])
-				content = 'Removed `{}` from array `{}`'.format(wrapbackticks(splitargs[2]), splitargs[1])
+				embed = emb.success('Removed `{}` from array `{}`'.format(wrapbackticks(splitargs[2]), splitargs[1]))
 			config.saveconfig()
 			logcommand(command, arguments, message)
-			await reply(message, content)
+			await reply(message, emb=embed)
 		elif splitargs[0] == 'detach' or splitargs[0] == 'reattach':
 			if not config.exists(splitargs[1]):
-				content = 'That setting does not exist'
-				await reply(message, content)
+				embed = emb.error('That setting does not exist')
+				await reply(message, emb=embed)
 				return
 			if not config.is_detachable(splitargs[1]):
-				content = 'That setting cannot have an independent local value.'
-				await reply(message, content)
+				embed = emb.error('That setting cannot have an independent local value.')
+				await reply(message, emb=embed)
 				return
 			if splitargs[0] == 'detach':
 				try:
 					config.detach(splitargs[1], message.server.id)
-					content = 'Setting `{}` now uses a local value for this server.'.format(splitargs[1])
+					embed = emb.success('Setting `{}` now uses a local value for this server.'.format(splitargs[1]))
 				except AttributeError:
-					content = 'Can’t detach values for non-servers.'
+					embed = emb.error('Can’t detach values for non-servers.')
 			else:
 				try:
 					config.reattach(splitargs[1], message.server.id)
-					content = 'Setting `{}` is now using the master value again on this server.'.format(splitargs[1])
+					embed = emb.success('Setting `{}` is now using the master value again on this server.'.format(splitargs[1]))
 				except AttributeError:
-					content = 'Can’t reattach values for non-servers.'
+					embed = emb.error('Can’t reattach values for non-servers.')
 			config.saveconfig()
 			logcommand(command, arguments, message)
-			await reply(message, content)
+			await reply(message, emb=embed)
 		elif splitargs[0] == 'default':
 			if not config.exists(splitargs[1]):
-				content = 'That setting does not exist'
-				await reply(message, content)
+				embed = emb.error('That setting does not exist')
+				await reply(message, emb=embed)
 				return
 			try:
 				config.restore_default(splitargs[1], message.server.id)
@@ -941,11 +941,11 @@ async def on_message(message):
 				config.restore_default(splitargs[1])
 			config.saveconfig()
 			logcommand(command, arguments, message)
-			content = 'Set `{}` back to default value of `{}`'.format(splitargs[1], wrapbackticks(config.get_default(splitargs[1])))
-			await reply(message, content)
+			embed = emb.success('Set `{}` back to default value of `{}`'.format(splitargs[1], wrapbackticks(config.get_default(splitargs[1]))))
+			await reply(message, emb=embed)
 		else:
-			content = '`{}` was not recognized'.format(splitargs[0])
-			await reply(message, content)
+			embed = emb.error('`{}` was not recognized'.format(splitargs[0]))
+			await reply(message, emb=embed)
 	elif command == 'echo':
 		if arguments == None:
 			arguments = ''
@@ -988,24 +988,24 @@ async def on_message(message):
 		await reply(message, content)
 	elif command == 'hangman':
 		if hangmanactive:
-			content = 'ERROR: Hangman is already running. It can be aborted by the starter or by a mod with `\stophangman`.'
-			await reply(message, content)
+			embed = emb.error('Hangman is already running. It can be aborted by the starter or by a mod with `\stophangman`.')
+			await reply(message, emb=embed)
 			return
 		if not isprivatemessage(message.server):
-			content = 'For now, this can only be run via DM.'
-			await reply(message, content)
+			embed = emb.error('For now, this can only be run via DM.')
+			await reply(message, emb=embed)
 			return
 		if arguments == None:
-			content = 'Please specify a word.'
-			await reply(message, content)
+			embed = emb.error('Please specify a word.')
+			await reply(message, emb=embed)
 			return
 		if not arguments.isalpha():
-			content = 'ERROR: Words can only consist of letters A-Z'
-			await reply(message, content)
+			embed = emb.error('Words can only consist of letters A-Z')
+			await reply(message, emb=embed)
 			return
 		if len(arguments) > 50:
-			content = 'ERROR: Sorry, but your word is too long. It can be 50 characters max.'
-			await reply(message, content)
+			embed = emb.error('Sorry, but your word is too long. It can be 50 characters max.')
+			await reply(message, emb=embed)
 			return
 
 		hangmanchosenword = arguments
@@ -1023,12 +1023,12 @@ async def on_message(message):
 		await reply(message, content)
 	elif command == 'stophangman':
 		if not hangmanactive:
-			content = 'ERROR: Can’t abort hangman because it’s not running.'
-			await reply(message, content)
+			embed = emb.error('Can’t abort hangman because it’s not running.')
+			await reply(message, emb=embed)
 			return
 		elif not is_mod(message.author) and message.author.id != hangmanstarter.id:
-			content = 'ERROR: Can’t abort hangman because you haven’t started this game.'
-			await reply(message, content)
+			embed = emb.error('Can’t abort hangman because you haven’t started this game.')
+			await reply(message, emb=embed)
 			return
 
 		hangmanactive = False
@@ -1040,8 +1040,8 @@ async def on_message(message):
 	elif command == 'findu' or command == 'findup':
 		targetmember = get_member_input(message.server, arguments)
 		if targetmember == None:
-			content = 'Unable to find that member. ' + t['specify_user']
-			await reply(message, content)
+			embed = emb.error('Unable to find that member. ' + t['specify_user'])
+			await reply(message, emb=embed)
 			return
 		if targetmember.nick == None:
 			displaynick = '**`No Nickname`**'
@@ -1091,13 +1091,13 @@ async def on_message(message):
 		await reply(message, content, embed)
 	elif command == 'softban':
 		if not is_mod(message.author):
-			content = t['mod_only']
+			embed = emb.error(t['mod_only'])
 			logfailedcommand(command, arguments, message)
-			await reply(message, content)
+			await reply(message, emb=embed)
 			return
 		elif message.server.id != productionserver:
-			content = t['production_only']
-			await reply(message, content)
+			embed = emb.error(t['production_only'])
+			await reply(message, emb=embed)
 			return
 
 		try:
@@ -1111,21 +1111,22 @@ async def on_message(message):
 			)
 			await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='220643748508467220')) # The banned role
 		except(AttributeError,TypeError):
-			content = t['specify_user']
-			await reply(message, content)
+			embed = emb.error(t['specify_user'])
+			await reply(message, emb=embed)
 			return
 
-		content = ':no_entry: <@{}> has been softbanned.'.format(targetmember.id)
-		await reply(message, content)
+		content = targetmember.mention
+		embed = emb.success(':no_entry: <@{}> has been softbanned.'.format(targetmember.id))
+		await reply(message, content, emb=embed)
 	elif command == 'nononly' or command == 'nogenmen' or command == 'nocedule' or command == 'notts' or command == 'noreact':
 		if not is_mod(message.author):
-			content = t['mod_only']
+			embed = emb.error(t['mod_only'])
 			logfailedcommand(command, arguments, message)
-			await reply(message, content)
+			await reply(message, emb=embed)
 			return
 		elif message.server.id != productionserver:
-			content = t['production_only']
-			await reply(message, content)
+			embed = emb.error(t['production_only'])
+			await reply(message, emb=embed)
 			return
 		roletoadd = {
 			'nononly': '173240966575161344',
@@ -1145,60 +1146,65 @@ async def on_message(message):
 			targetmember = get_member_input(message.server, arguments)
 			await client.add_roles(targetmember, discord.utils.get(message.server.roles, id=roletoadd[command]))
 		except(AttributeError,TypeError):
-			content = t['specify_user']
-			await reply(message, content)
+			embed = emb.error(t['specify_user'])
+			await reply(message, emb=embed)
 			return
-		content = 'Gave <@{}> the {} role.'.format(targetmember.id, rolelabel[command])
-		await reply(message, content)
+		content = targetmember.mention
+		embed = emb.success('Gave <@{}> the {} role.'.format(targetmember.id, rolelabel[command]))
+		await reply(message, content, emb=embed)
 	elif command == 'nonick':
 		if not is_mod(message.author):
-			content = t['mod_only']
+			embed = emb.error(t['mod_only'])
 			logfailedcommand(command, arguments, message)
-			await reply(message, content)
+			await reply(message, emb=embed)
 			return
 		elif message.server.id != productionserver:
-			content = t['production_only']
-			await reply(message, content)
+			embed = emb.error(t['production_only'])
+			await reply(message, emb=embed)
 			return
 		try:
 			targetmember = get_member_input(message.server, arguments)
 			await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='236925451216355338'))
 			await client.remove_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
 		except(AttributeError,TypeError):
-			content = t['specify_user']
-			await reply(message, content)
+			embed = emb.error(t['specify_user'])
+			await reply(message, emb=embed)
 			return
-		content = 'Gave <@{}> the tOLPer who can’t change nickname role, and removed the tOLPer role from them.'.format(targetmember.id)
-		await reply(message, content)
+		content = targetmember.mention
+		embed = emb.success('Gave <@{}> the tOLPer who can’t change nickname role, and removed the tOLPer role from them.'.format(targetmember.id))
+		await reply(message, content, emb=embed)
 		return
 	elif command == 'voicemute' or command == 'voiceunmute':
 		targetmember = get_member_input(message.server, arguments)
+		content = None
 		try:
 			if not is_mod(message.author):
-				content = t['mod_only']
+				embed = emb.error(t['mod_only'])
 				logfailedcommand(command, arguments, message)
 			elif targetmember.voice.voice_channel == None:
-				content = 'User is not in a voice channel.'
+				embed = emb.error('User is not in a voice channel.')
 			elif command == 'voicemute':
 				await client.server_voice_state(targetmember, mute=1)
-				content = 'Voice muted <@{}>.'.format(targetmember.id)
+				content = targetmember.mention
+				embed = emb.success('Voice muted <@{}>.'.format(targetmember.id))
 			elif command == 'voiceunmute':
 				await client.server_voice_state(targetmember, mute=0)
-				content = 'Voice unmuted <@{}>.'.format(targetmember.id)
+				content = targetmember.mention
+				embed = emb.success('Voice unmuted <@{}>.'.format(targetmember.id))
 		except AttributeError:
-			content = t['specify_user']
+			embed = emb.error(t['specify_user'])
 		except discord.errors.Forbidden:
-			content = t['no_permission']
-		await reply(message, content)
+			embed = emb.error(t['no_permission'])
+		await reply(message, content, emb=embed)
 	elif command == 'rolerst':
 		if not is_mod(message.author):
-			content = t['mod_only']
+			embed = emb.error(t['mod_only'])
 			logfailedcommand(command, arguments, message)
-			await reply(message, content)
+			await reply(message, emb=embed)
 			return
 		elif message.server.id != productionserver:
-			content = t['production_only']
-			await reply(message, content)
+			embed = emb.error(t['production_only'])
+			await reply(message, emb=embed)
 			return
 
 		try:
@@ -1215,42 +1221,43 @@ async def on_message(message):
 			if not is_bot(targetmember):
 				await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
 		except(AttributeError,TypeError):
-			content = t['specify_user']
-			await reply(message, content)
+			embed = emb.error(t['specify_user'])
+			await reply(message, emb=embed)
 			return
-		content = 'Reset roles for <@{}> back to normal.'.format(targetmember.id)
-		await reply(message, content)
+		content = targetmember.mention
+		embed = emb.success('Reset roles for <@{}> back to normal.'.format(targetmember.id))
+		await reply(message, content, emb=embed)
 	elif command == 'rolecacherst':
 		if not is_mod(message.author):
-			content = t['mod_only']
+			embed = emb.error(t['mod_only'])
 			logfailedcommand(command, arguments, message)
-			await reply(message, content)
+			await reply(message, emb=embed)
 			return
 		elif message.server.id != productionserver:
-			content = t['production_only']
-			await reply(message, content)
+			embed = emb.error(t['production_only'])
+			await reply(message, emb=embed)
 			return
 		elif get_member_input(message.server, arguments) != None:
-			content = 'That member is apparently still on this server! Not removing from the cache.'
-			await reply(message, content)
+			embed = emb.error('That member is apparently still on this server! Not removing from the cache.')
+			await reply(message, emb=embed)
 			return
 
 		if removerolecache(arguments):
-			content = 'Member {} successfully removed from role cache.'.format(arguments)
-			await reply(message, content)
+			embed = emb.success('Member {} successfully removed from role cache.'.format(arguments))
+			await reply(message, emb=embed)
 			rolecachesave()
 		else:
-			content = 'Member {} cannot be found in the role cache. Please note you have to enter an ID, not any form of name!'.format(arguments)
-			await reply(message, content)
+			embed = emb.error('Member {} cannot be found in the role cache. Please note you have to enter an ID, not any form of name!'.format(arguments))
+			await reply(message, emb=embed)
 	elif command == 'rolesync':
 		if not is_mod(message.author):
-			content = t['mod_only']
+			embed = emb.error(t['mod_only'])
 			logfailedcommand(command, arguments, message)
-			await reply(message, content)
+			await reply(message, emb=embed)
 			return
 		elif message.server.id != productionserver:
-			content = t['production_only']
-			await reply(message, content)
+			embed = emb.error(t['production_only'])
+			await reply(message, emb=embed)
 			return
 
 		for mem in message.server.members:
@@ -1258,20 +1265,20 @@ async def on_message(message):
 
 		rolecachesave()
 
-		content = 'Synced roles.'
-		await reply(message, content)
+		embed = emb.success('Synced roles.')
+		await reply(message, emb=embed)
 	elif command == 'rules' or command == 'rule':
 		if isprivatemessage(message.server):
 			content = 'Rules:\n**1.** I am always right.\n**2.** If I am not right, rule 1 applies.'
 			await reply(message, content)
 			return
 		if message.server.id in disabledrules and not is_mod(message.author):
-			content = 'The rules system is currently disabled for this server.'
-			await reply(message, content)
+			embed = emb.error('The rules system is currently disabled for this server.')
+			await reply(message, emb=embed)
 			return
 		if not message.server.id in rules:
-			content = 'Rules are not (yet) set for this server.'
-			await reply(message, content)
+			embed = emb.warning('Rules are not (yet) set for this server.')
+			await reply(message, emb=embed)
 			return
 		if arguments != None and arguments.isdigit():
 			try:
@@ -1291,20 +1298,20 @@ async def on_message(message):
 		await reply(message, content)
 	elif command == 'rulefind' or command == 'rulesfind':
 		if isprivatemessage(message.server):
-			content = 'Alright, this isn’t a server, this is our private conversation. I run on multiple servers with different rules, you know.'
-			await reply(message, content)
+			embed = emb.error('Alright, this isn’t a server, this is our private conversation. I run on multiple servers with different rules, you know.')
+			await reply(message, emb=embed)
 			return
 		if message.server.id in disabledrules and not is_mod(message.author):
-			content = 'The rules system is currently disabled for this server.'
-			await reply(message, content)
+			embed = emb.error('The rules system is currently disabled for this server.')
+			await reply(message, emb=embed)
 			return
 		if not message.server.id in rules:
-			content = 'Rules are not (yet) set for this server.'
-			await reply(message, content)
+			embed = emb.warning('Rules are not (yet) set for this server.')
+			await reply(message, emb=embed)
 			return
 		if arguments == None:
-			content = 'Please enter a search term.'
-			await reply(message, content)
+			embed = emb.error('Please enter a search term.')
+			await reply(message, emb=embed)
 			return
 		matched = False
 		n = 1
@@ -1315,18 +1322,19 @@ async def on_message(message):
 				matched = True
 			n += 1
 		if not matched:
-			content = 'No rules on server `{}` matching `{}`.'.format(wrapbackticks(message.server.name), wrapbackticks(arguments))
+			embed = emb.error('No rules on server `{}` matching `{}`.'.format(wrapbackticks(message.server.name), wrapbackticks(arguments)))
+			await reply(message, emb=embed)
 		await reply(message, content)
 	elif command == 'ruleadd' or command == 'addrule':
 		if not is_mod(message.author):
-			content = t['mod_only']
+			embed = emb.error(t['mod_only'])
 			logfailedcommand(command, arguments, message)
 
-			await reply(message, content)
+			await reply(message, emb=embed)
 			return
 		if arguments == None:
-			content = 'I’m not going to think up any rules by myself.'
-			await reply(message, content)
+			embed = emb.error('I’m not going to think up any rules by myself.')
+			await reply(message, emb=embed)
 			return
 		if not message.server.id in rules:
 			rules[message.server.id] = []
@@ -1342,22 +1350,23 @@ async def on_message(message):
 		else:
 			rules[message.server.id].append(arguments)
 			content = 'New rule {} added:\n{}'.format(len(rules[message.server.id]), arguments) # ...and this one is "added". That is on purpose, not an inconsistency.
+		embed = emb.success(content)
 		rulesave()
-		await reply(message, content)
+		await reply(message, emb=embed)
 	elif command == 'ruleedit' or command == 'editrule':
 		if not is_mod(message.author):
-			content = t['mod_only']
+			embed = emb.error(t['mod_only'])
 			logfailedcommand(command, arguments, message)
 
-			await reply(message, content)
+			await reply(message, emb=embed)
 			return
 		if arguments == None:
-			content = 'This command expects you to enter some more info, maybe read its help entry.'
-			await reply(message, content)
+			embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
+			await reply(message, emb=embed)
 			return
 		if not message.server.id in rules:
-			content = 'No rules to edit.'
-			await reply(message, content)
+			embed = emb.error('No rules to edit.')
+			await reply(message, emb=embed)
 			return
 
 		splitargs = arguments.split(' ', 1)
@@ -1365,31 +1374,31 @@ async def on_message(message):
 			try:
 				rules[message.server.id][int(splitargs[0])-1]
 			except IndexError:
-				content = 'Rule {} does not appear to exist.'.format(int(splitargs[0]))
-				await reply(message, content)
+				embed = emb.error('Rule {} does not appear to exist.'.format(int(splitargs[0])))
+				await reply(message, emb=embed)
 				return
 
-			content = 'Rule {} successfully edited from:\n{}\nTo:\n{}'.format(int(splitargs[0]), rules[message.server.id][int(splitargs[0])-1], splitargs[1])
+			embed = emb.success('Rule {} successfully edited from:\n{}\nTo:\n{}'.format(int(splitargs[0]), rules[message.server.id][int(splitargs[0])-1], splitargs[1]))
 
 			rules[message.server.id][int(splitargs[0])-1] = splitargs[1]
 			rulesave()
 		else:
-			content = 'Invalid rule number given, just check the help entry.'
-		await reply(message, content)
+			embed = emb.error('Invalid rule number given, just check the help entry.')
+		await reply(message, emb=embed)
 	elif command == 'rulemove' or command == 'moverule':
 		if not is_mod(message.author):
-			content = t['mod_only']
+			embed = emb.error(t['mod_only'])
 			logfailedcommand(command, arguments, message)
 
-			await reply(message, content)
+			await reply(message, emb=embed)
 			return
 		if arguments == None:
-			content = 'This command expects you to enter some more info, maybe read its help entry.'
-			await reply(message, content)
+			embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
+			await reply(message, emb=embed)
 			return
 		if not message.server.id in rules:
-			content = 'No rules to move.'
-			await reply(message, content)
+			embed = emb.error('No rules to move.')
+			await reply(message, emb=embed)
 			return
 
 		splitargs = arguments.split(' ', 1)
@@ -1398,8 +1407,8 @@ async def on_message(message):
 				rules[message.server.id][int(splitargs[0])-1]
 				rules[message.server.id][int(splitargs[1])-1]
 			except IndexError:
-				content = 'Either rule {} does not exist or {} is not a slot it can be moved to.'.format(int(splitargs[0]), int(splitargs[1]))
-				await reply(message, content)
+				embed = emb.error('Either rule {} does not exist or {} is not a slot it can be moved to.'.format(int(splitargs[0]), int(splitargs[1])))
+				await reply(message, emb=embed)
 				return
 
 			rulecontent = rules[message.server.id][int(splitargs[0])-1]
@@ -1407,57 +1416,57 @@ async def on_message(message):
 			rules[message.server.id].insert(int(splitargs[1])-1, rulecontent)
 			rulesave()
 
-			content = 'Rule {} successfully moved to number {}.'.format(int(splitargs[0]), int(splitargs[1]))
+			embed = emb.success('Rule {} successfully moved to number {}.'.format(int(splitargs[0]), int(splitargs[1])))
 		else:
-			content = 'Invalid rule number(s) given, just check the help entry.'
-		await reply(message, content)
+			embed = emb.error('Invalid rule number(s) given, just check the help entry.')
+		await reply(message, emb=embed)
 	elif command == 'ruleremove' or command == 'removerule':
 		if not is_mod(message.author):
-			content = t['mod_only']
+			embed = emb.error(t['mod_only'])
 			logfailedcommand(command, arguments, message)
 
-			await reply(message, content)
+			await reply(message, emb=embed)
 			return
 		if arguments == None:
-			content = 'This command expects you to enter some more info, maybe read its help entry.'
-			await reply(message, content)
+			embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
+			await reply(message, emb=embed)
 			return
 		if not message.server.id in rules:
-			content = 'No rules to delete.'
-			await reply(message, content)
+			embed = emb.error('No rules to delete.')
+			await reply(message, emb=embed)
 			return
 
 		if arguments.isdigit():
 			try:
 				rules[message.server.id][int(arguments)-1]
 			except IndexError:
-				content = 'Rule {} does not appear to exist.'.format(int(arguments))
-				await reply(message, content)
+				embed = emb.error('Rule {} does not appear to exist.'.format(int(arguments)))
+				await reply(message, emb=embed)
 				return
 
-			content = 'Rule {} successfully removed:\n{}'.format(int(arguments), rules[message.server.id][int(arguments)-1])
+			embed = emb.success('Rule {} successfully removed:\n{}'.format(int(arguments), rules[message.server.id][int(arguments)-1]))
 
 			rules[message.server.id].remove(rules[message.server.id][int(arguments)-1])
 			rulesave()
 		else:
-			content = 'Invalid rule number given, just check the help entry.'
-		await reply(message, content)
+			embed = emb.error('Invalid rule number given, just check the help entry.')
+		await reply(message, emb=embed)
 	elif command == 'rulemaint':
 		if not is_mod(message.author):
-			content = t['mod_only']
+			embed = emb.error(t['mod_only'])
 			logfailedcommand(command, arguments, message)
 
-			await reply(message, content)
+			await reply(message, emb=embed)
 			return
 		if message.server.id in disabledrules:
 			disabledrules.remove(message.server.id)
-			content = 'Rules system enabled for this server.'
+			embed = emb.success('Rules system enabled for this server.')
 		else:
 			disabledrules.append(message.server.id)
-			content = 'Rules system disabled for this server.'
+			embed = emb.success('Rules system disabled for this server.')
 		with open('disabledrules.json', 'w') as outfile:
 			json.dump(disabledrules, outfile)
-		await reply(message, content)
+		await reply(message, emb=embed)
 	elif command == 'info':
 		persontocheck = get_member_input(message.server, arguments)
 		yesperm = '☑'
@@ -1465,8 +1474,8 @@ async def on_message(message):
 		try:
 			perms = discord.Channel.permissions_for(message.channel, persontocheck)
 		except AttributeError:
-			content = t['specify_user']
-			await reply(message, content)
+			embed = emb.error(t['specify_user'])
+			await reply(message, emb=embed)
 			return
 
 		leftover = []
@@ -1564,8 +1573,8 @@ async def on_message(message):
 	elif command == 'getrawmessagecontent':
 		if not is_mod(message.author):
 			logfailedcommand(command, arguments, message)
-			content = t['mod_only']
-			await reply(message, content)
+			embed = emb.error(t['mod_only'])
+			await reply(message, emb=embed)
 			return
 		try:
 			argsplit = arguments.split(' ', 1)
@@ -1575,47 +1584,52 @@ async def on_message(message):
 			getchannel = client.get_channel(channelid)
 			getmessage = await client.get_message(getchannel, arg1)
 			content = '``{}``'.format(wrapbackticks(getmessage.content[:1900]))
-		except AttributeError:
-			content = 'Invalid arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command)
-		except IndexError:
-			content = 'Invalid amount of arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command)
-		except discord.errors.HTTPException:
-			content = 'Invalid message ID given. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command)
-		await reply(message, content)
-	elif command == 'addcontrib' or command == 'removecontrib':
-		if isprivate:
-			content = t['noprivate']
 			await reply(message, content)
 			return
+		except AttributeError:
+			embed = emb.error('Invalid arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command))
+		except IndexError:
+			embed = emb.error('Invalid amount of arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command))
+		except discord.errors.HTTPException:
+			embed = emb.error('Invalid message ID given. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command))
+		await reply(message, emb=embed)
+	elif command == 'addcontrib' or command == 'removecontrib':
+		if isprivate:
+			embed = emb.error(t['noprivate'])
+			await reply(message, emb=embed)
+			return
 		if message.server.id != productionserver:
-			content = t['production_only']
-			await reply(message, content)
+			embed = emb.error(t['production_only'])
+			await reply(message, emb=embed)
 			return
 		contribmodrole = discord.utils.get(message.server.roles, id='249695436812713984')
 		contribrole = discord.utils.get(message.server.roles, id='241728185937559552')
 		targetmember = get_member_input(message.server, arguments)
 		if not contribmodrole in message.author.roles:
-			content = 'Permission denied. This command can only be used by a tOLP Contributor Moderator.'
-			await reply(message, content)
+			embed = emb.error('Permission denied. This command can only be used by a tOLP Contributor Moderator.')
+			await reply(message, emb=embed)
 			return
 		try:
 			if command == 'addcontrib':
 				if contribrole in targetmember.roles:
-					content = 'The user is already a tOLP Contributor.'
-					await reply(message, content)
+					embed = emb.warning('The user is already a tOLP Contributor.')
+					await reply(message, emb=embed)
 					return
 				await client.add_roles(targetmember, contribrole)
-				content = 'Made <@{}> a tOLP Contributor.'.format(targetmember.id)
+				content = targetmember.mention
+				embed = emb.success('Made <@{}> a tOLP Contributor.'.format(targetmember.id))
 			if command == 'removecontrib':
 				if contribrole not in targetmember.roles:
-					content = 'The user is already not a tOLP Contributor.'
-					await reply(message, content)
+					embed = emb.warning('The user is already not a tOLP Contributor.')
+					await reply(message, emb=embed)
 					return
 				await client.remove_roles(targetmember, contribrole)
-				content = 'Made <@{}> not a tOLP Contributor.'.format(targetmember.id)
+				content = targetmember.mention
+				embed = emb.success('Made <@{}> not a tOLP Contributor.'.format(targetmember.id))
 		except AttributeError:
-			content = t['specify_user']
-		await reply(message, content)
+			content = None
+			embed = emb.error(t['specify_user'])
+		await reply(message, content, emb=embed)
 	elif command == 'countpins':
 		if arguments == None:
 			getchannel = message.channel
@@ -1625,13 +1639,14 @@ async def on_message(message):
 		try:
 			pins = await client.pins_from(getchannel)
 			content = '{} currently has {} pins, {} remaining.'.format(getchannel.mention, len(pins), 50-len(pins))
+			await reply(message, content)
 		except AttributeError:
-			content = 'The channel doesn’t exist, has been deleted, or it’s not a channel at all. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command)
-		await reply(message, content)
+			embed = emb.error('The channel doesn’t exist, has been deleted, or it’s not a channel at all. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command))
+			await reply(message, emb=embed)
 	elif command == 'countallpins':
 		if isprivate:
-			content = 'No channels to iterate through, try `\countpins` instead'
-			await reply(message, content)
+			embed = emb.error('No channels to iterate through, try `\countpins` instead')
+			await reply(message, emb=embed)
 			return
 		content = ''
 		for chan in message.server.channels:
@@ -1683,15 +1698,17 @@ async def on_message(message):
 	elif command == 'gamestatus':
 		if not is_operator(message.author):
 			logfailedcommand(command, arguments, message)
-			content = t['op_only']
+			embed = emb.error(t['op_only'])
 		else:
 			await client.change_presence(game=discord.Game(name=arguments))
-			content = 'Set game status to: ``{}``'.format(wrapbackticks(arguments))
-		await reply(message, content)
+			embed = emb.success('Set game status to: ``{}``'.format(wrapbackticks(arguments)))
+		await reply(message, emb=embed)
 	elif command == 'eval' or command == 'evalawait' or command == 'evalfile' or command == 'evalawaitfile':
 		if message.author.id != ownerid:
 			logfailedcommand(command, arguments, message)
-			content = t['owner_only']
+			embed = emb.error(t['owner_only'])
+			await reply(message, emb=embed)
+			return
 		else:
 			try:
 				if command == 'eval':
@@ -1719,14 +1736,14 @@ async def on_message(message):
 				'{}\n'
 				'End of results.'
 			).format(content))
-			content = 'Content too large to print. Printing to terminal instead.'
-			await reply(message, content)
+			embed = emb.warning('Content too large to print. Printing to terminal instead.')
+			await reply(message, emb=embed)
 	else:
 		if altinvokeractive:
 			return # do not print error message if command is invalid
 		else:
-			content = 'Invalid command. Input `\help` for a list of valid commands.'
-			await reply(message, content)
+			embed = emb.warning('Invalid command. Input `\help` for a list of valid commands.')
+			await reply(message, emb=embed)
 
 @client.event
 async def on_message_delete(message): # when a message gets deleted
