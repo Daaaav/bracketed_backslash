@@ -1581,6 +1581,10 @@ async def on_message(message):
 			content = 'Invalid message ID given. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command)
 		await reply(message, content)
 	elif command == 'addcontrib' or command == 'removecontrib':
+		if isprivate:
+			content = t['noprivate']
+			await reply(message, content)
+			return
 		if message.server.id != productionserver:
 			content = t['production_only']
 			await reply(message, content)
