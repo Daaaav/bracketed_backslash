@@ -1529,20 +1529,13 @@ async def on_message(message):
 		embed.set_thumbnail(url=client.user.avatar_url)
 		embed.set_footer(text='Uptime Statistics', icon_url=client.user.avatar_url)
 		embed.add_field(name='Boot Time', value=boottime)
-		embed.add_field(name='Current Time', value=time.strftime(config.get_s('timeformat', message.server.id)))
+		try:
+			now = config.get_s('timeformat', message.server.id)
+		except AttributeError:
+			now = config.get_s('timeformat')
+		embed.add_field(name='Current Time', value=time.strftime(now))
 		embed.add_field(name='Bot Uptime', value=reltime(boottimeunix, True))
 		embed.add_field(name='Host Uptime', value=hostuptime.decode('utf-8'))
-		content = (
-			'**`Boot time:`**        `{}`\n'
-			'**`Current time:`** `{}`\n'
-			'**`Bot Uptime:`**      `{}`\n'
-			'**`Host Uptime:`**   `{}`'
-		).format(
-			boottime,
-			time.strftime(config.get_s('timeformat', message.server.id)),
-			reltime(boottimeunix, True),
-			hostuptime.decode('utf-8'),
-		)
 		await reply(message, None, emb=embed)
 	elif command == '*formatting*':
 		content = 'That’s italicized formatting.'
