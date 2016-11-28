@@ -36,6 +36,8 @@ import traceback
 import subprocess
 
 import config
+import col
+import emb
 
 config.load()
 
@@ -774,7 +776,7 @@ async def on_message(message):
 			logfailedcommand(message, content)
 			await reply(message, emb=embed)
 			return
-		embed = discord.Embed(description='_Restarting._', colour=0x11c11e)
+		embed = emb.success('Restarting.')
 		embed.add_field(name='Uptime', value=reltime(boottimeunix, True))
 		logcommand(command, arguments, message)
 		await reply(message, emb=embed)
@@ -785,7 +787,7 @@ async def on_message(message):
 			logfailedcommand(command, arguments, message)
 			await reply(message, emb=embed)
 			return
-		embed = discord.Embed(description='_Killing._', colour=0x11c11e)
+		embed = emb.success('Killing.')
 		embed.add_field(name='Uptime', value=reltime(boottimeunix, True))
 		logcommand(command, arguments, message)
 		await reply(message, emb=embed)
@@ -1525,11 +1527,11 @@ async def on_message(message):
 		content = 'nah'
 		await reply(message, content)
 	elif command == 'botok':
-		embed = discord.Embed(description='_Bot is okay._', colour=0x11c11e)
+		embed = emb.success('Bot is okay.')
 		await reply(message, emb=embed)
 	elif command == 'uptime':
 		hostuptime = subprocess.Popen(['uptime', '-p'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
-		embed = discord.Embed(colour=0x11c11e, timestamp=message.timestamp)
+		embed = discord.Embed(colour=col.r_success, timestamp=message.timestamp)
 		embed.set_author(name='Uptime Statistics', icon_url=client.user.avatar_url)
 		embed.set_thumbnail(url=client.user.avatar_url)
 		embed.set_footer(text='Uptime Statistics', icon_url=client.user.avatar_url)
