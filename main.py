@@ -1324,6 +1324,7 @@ async def on_message(message):
 		if not matched:
 			embed = emb.error('No rules on server `{}` matching `{}`.'.format(wrapbackticks(message.server.name), wrapbackticks(arguments)))
 			await reply(message, emb=embed)
+			return
 		await reply(message, content)
 	elif command == 'ruleadd' or command == 'addrule':
 		if not is_mod(message.author):
