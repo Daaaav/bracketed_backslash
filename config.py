@@ -11,14 +11,6 @@ import copy
 # uid: user/member Discord ID (members can be searched)
 # cid: channel ID (channels can be mentioned)
 configs = {
-	'test': {
-		'default': 2,
-		'type': 'int',
-		'is_array': False,
-		'expl': 'A testing setting to see whether everything works',
-		'detachable': True,
-		'shown': True,
-	},
 	'gamestatus': {
 		'default': '​',
 		'type': 'str',
