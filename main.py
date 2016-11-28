@@ -1860,7 +1860,7 @@ async def on_member_update(before, after):
 		embed.set_thumbnail(url=before.avatar_url)
 		embed.set_image(url=after.avatar_url)
 		embed.add_field(name='Older Avatar URL (Thumbnail)', value=before.avatar_url)
-		embed.add_field(name='Newer Avatar URL (Inset Image)', value=after.avatar_url)
+		embed.add_field(name='Newer Avatar URL (Inset Image)', value=after.avatar_url, inline=False)
 		await client.send_message(specialchannel, embed=embed)
 
 @client.event
