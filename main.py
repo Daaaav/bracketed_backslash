@@ -771,7 +771,7 @@ async def on_message(message):
 	elif command == 'restart':
 		if not is_operator(message.author):
 			embed = discord.Embed(description=t['op_only'], colour=message.server.me.colour)
-			logging.info('bot restart tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			logfailedcommand(message, content)
 			await reply(message, emb=embed)
 			return
 		embed = discord.Embed(description='_Restarting._', colour=0x11c11e)
