@@ -774,7 +774,7 @@ async def on_message(message):
 			logging.info('bot restart tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			await reply(message, None, emb=embed)
 			return
-		embed = discord.Embed(description='Restarting.', colour=message.server.me.colour)
+		embed = discord.Embed(description='Restarting.', colour=0x11c11e)
 		embed.add_field(name='Uptime', value=reltime(boottimeunix, True))
 		logging.info('bot restart called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 		await reply(message, None, emb=embed)
