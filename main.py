@@ -727,12 +727,12 @@ async def on_message(message):
 	command = command.split(' ', 1)[0]
 	if not isprivate and command in config.get_s('disabledcommands', message.server.id):
 		embed = discord.Embed(description='This command is currently disabled{}.'.format(' on this server' if config.is_detached('disabledcommands', message.server.id) else '', color=message.server.me.colour, timestamp=message.timestamp))
-		await reply(message, None, emb=embed)
+		await reply(message, emb=embed)
 		return
 
 	if isprivate and command in config.get_s('disabledcommands'):
 		embed = discord.Embed(description='This command is currently disabled', color=message.server.me.colour, timestamp=message.timestamp)
-		await reply(message, None, emb=embed)
+		await reply(message, emb=embed)
 
 	if command == 'help':
 		content = (
@@ -772,23 +772,23 @@ async def on_message(message):
 		if not is_operator(message.author):
 			embed = discord.Embed(description=t['op_only'], colour=message.server.me.colour)
 			logging.info('bot restart tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-			await reply(message, None, emb=embed)
+			await reply(message, emb=embed)
 			return
 		embed = discord.Embed(description='_Restarting._', colour=0x11c11e)
 		embed.add_field(name='Uptime', value=reltime(boottimeunix, True))
 		logging.info('bot restart called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-		await reply(message, None, emb=embed)
+		await reply(message, emb=embed)
 		await os.execl(__file__, '')
 	elif command == 'kill':
 		if not is_operator(message.author):
 			embed = discord.Embed(description=t['op_only'], colour=message.server.me.colour)
 			logfailedcommand(command, message)
-			await reply(message, None, emb=embed)
+			await reply(message, emb=embed)
 			return
 		embed = discord.Embed(description='_Killing._', colour=0x11c11e)
 		embed.add_field(name='Uptime', value=reltime(boottimeunix, True))
 		logging.info('bot kill called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-		await reply(message, None, emb=embed)
+		await reply(message, emb=embed)
 		await sys.exit()
 	elif command == 'config':
 		if not is_operator(message.author):
@@ -1521,7 +1521,7 @@ async def on_message(message):
 		await reply(message, content)
 	elif command == 'botok':
 		embed = discord.Embed(description='_Bot is okay._', colour=0x11c11e)
-		await reply(message, None, emb=embed)
+		await reply(message, emb=embed)
 	elif command == 'uptime':
 		hostuptime = subprocess.Popen(['uptime', '-p'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
 		embed = discord.Embed(colour=0x11c11e, timestamp=message.timestamp)
@@ -1536,7 +1536,7 @@ async def on_message(message):
 		embed.add_field(name='Current Time', value=time.strftime(now))
 		embed.add_field(name='Bot Uptime', value=reltime(boottimeunix, True))
 		embed.add_field(name='Host Uptime', value=hostuptime.decode('utf-8'))
-		await reply(message, None, emb=embed)
+		await reply(message, emb=embed)
 	elif command == '*formatting*':
 		content = 'That’s italicized formatting.'
 		await reply(message, content)

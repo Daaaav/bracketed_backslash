@@ -127,7 +127,7 @@ def get_member_input(server, input):
 	return targetmember
 
 @client.event
-async def reply(messageobject, message, emb=None):
+async def reply(messageobject, message=None, emb=None):
 	# Removes the need for adding msg_start manually every time
 	if message == None:
 		message = ''
