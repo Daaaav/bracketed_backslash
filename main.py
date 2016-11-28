@@ -1524,7 +1524,7 @@ async def on_message(message):
 		await reply(message, None, emb=embed)
 	elif command == 'uptime':
 		hostuptime = subprocess.Popen(['uptime', '-p'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
-		embed = discord.Embed(colour=message.server.me.colour, timestamp=message.timestamp)
+		embed = discord.Embed(colour=0x11c11e, timestamp=message.timestamp)
 		embed.set_author(name='Uptime Statistics', icon_url=client.user.avatar_url)
 		embed.set_thumbnail(url=client.user.avatar_url)
 		embed.set_footer(text='Uptime Statistics', icon_url=client.user.avatar_url)
