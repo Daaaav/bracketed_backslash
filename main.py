@@ -782,7 +782,7 @@ async def on_message(message):
 	elif command == 'kill':
 		if not is_operator(message.author):
 			embed = discord.Embed(description=t['op_only'], colour=message.server.me.colour)
-			logging.info('bot kill tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+			logfailedcommand(command, message)
 			await reply(message, None, emb=embed)
 			return
 		embed = discord.Embed(description='_Killing._', colour=0x11c11e)
