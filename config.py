@@ -175,5 +175,5 @@ def load():
 				if loadedlocalsetting != 'master':
 					s[loadedsetting][loadedlocalsetting] = loadedconfig[loadedsetting][loadedlocalsetting]
 	except FileNotFoundError:
-		print('Making new config file')
+		logging.info('did not find a config file so making a new one')
 		saveconfig()
