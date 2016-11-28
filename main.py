@@ -785,7 +785,7 @@ async def on_message(message):
 			logging.info('bot kill tried to be called by {}#{} (uuid {}) at {} utc but failed'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 			await reply(message, None, emb=embed)
 			return
-		embed = discord.Embed(description='Killing.', colour=message.server.me.colour)
+		embed = discord.Embed(description='_Killing._', colour=0x11c11e)
 		embed.add_field(name='Uptime', value=reltime(boottimeunix, True))
 		logging.info('bot kill called by {}#{} (uuid {}) at {} utc'.format(message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 		await reply(message, None, emb=embed)
