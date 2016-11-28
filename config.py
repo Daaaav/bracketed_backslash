@@ -58,7 +58,15 @@ configs = {
 		'expl': 'Log channel',
 		'detachable': True,
 		'shown': False,
-	}
+	},
+	'disabledlogs': {
+		'default': [],
+		'type': 'str',
+		'is_array': True,
+		'expl': 'Identifiers for log messages that will not be shown.',
+		'detachable': True,
+		'shown': False,
+	},
 }
 
 s = {}

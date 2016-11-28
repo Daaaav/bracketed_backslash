@@ -341,3 +341,6 @@ def logfailedcommand(command, message):
 
 def infourl(query):
 	return 'https://tolp2.nl/showdiscordinfo.php?' + query
+
+def logdisabled(key, server):
+	return key in config.get_s('disabledlogs', server.id)

@@ -1705,6 +1705,8 @@ async def on_message_delete(message): # when a message gets deleted
 		return
 	if message.content == '' and message.attachments == []:
 		return
+	if logdisabled('message_delete', message.server):
+		return
 	specialchannel = getspecialchannel_reply(message)
 	embed = discord.Embed(title='🚫MESSAGE DELETED (SENT {} IN {})'.format(reltime(time.mktime(message.timestamp.timetuple())), message.channel.mention), description=message.content, colour=message.author.colour)
 	embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url, url=infourl('userid={}&messageid={}'.format(message.author.id, message.id)))
@@ -1722,15 +1724,13 @@ async def on_message_delete(message): # when a message gets deleted
 async def on_message_edit(before, after): # when a message gets edited
 	specialchannel = getspecialchannel_reply(after)
 	if before.pinned != after.pinned:
-		if before.pinned == False and after.pinned == True: # if the message was pinned
-			embed = discord.Embed(title='📌Message {} pinned in {}'.format(after.id, after.channel.mention), description=after.content, color=after.author.colour, timestamp=datetime.datetime.now())
-			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url)
-			embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=after.author.id))
+		if not before.pinned and after.pinned and not logdisabled('message_pin', after.server): # if the message was pinned
+			embed = discord.Embed(title='📌MESSAGE PINNED (SENT {} IN {})'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), description=after.content, color=after.author.colour)
+			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
 			await client.send_message(specialchannel, embed=embed)
-		if before.pinned == True and after.pinned == False: # if the message was unpinned
-			embed = discord.Embed(title='📌Message {} unpinned in {}'.format(after.id, after.channel.mention), description=after.content, color=after.author.colour, timestamp=datetime.datetime.now())
-			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url)
-			embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=after.author.id))
+		if before.pinned and not after.pinned and not logdisabled('message_unpin', after.server): # if the message was unpinned
+			embed = discord.Embed(title='📌MESSAGE UNPINNED (SENT {} IN {})'.format(after.id, after.channel.mention), description=after.content, color=after.author.colour, timestamp=datetime.datetime.now())
+			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
 			await client.send_message(specialchannel, embed=embed)
 	# preliminary checkings
 	if before.content == after.content:
@@ -1739,44 +1739,46 @@ async def on_message_edit(before, after): # when a message gets edited
 		logging.warn('this is the bots own message and the bot doesnt edit messages\nid of before: {}\nid of after: {}'.format(before.id, after.id))
 		return
 	# checks succeeded
-	embed = discord.Embed(title='📝MESSAGE EDITED (SENT {} IN {}). The older content is:'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), description=before.content, colour=after.author.colour)
-	embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
-	await client.send_message(specialchannel, embed=embed)
-	embed = discord.Embed(title='MESSAGE EDITED (SENT {} IN {}). The newer content is:'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), description=after.content, colour=after.author.colour)
-	embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
-	await client.send_message(specialchannel, embed=embed)
-	# Delete a message if it has been edited more than 5 times in 30 seconds
-	if not after.id in minutemessageedits:
-		minutemessageedits[after.id] = [int(time.time())]
-	else:
-		edittime = int(time.time())
-		while True:
-			if edittime in minutemessageedits[after.id]:
-				edittime += 0.1
-			else:
-				minutemessageedits[after.id].append(edittime)
-				break
-		if len(minutemessageedits[after.id]) >= 5:
-			for i in minutemessageedits[after.id][:]: # [:] because we may be removing elements from here
-				if i < (int(time.time())-30):
-					minutemessageedits[after.id].remove(i)
+	if not logdisabled('message_edit', after.server):
+		embed = discord.Embed(title='📝MESSAGE EDITED (SENT {} IN {}). The older content is:'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), description=before.content, colour=after.author.colour)
+		embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
+		await client.send_message(specialchannel, embed=embed)
+		embed = discord.Embed(title='MESSAGE EDITED (SENT {} IN {}). The newer content is:'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), description=after.content, colour=after.author.colour)
+		embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
+		await client.send_message(specialchannel, embed=embed)
+	if not logdisabled('message_overedit', after.server): # Turning off this logging also turns off the feature
+		# Delete a message if it has been edited more than 5 times in 30 seconds
+		if not after.id in minutemessageedits:
+			minutemessageedits[after.id] = [int(time.time())]
+		else:
+			edittime = int(time.time())
+			while True:
+				if edittime in minutemessageedits[after.id]:
+					edittime += 0.1
+				else:
+					minutemessageedits[after.id].append(edittime)
+					break
 			if len(minutemessageedits[after.id]) >= 5:
-				# Ok, that's enough editing.
-				await client.delete_message(after)
-				embed = discord.Embed(title='📝📝📝📝📝Message {} was edited too many times in {} and has been deleted by me'.format(after.id, after.channel.mention), description=after.content, colour=after.author.colour, timestamp=datetime.datetime.now())
-				embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url)
-				embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=after.author.id))
-				await client.send_message(specialchannel, embed=embed)
-				# Also actually reply
-				await client.send_message(after.channel, '<@!{}>. Were you going to stop editing that message?'.format(after.author.id))
-		# While we're at it, also clean up other messages.
-		for k in minutemessageedits.copy(): # Copying because we may be removing elements from here [2]
-			if k != after.id:
-				for i in minutemessageedits[k][:]:
+				for i in minutemessageedits[after.id][:]: # [:] because we may be removing elements from here
 					if i < (int(time.time())-30):
-						minutemessageedits[k].remove(i)
-				if len(minutemessageedits[k]) == 0:
-					del minutemessageedits[k]
+						minutemessageedits[after.id].remove(i)
+				if len(minutemessageedits[after.id]) >= 5:
+					# Ok, that's enough editing.
+					await client.delete_message(after)
+					embed = discord.Embed(title='📝📝📝📝📝Message {} was edited too many times in {} and has been deleted by me'.format(after.id, after.channel.mention), description=after.content, colour=after.author.colour, timestamp=datetime.datetime.now())
+					embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url)
+					embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=after.author.id))
+					await client.send_message(specialchannel, embed=embed)
+					# Also actually reply
+					await client.send_message(after.channel, '<@!{}>. Were you going to stop editing that message?'.format(after.author.id))
+			# While we're at it, also clean up other messages.
+			for k in minutemessageedits.copy(): # Copying because we may be removing elements from here [2]
+				if k != after.id:
+					for i in minutemessageedits[k][:]:
+						if i < (int(time.time())-30):
+							minutemessageedits[k].remove(i)
+					if len(minutemessageedits[k]) == 0:
+						del minutemessageedits[k]
 
 @client.event
 async def on_member_update(before, after):
