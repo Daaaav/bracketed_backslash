@@ -776,7 +776,7 @@ async def on_message(message):
 			return
 		embed = discord.Embed(description='_Restarting._', colour=0x11c11e)
 		embed.add_field(name='Uptime', value=reltime(boottimeunix, True))
-		logcommand(command, messageE)
+		logcommand(command, message)
 		await reply(message, emb=embed)
 		await os.execl(__file__, '')
 	elif command == 'kill':
