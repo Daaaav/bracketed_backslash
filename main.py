@@ -1520,11 +1520,7 @@ async def on_message(message):
 		content = 'nah'
 		await reply(message, content)
 	elif command == 'botok':
-		try:
-			colour = message.server.me.colour
-		except AttributeError:
-			colour = 0x000000
-		embed = discord.Embed(description='Bot is okay.', colour=colour)
+		embed = discord.Embed(description='_Bot is okay._', colour=0x11c11e)
 		await reply(message, None, emb=embed)
 	elif command == 'uptime':
 		hostuptime = subprocess.Popen(['uptime', '-p'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
