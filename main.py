@@ -714,14 +714,14 @@ async def on_message(message):
 		command = message.content.split(invoker, 1)[1] # removes invoker from the message
 		msg_start = '**`>`**``{}``**`{}`**{}\n'.format(wrapbackticks(message.author.name), invokesymbol, displaymessagecontent) # shows what the user put in
 
-	# Prevent access to those who aren't supposed to send messages
-	if not isprivate and not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver and not (is_dev(message.author) and message.channel.id == '238423391571279872'):
-		return
 	try:
 		arguments = command.split(' ', 1)[1]
 	except IndexError:
 		arguments = None
 	command = command.split(' ', 1)[0]
+	# Prevent access to those who aren't supposed to send messages
+	if not isprivate and not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver and not (is_dev(message.author) and message.channel.id == '238423391571279872') and command != 'rule' and command != 'rules' and command != 'rulefind' and command != 'rulesfind':
+		return
 	if not isprivate and command in config.get_s('disabledcommands', message.server.id):
 		embed = emb.error('This command is currently disabled{}.'.format(' on this server' if config.is_detached('disabledcommands', message.server.id) else ''))
 		await reply(message, emb=embed)
