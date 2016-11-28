@@ -1729,7 +1729,7 @@ async def on_message_edit(before, after): # when a message gets edited
 			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
 			await client.send_message(specialchannel, embed=embed)
 		if before.pinned and not after.pinned and not logdisabled('message_unpin', after.server): # if the message was unpinned
-			embed = discord.Embed(title='📌MESSAGE UNPINNED (SENT {} IN {})'.format(after.id, after.channel.mention), description=after.content, color=after.author.colour, timestamp=datetime.datetime.now())
+			embed = discord.Embed(title='📌MESSAGE UNPINNED (SENT {} IN {})'.format(after.id, after.channel.mention), description=after.content, color=after.author.colour)
 			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
 			await client.send_message(specialchannel, embed=embed)
 	# preliminary checkings
