@@ -29,9 +29,12 @@ with `\restart`.
 After that, you start the bot by doing `./intro.sh` (if you did
 `chmod +x intro.sh`) or `bash intro.sh` or `sh intro.sh`.
 # Configuration
-Since this is a private bot, the variables are pretty much hard-written into
-the bot script itself. But all of the user-specific variables (except for the
-token) are Discord IDs.
+Since this started as a private bot, the variables are pretty much hard-written
+into the bot scripts themselves. But all of the hardcode variables are Discord
+IDs.
+
+Sometime ago, we added the `\config` command. There should be enough
+documentation for it in its `\help` entry.
 ## Token
 The bot token should be only by itself in a file, called `bot_token.conf`, in
 the same directory as `main.py`.

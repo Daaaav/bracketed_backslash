@@ -1,14 +1,19 @@
 # Contributing
-Just make sure your code is worth its merit.
-## General
+Oh shit, this repository is actually public now.
+## People who aren’t [\] Developers
+Make a pull request. I’ll see if it works or something.
+## [\] Developers
+You have somehow become a developer. Just make sure your code is worth its merit.
+
 Please don’t push your changes to the `master` branch, unless you know what you
 are doing! Use the `untested` branch instead. Or you can create your own
 branch.
-## Documentation Style
+## Things everyone should follow
+### Documentation Style
 Make sure each line doesn’t exceed eighty characters, for maintainability.
 Markdown will concatenate each “block” of text not separated by a blank line
 into one big line, anyways.
-## Code Style
+### Code Style
 - tabs instead of spaces with a tabstop of eight.
 - no trailing whitespace
 	- this includes lines that are just whitespace
