@@ -351,3 +351,9 @@ def infourl(query):
 
 def logdisabled(key, server):
 	return key in config.get_s('disabledlogs', server.id)
+
+def respondtorule(rule):
+	if int(rule) == 37:
+		return 'Funny and original, nothing to see here.'
+	return 'Wow, you’re the FIRST one to come up with that. I wish I could be as funny as you, I dunno how I’m ever gonna top "rule {}", though. That shit is genius.'.format(rule)
+

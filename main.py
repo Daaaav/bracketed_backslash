@@ -89,6 +89,10 @@ minutemessageedits = {}
 rules = {}
 disabledrules = []
 
+funnynumbers = [34,37,69] # rule numbers that we can, unsarcastically, totally all agree on are funny. Especially rule 34 and 69.
+                          # I would be afraid a cool kid used one of them and totally outcooled everyone else using it.
+                          # (note: 37 gives a different message - it's not as extremely funny if people use it)
+
 modificationtimes = [
 	os.path.getmtime('main.py'),
 	os.path.getmtime('functions.py'),
@@ -1289,6 +1293,11 @@ async def on_message(message):
 				await reply(message, content)
 				return
 			except IndexError:
+				# But only if the rules actually don't exist
+				if int(arguments) in funnynumbers:
+					content = respondtorule(arguments)
+					await reply(message, content)
+					return
 				pass
 		n = 1
 		content = 'Rules for server `{}`:{}'.format(wrapbackticks(message.server.name), ' (Disabled)' if message.server.id in disabledrules else '')
@@ -1328,6 +1337,18 @@ async def on_message(message):
 		await reply(message, content)
 	elif command == 'ruleadd' or command == 'addrule':
 		if not is_mod(message.author):
+			# Okay, so they're not allowed to mess with the rules - but we want to respond to some particular things as well.
+			splitargs = arguments.split(' ', 1)
+			if splitargs[0].isdigit() and int(splitargs[0]) in funnynumbers:
+				content = respondtorule(splitargs[0])
+				await reply(message, content)
+				return
+			elif splitargs[0].isdigit() and int(splitargs[0]) > len(rules[message.server.id]):
+				embed = emb.warning('Why are you mentioning the number if you want to add this as the last rule?')
+				await reply(message, emb=embed)
+				return
+
+			# Ok good, they're not doing something weird or trying to be funny.
 			embed = emb.error(t['mod_only'])
 			logfailedcommand(command, arguments, message)
 
