@@ -89,9 +89,10 @@ minutemessageedits = {}
 rules = {}
 disabledrules = []
 
-funnynumbers = [34,37,69] # rule numbers that we can, unsarcastically, totally all agree on are funny. Especially rule 34 and 69.
-                          # I would be afraid a cool kid used one of them and totally outcooled everyone else using it.
-                          # (note: 37 gives a different message - it's not as extremely funny if people use it)
+# rule numbers that we can, unsarcastically, totally all agree on are funny. Especially rule 34 and 69.
+# I would be afraid a cool kid used one of them and totally outcooled everyone else using it.
+# (note: 37 gives a different message - it's not as extremely funny if people use it)
+funnynumbers = [34,37,69]
 
 modificationtimes = [
 	os.path.getmtime('main.py'),
