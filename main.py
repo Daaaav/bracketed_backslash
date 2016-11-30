@@ -1833,10 +1833,15 @@ async def on_message_edit(before, after): # when a message gets edited
 						minutemessageedits[after.id].remove(i)
 				if len(minutemessageedits[after.id]) >= 5:
 					# Ok, that's enough editing.
-					await client.delete_message(after)
-					embed = discord.Embed(title='📝📝📝📝📝Message {} was edited too many times in {} and has been deleted by me'.format(after.id, after.channel.mention), description=after.content, colour=after.author.colour, timestamp=datetime.datetime.now())
-					embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url)
-					embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=after.author.id))
+					try:
+						await client.delete_message(after)
+						embed = discord.Embed(title='📝📝📝📝📝Message {} was edited too many times in {} and has been deleted by me'.format(after.id, after.channel.mention), description=after.content, colour=after.author.colour, timestamp=datetime.datetime.now())
+						embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url)
+						embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=after.author.id))
+					except discord.errors.NotFound:
+						embed = discord.Embed(title='📝📝📝📝📝Message {} was edited too many times in {} but they deleted it before I could'.format(after.id, after.channel.mention), description=after.content, colour=after.author.colour, timestamp=datetime.datetime.now())
+						embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url)
+						embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=after.author.id))
 					await client.send_message(specialchannel, embed=embed)
 					# Also actually reply
 					await client.send_message(after.channel, '<@!{}>. Were you going to stop editing that message?'.format(after.author.id))
