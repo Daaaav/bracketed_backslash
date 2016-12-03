@@ -1056,6 +1056,7 @@ async def on_message(message):
 			memberhasgame = False
 			displaygamestatus = 'Not Playing'
 			displaygamename = 'Not Playing'
+			displaygameurlstatus = 'No Stream Link'
 			displaygameurl = 'No Stream Link'
 			pass
 		else:
@@ -1068,8 +1069,10 @@ async def on_message(message):
 				displaygamestatus = 'Streaming'
 				displaygamename = mdspecialchars(targetmember.game.name)
 			if targetmember.game.url == None:
+				displaygameurlstatus = 'No Stream Link'
 				displaygameurl = 'No Stream Link'
 			else:
+				displaygameurlstatus = 'Stream Link'
 				displaygameurl = mdspecialchars(targetmember.game.url)
 		embed = discord.Embed(colour=targetmember.colour)
 		embed.set_image(url=targetmember.avatar_url)
@@ -1079,7 +1082,7 @@ async def on_message(message):
 		embed.add_field(name='User ID', value=targetmember.id)
 		embed.add_field(name='Bot', value='Yes' if is_bot(targetmember) else 'No')
 		embed.add_field(name=displaygamestatus, value=displaygamename)
-		embed.add_field(name='Stream Link', value=displaygameurl)
+		embed.add_field(name=displaygameurlstatus, value=displaygameurl)
 		embed.add_field(name='Status', value='Do Not Disturb' if str(targetmember.status) == 'dnd' else str(targetmember.status).title())
 		embed.add_field(name='Default Avatar', value=str(targetmember.default_avatar).title())
 		embed.add_field(name='Joined Server At', value=time.strftime(config.get_s('timeformat', message.server.id), targetmember.joined_at.timetuple()))
