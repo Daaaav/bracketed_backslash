@@ -1066,6 +1066,7 @@ async def on_message(message):
 				displaygamename = mdspecialchars(targetmember.game.name)
 			if targetmember.game.type == 1:
 				displaygamestatus = 'Streaming'
+				displaygamename = mdspecialchars(targetmember.game.name)
 			if targetmember.game.url == None:
 				displaygameurl = 'No Stream Link'
 			else:
