@@ -1056,7 +1056,7 @@ async def on_message(message):
 		if command == "findup":
 			displaymatch = '<@{}>'.format(targetmember.id)
 		else:
-			displaymatch = '__@{}__'.format(targetmember.display_name)
+			displaymatch = '__@{}__'.format(mdspecialchars(targetmember.display_name))
 		if targetmember.game == None:
 			memberhasgame = False
 			displaygamestatus = 'Not Playing'
@@ -1068,17 +1068,17 @@ async def on_message(message):
 		if memberhasgame:
 			if targetmember.game.type == 0 or targetmember.game.type == None:
 				displaygamestatus = 'Playing'
-				displaygamename = '``{}``'.format(wrapbackticks(targetmember.game.name))
+				displaygamename = mdspecialchars(targetmember.game.name)
 			if targetmember.game.type == 1:
 				displaygamestatus = 'Streaming'
 			if targetmember.game.url == None:
 				displaygameurl = 'No Stream Link'
 			else:
-				displaygameurl = '``{}``'
+				displaygameurl = mdspecialchars(targetmember.game.url)
 		embed = discord.Embed(colour=targetmember.colour)
 		embed.set_image(url=targetmember.avatar_url)
-		embed.add_field(name='Nickname' if targetmember.nick != None else 'No Nickname', value='``{}``'.format(wrapbackticks(targetmember.nick)) if targetmember.nick != None else 'No Nickname')
-		embed.add_field(name='Username', value='``{}``'.format(wrapbackticks(targetmember.name)))
+		embed.add_field(name='Nickname' if targetmember.nick != None else 'No Nickname', value=mdspecialchars(targetmember.nick) if targetmember.nick != None else 'No Nickname')
+		embed.add_field(name='Username', value=mdspecialchars(targetmember.name))
 		embed.add_field(name='Discriminator', value='#{}'.format(targetmember.discriminator))
 		embed.add_field(name='User ID', value=targetmember.id)
 		embed.add_field(name='Bot', value='Yes' if is_bot(targetmember) else 'No')
