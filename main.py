@@ -1048,11 +1048,6 @@ async def on_message(message):
 			embed = emb.error('Unable to find that member. ' + t['specify_user'])
 			await reply(message, emb=embed)
 			return
-		if targetmember.nick == None:
-			displaynick = '**`No Nickname`**'
-		else:
-			displaynick = '**`Nickname:`** ``{}``'.format(wrapbackticks(targetmember.nick))
-
 		if command == "findup":
 			displaymatch = '<@{}>'.format(targetmember.id)
 		else:
