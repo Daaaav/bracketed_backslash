@@ -1809,12 +1809,19 @@ async def on_message_edit(before, after): # when a message gets edited
 		return
 	# checks succeeded
 	if not logdisabled('message_edit', after.server):
-		embed = discord.Embed(title='📝MESSAGE EDITED (SENT {} IN {}). The older content is:'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), description=before.content, colour=after.author.colour)
-		embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
-		await client.send_message(specialchannel, embed=embed)
-		embed = discord.Embed(title='MESSAGE EDITED (SENT {} IN {}). The newer content is:'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), description=after.content, colour=after.author.colour)
-		embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
-		await client.send_message(specialchannel, embed=embed)
+		if len(before.content) > 1024 or len(after.content) > 1024:
+			embed = discord.Embed(title='📝MESSAGE EDITED (SENT {} IN {}). The older content is:'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), description=before.content, colour=after.author.colour)
+			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
+			await client.send_message(specialchannel, embed=embed)
+			embed = discord.Embed(title='MESSAGE EDITED (SENT {} IN {}). The newer content is:'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), description=after.content, colour=after.author.colour)
+			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
+			await client.send_message(specialchannel, embed=embed)
+		else:
+			embed = discord.Embed(title='MESSAGE EDITED (SENT {} IN {})'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), colour=after.author.colour)
+			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
+			embed.add_field(name='Older Content', value=before.content)
+			embed.add_field(name='Newer Content', value=after.content)
+			await client.send_message(specialchannel, embed=embed)
 	if not logdisabled('message_overedit', after.server): # Turning off this logging also turns off the feature
 		# Delete a message if it has been edited more than 5 times in 30 seconds
 		if not after.id in minutemessageedits:
