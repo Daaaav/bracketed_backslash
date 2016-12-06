@@ -1817,10 +1817,10 @@ async def on_message_edit(before, after): # when a message gets edited
 			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
 			await client.send_message(specialchannel, embed=embed)
 		else:
-			embed = discord.Embed(title='MESSAGE EDITED (SENT {} IN {})'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), colour=after.author.colour)
+			embed = discord.Embed(title='📝MESSAGE EDITED (SENT {} IN {})'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), colour=after.author.colour)
 			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
-			embed.add_field(name='Older Content', value=before.content)
-			embed.add_field(name='Newer Content', value=after.content)
+			embed.add_field(name='Older Content', value=before.content, inline=False)
+			embed.add_field(name='Newer Content', value=after.content, inline=False)
 			await client.send_message(specialchannel, embed=embed)
 	if not logdisabled('message_overedit', after.server): # Turning off this logging also turns off the feature
 		# Delete a message if it has been edited more than 5 times in 30 seconds
@@ -1864,9 +1864,9 @@ async def on_message_edit(before, after): # when a message gets edited
 @client.event
 async def on_member_update(before, after):
 	specialchannel = getspecialchannel(after.server)
-	if before.nick != after.nick:
-		embed = discord.Embed(description='🇳📟<@!{id}> ({id}) changed nickname'.format(id=after.id), colour=after.colour, timestamp=datetime.datetime.now())
-		embed.set_author(name=after.display_name, icon_url=after.avatar_url)
+	if before.nick != after.nick and not logdisabled('member_nickname', after.server):
+		embed = discord.Embed(title='🇳📟CHANGED NICKNAME'.format(id=after.id), colour=after.colour)
+		embed.set_author(name=after.display_name, icon_url=after.avatar_url, url=infourl('userid={}'.format(after.id)))
 		if before.nick == None:
 			embed.add_field(name='No Older Nickname', value='_No Older Nickname_')
 		else:
@@ -1877,30 +1877,30 @@ async def on_member_update(before, after):
 			embed.add_field(name='Newer Nickname', value=mdspecialchars(after.nick))
 		await client.send_message(specialchannel, embed=embed)
 	if before.roles != after.roles:
-		if len(before.roles) > len(after.roles): # if a role has been removed
+		if len(before.roles) > len(after.roles) and not logdisabled('member_roleremove', after.server): # if a role has been removed
 			roleremoved = list(set(before.roles).symmetric_difference(set(after.roles)))[0]
-			embed = discord.Embed(description='<@!{id}> ({id}) has role removed'.format(id=after.id), colour=roleremoved.colour, timestamp=datetime.datetime.now())
-			embed.set_author(name=after.display_name, icon_url=after.avatar_url)
+			embed = discord.Embed(title='ROLE REMOVED FROM USER'.format(id=after.id), colour=roleremoved.colour)
+			embed.set_author(name=after.display_name, icon_url=after.avatar_url, url=infourl('userid={}'.format(after.id)))
 			embed.add_field(name='Role Name', value=mdspecialchars(roleremoved.name))
 			embed.add_field(name='Role ID', value=roleremoved.id)
 			await client.send_message(specialchannel, embed=embed)
-		if len(before.roles) < len(after.roles): # if a role has been added
+		if len(before.roles) < len(after.roles) and not logdisabled('member_roleadd', after.server): # if a role has been added
 			roleadded = list(set(after.roles).symmetric_difference(set(before.roles)))[0]
-			embed = discord.Embed(description='<@!{id}> ({id}) has role added'.format(id=after.id), colour=roleadded.colour, timestamp=datetime.datetime.now())
+			embed = discord.Embed(title='ROLE ADDED TO USER'.format(id=after.id), colour=roleadded.colour)
 			# i am fucking TRIGGERED that i have to set these values twice
-			embed.set_author(name=after.display_name, icon_url=after.avatar_url)
+			embed.set_author(name=after.display_name, icon_url=after.avatar_url, url=infourl('userid={}'.format(after.id)))
 			embed.add_field(name='Role Name', value=mdspecialchars(roleadded.name))
 			embed.add_field(name='Role ID', value=roleadded.id)
 			await client.send_message(specialchannel, embed=embed)
 		if after.server.id == productionserver:
 			updaterolecache(after)
 			rolecachesave()
-	if before.name != after.name:
-		description = '🇺📟<@!{id}> ({id}) changed username'.format(id=after.id)
+	if before.name != after.name and not logdisabled('member_username', after.server):
+		description = '🇺📟CHANGED USERNAME'.format(id=after.id)
 		if before.discriminator != after.discriminator:
-			description += 'and discriminator'
-		embed = discord.Embed(description=description, colour=after.colour, timestamp=datetime.datetime.now())
-		embed.set_author(name=after.display_name, icon_url=after.avatar_url)
+			description += ' AND DISCRIMINATOR 🔸'
+		embed = discord.Embed(title=description, colour=after.colour)
+		embed.set_author(name=after.display_name, icon_url=after.avatar_url, url=infourl('userid={}'.format(after.id)))
 		embed.add_field(name='Older Username', value=mdspecialchars(before.name))
 		embed.add_field(name='Newer Username', value=mdspecialchars(after.name))
 		if before.discriminator != after.discriminator:

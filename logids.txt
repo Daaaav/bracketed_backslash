@@ -1,0 +1,12 @@
+message_delete
+message_pin
+message_unpin
+message_edit
+message_overedit
+
+member_nickname
+member_username
+member_roleadd
+member_roleremove
+
+- More still need to be added -
