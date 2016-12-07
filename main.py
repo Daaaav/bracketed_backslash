@@ -1607,6 +1607,9 @@ async def on_message(message):
 			getmessage = await client.get_message(getchannel, arg1)
 			content = '``{}``'.format(wrapbackticks(getmessage.content[:1900]))
 			await reply(message, content)
+			if getmessage.embeds != []:
+				content = '``{}``'.format(wrapbackticks(getmessage.embeds[:1900]))
+				await reply(message, content)
 			return
 		except AttributeError:
 			embed = emb.error('Invalid arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command))
