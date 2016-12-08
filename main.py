@@ -38,6 +38,7 @@ import subprocess
 import config
 import col
 import emb
+import images
 
 config.load()
 
@@ -1331,7 +1332,7 @@ async def on_message(message):
 				matched = True
 			n += 1
 		if not matched:
-			embed = emb.error('No rules on server `{}` matching `{}`.'.format(wrapbackticks(message.server.name), wrapbackticks(arguments)))
+			embed = emb.warning('No rules on server `{}` matching `{}`.'.format(wrapbackticks(message.server.name), wrapbackticks(arguments)))
 			await reply(message, emb=embed)
 			return
 		await reply(message, content)
@@ -1661,7 +1662,7 @@ async def on_message(message):
 		try:
 			pins = await client.pins_from(getchannel)
 			content = '{} currently has {} pins, {} remaining.'.format(getchannel.mention, len(pins), 50-len(pins))
-			await reply(message, content)
+			await replyattach(message, progressbar(len(pins)), 'temp.png', content)
 		except AttributeError:
 			embed = emb.error('The channel doesn’t exist, has been deleted, or it’s not a channel at all. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command))
 			await reply(message, emb=embed)

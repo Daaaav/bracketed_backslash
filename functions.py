@@ -127,10 +127,8 @@ def get_member_input(server, input):
 	return targetmember
 
 @client.event
-async def reply(messageobject, message=None, emb=None):
+async def reply(messageobject, message='', emb=None):
 	# Removes the need for adding msg_start manually every time
-	if message == None:
-		message = ''
 	if len(msg_start + message) >= 2000:
 		# We can at least try in a totally not failsafe and kinda ugly way
 		content = msg_start + message
@@ -146,6 +144,11 @@ async def reply(messageobject, message=None, emb=None):
 		await client.send_message(messageobject.channel, msg_start + message, embed=emb)
 	else:
 		await client.send_message(messageobject.channel, msg_start + message)
+
+@client.event
+async def replyattach(messageobject, filetoattach, fname, message=''):
+	# Don't bother with handling >2000 character messages just yet
+	await client.send_file(destination=messageobject.channel, content = msg_start + message, fp=filetoattach, filename=fname)
 
 def wrapbackticks(string, character=u'​'):
 	"""escapes backticks for use in message output to discord
