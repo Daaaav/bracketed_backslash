@@ -8,5 +8,7 @@ member_nickname
 member_username
 member_roleadd
 member_roleremove
+member_avatar
+member_botavatar
 
 - More still need to be added -

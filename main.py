@@ -99,6 +99,9 @@ modificationtimes = [
 	os.path.getmtime('main.py'),
 	os.path.getmtime('functions.py'),
 	os.path.getmtime('config.py'),
+	os.path.getmtime('emb.py'),
+	os.path.getmtime('col.py'),
+	os.path.getmtime('images.py'),
 ]
 modificationtimecache = time.strftime(config.get_s('timeformat'), time.gmtime(max(modificationtimes)))
 
@@ -1911,7 +1914,7 @@ async def on_member_update(before, after):
 			embed.add_field(name='Older Discriminator', value=before.discriminator, inline=False)
 			embed.add_field(name='Newer Discriminator', value=after.discriminator)
 		await client.send_message(specialchannel, embed=embed)
-	if before.avatar_url != after.avatar_url and before.id != '141769689406636032' and before.id != '88575421972516864' and before.id != '196574963673595904': # isn't 35, 42 or beta 42
+	if before.avatar_url != after.avatar_url and ((not logdisabled('member_botavatar', after.server)) if is_bot(after) else (not logdisabled('member_avatar', after.server))): # isn't 35, 42 or beta 42
 		embed = discord.Embed(description='👥<@!{id}> ({id}) changed avatar'.format(id=after.id), colour=after.colour, timestamp=datetime.datetime.now())
 		embed.set_author(name=after.display_name, icon_url=after.avatar_url)
 		embed.set_thumbnail(url=before.avatar_url)
