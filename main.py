@@ -1668,7 +1668,7 @@ async def on_message(message):
 		try:
 			pins = await client.pins_from(getchannel)
 			content = '{} currently has {} pins, {} remaining.'.format(getchannel.mention, len(pins), 50-len(pins))
-			await replyattach(message, images.progressbar(len(pins)), 'temp.png', content)
+			await replyattach(message, images.progressbar(len(pins)*2), 'temp.png', content)
 		except AttributeError:
 			embed = emb.error('The channel doesn’t exist, has been deleted, or it’s not a channel at all. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command))
 			await reply(message, emb=embed)
