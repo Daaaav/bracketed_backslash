@@ -59,6 +59,22 @@ configs = {
 		'detachable': True,
 		'shown': False,
 	},
+	'votevmute_minmembers': {
+		'default': 4,
+		'type': 'int',
+		'is_array': False,
+		'expl': 'The minimum amount of users needed to be in any voice channel before a vote voice mute can be started.',
+		'detachable': True,
+		'shown': True,
+	},
+	'votevmute_threshold': {
+		'default': 51,
+		'type': 'int',
+		'is_array': False,
+		'expl': 'The percentage of users needing to vote in favor of muting before the mute is carried out.',
+		'detachable': True,
+		'shown': True,
+	}
 }
 
 s = {}

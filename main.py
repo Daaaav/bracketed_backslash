@@ -90,6 +90,8 @@ minutemessageedits = {}
 rules = {}
 disabledrules = []
 
+votemutes = {} # userid -> dict with `starttime`, `proponents`*, `opponents`*
+
 # rule numbers that we can, unsarcastically, totally all agree on are funny. Especially rule 34 and 69.
 # I would be afraid a cool kid used one of them and totally outcooled everyone else using it.
 # (note: 37 gives a different message - it's not as extremely funny if people use it)
@@ -311,6 +313,11 @@ cmds = [
 			{
 				'name': 'voiceunmute',
 				'short': 'Unmutes a user in a voice channel.',
+				'extra': t['accepts_user']
+			},
+			{
+				'name': 'votevoicemute',
+				'short': 'Starts a vote on whether to mute a user in a voice channel.',
 				'extra': t['accepts_user']
 			},
 			{
@@ -1204,6 +1211,114 @@ async def on_message(message):
 		except discord.errors.Forbidden:
 			embed = emb.error(t['no_permission'])
 		await reply(message, content, emb=embed)
+	elif command == 'votevoicemute':
+		targetmember = get_member_input(message.server, arguments)
+		try:
+			if targetmember.voice.voice_channel == None:
+				embed = emb.error('User is not in a voice channel.')
+			elif targetmember.id in votemutes:
+				embed = emb.warning('There is already a vote running for this user. Type **`\\vy`** to vote yes.')
+			else:
+				# Count the amount of people in all the voice channels
+				voicechatters = 0
+				for chan in message.server.channels:
+					if chan.type == ChannelType.voice:
+						voicechatters += len(chan.voice_members)
+
+				if voicechatters < config.get_s('votevmute_minmembers', message.server.id):
+					embed = emb.warning('There are not enough members in voice channels to start a vote.')
+					await reply(message, emb=embed)
+					return
+
+				votemutes[targetmember.id] = {
+					'starttime': int(time.time()),
+					'proponents': [message.author.id],
+					'opponents': []
+				}
+				content = 'A vote has been started to voice mute <@{}>.\nTo vote in favor of muting, type **`\\vy`**.\nTo vote against muting, type **`\\vn`**.\nModerators can cancel the vote by typing **`\\vc`**.'
+				await replyattach(message, images.votebar(1/voicechatters, 0, config.get_s('votevmute_threshold', message.server.id)), 'temp.png', content)
+				return
+		except AttributeError:
+			embed = emb.error(t['specify_user'])
+		await reply(message, emb=embed)
+	elif command == 'vy' or command == 'vn':
+		if len(votemutes) == 0:
+			embed = emb.error('There are currently no votes running.')
+		elif len(votemutes) > 1:
+			embed = emb.error('Multiple votes running at the same time is not yet supported.')
+		else:
+			# First, who are we going to mute, again?
+			for m in votemutes:
+				mutee = m
+				break
+
+			if message.author.voice.voice_channel == None:
+				embed = emb.error('You\'re not in any voice channel.')
+				await reply(message, emb=embed)
+				return
+
+			content = 'Voted {}.'
+			if command == 'vy':
+				side = 'proponents'
+				oppositeside = 'opponents'
+				resulttext = 'in favor of muting'
+			else:
+				side = 'opponents'
+				oppositeside = 'proponents'
+				resulttext = 'against muting'
+
+			content = content.format(resulttext)
+			
+			if message.author.id in votemutes[mutee][side]:
+				embed = emb.warning('You have already voted that.')
+				await reply(message, emb=embed)
+				return
+
+			votemutes[mutee][side].append(message.author.id)
+
+			if message.author.id in votemutes[mutee][oppositeside]:
+				# Changing your vote, huh?
+				content = 'Changed vote to be {}.'.format(resulttext)
+				votemutes[mutee][side].remove(message.author.id)
+
+			voicechatters = 0
+			for chan in message.server.channels:
+				if chan.type == ChannelType.voice:
+					voicechatters += len(chan.voice_members)
+
+			percpro = len(votemutes[mutee]['proponents'])/voicechatters
+			percopp = len(votemutes[mutee]['opponents'])/voicechatters
+
+			if percpro >= config.get_s('votevmute_threshold', message.server.id):
+				targetmember = get_member_input(message.server, mutee)
+				await client.server_voice_state(targetmember, mute=1)
+				content += '\n{}% of the members have now voted in favor of muting, so <@{}> is now voice muted.'.format(percpro, mutee)
+			elif percopp > 100-config.get_s('voicevmute_threshold', message.server.id):
+				content += '\n{}% of the members have now voted against muting, so <@{}> is not getting voice muted.'.format(percopp, mutee)
+				del votemutes[mutee]
+
+			await replyattach(message, images.votebar(percpro, percopp, config.get_s('votevmute_threshold', message.server.id)), 'temp.png', content)
+			return
+		await reply(message, emb=embed)
+	elif command == 'vc':
+		if not is_mod(message.author):
+			embed = emb.error(t['mod_only'])
+			logfailedcommand(command, arguments, message)
+			await reply(message, emb=embed)
+			return
+		if len(votemutes) == 0:
+			embed = emb.error('There are currently no votes running.')
+		elif len(votemutes) > 1:
+			embed = emb.error('Multiple votes running at the same time is not yet supported.')
+		else:
+			# We're going to cancel the vote on whom?
+			for m in votemutes:
+				mutee = m
+				break
+			
+			del votemutes[mutee]
+			embed = emb.success('The vote on <@{}> has been vetoed.'.format(mutee))
+			await reply(message, emb=embed)
 	elif command == 'rolerst':
 		if not is_mod(message.author):
 			embed = emb.error(t['mod_only'])

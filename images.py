@@ -6,6 +6,7 @@ barim = Image.open('img/bar.png')
 greenbarim = Image.open('img/greenbar.png')
 yellowbarim = Image.open('img/yellowbar.png')
 redbarim = Image.open('img/redbar.png')
+thresholdim = Image.open('img/threshold.png')
 
 def progressbar(percentage):
 	tempimg = Image.new("RGBA", (102,12))
@@ -21,3 +22,15 @@ def progressbar(percentage):
 	tempimg.save("img/temp.png") # Maybe we can write to and return a file-like object instead of writing anything to disk?
 
 	return "img/temp.png"
+
+def votebar(percentagepro, percentageopp, threshold):
+	tempimg = Image.new('RGBA', (102,12))
+	tempimg.paste(barim, (0,0,102,12))
+
+	tempimg.paste(thresholdim, (threshold+1,1,threshold+2, 11))
+
+	tempimg.paste(greenbarim.crop((0,0,percentagepro,10)), (1,1,percentagepro+1,11))
+	tempimg.paste(redbarim.crop((100-percentageopp,0,100,10)), (101-percentageopp,1,101,10))
+	tempimg.save('img/temp.png')
+
+	return 'img/temp.png'
