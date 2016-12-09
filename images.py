@@ -29,8 +29,8 @@ def votebar(percentagepro, percentageopp, threshold):
 
 	tempimg.paste(thresholdim, (threshold+1,1,threshold+2, 11))
 
-	tempimg.paste(greenbarim.crop((0,0,percentagepro,10)), (1,1,percentagepro+1,11))
-	tempimg.paste(redbarim.crop((100-percentageopp,0,100,10)), (101-percentageopp,1,101,10))
+	tempimg.paste(greenbarim.crop((0,0,int(percentagepro),10)), (1,1,int(percentagepro)+1,11))
+	tempimg.paste(redbarim.crop((100-int(percentageopp),0,100,10)), (101-int(percentageopp),1,101,10))
 	tempimg.save('img/temp.png')
 
 	return 'img/temp.png'
