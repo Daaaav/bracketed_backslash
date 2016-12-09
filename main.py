@@ -1222,7 +1222,7 @@ async def on_message(message):
 				# Count the amount of people in all the voice channels
 				voicechatters = 0
 				for chan in message.server.channels:
-					if chan.type == ChannelType.voice:
+					if str(chan.type) == 'voice':
 						voicechatters += len(chan.voice_members)
 
 				if voicechatters < config.get_s('votevmute_minmembers', message.server.id):
