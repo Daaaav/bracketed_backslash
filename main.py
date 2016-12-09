@@ -1283,7 +1283,7 @@ async def on_message(message):
 
 			voicechatters = 0
 			for chan in message.server.channels:
-				if chan.type == ChannelType.voice:
+				if str(chan.type) == 'voice':
 					voicechatters += len(chan.voice_members)
 
 			percpro = len(votemutes[mutee]['proponents'])/voicechatters
