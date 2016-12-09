@@ -8,6 +8,7 @@ This bot is in active development.
 ## Requirements
 - Python ≥3.5 is required.
 - [`discord.py`](https://github.com/Rapptz/discord.py) is required.
+- [Pillow](https://github.com/python-pillow/Pillow) is required.
 
 ## Downloading
 Download the bot first.
