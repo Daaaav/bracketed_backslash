@@ -1225,7 +1225,7 @@ async def on_message(message):
 					if str(chan.type) == 'voice':
 						voicechatters += len(chan.voice_members)
 
-				if voicechatters < config.get_s('votevmute_minmembers', message.server.id):
+				if voicechatters < config.get_s('voicevmute_minmembers', message.server.id):
 					embed = emb.warning('There are not enough members in voice channels to start a vote.')
 					await reply(message, emb=embed)
 					return
@@ -1236,7 +1236,7 @@ async def on_message(message):
 					'opponents': []
 				}
 				content = 'A vote has been started to voice mute <@{}>.\nTo vote in favor of muting, type **`\\vy`**.\nTo vote against muting, type **`\\vn`**.\nModerators can cancel the vote by typing **`\\vc`**.'
-				await replyattach(message, images.votebar(1/voicechatters, 0, config.get_s('votevmute_threshold', message.server.id)), 'temp.png', content)
+				await replyattach(message, images.votebar(1/voicechatters, 0, config.get_s('voicevmute_threshold', message.server.id)), 'temp.png', content)
 				return
 		except AttributeError:
 			embed = emb.error(t['specify_user'])
@@ -1289,7 +1289,7 @@ async def on_message(message):
 			percpro = len(votemutes[mutee]['proponents'])/voicechatters
 			percopp = len(votemutes[mutee]['opponents'])/voicechatters
 
-			if percpro >= config.get_s('votevmute_threshold', message.server.id):
+			if percpro >= config.get_s('voicevmute_threshold', message.server.id):
 				targetmember = get_member_input(message.server, mutee)
 				await client.server_voice_state(targetmember, mute=1)
 				content += '\n{}% of the members have now voted in favor of muting, so <@{}> is now voice muted.'.format(percpro, mutee)
@@ -1297,7 +1297,7 @@ async def on_message(message):
 				content += '\n{}% of the members have now voted against muting, so <@{}> is not getting voice muted.'.format(percopp, mutee)
 				del votemutes[mutee]
 
-			await replyattach(message, images.votebar(percpro, percopp, config.get_s('votevmute_threshold', message.server.id)), 'temp.png', content)
+			await replyattach(message, images.votebar(percpro, percopp, config.get_s('voicevmute_threshold', message.server.id)), 'temp.png', content)
 			return
 		await reply(message, emb=embed)
 	elif command == 'vc':
