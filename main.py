@@ -2235,6 +2235,7 @@ async def on_voice_state_update(before, after):
 		if voicechatters == 2:
 			overwrite = discord.PermissionOverwrite()
 			overwrite.read_messages = True
+			overwrite.read_message_history = False
 			await client.edit_channel_permissions(voicetextchannel, after.server.default_role, overwrite)
 
 			logembed = emb.info('Opening <#256924583737819146> because there are now 2 people in voice chat')
@@ -2245,6 +2246,7 @@ async def on_voice_state_update(before, after):
 		if voicechatters == 1:
 			overwrite = discord.PermissionOverwrite()
 			overwrite.read_messages = False
+			overwrite.read_message_history = False
 			await client.edit_channel_permissions(voicetextchannel, after.server.default_role, overwrite)
 
 			logembed = emb.info('Closing <#256924583737819146> because there is now only one person left in voice chat')
