@@ -737,10 +737,10 @@ async def on_message(message):
 		arguments = None
 	command = command.split(' ', 1)[0]
 	# Prevent access to those who aren't supposed to send messages
-	if not isprivate and not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver
-	and not (is_dev(message.author) and message.channel.id == '238423391571279872')
-	and not command in ['rule','rules','rulefind','rulesfind']
-	and not (message.channel.id == '256924583737819146' and command in ['votevoicemute', 'vy', 'vn']):
+	if not isprivate and not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver and
+	not (is_dev(message.author) and message.channel.id == '238423391571279872') and
+	not command in ['rule','rules','rulefind','rulesfind'] and
+	not (message.channel.id == '256924583737819146' and command in ['votevoicemute', 'vy', 'vn']):
 		return
 	if not isprivate and command in config.get_s('disabledcommands', message.server.id):
 		embed = emb.error('This command is currently disabled{}.'.format(' on this server' if config.is_detached('disabledcommands', message.server.id) else ''))
