@@ -499,11 +499,12 @@ permissionlabels = [
 
 @client.event
 async def on_ready():
-	global memberroles, rules, disabledrules, server, specialchannel_prod, botschannel, productionserver
+	global memberroles, rules, disabledrules, server, specialchannel_prod, botschannel, voicetextchannel, productionserver
 	productionserver = '153368829160849408'
 	server = discord.utils.get(client.servers, id=productionserver) # defines all server.* commands
 	specialchannel_prod = discord.utils.get(server.channels, id='234185735266238464')
 	botschannel = discord.utils.get(server.channels, id='201130047736643584')
+	voicetextchannel = discord.utils.get(server.channels, id='256924583737819146')
 	logging.info('logged in as {} with id {}'.format(client.user.name, client.user.id))
 	await client.change_presence(game=discord.Game(name=config.get_s('gamestatus')))
 	embed = discord.Embed(title='🔌BOT CONNECTED', colour=server.me.colour)
@@ -2213,6 +2214,41 @@ async def on_server_update(before, after):
 		).format(wrapbackticks(after.name))
 		msg = msg_start + content
 		await client.send_message(specialchannel, msg)
+
+@client.event
+async def on_voice_state_update(before, after):
+	global productionserver, voicetextchannel
+
+	if after.server.id != productionserver:
+		return
+
+	notcounting = [None, '160641024811728896']
+
+	# Count the amount of users in voice channels... But don't count modchat. It'd make no sense to open the public voicechat text channel once two mods are talking privately.
+	voicechatters = 0
+	for chan in after.server.channels:
+		if str(chan.type) == 'voice' and (not chan.id in notcounting):
+			voicechatters += len(chan.voice_members)
+
+	if before.voice.voice_channel in notcounting and (not after.voice.voice_channel in notcounting):
+		# JOINED a voice channel. If this is the second person, open the #voicechat channel!
+		if voicechatters == 2:
+			overwrite = discord.PermissionOverwrite()
+			overwrite.read_messages = True
+			await client.edit_channel_permissions(voicetextchannel, after.server.default_role, overwrite)
+
+			logembed = emb.info('Opening <#256924583737819146> because there are now 2 people in voice chat')
+			await client.send_message(voicetextchannel, embed=logembed)
+
+	elif (not before.voice.voice_channel in notcounting) and after.voice.voice_channel in notcounting:
+		# LEFT a voice channel. If they're now alone, close the #voicechat channel again.
+		if voicechatters == 1:
+			overwrite = discord.PermissionOverwrite()
+			overwrite.read_messages = False
+			await client.edit_channel_permissions(voicetextchannel, after.server.default_role, overwrite)
+
+			logembed = emb.info('Closing <#256924583737819146> because there is now only one person left in voice chat')
+			await client.send_message(voicetextchannel, embed=logembed)
 
 exec(compile(open("functions.py", "rb").read(), "functions.py", 'exec'))
 
