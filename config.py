@@ -88,6 +88,8 @@ def set_s(skey, value, serverid=None):
 	if is_array(skey):
 		raise TypeError('Array options cannot be set using the standard config.set_s() function!')
 		return
+	if get_type(skey) == 'int':
+		value = int(value)
 	if serverid != None and serverid in s[skey]:
 		s[skey][serverid] = value
 	else:
