@@ -1279,7 +1279,7 @@ async def on_message(message):
 			if message.author.id in votemutes[mutee][oppositeside]:
 				# Changing your vote, huh?
 				content = 'Changed vote to be {}.'.format(resulttext)
-				votemutes[mutee][side].remove(message.author.id)
+				votemutes[mutee][oppositeside].remove(message.author.id)
 
 			voicechatters = 0
 			for chan in message.server.channels:
