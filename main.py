@@ -2225,7 +2225,8 @@ async def on_voice_state_update(before, after):
 	if after.server.id != productionserver:
 		return
 
-	notcounting = [None, '160641024811728896']
+	# notcounting = [None, '160641024811728896']
+	notcounting = [None]
 
 	# Count the amount of users in voice channels... But don't count modchat. It'd make no sense to open the public voicechat text channel once two mods are talking privately.
 	voicechatters = 0
