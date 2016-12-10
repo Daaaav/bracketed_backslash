@@ -1236,7 +1236,7 @@ async def on_message(message):
 					'opponents': []
 				}
 				content = 'A vote has been started to voice mute <@{}>.\nTo vote in favor of muting, type **`\\vy`**.\nTo vote against muting, type **`\\vn`**.\nModerators can cancel the vote by typing **`\\vc`**.'
-				await replyattach(message, images.votebar(1/voicechatters, 0, config.get_s('votevmute_threshold', message.server.id)), 'temp.png', content)
+				await replyattach(message, images.votebar(1/voicechatters*100, 0, config.get_s('votevmute_threshold', message.server.id)), 'temp.png', content)
 				return
 		except AttributeError:
 			embed = emb.error(t['specify_user'])
@@ -1286,8 +1286,8 @@ async def on_message(message):
 				if str(chan.type) == 'voice':
 					voicechatters += len(chan.voice_members)
 
-			percpro = len(votemutes[mutee]['proponents'])/voicechatters
-			percopp = len(votemutes[mutee]['opponents'])/voicechatters
+			percpro = len(votemutes[mutee]['proponents'])/voicechatters*100
+			percopp = len(votemutes[mutee]['opponents'])/voicechatters*100
 
 			if percpro >= config.get_s('votevmute_threshold', message.server.id):
 				targetmember = get_member_input(message.server, mutee)
