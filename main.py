@@ -1214,7 +1214,9 @@ async def on_message(message):
 	elif command == 'votevoicemute':
 		targetmember = get_member_input(message.server, arguments)
 		try:
-			if targetmember.voice.voice_channel == None:
+			if message.author.voice.voice_channel == None:
+				embed = emb.error('You have to be in a voice channel to be able to start a vote.')
+			elif targetmember.voice.voice_channel == None:
 				embed = emb.error('User is not in a voice channel.')
 			elif targetmember.id in votemutes:
 				embed = emb.warning('There is already a vote running for this user. Type **`\\vy`** to vote yes.')
@@ -1235,7 +1237,7 @@ async def on_message(message):
 					'proponents': [message.author.id],
 					'opponents': []
 				}
-				content = 'A vote has been started to voice mute <@{}>.\nTo vote in favor of muting, type **`\\vy`**.\nTo vote against muting, type **`\\vn`**.\nModerators can cancel the vote by typing **`\\vc`**.'
+				content = 'A vote has been started to voice mute <@{}>.\nTo vote in favor of muting, type **`\\vy`**.\nTo vote against muting, type **`\\vn`**.\nModerators can cancel the vote by typing **`\\vc`**.'.format(targetmember.id)
 				await replyattach(message, images.votebar(1/voicechatters*100, 0, config.get_s('votevmute_threshold', message.server.id)), 'temp.png', content)
 				return
 		except AttributeError:
