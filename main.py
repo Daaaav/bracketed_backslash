@@ -1283,7 +1283,7 @@ async def on_message(message):
 			votemutes[mutee][side].append(message.author.id)
 
 			if message.author.id in votemutes[mutee][oppositeside]:
-				# Changing your vote, huh?
+				# Changing your mind, huh?
 				content = 'Changed vote to be {}.'.format(resulttext)
 				votemutes[mutee][oppositeside].remove(message.author.id)
 
@@ -1299,6 +1299,7 @@ async def on_message(message):
 				targetmember = get_member_input(message.server, mutee)
 				await client.server_voice_state(targetmember, mute=1)
 				content += '\n{}% of the members have now voted in favor of muting, so <@{}> is now voice muted.'.format(percpro, mutee)
+				del votemutes[mutee]
 			elif percopp > 100-config.get_s('votevmute_threshold', message.server.id):
 				content += '\n{}% of the members have now voted against muting, so <@{}> is not getting voice muted.'.format(percopp, mutee)
 				del votemutes[mutee]
@@ -1324,7 +1325,7 @@ async def on_message(message):
 			
 			del votemutes[mutee]
 			embed = emb.success('The vote on <@{}> has been vetoed.'.format(mutee))
-			await reply(message, emb=embed)
+		await reply(message, emb=embed)
 	elif command == 'rolerst':
 		if not is_mod(message.author):
 			embed = emb.error(t['mod_only'])
