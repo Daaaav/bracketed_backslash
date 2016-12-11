@@ -127,8 +127,10 @@ def get_member_input(server, input):
 	return targetmember
 
 @client.event
-async def reply(messageobject, message='', emb=None):
+async def reply(messageobject, message=None, emb=None):
 	# Removes the need for adding msg_start manually every time
+	if message == None:
+		message = ''
 	if len(msg_start + message) >= 2000:
 		# We can at least try in a totally not failsafe and kinda ugly way
 		content = msg_start + message
