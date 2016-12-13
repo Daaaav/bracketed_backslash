@@ -1904,6 +1904,29 @@ async def on_message(message):
 			).format(content))
 			embed = emb.warning('Content too large to print. Printing to terminal instead.')
 			await reply(message, emb=embed)
+	elif command == 'kick' or command == 'ban' or command == 'unban':
+		if not is_mod(message.author):
+			logfailedcommand(command, arguments, message)
+			embed = emb.error(t['mod_only'])
+			await reply(message, emb=embed)
+			return
+		targetmember = get_member_input(message.server, arguments)
+		try:
+			if command == 'kick':
+				await client.kick(targetmember)
+			elif command == 'ban':
+				await client.ban(targetmember, 0)
+			elif command == 'unban':
+				await client.unban(message.server, targetmember)
+			content = targetmember.mention
+			embed = emb.success('{}ed <@{}>.'.format(command.title() if command == 'kick' else command.title() + 'n', targetmember.id))
+		except discord.errors.HTTPException:
+			content = ''
+			embed = emb.error(t['specify_user'])
+		except discord.errors.Forbidden:
+			content = ''
+			embed = emb.error(t['no_permission'])
+		await reply(message, content, emb=embed)
 	else:
 		if altinvokeractive:
 			return # do not print error message if command is invalid
