@@ -1274,7 +1274,7 @@ async def on_message(message):
 				resulttext = 'against muting'
 
 			content = content.format(resulttext)
-			
+
 			if message.author.id in votemutes[mutee][side]:
 				embed = emb.warning('You have already voted that.')
 				await reply(message, emb=embed)
@@ -1322,7 +1322,7 @@ async def on_message(message):
 			for m in votemutes:
 				mutee = m
 				break
-			
+
 			del votemutes[mutee]
 			embed = emb.success('The vote on <@{}> has been vetoed.'.format(mutee))
 		await reply(message, emb=embed)
