@@ -1920,7 +1920,7 @@ async def on_message(message):
 				await client.unban(message.server, targetmember)
 			content = targetmember.mention
 			embed = emb.success('{}ed <@{}>.'.format(command.title() if command == 'kick' else command.title() + 'n', targetmember.id))
-		except discord.errors.HTTPException:
+		except AttributeError:
 			content = ''
 			embed = emb.error(t['specify_user'])
 		except discord.errors.Forbidden:
