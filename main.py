@@ -271,6 +271,21 @@ cmds = [
 		'cat_shown': True,
 		'commands': [
 			{
+				'name': 'kick',
+				'short': 'Kicks a user from the server.',
+				'extra': t['accepts_user']
+			},
+			{
+				'name': 'serverban',
+				'short': 'Bans a user from the server.',
+				'extra': t['accepts_user']
+			},
+			{
+				'name': 'unserverban',
+				'short': 'Unbans a user from the server.',
+				'extra': t['accepts_user']
+			},
+			{
 				'name': 'softban',
 				'short': 'Gives a user the `Banned` role.',
 				'extra': t['accepts_user']
