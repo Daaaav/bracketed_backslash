@@ -1216,6 +1216,12 @@ async def on_message(message):
 			embed = emb.error(t['no_permission'])
 		await reply(message, content, emb=embed)
 	elif command == 'votevoicemute':
+		# TODO start supporting this. When voting, require (part of) name (or id/mention/disc/you know the drill) if more than one vote is running
+		if len(votemutes) >= 1:
+			embed = emb.error('Multiple votes running at the same time is not yet supported.')
+			await reply(message, emb=embed)
+			return
+
 		targetmember = get_member_input(message.server, arguments)
 		try:
 			if message.author.voice.voice_channel == None:
@@ -1287,21 +1293,30 @@ async def on_message(message):
 				content = 'Changed vote to be {}.'.format(resulttext)
 				votemutes[mutee][oppositeside].remove(message.author.id)
 
+			# For the amount of people who voted, only count those who are still inside the channel!
 			voicechatters = 0
+			numproponents = 0
+			numopponents  = 0
 			for chan in message.server.channels:
 				if str(chan.type) == 'voice':
 					voicechatters += len(chan.voice_members)
 
-			percpro = len(votemutes[mutee]['proponents'])/voicechatters*100
-			percopp = len(votemutes[mutee]['opponents'])/voicechatters*100
+					for voicemember in chan.voice_members:
+						if voicemember.id in votemutes[mutee]['proponents']:
+							numproponents += 1
+						if voicemember.id in votemutes[mutee]['opponents']:
+							numopponents  += 1
+
+			percpro = numproponents/voicechatters*100
+			percopp = numopponents /voicechatters*100
 
 			if percpro >= config.get_s('votevmute_threshold', message.server.id):
 				targetmember = get_member_input(message.server, mutee)
 				await client.server_voice_state(targetmember, mute=1)
-				content += '\n{}% of the members have now voted in favor of muting, so <@{}> is now voice muted.'.format(percpro, mutee)
+				content += '\n{}% of the members have now voted in favor of muting, so <@{}> is now voice muted.'.format(round(percpro,1), mutee)
 				del votemutes[mutee]
 			elif percopp > 100-config.get_s('votevmute_threshold', message.server.id):
-				content += '\n{}% of the members have now voted against muting, so <@{}> is not getting voice muted.'.format(percopp, mutee)
+				content += '\n{}% of the members have now voted against muting, so <@{}> is not getting voice muted.'.format(round(percopp,1), mutee)
 				del votemutes[mutee]
 
 			await replyattach(message, images.votebar(percpro, percopp, config.get_s('votevmute_threshold', message.server.id)), 'temp.png', content)
@@ -2243,7 +2258,7 @@ async def on_voice_state_update(before, after):
 			overwrite.read_message_history = False
 			await client.edit_channel_permissions(voicetextchannel, after.server.default_role, overwrite)
 
-			logembed = emb.info('Opening <#256924583737819146> because there are now 2 people in voice chat')
+			logembed = emb.info('Opening <#256924583737819146> because there are now 2 people in voice chat.\nThis channel accompanies the voice chat; read the channel description for more info.')
 			await client.send_message(voicetextchannel, embed=logembed)
 
 	elif (not before.voice.voice_channel in notcounting) and after.voice.voice_channel in notcounting:
