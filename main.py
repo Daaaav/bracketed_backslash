@@ -1904,7 +1904,7 @@ async def on_message(message):
 			).format(content))
 			embed = emb.warning('Content too large to print. Printing to terminal instead.')
 			await reply(message, emb=embed)
-	elif command == 'kick' or command == 'ban' or command == 'unban':
+	elif command == 'kick' or command == 'serverban' or command == 'unserverban':
 		if not is_mod(message.author):
 			logfailedcommand(command, arguments, message)
 			embed = emb.error(t['mod_only'])
