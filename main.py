@@ -346,6 +346,11 @@ cmds = [
 				'extra': 'Only accepts a user ID!'
 			},
 			{
+				'name': 'rolecacheadd',
+				'short': 'Gives someone a role after they have left the server.',
+				'extra': 'Give a user ID, then a space, and then the role you want to add.'
+			},
+			{
 				'name': 'rolesync',
 				'short': 'Re-syncs the roles cache with the current roles everyone has, if the bot missed role additions/removals',
 				'extra': 'Does not remove members from the cache who have left the server.'
@@ -1406,6 +1411,10 @@ async def on_message(message):
 			embed = emb.error(t['production_only'])
 			await reply(message, emb=embed)
 			return
+		elif arguments == None:
+			embed = emb.error('Please give an ID')
+			await reply(message, emb=embed)
+			return
 		elif get_member_input(message.server, arguments) != None:
 			embed = emb.error('That member is apparently still on this server! Not removing from the cache.')
 			await reply(message, emb=embed)
@@ -1418,6 +1427,42 @@ async def on_message(message):
 		else:
 			embed = emb.error('Member {} cannot be found in the role cache. Please note you have to enter an ID, not any form of name!'.format(arguments))
 			await reply(message, emb=embed)
+	elif command == 'rolecacheadd':
+		if not is_mod(message.author):
+			embed = emb.error(t['mod_only'])
+			logfailedcommand(command, arguments, message)
+			await reply(message, emb=embed)
+			return
+		elif message.server.id != productionserver:
+			embed = emb.error(t['production_only'])
+			await reply(message, emb=embed)
+			return
+		elif arguments == None:
+			embed = emb.error('Please give two IDs.')
+			await reply(message, emb=embed)
+			return
+
+		splitargs = arguments.split(' ')
+		if get_member_input(message.server, splitargs[0]) != None:
+			embed = emb.error('That member is apparently still on this server! Not doing anything.')
+			await reply(message, emb=embed)
+			return
+
+		if splitargs[1] == None:
+			embed = emb.error('Please give two IDs.')
+			await reply(message, emb=embed)
+			return
+
+		if splitargs[0] not in memberroles:
+			embed = emb.error('Member {} cannot be found in the role cache. Please note you have to enter an ID, not any form of name!'.format(arguments))
+			await reply(message, emb=embed)
+			return
+
+		memberroles[splitargs[0]].append(splitargs[1])
+		rolecachesave()
+
+		embed = emb.success('Successfully added role {} to member {} in the role cache.'.format(splitargs[1], splitargs[0]))
+		await reply(message, emb=embed)
 	elif command == 'rolesync':
 		if not is_mod(message.author):
 			embed = emb.error(t['mod_only'])
