@@ -1379,8 +1379,7 @@ async def on_message(message):
 				#discord.utils.get(message.server.roles, id='241183168269516800'), # no reactions
 			)
 			if not is_bot(targetmember):
-				pass
-				#await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
+				await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
 		except(AttributeError,TypeError):
 			embed = emb.error(t['specify_user'])
 			await reply(message, emb=embed)
