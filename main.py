@@ -2150,7 +2150,7 @@ async def on_member_join(member):
 			embed.set_author(name=member.display_name)
 			embed.set_thumbnail(url=member.avatar_url)
 			value = '_{} role'.format(str(len(addingtheseroles)))
-			value += 's:' if roles != 1 else ':'
+			value += 's:' if len(addingtheseroles) != 1 else ':'
 			value += listroles(addingtheseroles) + '_'
 			embed.add_field(name='Given them back their roles', value=value)
 			await client.send_message(specialchannel, embed=embed)
