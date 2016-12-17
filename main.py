@@ -1369,6 +1369,12 @@ async def on_message(message):
 
 		try:
 			targetmember = get_member_input(message.server, arguments)
+			if not is_bot(targetmember) and not discord.utils.get(message.server.roles, id='231644869351833600') in targetmember.roles:
+				await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600')
+				embed = emb.warning('<@{}> didn\'t have the tOLPer role, so I\'ve added that back. To remove any restrictive roles, re-run this command.')
+				await reply(message, emb=embed)
+				return
+
 			await client.remove_roles(targetmember,
 				discord.utils.get(message.server.roles, id='173240966575161344'), # nonsense-only
 				discord.utils.get(message.server.roles, id='216647716531339264'), # no general mentions
@@ -1378,8 +1384,6 @@ async def on_message(message):
 				discord.utils.get(message.server.roles, id='236925451216355338'), # tolper who cant change nickname
 				discord.utils.get(message.server.roles, id='241183168269516800'), # no reactions
 			)
-			if not is_bot(targetmember):
-				await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
 		except(AttributeError,TypeError):
 			embed = emb.error(t['specify_user'])
 			await reply(message, emb=embed)
@@ -1387,22 +1391,6 @@ async def on_message(message):
 		content = targetmember.mention
 		embed = emb.success('Reset roles for <@{}> back to normal.'.format(targetmember.id))
 		await reply(message, content, emb=embed)
-	elif command == 'temproledebug':
-		if not is_mod(message.author):
-			embed = emb.error(t['mod_only'])
-			logfailedcommand(command, arguments, message)
-			await reply(message, emb=embed)
-			return
-
-		targetmember = get_member_input(message.server, arguments) # Returns a member object
-		await client.add_roles(targetmember,
-			discord.utils.get(message.server.roles, id='231644869351833600') # main role
-		)
-		await client.remove_roles(targetmember,
-			discord.utils.get(message.server.roles, id='222046096216686592') # no cedule
-		)
-		content = 'Done for {}'.format(targetmember.mention)
-		await reply(message, content)
 	elif command == 'rolecacherst':
 		if not is_mod(message.author):
 			embed = emb.error(t['mod_only'])
