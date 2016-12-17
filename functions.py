@@ -279,7 +279,7 @@ def listroles(lijst):
 	for role in lijst:
 		if returnage != '':
 			returnage += ', '
-		returnage += '{} ({})'.format(role.name, role.id)
+		returnage += '<@&{}>'.format(role.id)
 	return returnage
 
 def listroles_id(lijst):
@@ -287,7 +287,7 @@ def listroles_id(lijst):
 	for role in lijst:
 		if returnage != '':
 			returnage += ', '
-		returnage += '{} ({})'.format(discord.utils.get(client.get_server('158091122747506688').roles, id=role), role)
+		returnage += '<@&{}>'.format(role)
 	return returnage
 
 def getspecialchannel(server):
