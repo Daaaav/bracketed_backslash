@@ -2146,14 +2146,12 @@ async def on_member_join(member):
 					continue
 				addingtheseroles.append(addingrole)
 			await client.add_roles(member, *addingtheseroles)
-			embed = discord.Embed(description='<@!{id}> ({id}) found in the role cache'.format(id=member.id), colour=member.server.me.colour)
-			embed.set_author(name=member.display_name)
-			embed.set_thumbnail(url=member.avatar_url)
+			content = '<@!{id}> ({id}) found in the role cache\n'.format(id=member.id)
 			value = '_{} role'.format(str(len(addingtheseroles)))
 			value += 's:' if len(addingtheseroles) != 1 else ':'
 			value += listroles(addingtheseroles) + '_'
-			embed.add_field(name='Given them back their roles', value=value)
-			await client.send_message(specialchannel, embed=embed)
+			content += 'Given them back their roles:\n' + value
+			await client.send_message(specialchannel, content)
 		else:
 			# Not found, so they're just a tOLPer.
 			await client.add_roles(member, discord.utils.get(member.server.roles, id='231644869351833600')) # The tOLPer role
