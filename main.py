@@ -351,6 +351,11 @@ cmds = [
 				'extra': 'Does not remove members from the cache who have left the server.'
 			},
 			{
+				'name': 'rolecacheinfo',
+				'short': 'Shows the roles that are stored in the role cache for a certain user.',
+				'extra': 'Only accepts a user ID!',
+			},
+			{
 				'name': 'getrawmessagecontent',
 				'short': 'Gets the raw content of a message.',
 				'extra': (
@@ -1431,6 +1436,24 @@ async def on_message(message):
 
 		embed = emb.success('Synced roles.')
 		await reply(message, emb=embed)
+	elif command == 'rolecacheinfo':
+		if not is_mod(message.author):
+			embed = emb.error(t['mod_only'])
+			logfailedcommand(command, arguments, message)
+			await reply(message, emb=embed)
+			return
+		if message.server.id != productionserver:
+			embed = emb.error(t['production_only'])
+			await reply(message, emb=embed)
+			return
+		if not arguments in memberroles:
+			embed = emb.error('That member is not in the role cache.')
+			await reply(message, emb=embed)
+			return
+
+		content = 'According to the role cache, this member has the following roles: ' + listroles_id(memberroles[arguments])
+
+		await reply(message, content)
 	elif command == 'rules' or command == 'rule':
 		if isprivatemessage(message.server):
 			content = 'Rules:\n**1.** I am always right.\n**2.** If I am not right, rule 1 applies.'
@@ -2115,16 +2138,20 @@ async def on_member_join(member):
 			return
 		# Are they in our database of members which had roles before?
 		if member.id in memberroles:
-			roles = 0
+			addingtheseroles = []
 			# They're found in the database! Give them the groups they should have
 			for rid in memberroles[member.id]:
-				await client.add_roles(member, discord.utils.get(member.server.roles, id=rid)) # TODO make this less iterative and add multiple roles at once
-				roles += 1
-			embed = discord.Embed(description='<@!{id}> ({id}) found in the role cache'.format(id=member.id), colour=member.server.me.colour, timestamp=datetime.datetime.now())
+				addingrole = discord.utils.get(member.server.roles, id=rid)
+				if addingrole.is_everyone:
+					continue
+				addingtheseroles.append(addingrole)
+			await client.add_roles(member, *addingtheseroles)
+			embed = discord.Embed(description='<@!{id}> ({id}) found in the role cache'.format(id=member.id), colour=member.server.me.colour)
 			embed.set_author(name=member.display_name)
 			embed.set_thumbnail(url=member.avatar_url)
-			value = '_{} role'.format(str(roles))
-			value += 's_' if roles != 1 else '_'
+			value = '_{} role'.format(str(len(addingtheseroles)))
+			value += 's:' if roles != 1 else ':'
+			value += listroles(addingtheseroles) + '_'
 			embed.add_field(name='Given them back their roles', value=value)
 			await client.send_message(specialchannel, embed=embed)
 		else:
