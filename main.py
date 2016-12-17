@@ -2086,20 +2086,21 @@ async def on_member_update(before, after):
 			embed.add_field(name='Newer Nickname', value=mdspecialchars(after.nick))
 		await client.send_message(specialchannel, embed=embed)
 	if before.roles != after.roles:
+		# TODO: Handle it well when roles are both added and deleted!
 		if len(before.roles) > len(after.roles) and not logdisabled('member_roleremove', after.server): # if a role has been removed
-			roleremoved = list(set(before.roles).symmetric_difference(set(after.roles)))[0]
-			embed = discord.Embed(title='ROLE REMOVED FROM USER'.format(id=after.id), colour=roleremoved.colour)
+			rolesremoved = list(set(before.roles).symmetric_difference(set(after.roles)))
+			embed = discord.Embed(title='ROLE REMOVED FROM USER'.format(id=after.id), colour=rolesremoved[0].colour)
 			embed.set_author(name=after.display_name, icon_url=after.avatar_url, url=infourl('userid={}'.format(after.id)))
-			embed.add_field(name='Role Name', value=mdspecialchars(roleremoved.name))
-			embed.add_field(name='Role ID', value=roleremoved.id)
+			for roleremoved in rolesremoved:
+				embed.add_field(name='Removed Role', value=mdspecialchars('{} ({})'.format(roleremoved.name, roleremoved.id)))
 			await client.send_message(specialchannel, embed=embed)
 		if len(before.roles) < len(after.roles) and not logdisabled('member_roleadd', after.server): # if a role has been added
-			roleadded = list(set(after.roles).symmetric_difference(set(before.roles)))[0]
-			embed = discord.Embed(title='ROLE ADDED TO USER'.format(id=after.id), colour=roleadded.colour)
+			rolesadded = list(set(after.roles).symmetric_difference(set(before.roles)))
+			embed = discord.Embed(title='ROLE ADDED TO USER'.format(id=after.id), colour=rolesadded[0].colour)
 			# i am fucking TRIGGERED that i have to set these values twice
 			embed.set_author(name=after.display_name, icon_url=after.avatar_url, url=infourl('userid={}'.format(after.id)))
-			embed.add_field(name='Role Name', value=mdspecialchars(roleadded.name))
-			embed.add_field(name='Role ID', value=roleadded.id)
+			for roleadded in rolesadded:
+				embed.add_field(name='Added Role', value=mdspecialchars('{} ({})'.format(roleadded.name, roleadded.id)))
 			await client.send_message(specialchannel, embed=embed)
 		if after.server.id == productionserver:
 			updaterolecache(after)
