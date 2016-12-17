@@ -80,7 +80,7 @@ configs = {
 		'type': 'str',
 		'is_array': False,
 		'expl': 'The string to be entered after `\help` to get the list of meme commands.',
-		'detachable': True,
+		'detachable': False,
 		'shown': False,
 	},
 }

@@ -429,7 +429,7 @@ cmds = [
 	},
 	{
 		'cat_name': 'Meme Commands',
-		'cat_slug': config.get_s('meme_helplist_string', message.server.id),
+		'cat_slug': config.get_s('meme_helplist_string'),
 		'cat_desc': 'You found a secret, congratulations. The command to get this help message will change sometimes.',
 		'cat_shown': False,
 		'commands': [
