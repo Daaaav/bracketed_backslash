@@ -1933,9 +1933,9 @@ async def on_message(message):
 		try:
 			if command == 'kick':
 				await client.kick(targetmember)
-			elif command == 'ban':
+			elif command == 'serverban':
 				await client.ban(targetmember, 0)
-			elif command == 'unban':
+			elif command == 'serverunban':
 				await client.unban(message.server, targetmember)
 			content = targetmember.mention
 			embed = emb.success('{}ed <@{}>.'.format(command.title() if command == 'kick' else command.title() + 'n', targetmember.id))
