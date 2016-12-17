@@ -1370,16 +1370,16 @@ async def on_message(message):
 		try:
 			targetmember = get_member_input(message.server, arguments)
 			await client.remove_roles(targetmember,
-				#discord.utils.get(message.server.roles, id='173240966575161344'), # nonsense-only
-				#discord.utils.get(message.server.roles, id='216647716531339264'), # no general mentions
+				discord.utils.get(message.server.roles, id='173240966575161344'), # nonsense-only
+				discord.utils.get(message.server.roles, id='216647716531339264'), # no general mentions
 				discord.utils.get(message.server.roles, id='222046096216686592'), # no cedule
-				#discord.utils.get(message.server.roles, id='215954720555139073'), # no tts
-				#discord.utils.get(message.server.roles, id='220643748508467220'), # banned
-				#discord.utils.get(message.server.roles, id='236925451216355338'), # tolper who cant change nickname
-				#discord.utils.get(message.server.roles, id='241183168269516800'), # no reactions
+				discord.utils.get(message.server.roles, id='215954720555139073'), # no tts
+				discord.utils.get(message.server.roles, id='220643748508467220'), # banned
+				discord.utils.get(message.server.roles, id='236925451216355338'), # tolper who cant change nickname
+				discord.utils.get(message.server.roles, id='241183168269516800'), # no reactions
 			)
-			#if not is_bot(targetmember):
-				#await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
+			if not is_bot(targetmember):
+				await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
 		except(AttributeError,TypeError):
 			embed = emb.error(t['specify_user'])
 			await reply(message, emb=embed)
