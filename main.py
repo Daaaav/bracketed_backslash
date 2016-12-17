@@ -1395,11 +1395,11 @@ async def on_message(message):
 			return
 
 		targetmember = get_member_input(message.server, arguments) # Returns a member object
-		await client.remove_roles(targetmember,
-			discord.utils.get(message.server.roles, id='222046096216686592') # no cedule
-		)
 		await client.add_roles(targetmember,
 			discord.utils.get(message.server.roles, id='231644869351833600') # main role
+		)
+		await client.remove_roles(targetmember,
+			discord.utils.get(message.server.roles, id='222046096216686592') # no cedule
 		)
 		content = 'Done for {}'.format(targetmember.mention)
 		await reply(message, content)
