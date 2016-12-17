@@ -1371,7 +1371,7 @@ async def on_message(message):
 			targetmember = get_member_input(message.server, arguments)
 			if not is_bot(targetmember) and not discord.utils.get(message.server.roles, id='231644869351833600') in targetmember.roles:
 				await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
-				embed = emb.warning('<@{}> didn\'t have the tOLPer role, so I\'ve added that back. To remove any restrictive roles, re-run this command.')
+				embed = emb.warning('<@{}> didn\'t have the tOLPer role, so I\'ve added that back. To remove any restrictive roles, re-run this command.'.format(targetmember.id))
 				await reply(message, emb=embed)
 				return
 
