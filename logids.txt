@@ -11,4 +11,7 @@ member_roleremove
 member_avatar
 member_botavatar
 
+invisible_typing
+invisible_sentmessage
+
 - More still need to be added -

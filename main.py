@@ -615,10 +615,9 @@ async def on_message(message):
 	isprivate = isprivatemessage(message.server) # cant use isprivatemessage = isprivatemessage(), otherwise python will think "holy fuck a variable was referenced before assignment"
 
 	try:
-		if not isprivate and str(message.author.status) == 'offline':
-			embed = discord.Embed(title='👻Message {} was sent whilst invisible in {}'.format(message.id, message.channel.mention), description=message.content, colour=message.author.colour, timestamp=message.timestamp)
-			embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url)
-			embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=message.author.id))
+		if not isprivate and str(message.author.status) == 'offline' and not logdisabled('invisible_sentmessage', message.server):
+			embed = discord.Embed(title='👻INVISIBLE WHILE SENDING MESSAGE IN {}'.format(message.id, message.channel.mention), description=message.content, colour=message.author.colour)
+			embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url, url=infourl('userid={}&messageid={}'.format(message.author.id, message.id)))
 			await client.send_message(specialchannel, embed=embed)
 	except AttributeError:
 		return
@@ -2231,10 +2230,9 @@ async def on_typing(channel, user, when):
 		return
 	if specialchannel.id == channel.server.default_channel.id:
 		specialchannel = channel
-	if str(user.status) == 'offline':
-		embed = discord.Embed(title='👻{} was invisible while typing in {}'.format(user.display_name, channel.mention), colour=user.colour, timestamp=when)
-		embed.set_author(name=user.display_name, icon_url=user.avatar_url)
-		embed.add_field(name='Member', value='<@!{id}> ({id})'.format(id=user.id))
+	if str(user.status) == 'offline' and not logdisabled('invisible_typing', channel.server):
+		embed = discord.Embed(title='👻INVISIBLE WHILE TYPING IN {}'.format(channel.mention), colour=user.colour)
+		embed.set_author(name=user.display_name, icon_url=user.avatar_url, url=infourl('userid={}'.format(user.id)))
 		await client.send_message(specialchannel, embed=embed)
 	else:
 		return # practically unnecessary, but this is for if we want to do things when members type later
