@@ -779,7 +779,7 @@ async def on_message(message):
 		content = (
 			'`[\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server.\n'
 			'To get accepted into the developer team, you have to be accepted by eighty-percent of the current members of the team.\n'
-			'Special thanks to Format for making the current icon for the bot.\n'
+			'Special thanks to Shiny for making the current icon for the bot.\n'
 			'The bot is currently hosted on Info Teddy’s personal computer.'
 			+ helplist(cmds)
 			)
