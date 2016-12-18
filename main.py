@@ -616,7 +616,7 @@ async def on_message(message):
 
 	try:
 		if not isprivate and str(message.author.status) == 'offline' and not logdisabled('invisible_sentmessage', message.server):
-			embed = discord.Embed(title='👻INVISIBLE WHILE SENDING MESSAGE IN {}'.format(message.id, message.channel.mention), description=message.content, colour=message.author.colour)
+			embed = discord.Embed(title='👻INVISIBLE WHILE SENDING MESSAGE IN {}'.format(message.channel.mention), description=message.content, colour=message.author.colour)
 			embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url, url=infourl('userid={}&messageid={}'.format(message.author.id, message.id)))
 			await client.send_message(specialchannel, embed=embed)
 	except AttributeError:
