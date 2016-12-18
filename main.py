@@ -1844,7 +1844,7 @@ async def on_message(message):
 		except IndexError:
 			embed = emb.error('Invalid amount of arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command))
 		except discord.errors.HTTPException:
-			embed = emb.error('Invalid message ID given. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command))
+			embed = emb.error('Invalid channel or message ID given. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command))
 		await reply(message, emb=embed)
 	elif command == 'addcontrib' or command == 'removecontrib':
 		if isprivate:
