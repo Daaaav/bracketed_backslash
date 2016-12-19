@@ -92,6 +92,9 @@ disabledrules = []
 
 votemutes = {} # userid -> dict with `starttime`, `proponents`*, `opponents`*
 
+rolexpires = {} # userid -> unixtime
+latestroled = None  # ID of the latest person that has been given a restrictive role
+
 # rule numbers that we can, unsarcastically, totally all agree on are funny. Especially rule 34 and 69.
 # I would be afraid a cool kid used one of them and totally outcooled everyone else using it.
 # (note: 37 gives a different message - it's not as extremely funny if people use it)
@@ -1153,6 +1156,7 @@ async def on_message(message):
 				discord.utils.get(message.server.roles, id='241183168269516800'), # no reactions
 			)
 			await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='220643748508467220')) # The banned role
+			latestroled = targetmember.id
 		except(AttributeError,TypeError):
 			embed = emb.error(t['specify_user'])
 			await reply(message, emb=embed)
@@ -1188,6 +1192,7 @@ async def on_message(message):
 		try:
 			targetmember = get_member_input(message.server, arguments)
 			await client.add_roles(targetmember, discord.utils.get(message.server.roles, id=roletoadd[command]))
+			latestroled = targetmember.id
 		except(AttributeError,TypeError):
 			embed = emb.error(t['specify_user'])
 			await reply(message, emb=embed)
@@ -1209,6 +1214,7 @@ async def on_message(message):
 			targetmember = get_member_input(message.server, arguments)
 			await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='236925451216355338'))
 			await client.remove_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
+			latestroled = targetmember.id
 		except(AttributeError,TypeError):
 			embed = emb.error(t['specify_user'])
 			await reply(message, emb=embed)
@@ -1400,6 +1406,19 @@ async def on_message(message):
 		content = targetmember.mention
 		embed = emb.success('Reset roles for <@{}> back to normal.'.format(targetmember.id))
 		await reply(message, content, emb=embed)
+	elif command == 'expires':
+		if not is_mod(message.author):
+			embed = emb.error(t['mod_only'])
+			logfailedcommand(command, arguments, message)
+			await reply(message, emb=embed)
+			return
+		elif message.server.id != productionserver:
+			embed = emb.error(t['production_only'])
+			await reply(message, emb=embed)
+			return
+
+		splitargs = arguments.split(' ', 1)
+		
 	elif command == 'rolecacherst':
 		if not is_mod(message.author):
 			embed = emb.error(t['mod_only'])

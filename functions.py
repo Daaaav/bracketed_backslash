@@ -335,6 +335,12 @@ def reltime(timestamp, noago=False):
 		return '{} ago'.format(solong)
 	return '{} in the future'.format(solong)
 
+def parsereltime(inputstr, relative=False):
+	# if relative is true then we only get the amount of seconds from now, if false we get a unix timestamp.
+	now = int(time.time())
+	
+	
+
 @client.event
 async def fetch(url):
 	async with ClientSession() as session:
