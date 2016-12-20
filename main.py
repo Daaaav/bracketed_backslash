@@ -1999,11 +1999,29 @@ async def on_message(message):
 		targetmember = get_member_input(message.server, arguments)
 		try:
 			if command == 'kick':
-				await client.kick(targetmember)
+				if not message.author.server_permissions.kick_members:
+					logfailedcommand(command, arguments, message)
+					embed = emb.error(t['no_permission'])
+					await reply(message, emb=embed)
+					return
+				else:
+					await client.kick(targetmember)
 			elif command == 'serverban':
-				await client.ban(targetmember, 0)
+				if not message.author.server_permissions.ban_members:
+					logfailedcommand(command, arguments, message)
+					embed = emb.error(t['no_permission'])
+					await reply(message, emb=embed)
+					return
+				else:
+					await client.ban(targetmember, 0)
 			elif command == 'serverunban':
-				await client.unban(message.server, targetmember)
+				if not message.author.server_permissions.ban_members:
+					logfailedcommand(command, arguments, message)
+					embed = emb.error(t['no_permission'])
+					await reply(message, emb=embed)
+					return
+				else:
+					await client.unban(message.server, targetmember)
 			content = targetmember.mention
 			embed = emb.success('{}ed <@{}>.'.format(command.title() if command == 'kick' else command.title() + 'n', targetmember.id))
 		except AttributeError:
