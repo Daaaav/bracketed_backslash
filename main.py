@@ -107,7 +107,7 @@ modificationtimes = [
 ]
 modificationtimecache = time.strftime(config.get_s('timeformat'), time.gmtime(max(modificationtimes)))
 
-client.max_messages = None
+client.max_messages = 999999999
 
 t = {
 	'owner_only': 'Permission denied. This command can only be used by <@!{}>.'.format(ownerid),
