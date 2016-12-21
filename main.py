@@ -2185,8 +2185,8 @@ async def on_member_update(before, after):
 		embed.set_author(name=after.display_name, icon_url=after.avatar_url)
 		embed.set_thumbnail(url=before.avatar_url)
 		embed.set_image(url=after.avatar_url)
-		embed.add_field(name='Older Avatar URL (Thumbnail)', value=before.avatar_url)
-		embed.add_field(name='Newer Avatar URL (Inset Image)', value=after.avatar_url, inline=False)
+		embed.add_field(name='Older Avatar URL: None' if before.avatar_url == '' else 'Older Avatar URL (Thumbnail)', value='No Older Avatar URL' if before.avatar_url == '' else before.avatar_url)
+		embed.add_field(name='Newer Avatar URL: None' if after.avatar_url == '' else 'Newer Avatar URL (Inset Image)', value='No Newer Avatar URL' if after.avatar_url == '' else after.avatar_url, inline=False)
 		await client.send_message(specialchannel, embed=embed)
 
 @client.event
