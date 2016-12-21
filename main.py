@@ -2180,7 +2180,7 @@ async def on_member_update(before, after):
 			embed.add_field(name='Older Discriminator', value=before.discriminator, inline=False)
 			embed.add_field(name='Newer Discriminator', value=after.discriminator)
 		await client.send_message(specialchannel, embed=embed)
-	if before.avatar_url != after.avatar_url and ((not logdisabled('member_botavatar', after.server)) if is_bot(after) else (not logdisabled('member_avatar', after.server))): # isn't 35, 42 or beta 42
+	if before.avatar_url != after.avatar_url and ((not logdisabled('member_botavatar', after.server)) if is_bot(after) else (not logdisabled('member_avatar', after.server))):
 		embed = discord.Embed(description='👥<@!{id}> ({id}) changed avatar'.format(id=after.id), colour=after.colour, timestamp=datetime.datetime.now())
 		embed.set_author(name=after.display_name, icon_url=after.avatar_url)
 		embed.set_thumbnail(url=before.avatar_url)
