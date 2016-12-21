@@ -362,3 +362,5 @@ def respondtorule(rule):
 		return 'Funny and original, nothing to see here.'
 	return 'Wow, you’re the FIRST one to come up with that. I wish I could be as funny as you, I dunno how I’m ever gonna top "rule {}", though. That shit is genius.'.format(rule)
 
+def setglobal(s, x):
+	globals()[s] = x

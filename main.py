@@ -261,6 +261,11 @@ cmds = [
 				'name': 'evalawaitfile',
 				'short': 'Evaluates `eval.txt` as code, but precedes them with `await`.',
 				'extra': ''
+			},
+			{
+				'name': 'setvar',
+				'short': 'Sets a global variable.',
+				'extra': 'Syntax: `\setvar VARIABLE ASSIGNMENT`'
 			}
 		]
 	},
@@ -1955,7 +1960,7 @@ async def on_message(message):
 			await client.change_presence(game=discord.Game(name=arguments))
 			embed = emb.success('Set game status to: ``{}``'.format(wrapbackticks(arguments)))
 		await reply(message, emb=embed)
-	elif command == 'eval' or command == 'evalawait' or command == 'evalfile' or command == 'evalawaitfile':
+	elif command == 'eval' or command == 'evalawait' or command == 'evalfile' or command == 'evalawaitfile' or command == 'setvar':
 		if message.author.id != ownerid:
 			logfailedcommand(command, arguments, message)
 			embed = emb.error(t['owner_only'])
@@ -1977,6 +1982,9 @@ async def on_message(message):
 					evalstring = evalfile.read()
 					evaluate = await eval(evalstring)
 					evalfile.close()
+				elif command == 'setvar':
+					splitargs = arguments.split(' ', 1)
+					evaluate = setglobal(splitargs[0], splitargs[1])
 				content = '```py\n{}```'.format(wrapbackticks(evaluate))
 			except:
 				content = '```py\n{}```'.format(wrapbackticks(traceback.format_exc()))
