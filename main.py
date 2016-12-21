@@ -114,6 +114,7 @@ t = {
 	'op_only': 'Permission denied. This command can only be used by Info Teddy or Dav999.',
 	'mod_only': 'Permission denied. This command can only be used by a moderator or administrator.',
 	'specify_user': 'Please specify a user ID, a username, a username and discriminator, or a nickname.',
+	'you_no_permission': 'You don’t have permission to do this.',
 	'no_permission': 'There are missing permissions required to execute this.',
 	'accepts_user': 'Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.',
 	'production_only': 'Production server only!',
@@ -1999,37 +2000,29 @@ async def on_message(message):
 			embed = emb.warning('Content too large to print. Printing to terminal instead.')
 			await reply(message, emb=embed)
 	elif command == 'kick' or command == 'serverban' or command == 'unserverban':
-		if not is_mod(message.author):
-			logfailedcommand(command, arguments, message)
-			embed = emb.error(t['mod_only'])
-			await reply(message, emb=embed)
-			return
 		targetmember = get_member_input(message.server, arguments)
 		try:
 			if command == 'kick':
 				if not message.author.server_permissions.kick_members:
 					logfailedcommand(command, arguments, message)
-					embed = emb.error(t['no_permission'])
+					embed = emb.error(t['you_no_permission'])
 					await reply(message, emb=embed)
 					return
-				else:
-					await client.kick(targetmember)
+				await client.kick(targetmember)
 			elif command == 'serverban':
 				if not message.author.server_permissions.ban_members:
 					logfailedcommand(command, arguments, message)
-					embed = emb.error(t['no_permission'])
+					embed = emb.error(t['you_no_permission'])
 					await reply(message, emb=embed)
 					return
-				else:
-					await client.ban(targetmember, 0)
+				await client.ban(targetmember, 0)
 			elif command == 'serverunban':
 				if not message.author.server_permissions.ban_members:
 					logfailedcommand(command, arguments, message)
-					embed = emb.error(t['no_permission'])
+					embed = emb.error(t['you_no_permission'])
 					await reply(message, emb=embed)
 					return
-				else:
-					await client.unban(message.server, targetmember)
+				await client.unban(message.server, targetmember)
 			content = targetmember.mention
 			embed = emb.success('{}ed <@{}>.'.format(command.title() if command == 'kick' else command.title() + 'n', targetmember.id))
 		except AttributeError:
