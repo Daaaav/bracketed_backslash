@@ -11,6 +11,14 @@ import copy
 # uid: user/member Discord ID (members can be searched)
 # cid: channel ID (channels can be mentioned)
 configs = {
+	'operators': {
+		'default': [],
+		'type': 'uid',
+		'is_array': True,
+		'expl': 'Sets the operators for the bot. Operators can change the config, and restart and kill the bot.',
+		'detachable': False,
+		'shown': True,
+	},
 	'gamestatus': {
 		'default': '​',
 		'type': 'str',

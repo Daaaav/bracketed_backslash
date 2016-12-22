@@ -54,10 +54,9 @@ def is_dev(member):
 	return False
 
 def is_operator(member):
-	# Just Info and Dav
-	if member.id == '146814960574398464' or member.id == '159793749604433921':
+	if member.id in config.get_s('operators'):
 		return True
-	return False
+	return member.id == ownerid
 
 def get_member_input(server, input):
 	"""Tries to return a member object given a user input which could be anything that identifies that member.
