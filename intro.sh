@@ -27,7 +27,11 @@ else
 	NOCOLOR=''
 fi
 
-until python main.py; do
-	echo -e "${LIGHTBLUE}bot crashed with exit code ${LIGHTCYAN}$?${LIGHTBLUE} also restarting${NOCOLOR}" >&2
-	sleep 1 # so if the startup sequence is fucked it wont keep starting up many times a millisecond
+while true; do
+	python main.py
+	if [ $? -eq 1 ]; then
+		exit 0
+	fi
+	echo -e "${LIGHTBLUE}bot exited with exit code ${LIGHTCYAN}$?${LIGHTBLUE} also restarting${NOCOLOR}" >&2
+	sleep 1
 done
