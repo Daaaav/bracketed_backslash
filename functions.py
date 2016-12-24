@@ -273,6 +273,12 @@ def rulesave():
 	with open('rules.json', 'w') as outfile:
 		json.dump(rules, outfile)
 
+def rolexpiresave():
+	global rolexpires
+
+	with open('rolexpires.json', 'w') as outfile:
+		json.dump(rolexpires, outfile)
+
 def listroles(lijst):
 	returnage = ''
 	for role in lijst:
@@ -333,6 +339,33 @@ def reltime(timestamp, noago=False):
 			return solong
 		return '{} ago'.format(solong)
 	return '{} in the future'.format(solong)
+
+def parsereltime(inputstr, relative=False, now=int(time.time())):
+	# if relative is true then we only get the amount of seconds from now, if false we get a unix timestamp.
+	total = 0
+
+	m = re.search("((?<d>[0-9]+)d)?((?P<h>[0-9]+)h)?((?P<m>[0-9]+)m)?((?P<s>[0-9]+)s)?", inputstr)
+
+	if m == None:
+		return None
+
+	ds = m.group('d')
+	if ds != None:
+		total += tonumber(ds)*86400
+	hs = m.group('h')
+	if hs != None:
+		total += tonumber(hs)*3600
+	ms = m.group('m')
+	if ms != None:
+		total += tonumber(ms)*60
+	ss = m.group('s')
+	if ss != None:
+		total += tonumber(ss)
+
+	if relative:
+		return total
+	else:
+		return now+total
 
 @client.event
 async def fetch(url):

@@ -34,6 +34,7 @@ import logging
 import math
 import traceback
 import subprocess
+import re
 
 import config
 import col
@@ -91,6 +92,9 @@ rules = {}
 disabledrules = []
 
 votemutes = {} # userid -> dict with `starttime`, `proponents`*, `opponents`*
+
+rolexpires = {} # userid -> unixtime
+latestroled = None  # ID of the latest person that has been given a restrictive role
 
 # rule numbers that we can, unsarcastically, totally all agree on are funny. Especially rule 34 and 69.
 # I would be afraid a cool kid used one of them and totally outcooled everyone else using it.
@@ -606,6 +610,18 @@ async def on_ready():
 			json.dump(disabledrules, outfile)
 
 		await client.send_message(specialchannel_prod, 'Disabledrules file didn’t exist yet, created a new one.')
+
+	try:
+		with open('rolexpires.json', 'r') as infile:
+			rolexpires = json.load(infile)
+	except FileNotFoundError:
+		logging.info('rolexpires file does not exist yet so creating it now')
+		rolexpires = {}
+
+		with open('rolexpires.json', 'w') as outfile:
+			json.dump(rolexpires, outfile)
+
+		await client.send_message(specialchannel_prod, 'Rolexpires file didn’t exist yet, created a new one.')
 
 @client.event
 async def on_message(message):
@@ -1161,6 +1177,7 @@ async def on_message(message):
 				discord.utils.get(message.server.roles, id='241183168269516800'), # no reactions
 			)
 			await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='220643748508467220')) # The banned role
+			latestroled = targetmember.id
 		except(AttributeError,TypeError):
 			embed = emb.error(t['specify_user'])
 			await reply(message, emb=embed)
@@ -1196,6 +1213,7 @@ async def on_message(message):
 		try:
 			targetmember = get_member_input(message.server, arguments)
 			await client.add_roles(targetmember, discord.utils.get(message.server.roles, id=roletoadd[command]))
+			latestroled = targetmember.id
 		except(AttributeError,TypeError):
 			embed = emb.error(t['specify_user'])
 			await reply(message, emb=embed)
@@ -1217,6 +1235,7 @@ async def on_message(message):
 			targetmember = get_member_input(message.server, arguments)
 			await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='236925451216355338'))
 			await client.remove_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
+			latestroled = targetmember.id
 		except(AttributeError,TypeError):
 			embed = emb.error(t['specify_user'])
 			await reply(message, emb=embed)
@@ -1408,6 +1427,35 @@ async def on_message(message):
 		content = targetmember.mention
 		embed = emb.success('Reset roles for <@{}> back to normal.'.format(targetmember.id))
 		await reply(message, content, emb=embed)
+	elif command == 'expires':
+		if not is_mod(message.author):
+			embed = emb.error(t['mod_only'])
+			logfailedcommand(command, arguments, message)
+			await reply(message, emb=embed)
+			return
+		elif message.server.id != productionserver:
+			embed = emb.error(t['production_only'])
+			await reply(message, emb=embed)
+			return
+
+		splitargs = arguments.split(' ', 1)
+		
+		expirytime = parsereltime(splitargs[0])
+		if expirytime == None:
+			embed = emb.error('Invalid expiry time. Please input a relative time in the format `[#d][#h][#m][#s]`, for example: `7d12h`, `1h`, `1d`, `1d2h3m4s`, `1d20s` or whatever combination you can think of. The units have to be in the correct order, though.')
+			await reply(message, emb=embed)
+			return
+
+		if splitargs[1] == None:
+			targetmemberid = lastroled
+		else
+			targetmember = get_member_input(message.server, splitargs[1])
+			targetmemberid = targetmember.id
+
+		rolexpires[targetmemberid] = expirytime
+
+		embed = embed.success('Roles for <@{}> will be reset {}'.format(targetmemberid, reltime(expirytime)))
+		await reply(message, emb=embed)
 	elif command == 'rolecacherst':
 		if not is_mod(message.author):
 			embed = emb.error(t['mod_only'])
