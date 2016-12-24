@@ -1453,8 +1453,9 @@ async def on_message(message):
 			targetmemberid = targetmember.id
 
 		rolexpires[targetmemberid] = expirytime
+		rolexpiresave()
 
-		embed = embed.success('Roles for <@{}> will be reset {}'.format(targetmemberid, reltime(expirytime)))
+		embed = emb.success('Roles for <@{}> will be reset {}'.format(targetmemberid, reltime(expirytime)))
 		await reply(message, emb=embed)
 	elif command == 'rolecacherst':
 		if not is_mod(message.author):
