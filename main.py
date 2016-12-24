@@ -34,6 +34,7 @@ import logging
 import math
 import traceback
 import subprocess
+import re
 
 import config
 import col
@@ -609,6 +610,18 @@ async def on_ready():
 			json.dump(disabledrules, outfile)
 
 		await client.send_message(specialchannel_prod, 'Disabledrules file didn’t exist yet, created a new one.')
+
+	try:
+		with open('rolexpires.json', 'r') as infile:
+			rolexpires = json.load(infile)
+	except FileNotFoundError:
+		logging.info('rolexpires file does not exist yet so creating it now')
+		rolexpires = {}
+
+		with open('rolexpires.json', 'w') as outfile:
+			json.dump(rolexpires, outfile)
+
+		await client.send_message(specialchannel_prod, 'Rolexpires file didn’t exist yet, created a new one.')
 
 @client.event
 async def on_message(message):
@@ -1427,6 +1440,22 @@ async def on_message(message):
 
 		splitargs = arguments.split(' ', 1)
 		
+		expirytime = parsereltime(splitargs[0])
+		if expirytime == None:
+			embed = emb.error('Invalid expiry time. Please input a relative time in the format `[#d][#h][#m][#s]`, for example: `7d12h`, `1h`, `1d`, `1d2h3m4s`, `1d20s` or whatever combination you can think of. The units have to be in the correct order, though.')
+			await reply(message, emb=embed)
+			return
+
+		if splitargs[1] == None:
+			targetmemberid = lastroled
+		else
+			targetmember = get_member_input(message.server, splitargs[1])
+			targetmemberid = targetmember.id
+
+		rolexpires[targetmemberid] = expirytime
+
+		embed = embed.success('Roles for <@{}> will be reset {}'.format(targetmemberid, reltime(expirytime)))
+		await reply(message, emb=embed)
 	elif command == 'rolecacherst':
 		if not is_mod(message.author):
 			embed = emb.error(t['mod_only'])
