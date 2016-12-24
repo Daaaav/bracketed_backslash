@@ -351,16 +351,16 @@ def parsereltime(inputstr, relative=False, now=int(time.time())):
 
 	ds = m.group('d')
 	if ds != None:
-		total += tonumber(ds)*86400
+		total += int(ds)*86400
 	hs = m.group('h')
 	if hs != None:
-		total += tonumber(hs)*3600
+		total += int(hs)*3600
 	ms = m.group('m')
 	if ms != None:
-		total += tonumber(ms)*60
+		total += int(ms)*60
 	ss = m.group('s')
 	if ss != None:
-		total += tonumber(ss)
+		total += int(ss)
 
 	if relative:
 		return total
