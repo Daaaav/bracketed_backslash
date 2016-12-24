@@ -344,7 +344,7 @@ def parsereltime(inputstr, relative=False, now=int(time.time())):
 	# if relative is true then we only get the amount of seconds from now, if false we get a unix timestamp.
 	total = 0
 
-	m = re.search("((P?<d>[0-9]+)d)?((?P<h>[0-9]+)h)?((?P<m>[0-9]+)m)?((?P<s>[0-9]+)s)?", inputstr)
+	m = re.search("((?P<d>[0-9]+)d)?((?P<h>[0-9]+)h)?((?P<m>[0-9]+)m)?((?P<s>[0-9]+)s)?", inputstr)
 
 	if m == None:
 		return None
