@@ -771,7 +771,7 @@ async def on_message(message):
 	not (is_dev(message.author) and message.channel.id == '238423391571279872') and \
 	not command in ['rule','rules','rulefind','rulesfind'] and \
 	not (message.channel.id == '256924583737819146' and command in ['votevoicemute', 'vy', 'vn']):
-		await client.add_reaction(message, discord.utils.get(message.server.emoji, id='262051482549878796'))
+		await client.add_reaction(message, discord.utils.get(message.server.emojis, id='262051482549878796'))
 		return
 	if not isprivate and command in config.get_s('disabledcommands', message.server.id):
 		embed = emb.error('This command is currently disabled{}.'.format(' on this server' if config.is_detached('disabledcommands', message.server.id) else ''))
