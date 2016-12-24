@@ -1439,7 +1439,7 @@ async def on_message(message):
 			return
 
 		splitargs = arguments.split(' ', 1)
-		
+
 		expirytime = parsereltime(splitargs[0])
 		if expirytime == None:
 			embed = emb.error('Invalid expiry time. Please input a relative time in the format `[#d][#h][#m][#s]`, for example: `7d12h`, `1h`, `1d`, `1d2h3m4s`, `1d20s` or whatever combination you can think of. The units have to be in the correct order, though.')
