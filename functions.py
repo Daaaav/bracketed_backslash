@@ -340,8 +340,10 @@ def reltime(timestamp, noago=False):
 		return '{} ago'.format(solong)
 	return '{} in the future'.format(solong)
 
-def parsereltime(inputstr, relative=False, now=int(time.time())):
+def parsereltime(inputstr, relative=False, now=None):
 	# if relative is true then we only get the amount of seconds from now, if false we get a unix timestamp.
+	if now == None:
+		now = int(time.time())
 	total = 0
 
 	m = re.search("((?P<d>[0-9]+)d)?((?P<h>[0-9]+)h)?((?P<m>[0-9]+)m)?((?P<s>[0-9]+)s)?", inputstr)
