@@ -1448,7 +1448,7 @@ async def on_message(message):
 
 		if splitargs[1] == None:
 			targetmemberid = lastroled
-		else
+		else:
 			targetmember = get_member_input(message.server, splitargs[1])
 			targetmemberid = targetmember.id
 
