@@ -2397,13 +2397,12 @@ async def on_reaction_remove(reaction, user):
 async def on_server_update(before, after):
 	specialchannel = getspecialchannel(after)
 	if before.icon != after.icon:
-		msg_start = '**`>`**`server` **``{}``** `({}) changed icon`\n'.format(wrapbackticks(before.name), before.id)
-		content = '_`The older icon URL is:`_ ' + before.icon_url
-		msg = msg_start + content
-		await client.send_message(specialchannel, msg)
-		content = '_`The newer icon URL is:`_ ' + after.icon_url
-		msg = msg_start + content
-		await client.send_message(specialchannel, msg)
+		embed = discord.Embed(description='Server changed icon')
+		embed.set_thumbnail(url=before.icon_url)
+		embed.add_field(name='Older Icon URL: None' if before.icon_url == '' else 'Older Icon URL (Thumbnail)', description='No Older Icon URL' if before.icon_url == '' else before.icon_url)
+		embed.add_field(name='Newer Icon URL: None' if after.icon_url == '' else 'Newer Icon URL (Inset Image)', description='No Newer Icon URL' if after.icon_url == '' else after.icon_url)
+		embed.set_image(url=after.icon_url)
+		await client.send_message(specialchannel, embed=embed)
 	if before.name != after.name:
 		msg_start = '**`>`**`server {} changed name`\n'.format(before.id)
 		content = (
