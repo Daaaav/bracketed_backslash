@@ -631,7 +631,7 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-	global msg_start, hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, hangmanstarter, guessedletters, algeraden, memberroles, rules, disabledrules, lastroled
+	global msg_start, hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, hangmanstarter, guessedletters, algeraden, memberroles, rules, disabledrules, latestroled
 
 	if message.author == client.user: # is the message sent by the bot
 		return # do nothing
@@ -1447,7 +1447,11 @@ async def on_message(message):
 			return
 
 		if len(splitargs) < 2:
-			targetmemberid = lastroled
+			if latestroled = None:
+				embed = emb.error('Nobody has gotten a restrictive role this session. Please provide any member identification instead.')
+				await reply(message, emb=embed)
+				return
+			targetmemberid = latestroled
 		else:
 			targetmember = get_member_input(message.server, splitargs[1])
 			targetmemberid = targetmember.id
