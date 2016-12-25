@@ -35,6 +35,7 @@ import math
 import traceback
 import subprocess
 import re
+from threading import Timer
 
 import config
 import col
@@ -95,6 +96,7 @@ votemutes = {} # userid -> dict with `starttime`, `proponents`*, `opponents`*
 
 rolexpires = {} # userid -> unixtime
 latestroled = None  # ID of the latest person that has been given a restrictive role
+exptimer = None  # threading.Timer object
 
 # rule numbers that we can, unsarcastically, totally all agree on are funny. Especially rule 34 and 69.
 # I would be afraid a cool kid used one of them and totally outcooled everyone else using it.
@@ -622,6 +624,8 @@ async def on_ready():
 			json.dump(rolexpires, outfile)
 
 		await client.send_message(specialchannel_prod, 'Rolexpires file didn’t exist yet, created a new one.')
+
+	await handleExpiryTimer()
 
 @client.event
 async def on_message(message):
@@ -1410,16 +1414,8 @@ async def on_message(message):
 				embed = emb.warning('<@{}> didn\'t have the tOLPer role, so I\'ve added that back. To remove any restrictive roles, re-run this command.'.format(targetmember.id))
 				await reply(message, emb=embed)
 				return
-
-			await client.remove_roles(targetmember,
-				discord.utils.get(message.server.roles, id='173240966575161344'), # nonsense-only
-				discord.utils.get(message.server.roles, id='216647716531339264'), # no general mentions
-				discord.utils.get(message.server.roles, id='222046096216686592'), # no cedule
-				discord.utils.get(message.server.roles, id='215954720555139073'), # no tts
-				discord.utils.get(message.server.roles, id='220643748508467220'), # banned
-				discord.utils.get(message.server.roles, id='236925451216355338'), # tolper who cant change nickname
-				discord.utils.get(message.server.roles, id='241183168269516800'), # no reactions
-			)
+			
+			await removeRestrictiveRoles(targetmember, message.server)
 		except(AttributeError,TypeError):
 			embed = emb.error(t['specify_user'])
 			await reply(message, emb=embed)
@@ -1454,6 +1450,7 @@ async def on_message(message):
 
 		rolexpires[targetmemberid] = expirytime
 		rolexpiresave()
+		await handleExpiryTimer()
 
 		embed = emb.success('Roles for <@{}> will be reset {}'.format(targetmemberid, reltime(expirytime)))
 		await reply(message, emb=embed)

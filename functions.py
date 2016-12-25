@@ -370,6 +370,87 @@ def parsereltime(inputstr, relative=False, now=None):
 		return now+total
 
 @client.event
+async def handleExpiryTimer():
+	"""Sets the timer correctly to the first event
+	If time is in the past, call autoExpiry immediately
+	Can be called on startup, when changing something, or at the end of autoExpiry
+	"""
+	global exptimer, rolexpires
+
+	# Cancel the existing timer, if it's running
+	if exptimer != None:
+		exptimer.cancel()
+		exptimer = None  # Because there's no Timer.isCanceled()
+
+	if len(rolexpires) == 0:
+		# We're finished
+		print('Did not set expiry timer')
+		return
+	
+	timelowscore = 9999999999
+
+	for userid in rolexpires:
+		if rolexpires[userid] < timelowscore:
+			timelowscore = rolexpires[userid]
+	
+	if timelowscore <= int(time.time()):
+		print('Immediately calling autoExpiry() because we\'re overdue in resetting someone\'s roles')
+		await autoExpiry()
+	else:
+		timertime = (timelowscore - time.time()) + 2  # 2 seconds extra, just to make sure we're not getting problems due to being one second off
+		exptimer = Timer(timertime, autoExpiry)
+		print('Set expiry timer for {} seconds'.format(timertime))
+
+@client.event
+async def autoExpiry():
+	"""Called by timers
+	Actually resets roles
+	Calls back handleTimer to set the next timer
+	"""
+	global server, rolexpires, specialchannel_prod
+	now = int(time.time())
+
+	content = ''
+	successfulresets = []
+
+	# So apparently someone needs to be unbanned?
+	for userid in rolexpires:
+		if rolexpires[userid] <= now:
+			try:
+				await removeRestrictiveRoles(server.get_member(userid))
+				content += '\nRoles for <@!{}> reset.'.format(userid)
+			except (AttributeError, TypeError):
+				content += '\n<@!{}> was supposed to have their roles reset now, but they can\'t be found!'
+				# TODO: Look if they are in the role cache, and reset it there instead.
+			successfulresets.append(userid)
+	for userid in successfulresets:
+		del rolexpires[userid]
+
+	if content == '':
+		content = '\n(never mind, nobody has been found!)'
+
+	content = '**Auto expiry:**' + content
+
+	await client.send_message(specialchannel_prod, content)
+
+	await handleExpiryTimer()
+
+@client.event
+async def removeRestrictiveRoles(member, server):
+	try:
+		await client.remove_roles(member,
+			discord.utils.get(server.roles, id='173240966575161344'), # nonsense-only
+			discord.utils.get(server.roles, id='216647716531339264'), # no general mentions
+			discord.utils.get(server.roles, id='222046096216686592'), # no cedule
+			discord.utils.get(server.roles, id='215954720555139073'), # no tts
+			discord.utils.get(server.roles, id='220643748508467220'), # banned
+			discord.utils.get(server.roles, id='236925451216355338'), # tolper who cant change nickname
+			discord.utils.get(server.roles, id='241183168269516800'), # no reactions
+		)
+	except (AttributeError,TypeError) as e:
+		raise e
+
+@client.event
 async def fetch(url):
 	async with ClientSession() as session:
 		async with session.get(url) as response:
