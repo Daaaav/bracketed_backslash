@@ -211,6 +211,14 @@ def helplist(cats, onlycat=None):
 					returnage += '\n`\{}` – {}'.format(cmd['name'], cmd['short'])
 	return returnage
 
+def is_valid_command(com):
+	global cmds
+	for cat in cmds:
+		for cmd in cat['commands']:
+			if cmd['name'] == com:
+				return True
+	return False
+
 def hangmanworddisp(theword):
 	global hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, hangmanstarter, guessedletters, algeraden
 
