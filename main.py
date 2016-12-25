@@ -1447,7 +1447,7 @@ async def on_message(message):
 			return
 
 		if len(splitargs) < 2:
-			if latestroled = None:
+			if latestroled == None:
 				embed = emb.error('Nobody has gotten a restrictive role this session. Please provide any member identification instead.')
 				await reply(message, emb=embed)
 				return
