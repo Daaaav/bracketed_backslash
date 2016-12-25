@@ -847,6 +847,7 @@ async def on_message(message):
 			return
 		embed = emb.success('Restarting.', True)
 		embed.add_field(name='Uptime', value=reltime(boottimeunix, True))
+		embed.add_field(name='Messages in Cache', value=str(len(client.messages)))
 		logcommand(command, arguments, message)
 		await reply(message, emb=embed)
 		await os.execl(__file__, '')
