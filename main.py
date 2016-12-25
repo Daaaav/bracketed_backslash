@@ -115,6 +115,8 @@ modificationtimecache = time.strftime(config.get_s('timeformat'), time.gmtime(ma
 
 client.max_messages = 999999999
 
+maineventloop = asyncio.get_event_loop()
+
 t = {
 	'owner_only': 'Permission denied. This command can only be used by <@!{}>.'.format(ownerid),
 	'op_only': 'Permission denied. This command can only be used by Info Teddy or Dav999.',

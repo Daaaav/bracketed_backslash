@@ -403,9 +403,8 @@ async def handleExpiryTimer():
 		print('Set expiry timer for {} seconds'.format(timertime))
 
 def callAutoExpiry():
-	loop = asyncio.get_event_loop()
-	loop.run_until_complete(autoExpiry())
-	loop.close()
+	global maineventloop
+	maineventloop.run_until_complete(autoExpiry())
 
 @client.event
 async def autoExpiry():
