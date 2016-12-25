@@ -412,11 +412,9 @@ async def handleExpiryTimer():
 
 def callAutoExpiry():
 	global maineventloop
-	while maineventloop.is_running():
-		pass
 	maineventloop.run_until_complete(autoExpiry())
 
-@client.event
+@asyncio.coroutine
 async def autoExpiry():
 	"""Called by timers
 	Actually resets roles
