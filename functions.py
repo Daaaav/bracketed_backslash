@@ -402,7 +402,6 @@ async def handleExpiryTimer():
 		exptimer.start()
 		print('Set expiry timer for {} seconds'.format(timertime))
 
-@client.event
 async def callAutoExpiry():
 	await autoExpiry()
 
