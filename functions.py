@@ -402,7 +402,7 @@ async def handleExpiryTimer():
 			timelowscore = rolexpires[userid]
 
 	if timelowscore <= int(time.time()):
-		logging.info('Immediately calling autoExpiry() because we\'re overdue in resetting someone\'s roles')
+		logging.info('Immediately calling autoExpiry() because we’re overdue in resetting someone’s roles')
 		await autoExpiry()
 	else:
 		timertime = (timelowscore - time.time()) + 2  # 2 seconds extra, just to make sure we're not getting problems due to being one second off
@@ -432,7 +432,7 @@ async def autoExpiry():
 				await removeRestrictiveRoles(server.get_member(userid), server)
 				content += '\nRoles for <@!{}> reset.'.format(userid)
 			except (AttributeError, TypeError):
-				content += '\n<@!{}> was supposed to have their roles reset now, but they can\'t be found!'.format(userid)
+				content += '\n<@!{}> was supposed to have their roles reset now, but they can’t be found!'.format(userid)
 				# TODO: Look if they are in the role cache, and reset it there instead.
 			successfulresets.append(userid)
 	for userid in successfulresets:
