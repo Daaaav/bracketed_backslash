@@ -536,7 +536,7 @@ permissionlabels = [
 
 @client.event
 async def on_ready():
-	global memberroles, rules, disabledrules, server, specialchannel_prod, botschannel, voicetextchannel, productionserver
+	global memberroles, rules, disabledrules, server, specialchannel_prod, botschannel, voicetextchannel, productionserver, rolexpires
 	productionserver = '153368829160849408'
 	server = discord.utils.get(client.servers, id=productionserver) # defines all server.* commands
 	specialchannel_prod = discord.utils.get(server.channels, id='234185735266238464')
