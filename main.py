@@ -2404,19 +2404,11 @@ async def on_server_update(before, after):
 		embed.set_image(url=after.icon_url)
 		await client.send_message(specialchannel, embed=embed)
 	if before.name != after.name:
-		msg_start = '**`>`**`server {} changed name`\n'.format(before.id)
-		content = (
-			'_`The older name is:`_\n'
-			'**``{}``**'
-		).format(wrapbackticks(before.name))
-		msg = msg_start + content
-		await client.send_message(specialchannel, msg)
-		content = (
-			'_`The newer name is:`_\n'
-			'**``{}``**'
-		).format(wrapbackticks(after.name))
-		msg = msg_start + content
-		await client.send_message(specialchannel, msg)
+		embed = discord.Embed(description='Server changed name')
+		embed.set_thumbnail(url=after.icon_url)
+		embed.add_field(name='Older Name', value=mdspecialchars(before.name))
+		embed.add_field(name='Newer Name', value=mdspecialchars(after.name))
+		await client.send_message(specialchannel, embed=embed)
 
 @client.event
 async def on_voice_state_update(before, after):
