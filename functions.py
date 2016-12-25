@@ -411,7 +411,7 @@ async def handleExpiryTimer():
 		print('Set expiry timer for {} seconds'.format(timertime))
 
 def callAutoExpiry():
-	asyncio.run_coroutine_threadsafe(autoExpiry, client.loop)
+	asyncio.run_coroutine_threadsafe(autoExpiry(), client.loop)
 
 @client.event
 async def autoExpiry():
