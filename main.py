@@ -1867,15 +1867,14 @@ async def on_message(message):
 		)
 		await reply(message, content)
 	elif command == 'version':
-		content = (
-			'**`[\]`** – {}, last updated {}\n'
-			'**`discord.py`** – {} {}'
-		).format(
-			botversion,
-			modificationtimecache,
-			discord.version_info.releaselevel, discord.__version__,
-		)
-		await reply(message, content)
+		embed = discord.Embed(colour=col.r_success, timestamp=message.timestamp)
+		embed.set_author(name='Version Information', icon_url=client.user.avatar_url)
+		embed.set_thumbnail(url=client.user.avatar_url)
+		embed.set_footer(text='Version Information', icon_url=client.user.avatar_url)
+		embed.set_thumbnail(url=client.user.avatar_url)
+		embed.add_field(name='[\\]', value='{}, last updated {}'.format(botversion, modificationtimecache))
+		embed.add_field(name='discord.py', value='{} {}'.format(discord.version_info.releaselevel, discord.__version__))
+		await reply(message, emb=embed)
 	elif command == 'getrawmessagecontent':
 		if not is_mod(message.author):
 			logfailedcommand(command, arguments, message)
