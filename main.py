@@ -1414,7 +1414,7 @@ async def on_message(message):
 				embed = emb.warning('<@{}> didn\'t have the tOLPer role, so I\'ve added that back. To remove any restrictive roles, re-run this command.'.format(targetmember.id))
 				await reply(message, emb=embed)
 				return
-			
+
 			await removeRestrictiveRoles(targetmember, message.server)
 		except(AttributeError,TypeError):
 			embed = emb.error(t['specify_user'])

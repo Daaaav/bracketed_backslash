@@ -386,13 +386,13 @@ async def handleExpiryTimer():
 		# We're finished
 		print('Did not set expiry timer')
 		return
-	
+
 	timelowscore = 9999999999
 
 	for userid in rolexpires:
 		if rolexpires[userid] < timelowscore:
 			timelowscore = rolexpires[userid]
-	
+
 	if timelowscore <= int(time.time()):
 		print('Immediately calling autoExpiry() because we\'re overdue in resetting someone\'s roles')
 		await autoExpiry()
