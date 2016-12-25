@@ -398,8 +398,8 @@ async def handleExpiryTimer():
 		await autoExpiry()
 	else:
 		timertime = (timelowscore - time.time()) + 2  # 2 seconds extra, just to make sure we're not getting problems due to being one second off
-		exptimer = Timer(timertime, autoExpiry)
-		await exptimer.start()
+		exptimer = Timer(timertime, await autoExpiry)
+		exptimer.start()
 		print('Set expiry timer for {} seconds'.format(timertime))
 
 @client.event
