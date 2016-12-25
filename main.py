@@ -1443,7 +1443,9 @@ async def on_message(message):
 			await reply(message, emb=embed)
 			return
 		elif arguments == None:
-			embed = emb.error(t['Please input at least a relative time.'])
+			embed = emb.error('Please input at least a relative time.')
+			await reply(message, emb=embed)
+			return
 
 		splitargs = arguments.split(' ', 1)
 
