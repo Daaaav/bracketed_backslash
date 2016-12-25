@@ -377,7 +377,7 @@ def parsereltime(inputstr, relative=False, now=None):
 	else:
 		return now+total
 
-@client.event
+@asyncio.coroutine
 async def handleExpiryTimer():
 	"""Sets the timer correctly to the first event
 	If time is in the past, call autoExpiry immediately
@@ -450,7 +450,7 @@ async def autoExpiry():
 
 	await handleExpiryTimer()
 
-@client.event
+@asyncio.coroutine
 async def removeRestrictiveRoles(member, server):
 	try:
 		await client.remove_roles(member,
