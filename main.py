@@ -2399,8 +2399,8 @@ async def on_server_update(before, after):
 	if before.icon != after.icon:
 		embed = discord.Embed(description='Server changed icon')
 		embed.set_thumbnail(url=before.icon_url)
-		embed.add_field(name='Older Icon URL: None' if before.icon_url == '' else 'Older Icon URL (Thumbnail)', description='No Older Icon URL' if before.icon_url == '' else before.icon_url)
-		embed.add_field(name='Newer Icon URL: None' if after.icon_url == '' else 'Newer Icon URL (Inset Image)', description='No Newer Icon URL' if after.icon_url == '' else after.icon_url)
+		embed.add_field(name='Older Icon URL: None' if before.icon_url == '' else 'Older Icon URL (Thumbnail)', value='No Older Icon URL' if before.icon_url == '' else before.icon_url)
+		embed.add_field(name='Newer Icon URL: None' if after.icon_url == '' else 'Newer Icon URL (Inset Image)', value='No Newer Icon URL' if after.icon_url == '' else after.icon_url)
 		embed.set_image(url=after.icon_url)
 		await client.send_message(specialchannel, embed=embed)
 	if before.name != after.name:
