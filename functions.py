@@ -413,6 +413,7 @@ async def handleExpiryTimer():
 def callAutoExpiry():
 	global maineventloop
 	maineventloop.run_until_complete(autoExpiry())
+	maineventloop.stop()
 
 @client.event
 async def autoExpiry():
