@@ -392,7 +392,7 @@ async def handleExpiryTimer():
 
 	if len(rolexpires) == 0:
 		# We're finished
-		print('Did not set expiry timer')
+		logging.info('Did not set expiry timer')
 		return
 
 	timelowscore = 9999999999
@@ -402,13 +402,13 @@ async def handleExpiryTimer():
 			timelowscore = rolexpires[userid]
 
 	if timelowscore <= int(time.time()):
-		print('Immediately calling autoExpiry() because we\'re overdue in resetting someone\'s roles')
+		logging.info('Immediately calling autoExpiry() because we\'re overdue in resetting someone\'s roles')
 		await autoExpiry()
 	else:
 		timertime = (timelowscore - time.time()) + 2  # 2 seconds extra, just to make sure we're not getting problems due to being one second off
 		exptimer = Timer(timertime, callAutoExpiry)
 		exptimer.start()
-		print('Set expiry timer for {} seconds'.format(timertime))
+		logging.info('Set expiry timer for {} seconds'.format(timertime))
 
 def callAutoExpiry():
 	asyncio.run_coroutine_threadsafe(autoExpiry(), client.loop)
