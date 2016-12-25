@@ -412,8 +412,9 @@ async def handleExpiryTimer():
 
 def callAutoExpiry():
 	global maineventloop
+	while maineventloop.is_running():
+		pass
 	maineventloop.run_until_complete(autoExpiry())
-	maineventloop.close()
 
 @client.event
 async def autoExpiry():
