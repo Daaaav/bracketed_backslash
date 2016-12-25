@@ -354,7 +354,7 @@ def parsereltime(inputstr, relative=False, now=None):
 		now = int(time.time())
 	total = 0
 
-	m = re.search("((?P<d>[0-9]+)d)?((?P<h>[0-9]+)h)?((?P<m>[0-9]+)m)?((?P<s>[0-9]+)s)?", inputstr)
+	m = re.search("^((?P<d>[0-9]+)d)?((?P<h>[0-9]+)h)?((?P<m>[0-9]+)m)?((?P<s>[0-9]+)s)?$", inputstr)
 
 	if m == None:
 		return None

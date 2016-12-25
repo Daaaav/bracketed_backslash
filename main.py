@@ -360,6 +360,11 @@ cmds = [
 				'extra': 'Only accepts a user ID!'
 			},
 			{
+				'name': 'expires',
+				'short': 'Sets an expiry time for someone’s ban or otherwise restrictive roles. It will carry out a role reset after the specified time has elapsed.',
+				'extra': 'The first argument is always required, and takes a relative time in the format `[#d][#h][#m][#s]`, for example: `7d12h`, `1h`, `1d`, `1d2h3m4s`, `1d20s` or whatever combination you can think of. The units have to be in the correct order, though.\nThe second argument is optional, if given, it means the nickname/username/part of it/ID/discriminator of the member to set the expiry time for, if not given, the latest member to have been given a role will be chosen.'
+			},
+			{
 				'name': 'rolecacheadd',
 				'short': 'Gives someone a role after they have left the server.',
 				'extra': 'Give a user ID, then a space, and then the role you want to add.'
@@ -1437,6 +1442,8 @@ async def on_message(message):
 			embed = emb.error(t['production_only'])
 			await reply(message, emb=embed)
 			return
+		elif arguments == None:
+			embed = emb.error(t['Please input at least a relative time.'])
 
 		splitargs = arguments.split(' ', 1)
 
