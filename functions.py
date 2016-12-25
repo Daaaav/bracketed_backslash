@@ -427,6 +427,8 @@ async def autoExpiry():
 	for userid in successfulresets:
 		del rolexpires[userid]
 
+	rolexpiresave()
+
 	if content == '':
 		content = '\n(never mind, nobody has been found!)'
 
