@@ -1446,7 +1446,7 @@ async def on_message(message):
 			await reply(message, emb=embed)
 			return
 
-		if splitargs[1] == None:
+		if len(splitargs) < 2:
 			targetmemberid = lastroled
 		else:
 			targetmember = get_member_input(message.server, splitargs[1])
