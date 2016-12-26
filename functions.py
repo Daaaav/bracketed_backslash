@@ -432,8 +432,12 @@ async def autoExpiry():
 				await removeRestrictiveRoles(server.get_member(userid), server)
 				content += '\nRoles for <@!{}> reset.'.format(userid)
 			except (AttributeError, TypeError):
-				content += '\n<@!{}> was supposed to have their roles reset now, but they can’t be found!'.format(userid)
-				# TODO: Look if they are in the role cache, and reset it there instead.
+				# Look if they are in the role cache, and reset it there instead.
+				if removerolecache(userid):
+					content += '\n<@!{}> was supposed to have their roles reset now, they aren’t on the server, but they’ve successfully been removed from the role cache.'.format(userid)
+					rolecachesave()
+				else:
+					content += '\n<@!{}> was supposed to have their roles reset now, but they can be found neither on the server nor in the role cache!'.format(userid)
 			successfulresets.append(userid)
 	for userid in successfulresets:
 		del rolexpires[userid]
