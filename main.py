@@ -36,7 +36,6 @@ import traceback
 import subprocess
 import re
 from threading import Timer
-from PIL import Image
 
 import config
 import col
@@ -1916,7 +1915,7 @@ async def on_message(message):
 		embed.add_field(name='\\[\\\\\\]', value='{}, last updated {}'.format(botversion, modificationtimecache))
 		embed.add_field(name='discord.py', value='{} {}'.format(discord.version_info.releaselevel, discord.__version__))
 		embed.add_field(name='Python', value=sys.version)
-		embed.add_field(name='PIL', value=Image.VERSION)
+		embed.add_field(name='PIL', value=__import__("PIL").VERSION)
 		await reply(message, emb=embed)
 	elif command == 'getrawmessagecontent':
 		if not is_mod(message.author):
