@@ -2005,44 +2005,50 @@ async def on_message(message):
 	elif command == 'math':
 		# what kind of stupid language uses elif instead of elseif or else if?
 		try:
-			cmdbits = arguments.split() # should split it so [1] is number, [2] is operand, [3] is third number
-			if cmdbits[0] == "":
-				cmdbits = {"", "", ""}
-				out = "No input found."
-				raise ValueError() # They've entered nothing, raise an exception
-			cmdbits[0] = float(cmdbits[0])
-			cmdbits[2] = float(cmdbits[2])
-			# But apparently not, it's [0] / [1] / [2] instead
-			out = "" # setting extra crashes
-			if cmdbits[1] == "+":
-				out = cmdbits[0] + cmdbits[2]
-			elif cmdbits[1] == "-":
-				out = cmdbits[0] - cmdbits[2]
-			elif cmdbits[1] == "x" or cmdbits[1] == "*":
-				out = cmdbits[0] * cmdbits[2]
-			elif cmdbits[1] == "÷" or cmdbits[1] == "/":
-				if cmdbits[2] != 0:
-					out = cmdbits[0] / cmdbits[2]
-				else:
-					out = "Division by zero."
-			elif cmdbits[1] == "^":
-				if (cmdbits[2] == 0 and cmdbits[0] == 0):
-					out = "Undefined."
-				else:
-					out = cmdbits[0] ** cmdbits[2] # decimal powers are allowed
-			elif cmdbits[1] == "↑↑" or cmdbits[1] == "^^": # this one's for you, Info
-				oper = cmdbits[0] # this one's the stored operand, and has to be an int otherwise it won't work properly
-				#cmdbits[5] = cmdbits[0] This isn't
-				out = cmdbits[0] # Why is this still here? Dunno, changed it
-				for i in range(int(cmdbits[2])): # decimal range isn't
+			cmdbits = arguments.split() # should split it so [0] is number, [1] is operand, [2] is second number
+		except AttributeError:
+			embed = emb.error('Invalid arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command))
+			await reply(message, emb=embed)
+			return
+		if len(cmdbits) != 3: # the arguments should be [number], [operand], [number]
+			embed = emb.error('Invalid amount of arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command))
+			await reply(message, emb=embed)
+			return
+		numbers = ['', '']
+		numbers[0] = float(cmdbits[0]) # number 1
+		numbers[1] = float(cmdbits[2]) # number 2
+		out = '' # setting extra crashes
+		if cmdbits[1] == '+':
+			out = numbers[0] + numbers[1]
+		elif cmdbits[1] == '-':
+			out = numbers[0] - numbers[1]
+		elif cmdbits[1] == 'x' or cmdbits[1] == '*':
+			out = numbers[0] * numbers[1]
+		elif cmdbits[1] == '÷' or cmdbits[1] == '/':
+			try:
+				out = numbers[0] / numbers[1]
+			except ZeroDivisionError:
+				out = 'Undefined.'
+		elif cmdbits[1] == '^':
+			out = numbers[0] ** numbers[1] # decimal powers are allowed
+		elif cmdbits[1] == '↑↑' or cmdbits[1] == '^^': # this one's for you, Info
+			oper = numbers[0] # this one's the stored operand, and has to be an int otherwise it won't work properly
+			out = numbers[0] # Why is this still here? Dunno, changed it
+			try:
+				for i in range(int(numbers[1])): # decimal range isn't
 					out = out ** oper # iterate until tetration is finished
-			else: #invalid operand, we don't care what the inputs are
-				out = "Invalid operand."
-		except:
-			out = "Exception."
+			except OverflowError:
+				embed = emb.error('Overflow error.')
+				await reply(message, emb=embed)
+				return
+		else: #invalid operand, we don't care what the inputs are
+			embed = emb.error('Invalid operands passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command))
+			await reply(message, emb=embed)
+			return
 		# end
-		content = '`{} {} {} = {}`'.format(cmdbits[0], cmdbits[1], cmdbits[2], out)
-		await reply(message, content)
+		content = '{number1} {operand} {number2} = {out}'.format(firstnumber=cmdbits[0], operand=cmdbits[1], number2=cmdbits[2], out=out)
+		embed = discord.Embed(title='Math Output', description=content, colour=col.r_success)
+		await reply(message, emb=embed)
 	elif command == 'gamestatus':
 		if not is_operator(message.author):
 			logfailedcommand(command, arguments, message)
