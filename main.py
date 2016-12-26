@@ -365,6 +365,11 @@ cmds = [
 				'extra': 'The first argument is always required, and takes a relative time in the format `[#d][#h][#m][#s]`, for example: `7d12h`, `1h`, `1d`, `1d2h3m4s`, `1d20s` or whatever combination you can think of. The units have to be in the correct order, though.\nThe second argument is optional, if given, it means the nickname/username/part of it/ID/discriminator of the member to set the expiry time for, if not given, the latest member to have been given a role will be chosen.'
 			},
 			{
+				'name': 'expirylist',
+				'short': 'Gives a list of all expiry timers that are currently running.',
+				'extra': ''
+			},
+			{
 				'name': 'rolecacheadd',
 				'short': 'Gives someone a role after they have left the server.',
 				'extra': 'Give a user ID, then a space, and then the role you want to add.'
@@ -1470,6 +1475,27 @@ async def on_message(message):
 		await handleExpiryTimer()
 
 		embed = emb.success('Roles for <@{}> will be reset {}'.format(targetmemberid, reltime(expirytime)))
+		await reply(message, emb=embed)
+	elif command == 'expirylist':
+		if not is_mod(message.author):
+			embed = emb.error(t['mod_only'])
+			logfailedcommand(command, arguments, message)
+			await reply(message, emb=embed)
+			return
+		elif message.server.id != productionserver:
+			embed = emb.error(t['production_only'])
+			await reply(message, emb=embed)
+			return
+		
+		content = ''
+		
+		for memberid in rolexpires:
+			content += '<@{}>: {}\n'.format(memberid, reltime(rolexpires[memberid]))
+
+		if content == '':
+			content = 'No expiry timers are currently running.'
+
+		embed = emb.info(content)
 		await reply(message, emb=embed)
 	elif command == 'rolecacherst':
 		if not is_mod(message.author):
