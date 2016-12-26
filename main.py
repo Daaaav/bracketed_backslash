@@ -1486,9 +1486,9 @@ async def on_message(message):
 			embed = emb.error(t['production_only'])
 			await reply(message, emb=embed)
 			return
-		
+
 		content = ''
-		
+
 		for memberid in rolexpires:
 			content += '<@{}>: {}\n'.format(memberid, reltime(rolexpires[memberid]))
 
