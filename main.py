@@ -2046,7 +2046,7 @@ async def on_message(message):
 			await reply(message, emb=embed)
 			return
 		# end
-		content = '{number1} {operand} {number2} = {out}'.format(firstnumber=cmdbits[0], operand=cmdbits[1], number2=cmdbits[2], out=out)
+		content = '{number1} {operand} {number2} = {out}'.format(number1=cmdbits[0], operand=cmdbits[1], number2=cmdbits[2], out=out)
 		embed = discord.Embed(title='Math Output', description=content, colour=col.r_success)
 		await reply(message, emb=embed)
 	elif command == 'gamestatus':
