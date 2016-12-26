@@ -1914,6 +1914,7 @@ async def on_message(message):
 		embed.set_thumbnail(url=client.user.avatar_url)
 		embed.add_field(name='\\[\\\\\\]', value='{}, last updated {}'.format(botversion, modificationtimecache))
 		embed.add_field(name='discord.py', value='{} {}'.format(discord.version_info.releaselevel, discord.__version__))
+		embed.add_field(name='Python', value=sys.version)
 		await reply(message, emb=embed)
 	elif command == 'getrawmessagecontent':
 		if not is_mod(message.author):
