@@ -118,8 +118,8 @@ client.max_messages = 999999999
 maineventloop = asyncio.get_event_loop()
 
 t = {
-	'owner_only': 'Permission denied. This command can only be used by <@!{}>.'.format(ownerid),
-	'op_only': 'Permission denied. This command can only be used by Info Teddy or Dav999.',
+	'owner_only': 'Permission denied. This command can only be used by the owner.',
+	'op_only': 'Permission denied. This command can only be used by an operator.',
 	'mod_only': 'Permission denied. This command can only be used by a moderator or administrator.',
 	'specify_user': 'Please specify a user ID, a username, a username and discriminator, or a nickname.',
 	'you_no_permission': 'You don’t have permission to do this.',
