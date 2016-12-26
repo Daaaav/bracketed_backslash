@@ -2010,39 +2010,39 @@ async def on_message(message):
 			embed = emb.error('Invalid arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command))
 			await reply(message, emb=embed)
 			return
-		if len(cmdbits) != 3: # the arguments should be [number], [operand], [number]
-			embed = emb.error('Invalid amount of arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command))
-			await reply(message, emb=embed)
-			return
-		numbers = ['', '']
-		numbers[0] = float(cmdbits[0]) # number 1
-		numbers[1] = float(cmdbits[2]) # number 2
-		out = '' # setting extra crashes
-		if cmdbits[1] == '+':
-			out = numbers[0] + numbers[1]
-		elif cmdbits[1] == '-':
-			out = numbers[0] - numbers[1]
-		elif cmdbits[1] == 'x' or cmdbits[1] == '*':
-			out = numbers[0] * numbers[1]
-		elif cmdbits[1] == '÷' or cmdbits[1] == '/':
-			try:
-				out = numbers[0] / numbers[1]
-			except ZeroDivisionError:
-				out = 'Undefined.'
-		elif cmdbits[1] == '^':
-			out = numbers[0] ** numbers[1] # decimal powers are allowed
-		elif cmdbits[1] == '↑↑' or cmdbits[1] == '^^': # this one's for you, Info
-			oper = numbers[0] # this one's the stored operand, and has to be an int otherwise it won't work properly
-			out = numbers[0] # Why is this still here? Dunno, changed it
-			try:
-				for i in range(int(numbers[1])): # decimal range isn't
-					out = out ** oper # iterate until tetration is finished
-			except OverflowError:
-				embed = emb.error('Overflow error.')
+		try:
+			if len(cmdbits) != 3: # the arguments should be [number], [operand], [number]
+				embed = emb.error('Invalid amount of arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command))
 				await reply(message, emb=embed)
 				return
-		else: #invalid operand, we don't care what the inputs are
-			embed = emb.error('Invalid operands passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command))
+			numbers = ['', '']
+			numbers[0] = float(cmdbits[0]) # number 1
+			numbers[1] = float(cmdbits[2]) # number 2
+			out = '' # setting extra crashes
+			if cmdbits[1] == '+':
+				out = numbers[0] + numbers[1]
+			elif cmdbits[1] == '-':
+				out = numbers[0] - numbers[1]
+			elif cmdbits[1] == 'x' or cmdbits[1] == '*':
+				out = numbers[0] * numbers[1]
+			elif cmdbits[1] == '÷' or cmdbits[1] == '/':
+				try:
+					out = numbers[0] / numbers[1]
+				except ZeroDivisionError:
+					out = 'Undefined.'
+			elif cmdbits[1] == '^':
+				out = numbers[0] ** numbers[1] # decimal powers are allowed
+			elif cmdbits[1] == '↑↑' or cmdbits[1] == '^^': # this one's for you, Info
+				oper = numbers[0] # this one's the stored operand, and has to be an int otherwise it won't work properly
+				out = numbers[0] # Why is this still here? Dunno, changed it
+				for i in range(int(numbers[1])): # decimal range isn't
+					out = out ** oper # iterate until tetration is finished
+			else: #invalid operand, we don't care what the inputs are
+				embed = emb.error('Invalid operands passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=command))
+				await reply(message, emb=embed)
+				return
+		except OverflowError:
+			embed = emb.error('Overflow error.')
 			await reply(message, emb=embed)
 			return
 		# end
