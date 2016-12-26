@@ -194,8 +194,8 @@ cmds = [
 			},
 			{
 				'name': 'math',
-				'short': 'Does maths. What do you expect? [Must be in format `<number> <operand> <number>`.',
-				'extra': 'Supports most maths operands that do not return a negative number.\nNo, Info, you can add complex support yourself.'
+				'short': 'Does maths. What do you expect? Supports most maths operands that do not return a negative number.',
+				'extra': 'Syntax: `\\math NUMBER OPERAND NUMBER`'
 			},
 		]
 	},
