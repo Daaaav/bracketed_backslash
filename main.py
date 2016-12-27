@@ -1105,7 +1105,7 @@ async def on_message(message):
 		msg = msg_start + content
 		await client.send_message(botschannel, msg)
 
-		content = 'https://discord.gg/6e3KcEv'
+		content = 'https://discord.gg/gj6YmtV'
 		await reply(message, content)
 	elif command == 'stophangman':
 		if not hangmanactive:
