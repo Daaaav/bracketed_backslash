@@ -1124,7 +1124,10 @@ async def on_message(message):
 		content = 'Source code to the bot: __https://gitgud.io/infoteddy/bracketed_backslash__'
 		await reply(message, content)
 	elif command == 'findu' or command == 'findup':
-		targetmember = get_member_input(message.server, arguments)
+		if arguments == None:
+			targetmember = message.author
+		else:
+			targetmember = get_member_input(message.server, arguments)
 		if targetmember == None:
 			embed = emb.error('Unable to find that member. ' + t['specify_user'])
 			await reply(message, emb=embed)
