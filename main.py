@@ -2370,13 +2370,10 @@ async def on_server_role_delete(role):
 async def on_server_role_update(before, after):
 	specialchannel = getspecialchannel(before.server)
 	if before.name != after.name: # if the name changed
-		msg_start = '**`>`**`role {} has name changed`\n'.format(before.id)
-		content = '_`The older name is:`_\n**``{}``**'.format(wrapbackticks(before.name))
-		msg = msg_start + content
-		await client.send_message(specialchannel, msg)
-		content = '_`The newer name is:`_\n**``{}``**'.format(wrapbackticks(after.name))
-		msg = msg_start + content
-		await client.send_message(specialchannel, msg)
+		embed = discord.Embed(title='ROLE NAME CHANGE', description=mdspecialchars(after.name), colour=after.colour)
+		embed.add_field(name='Older Name', value=mdspecialchars(before.name))
+		embed.add_field(name='Newer Name', value=mdspecialchars(after.name))
+		await client.send_message(specialchannel, embed=embed)
 	if before.hoist != after.hoist: # if "display online members separately" changed
 		if before.hoist == 0 and after.hoist == 1: # if the role has been hoisted
 			msg = '**`>`**`role` **``{}``** `({}) has been hoisted`'.format(wrapbackticks(after.name), after.id)
