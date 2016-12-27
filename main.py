@@ -2396,13 +2396,10 @@ async def on_server_role_update(before, after):
 			msg = '**`>`**`role` **``{}``** `({}) has been moved up by {} roles ({} to {})`'.format(wrapbackticks(after.name), after.id, after.position - before.position, before.position, after.position)
 			await client.send_message(specialchannel, msg)
 	if before.colour != after.colour:
-		msg_start = '**`>`**`role` **``{}``** `({}) has changed color`\n'.format(wrapbackticks(after.name), after.id)
-		content = '_`The older color is:`_ `{}`'.format('(default)' if str(before.colour) == '#000000' else str(before.colour).upper())
-		msg = msg_start + content
-		await client.send_message(specialchannel, msg)
-		content = '_`The newer color is:`_ `{}`'.format('(default)' if str(after.colour) == '#000000' else str(after.colour).upper())
-		msg = msg_start + content
-		await client.send_message(specialchannel, msg)
+		embed = discord.Embed(title='ROLE COLOR CHANGE', description=mdspecialchars(after.name), colour=after.colour)
+		embed.add_field(name='Older Color', value='(default)' if before.colour.value == 0 else str(before.colour).upper())
+		embed.add_field(name='Newer Color', value='(default)' if after.colour.value == 0 else str(after.colour).upper())
+		await client.send_message(specialchannel, embed=embed)
 
 
 @client.event
