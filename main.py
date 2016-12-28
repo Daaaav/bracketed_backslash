@@ -2167,7 +2167,7 @@ async def on_message_delete(message): # when a message gets deleted
 async def on_message_edit(before, after): # when a message gets edited
 	specialchannel = getspecialchannel_reply(after)
 	if before.embeds != after.embeds:
-		for n, e in enumerate(message.embeds):
+		for n, e in enumerate(after.embeds):
 			if e['type'] == 'image':
 				# get the filename from the url
 				# i.e. the part after the last forward slash
