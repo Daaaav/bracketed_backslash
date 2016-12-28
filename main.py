@@ -56,6 +56,7 @@ client = discord.Client() # defines all client.* commands
 
 cachelocation = './.cache'
 attachcache = cachelocation + '/' + 'attach' # define attachment caching location
+embedcache = cachelocation + '/' + 'embed'
 
 invoker = '\\' # command invoker
 altinvoker = 'ok glass, ' # alt command invoker
@@ -2165,6 +2166,20 @@ async def on_message_delete(message): # when a message gets deleted
 @client.event
 async def on_message_edit(before, after): # when a message gets edited
 	specialchannel = getspecialchannel_reply(after)
+	if before.embeds != after.embeds:
+		for n, e in enumerate(message.embeds):
+			if e['type'] == 'image':
+				# get the filename from the url
+				# i.e. the part after the last forward slash
+				fn = e['url'].split('/')[-1]
+
+				# fetch the embed preview discord fetches
+				img = await fetch(e['thumbnail']['proxy_url'])
+
+				# cache the image
+				with open('{embedcache}/{n}_{fn}'.format(embedcache=embedcache, n=n, fn=fn), 'wb') as f:
+					f.write(img)
+					f.close()
 	if before.pinned != after.pinned:
 		if not before.pinned and after.pinned and not logdisabled('message_pin', after.server): # if the message was pinned
 			embed = discord.Embed(title='📌MESSAGE PINNED (SENT {} IN {})'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), description=after.content, color=after.author.colour)
