@@ -684,7 +684,7 @@ async def on_message(message):
 				img = await fetch(e['thumbnail']['proxy_url'])
 
 				# cache the image
-				with open('{embedcache}/{n}_{fn}'.format(embedcache=embedcache, n=n, fn=fn), 'wb') as f:
+				with open('{embedcache}/{m.id}_{n}_{fn}'.format(embedcache=embedcache, m=message, n=n, fn=fn), 'wb') as f:
 					f.write(img)
 					f.close()
 
