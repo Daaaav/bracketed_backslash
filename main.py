@@ -2423,20 +2423,48 @@ async def on_server_role_update(before, after):
 
 
 @client.event
-async def on_reaction_add(reaction, user):
-	specialchannel = getspecialchannel(reaction.message.server)
+async def on_reaction_add(r, u):
+	specialchannel = getspecialchannel(r.message.server)
 	try:
 		iscustomemote = True
-		emotename = reaction.emoji.name
+		emotename = r.emoji.name
 	except AttributeError:
 		iscustomemote = False
-		emotename = reaction.emoji
-	msg = '**`>`**`user` **``{}``**`#{}` `({}) added reaction` {} `{} to message {}'.format(wrapbackticks(user.name), user.discriminator, user.id, emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', reaction.message.id)
-	if str(user.status) == 'offline':
-		msg += ' and was invisible while doing so`'
-	else:
-		msg += '`'
-	await client.send_message(specialchannel, msg)
+		emotename = r.emoji
+	embed = discord.Embed(
+		title='REACTION ADD TO MESSAGE {m.id} IN {c.mention}'.format(
+			m=r.message,
+			c=r.message.channel,
+		),
+		description=r.message.content,
+		colour=user.colour,
+	)
+	mdetails = '**{name}**#{discrim}'.format(
+		name=mdspecialchars(u.display_name),
+		discrim=u.discriminator,
+	)
+	if user.status == discord.Status.offline:
+		mdetails += ' (Invisible)'
+	embed.add_field(
+		name='Member',
+		value=mdetails,
+	)
+	embed.add_field(
+		name='Reaction',
+		value=(
+			(emotename)
+			if
+			(not iscustomemote)
+			else
+			(
+				'{name} ({id})'.format(
+					name=emotename,
+					id=r.id,
+				)
+			)
+		),
+	)
+	await client.send_message(specialchannel, embed=embed)
 
 @client.event
 async def on_reaction_remove(reaction, user):
