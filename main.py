@@ -2382,7 +2382,7 @@ async def on_typing(channel, user, when):
 async def on_server_role_create(r):
 	schan = getspecialchannel(r.server)
 	embed = discord.Embed(
-		title='ROLE CREATE AT {time}'.format(time=str(r.created_at)),
+		title='ROLE ADD AT {time}'.format(time=str(r.created_at)),
 		description=mdspecialchars(r.name),
 		colour=r.colour,
 	)
@@ -2392,7 +2392,7 @@ async def on_server_role_create(r):
 async def on_server_role_delete(r):
 	schan = getspecialchannel(r.server)
 	embed = discord.Embed(
-		title='ROLE DELETE',
+		title='ROLE REMOVE',
 		description=mdspecialchars(r.name),
 		colour=r.colour,
 	)
