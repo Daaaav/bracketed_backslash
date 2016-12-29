@@ -2409,8 +2409,15 @@ async def on_server_role_update(before, after):
 		await client.send_message(specialchannel, embed=embed)
 	if before.hoist != after.hoist: # if "display online members separately" changed
 		if before.hoist == 0 and after.hoist == 1: # if the role has been hoisted
-			msg = '**`>`**`role` **``{}``** `({}) has been hoisted`'.format(wrapbackticks(after.name), after.id)
-			await client.send_message(specialchannel, msg)
+			embed = discord.Embed(
+				title='ROLE HOIST',
+				description='{name}\nID: {id}'.format(
+					name=mdspecialchars(after.name),
+					id=after.id,
+				),
+				colour=after.colour,
+			)
+			await client.send_message(specialchannel, embed=embed)
 		if before.hoist == 1 and after.hoist == 0: # if the role has been lowered
 			msg = '**`>`**`role` **``{}``** `({}) has been lowered`'.format(wrapbackticks(after.name), after.id)
 			await client.send_message(specialchannel, msg)
