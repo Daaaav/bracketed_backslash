@@ -2569,6 +2569,22 @@ async def on_server_update(before, after):
 		embed.add_field(name='Older Region', value=str(before.region))
 		embed.add_field(name='Newer Region', value=str(after.region))
 		await client.send_message(specialchannel, embed=embed)
+	if before.afk_timeout != after.afk_timeout:
+		b_m, b_s = divmod(before.afk_timeout, 60)
+		b_h, b_m = divmod(b_m, 60)
+		a_m, a_s = divmod(after.afk_timeout, 60)
+		a_h, a_s = divmod(a_m, 60)
+		embed = discord.Embed(description='AFK TIMEOUT CHANGE')
+		embed.set_thumbnail(url=after.icon_url)
+		embed.add_field(
+			name='Older Timeout',
+			value='{h}h {m}m {s}s'.format(h=b_h, m=b_m, s=b_s),
+		)
+		embed.add_field(
+			name='Newer Timeout',
+			value='{h}h {m}m {s}s'.format(h=a_h, m=a_m, s=a_s),
+		)
+		await client.send_message(specialchannel, embed=embed)
 
 @client.event
 async def on_voice_state_update(before, after):
