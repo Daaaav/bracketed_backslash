@@ -2473,16 +2473,49 @@ async def on_reaction_add(r, u):
 	await client.send_message(specialchannel, embed=embed)
 
 @client.event
-async def on_reaction_remove(reaction, user):
-	if isprivatemessage(reaction.server):
+async def on_reaction_remove(r, u):
+	if isprivatemessage(r.server):
 		return
 	specialchannel = getspecialchannel(reaction.message.server)
 	try:
 		iscustomemote = True
-		emotename = reaction.emoji.name
+		emotename = r.emoji.name
 	except AttributeError:
 		iscustomemote = False
-		emotename = reaction.emoji
+		emotename = r.emoji
+	embed = discord.Embed(
+		title='REACTION REMOVE FROM MESSAGE {m.id} IN {c.mention}'.format(
+			m=r.message,
+			c=r.message.channel,
+		),
+		description=r.message.content,
+		colour=u.colour,
+	)
+	mdetails = '**{name}**#{discrim}'.format(
+		name=mdspecialchars(u.display_name),
+		discrim=u.discriminator,
+	)
+	if user.status == discord.Status.offline:
+		mdetails += ' (Invisible)'
+	embed.add_field(
+		name='Member of Reaction',
+		value=mdetails,
+	)
+	embed.add_field(
+		name='Reaction',
+		value=(
+			(emotename)
+			if
+			(not iscustomemote)
+			else
+			(
+				'{name} ({id})'.format(
+					name=emotename,
+					id=r.id,
+				)
+			)
+		),
+	)
 	msg = '**`>`**`reaction` {} `{} by user` **``{}``**`#{}` `from message {} removed`'.format(emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', wrapbackticks(user.name), user.discriminator, user.id, reaction.message.id)
 	await client.send_message(specialchannel, msg)
 
