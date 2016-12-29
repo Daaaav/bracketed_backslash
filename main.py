@@ -2597,6 +2597,18 @@ async def on_server_update(before, after):
 			value='{0.mention} ({0.id})'.format(after.afk_channel),
 		)
 		await client.send_message(specialchannel, embed=embed)
+	if before.verification_level != after.verification_level:
+		embed = discord.Embed(description='VERIFICATION LEVEL CHANGE')
+		embed.set_thumbnail(url=after.icon_url)
+		embed.add_field(
+			name='Older Level',
+			value=str(before.verification_level).title(),
+		)
+		embed.add_field(
+			name='Newer Level',
+			value=str(after.verification_level).title(),
+		)
+		await client.send_message(specialchannel, embed=embed)
 
 @client.event
 async def on_voice_state_update(before, after):
