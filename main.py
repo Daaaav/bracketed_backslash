@@ -2443,7 +2443,7 @@ async def on_reaction_add(r, u):
 			c=r.message.channel,
 		),
 		description=r.message.content,
-		colour=user.colour,
+		colour=u.colour,
 	)
 	mdetails = '**{name}**#{discrim}'.format(
 		name=mdspecialchars(u.display_name),
