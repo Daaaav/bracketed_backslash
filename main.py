@@ -2618,6 +2618,24 @@ async def on_server_update(before, after):
 		await client.send_message(specialchannel, embed=embed)
 
 @client.event
+async def on_server_emojis_update(b, a):
+	try:
+		schan = getspecialchannel(a[0].server)
+	except IndexError:
+		schan = getspecialchannel(b[0].server)
+	diff = list(set(b).symmetric_difference(set(a)))
+	elist = ''
+	for e in diff:
+		elist += e.name + '\n'
+	if len(b) > len(a):
+		desc = 'EMOTE REMOVE'
+	elif len(b) < len(a):
+		desc = 'EMOTE ADD'
+	embed = discord.Embed(description=desc)
+	embed.add_field(name='Emotes', value=elist)
+	await client.send_message(schan, embed=embed)
+
+@client.event
 async def on_voice_state_update(before, after):
 	global productionserver, voicetextchannel
 
