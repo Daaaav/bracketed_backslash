@@ -2386,7 +2386,7 @@ async def on_server_role_create(r):
 		description=r.name,
 		colour=r.colour,
 	)
-	await client.send_message(specialchannel, embed=embed)
+	await client.send_message(schan, embed=embed)
 
 @client.event
 async def on_server_role_delete(role):
