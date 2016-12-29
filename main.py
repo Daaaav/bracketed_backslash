@@ -2419,8 +2419,15 @@ async def on_server_role_update(before, after):
 			)
 			await client.send_message(specialchannel, embed=embed)
 		if before.hoist == 1 and after.hoist == 0: # if the role has been lowered
-			msg = '**`>`**`role` **``{}``** `({}) has been lowered`'.format(wrapbackticks(after.name), after.id)
-			await client.send_message(specialchannel, msg)
+			embed = discord.Embed(
+				title='ROLE UNHOIST',
+				description='{name}\nID: {id}'.format(
+					name=mdspecialchars(after.name),
+					id=after.id,
+				),
+				colour=after.colour,
+			)
+			await client.send_message(specialchannel, embed=embed)
 	if before.mentionable != after.mentionable: # if "allow everyone to mention this role" changed
 		if before.mentionable == 0 and after.mentionable == 1: # if the role is now mentionable
 			msg = '**`>`**`role` **``{}``** `({}) is now mentionable`'.format(wrapbackticks(after.name), after.id)
