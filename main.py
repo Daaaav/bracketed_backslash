@@ -2519,6 +2519,35 @@ async def on_reaction_remove(r, u):
 	await client.send_message(specialchannel, embed=embed)
 
 @client.event
+async def on_reaction_clear(m, rs):
+	schan = getspecialchannel(m.server)
+	rlist = ''
+	for r in rs:
+		try:
+			name = r.emoji.name
+			cemt = True
+		except AttributeError:
+			name = r.emoji
+			cemt = False
+		rlist += str(r.count) + ' '
+		if cemt:
+			rlist += '{name} ({id})\n'.format(
+					name=emotename,
+					id=r.id,
+				)
+		else:
+			rlist += name + '\n'
+	embed = discord.Embed(
+		title='REACTIONS CLEAR FROM MESSAGE {m.id} IN {c.mention}'.format(
+			m=m,
+			c=m.channel,
+		),
+		description=m.content,
+		colour=m.author.colour,
+	)
+	embed.add_field(name='Reactions', value=rlist)
+
+@client.event
 async def on_server_update(before, after):
 	specialchannel = getspecialchannel(after)
 	if before.icon != after.icon:
