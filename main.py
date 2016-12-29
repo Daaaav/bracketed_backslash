@@ -2546,6 +2546,7 @@ async def on_reaction_clear(m, rs):
 		colour=m.author.colour,
 	)
 	embed.add_field(name='Reactions', value=rlist)
+	await client.send_message(schan, embed=embed)
 
 @client.event
 async def on_server_update(before, after):
