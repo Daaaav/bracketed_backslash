@@ -2585,6 +2585,18 @@ async def on_server_update(before, after):
 			value='{h}h {m}m {s}s'.format(h=a_h, m=a_m, s=a_s),
 		)
 		await client.send_message(specialchannel, embed=embed)
+	if before.afk_channel != after.afk_channel:
+		embed = discord.Embed(description='AFK CHANNEL CHANGE')
+		embed.set_thumbnail(url=after.icon_url)
+		embed.add_field(
+			name='Older Channel',
+			value='{0.mention} ({0.id})'.format(before.afk_channel),
+		)
+		embed.add_field(
+			name='Newer Channel',
+			value='{0.mention} ({0.id})'.format(after.afk_channel),
+		)
+		await client.send_message(specialchannel, embed=embed)
 
 @client.event
 async def on_voice_state_update(before, after):
