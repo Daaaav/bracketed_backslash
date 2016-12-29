@@ -2516,8 +2516,7 @@ async def on_reaction_remove(r, u):
 			)
 		),
 	)
-	msg = '**`>`**`reaction` {} `{} by user` **``{}``**`#{}` `from message {} removed`'.format(emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', wrapbackticks(user.name), user.discriminator, user.id, reaction.message.id)
-	await client.send_message(specialchannel, msg)
+	await client.send_message(specialchannel, embed=embed)
 
 @client.event
 async def on_server_update(before, after):
