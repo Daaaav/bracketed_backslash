@@ -2159,6 +2159,8 @@ async def on_message(message):
 
 @client.event
 async def on_message_delete(message): # when a message gets deleted
+	if isprivatemessage(message.server):
+		return
 	if message.author == client.user: # is the deleted message originally sent by the bot
 		logging.info('bot message {} by user {}#{} ({}) in channel {} ({}) at {} utc deleted, original content is \n{}'.format(message.id, message.author.name, message.author.discriminator, message.author.id, message.channel.id, message.channel.name, message.timestamp, message.content))
 		return
@@ -2181,6 +2183,8 @@ async def on_message_delete(message): # when a message gets deleted
 
 @client.event
 async def on_message_edit(before, after): # when a message gets edited
+	if isprivatemessage(after.server):
+		return
 	specialchannel = getspecialchannel_reply(after)
 	if before.pinned != after.pinned:
 		if not before.pinned and after.pinned and not logdisabled('message_pin', after.server): # if the message was pinned
@@ -2424,6 +2428,8 @@ async def on_server_role_update(before, after):
 
 @client.event
 async def on_reaction_add(r, u):
+	if isprivatemessage(r.message.server):
+		return
 	specialchannel = getspecialchannel(r.message.server)
 	try:
 		iscustomemote = True
@@ -2468,6 +2474,8 @@ async def on_reaction_add(r, u):
 
 @client.event
 async def on_reaction_remove(reaction, user):
+	if isprivatemessage(reaction.server):
+		return
 	specialchannel = getspecialchannel(reaction.message.server)
 	try:
 		iscustomemote = True
