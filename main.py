@@ -2476,7 +2476,7 @@ async def on_reaction_add(r, u):
 async def on_reaction_remove(r, u):
 	if isprivatemessage(r.server):
 		return
-	specialchannel = getspecialchannel(reaction.message.server)
+	specialchannel = getspecialchannel(r.message.server)
 	try:
 		iscustomemote = True
 		emotename = r.emoji.name
