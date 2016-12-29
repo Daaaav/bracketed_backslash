@@ -2610,6 +2610,12 @@ async def on_server_update(before, after):
 			value=str(after.verification_level).title(),
 		)
 		await client.send_message(specialchannel, embed=embed)
+	if before.mfa_level != after.mfa_level:
+		if before.mfa_level == 0 and after.mfa_level == 1:
+			embed=discord.Embed(description='SERVER 2FA ENABLED')
+		elif before.mfa_level == 1 and after.mfa_level == 0:
+			embed=discord.Embed(description='SERVER 2FA DISABLED')
+		await client.send_message(specialchannel, embed=embed)
 
 @client.event
 async def on_voice_state_update(before, after):
