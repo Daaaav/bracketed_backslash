@@ -2563,6 +2563,12 @@ async def on_server_update(before, after):
 		embed.add_field(name='Older Name', value=mdspecialchars(before.name))
 		embed.add_field(name='Newer Name', value=mdspecialchars(after.name))
 		await client.send_message(specialchannel, embed=embed)
+	if before.region != after.region:
+		embed = discord.Embed(description='VOICE REGION CHANGE')
+		embed.set_thumbnail(url=after.icon_url)
+		embed.add_field(name='Older Region', value=str(before.region))
+		embed.add_field(name='Newer Region', value=str(after.region))
+		await client.send_message(specialchannel, embed=embed)
 
 @client.event
 async def on_voice_state_update(before, after):
