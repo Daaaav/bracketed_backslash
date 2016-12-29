@@ -2389,10 +2389,15 @@ async def on_server_role_create(r):
 	await client.send_message(schan, embed=embed)
 
 @client.event
-async def on_server_role_delete(role):
-	specialchannel = getspecialchannel(role.server)
-	msg = '**`>`**`role` **``{}``** `({}) was deleted in server` **``{}``** `({}) originally created at {}`'.format(wrapbackticks(role.name), role.id, wrapbackticks(role.server.name), role.server.id, role.created_at)
-	await client.send_message(specialchannel, msg)
+async def on_server_role_delete(r):
+	schan = getspecialchannel(r.server)
+	embed = discord.Embed(
+		title='ROLE DELETE',
+		description=r.name,
+		colour=r.colour,
+	)
+	embed.add_field(name='Original Creation Time', value=str(r.created_at))
+	await client.send_message(schan, embed=embed)
 
 @client.event
 async def on_server_role_update(before, after):
