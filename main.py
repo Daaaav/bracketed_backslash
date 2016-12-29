@@ -2474,7 +2474,7 @@ async def on_reaction_add(r, u):
 
 @client.event
 async def on_reaction_remove(r, u):
-	if isprivatemessage(r.server):
+	if isprivatemessage(r.message.server):
 		return
 	specialchannel = getspecialchannel(r.message.server)
 	try:
