@@ -2383,7 +2383,7 @@ async def on_server_role_create(r):
 	schan = getspecialchannel(r.server)
 	embed = discord.Embed(
 		title='ROLE CREATE AT {time}'.format(time=str(r.created_at)),
-		description=r.name,
+		description=mdspecialchars(r.name),
 		colour=r.colour,
 	)
 	await client.send_message(schan, embed=embed)
@@ -2393,7 +2393,7 @@ async def on_server_role_delete(r):
 	schan = getspecialchannel(r.server)
 	embed = discord.Embed(
 		title='ROLE DELETE',
-		description=r.name,
+		description=mdspecialchars(r.name),
 		colour=r.colour,
 	)
 	embed.add_field(name='Original Creation Time', value=str(r.created_at))
