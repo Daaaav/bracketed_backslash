@@ -2379,10 +2379,14 @@ async def on_typing(channel, user, when):
 		return # practically unnecessary, but this is for if we want to do things when members type later
 
 @client.event
-async def on_server_role_create(role):
-	specialchannel = getspecialchannel(role.server)
-	msg = '**`>`**`role` **``{}``** `({}) was created in server` **``{}``** `({}) at {}`'.format(wrapbackticks(role.name), role.id, wrapbackticks(role.server.name), role.server.id, role.created_at)
-	await client.send_message(specialchannel, msg)
+async def on_server_role_create(r):
+	schan = getspecialchannel(r.server)
+	embed = discord.Embed(
+		title='ROLE CREATE AT {time}'.format(time=str(r.created_at)),
+		description=r.name,
+		colour=r.colour,
+	)
+	await client.send_message(specialchannel, embed=embed)
 
 @client.event
 async def on_server_role_delete(role):
