@@ -1579,8 +1579,9 @@ async def on_message(message):
 		embed = emb.success('Successfully added role {} to member {} in the role cache.'.format(splitargs[1], splitargs[0]))
 		await reply(message, emb=embed)
 	elif command == 'rolesync':
-		if not is_mod(message.author):
-			embed = emb.error(t['mod_only'])
+		perms = discord.Channel.permissions_for(message.channel, message.author)
+		if not perms.manage_roles:
+			embed = emb.error(t['you_no_permission'])
 			logfailedcommand(command, arguments, message)
 			await reply(message, emb=embed)
 			return
