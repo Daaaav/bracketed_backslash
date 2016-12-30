@@ -56,6 +56,7 @@ client = discord.Client() # defines all client.* commands
 
 cachelocation = './.cache'
 attachcache = cachelocation + '/' + 'attach' # define attachment caching location
+embedcache = cachelocation + '/' + 'embed'
 
 invoker = '\\' # command invoker
 altinvoker = 'ok glass, ' # alt command invoker
@@ -672,6 +673,21 @@ async def on_message(message):
 			f.write(actuallyretrieving)
 			f.close()
 
+	if message.embeds != []:
+		for n, e in enumerate(message.embeds):
+			if e['type'] == 'image':
+				# get the filename from the url
+				# i.e. the part after the last forward slash
+				fn = e['url'].split('/')[-1]
+
+				# fetch the embed preview discord fetches
+				img = await fetch(e['thumbnail']['proxy_url'])
+
+				# cache the image
+				with open('{embedcache}/{m.id}_{n}_{fn}'.format(embedcache=embedcache, m=message, n=n, fn=fn), 'wb') as f:
+					f.write(img)
+					f.close()
+
 	if not isprivate and message.author.id in config.get_s('blacklist', message.server.id):
 		return
 
@@ -1124,7 +1140,10 @@ async def on_message(message):
 		content = 'Source code to the bot: __https://gitgud.io/infoteddy/bracketed_backslash__'
 		await reply(message, content)
 	elif command == 'findu' or command == 'findup':
-		targetmember = get_member_input(message.server, arguments)
+		if arguments == None:
+			targetmember = message.author
+		else:
+			targetmember = get_member_input(message.server, arguments)
 		if targetmember == None:
 			embed = emb.error('Unable to find that member. ' + t['specify_user'])
 			await reply(message, emb=embed)
@@ -1560,8 +1579,9 @@ async def on_message(message):
 		embed = emb.success('Successfully added role {} to member {} in the role cache.'.format(splitargs[1], splitargs[0]))
 		await reply(message, emb=embed)
 	elif command == 'rolesync':
-		if not is_mod(message.author):
-			embed = emb.error(t['mod_only'])
+		perms = discord.Channel.permissions_for(message.channel, message.author)
+		if not perms.manage_roles:
+			embed = emb.error(t['you_no_permission'])
 			logfailedcommand(command, arguments, message)
 			await reply(message, emb=embed)
 			return
@@ -2130,6 +2150,24 @@ async def on_message(message):
 			content = ''
 			embed = emb.error(t['no_permission'])
 		await reply(message, content, emb=embed)
+	elif command == 'bans':
+		bans = await client.get_bans(message.server)
+		ulist = ''
+		for u in bans:
+			ulist += (
+				'**{0.name}**#{0.discriminator} ({0.id})\n'
+				.format(u)
+			)
+		if len(ulist) > 2048:
+			# TODO: actually split this into multiple strings
+			pass
+		embed = discord.Embed(
+			name='Bans',
+			description=ulist,
+			colour=col.r_success,
+		)
+		embed.set_thumbnail(url=message.server.icon_url)
+		await reply(message, emb=embed)
 	else:
 		if altinvokeractive:
 			return # do not print error message if command is invalid
@@ -2139,6 +2177,8 @@ async def on_message(message):
 
 @client.event
 async def on_message_delete(message): # when a message gets deleted
+	if isprivatemessage(message.server):
+		return
 	if message.author == client.user: # is the deleted message originally sent by the bot
 		logging.info('bot message {} by user {}#{} ({}) in channel {} ({}) at {} utc deleted, original content is \n{}'.format(message.id, message.author.name, message.author.discriminator, message.author.id, message.channel.id, message.channel.name, message.timestamp, message.content))
 		return
@@ -2161,6 +2201,8 @@ async def on_message_delete(message): # when a message gets deleted
 
 @client.event
 async def on_message_edit(before, after): # when a message gets edited
+	if isprivatemessage(after.server):
+		return
 	specialchannel = getspecialchannel_reply(after)
 	if before.pinned != after.pinned:
 		if not before.pinned and after.pinned and not logdisabled('message_pin', after.server): # if the message was pinned
@@ -2356,35 +2398,55 @@ async def on_typing(channel, user, when):
 		return # practically unnecessary, but this is for if we want to do things when members type later
 
 @client.event
-async def on_server_role_create(role):
-	specialchannel = getspecialchannel(role.server)
-	msg = '**`>`**`role` **``{}``** `({}) was created in server` **``{}``** `({}) at {}`'.format(wrapbackticks(role.name), role.id, wrapbackticks(role.server.name), role.server.id, role.created_at)
-	await client.send_message(specialchannel, msg)
+async def on_server_role_create(r):
+	schan = getspecialchannel(r.server)
+	embed = discord.Embed(
+		title='ROLE ADD AT {time}'.format(time=str(r.created_at)),
+		description=mdspecialchars(r.name),
+		colour=r.colour,
+	)
+	await client.send_message(schan, embed=embed)
 
 @client.event
-async def on_server_role_delete(role):
-	specialchannel = getspecialchannel(role.server)
-	msg = '**`>`**`role` **``{}``** `({}) was deleted in server` **``{}``** `({}) originally created at {}`'.format(wrapbackticks(role.name), role.id, wrapbackticks(role.server.name), role.server.id, role.created_at)
-	await client.send_message(specialchannel, msg)
+async def on_server_role_delete(r):
+	schan = getspecialchannel(r.server)
+	embed = discord.Embed(
+		title='ROLE REMOVE',
+		description=mdspecialchars(r.name),
+		colour=r.colour,
+	)
+	embed.add_field(name='Original Creation Time', value=str(r.created_at))
+	await client.send_message(schan, embed=embed)
 
 @client.event
 async def on_server_role_update(before, after):
 	specialchannel = getspecialchannel(before.server)
 	if before.name != after.name: # if the name changed
-		msg_start = '**`>`**`role {} has name changed`\n'.format(before.id)
-		content = '_`The older name is:`_\n**``{}``**'.format(wrapbackticks(before.name))
-		msg = msg_start + content
-		await client.send_message(specialchannel, msg)
-		content = '_`The newer name is:`_\n**``{}``**'.format(wrapbackticks(after.name))
-		msg = msg_start + content
-		await client.send_message(specialchannel, msg)
+		embed = discord.Embed(title='ROLE NAME CHANGE', description=mdspecialchars(after.name), colour=after.colour)
+		embed.add_field(name='Older Name', value=mdspecialchars(before.name))
+		embed.add_field(name='Newer Name', value=mdspecialchars(after.name))
+		await client.send_message(specialchannel, embed=embed)
 	if before.hoist != after.hoist: # if "display online members separately" changed
 		if before.hoist == 0 and after.hoist == 1: # if the role has been hoisted
-			msg = '**`>`**`role` **``{}``** `({}) has been hoisted`'.format(wrapbackticks(after.name), after.id)
-			await client.send_message(specialchannel, msg)
+			embed = discord.Embed(
+				title='ROLE HOIST',
+				description='{name}\nID: {id}'.format(
+					name=mdspecialchars(after.name),
+					id=after.id,
+				),
+				colour=after.colour,
+			)
+			await client.send_message(specialchannel, embed=embed)
 		if before.hoist == 1 and after.hoist == 0: # if the role has been lowered
-			msg = '**`>`**`role` **``{}``** `({}) has been lowered`'.format(wrapbackticks(after.name), after.id)
-			await client.send_message(specialchannel, msg)
+			embed = discord.Embed(
+				title='ROLE UNHOIST',
+				description='{name}\nID: {id}'.format(
+					name=mdspecialchars(after.name),
+					id=after.id,
+				),
+				colour=after.colour,
+			)
+			await client.send_message(specialchannel, embed=embed)
 	if before.mentionable != after.mentionable: # if "allow everyone to mention this role" changed
 		if before.mentionable == 0 and after.mentionable == 1: # if the role is now mentionable
 			msg = '**`>`**`role` **``{}``** `({}) is now mentionable`'.format(wrapbackticks(after.name), after.id)
@@ -2400,42 +2462,133 @@ async def on_server_role_update(before, after):
 			msg = '**`>`**`role` **``{}``** `({}) has been moved up by {} roles ({} to {})`'.format(wrapbackticks(after.name), after.id, after.position - before.position, before.position, after.position)
 			await client.send_message(specialchannel, msg)
 	if before.colour != after.colour:
-		msg_start = '**`>`**`role` **``{}``** `({}) has changed color`\n'.format(wrapbackticks(after.name), after.id)
-		content = '_`The older color is:`_ `{}`'.format('(default)' if str(before.colour) == '#000000' else str(before.colour).upper())
-		msg = msg_start + content
-		await client.send_message(specialchannel, msg)
-		content = '_`The newer color is:`_ `{}`'.format('(default)' if str(after.colour) == '#000000' else str(after.colour).upper())
-		msg = msg_start + content
-		await client.send_message(specialchannel, msg)
+		embed = discord.Embed(title='ROLE COLOR CHANGE', description=mdspecialchars(after.name), colour=after.colour)
+		embed.add_field(name='Older Color', value='(default)' if before.colour.value == 0 else str(before.colour).upper())
+		embed.add_field(name='Newer Color', value='(default)' if after.colour.value == 0 else str(after.colour).upper())
+		await client.send_message(specialchannel, embed=embed)
 
 
 @client.event
-async def on_reaction_add(reaction, user):
-	specialchannel = getspecialchannel(reaction.message.server)
+async def on_reaction_add(r, u):
+	if isprivatemessage(r.message.server):
+		return
+	specialchannel = getspecialchannel(r.message.server)
 	try:
 		iscustomemote = True
-		emotename = reaction.emoji.name
+		emotename = r.emoji.name
 	except AttributeError:
 		iscustomemote = False
-		emotename = reaction.emoji
-	msg = '**`>`**`user` **``{}``**`#{}` `({}) added reaction` {} `{} to message {}'.format(wrapbackticks(user.name), user.discriminator, user.id, emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', reaction.message.id)
-	if str(user.status) == 'offline':
-		msg += ' and was invisible while doing so`'
-	else:
-		msg += '`'
-	await client.send_message(specialchannel, msg)
+		emotename = r.emoji
+	embed = discord.Embed(
+		title='REACTION ADD TO MESSAGE {m.id} IN {c.mention}'.format(
+			m=r.message,
+			c=r.message.channel,
+		),
+		description=r.message.content,
+		colour=u.colour,
+	)
+	mdetails = '**{name}**#{discrim}'.format(
+		name=mdspecialchars(u.display_name),
+		discrim=u.discriminator,
+	)
+	if user.status == discord.Status.offline:
+		mdetails += ' (Invisible)'
+	embed.add_field(
+		name='Member of Reaction',
+		value=mdetails,
+	)
+	embed.add_field(
+		name='Reaction',
+		value=(
+			(emotename)
+			if
+			(not iscustomemote)
+			else
+			(
+				'{name} ({id})'.format(
+					name=emotename,
+					id=r.id,
+				)
+			)
+		),
+	)
+	await client.send_message(specialchannel, embed=embed)
 
 @client.event
-async def on_reaction_remove(reaction, user):
-	specialchannel = getspecialchannel(reaction.message.server)
+async def on_reaction_remove(r, u):
+	if isprivatemessage(r.message.server):
+		return
+	specialchannel = getspecialchannel(r.message.server)
 	try:
 		iscustomemote = True
-		emotename = reaction.emoji.name
+		emotename = r.emoji.name
 	except AttributeError:
 		iscustomemote = False
-		emotename = reaction.emoji
-	msg = '**`>`**`reaction` {} `{} by user` **``{}``**`#{}` `from message {} removed`'.format(emotename if not iscustomemote else '**`{}`**'.format(emotename), '({})'.format(reaction.emoji.id) if iscustomemote else '', wrapbackticks(user.name), user.discriminator, user.id, reaction.message.id)
-	await client.send_message(specialchannel, msg)
+		emotename = r.emoji
+	embed = discord.Embed(
+		title='REACTION REMOVE FROM MESSAGE {m.id} IN {c.mention}'.format(
+			m=r.message,
+			c=r.message.channel,
+		),
+		description=r.message.content,
+		colour=u.colour,
+	)
+	mdetails = '**{name}**#{discrim}'.format(
+		name=mdspecialchars(u.display_name),
+		discrim=u.discriminator,
+	)
+	if user.status == discord.Status.offline:
+		mdetails += ' (Invisible)'
+	embed.add_field(
+		name='Member of Reaction',
+		value=mdetails,
+	)
+	embed.add_field(
+		name='Reaction',
+		value=(
+			(emotename)
+			if
+			(not iscustomemote)
+			else
+			(
+				'{name} ({id})'.format(
+					name=emotename,
+					id=r.id,
+				)
+			)
+		),
+	)
+	await client.send_message(specialchannel, embed=embed)
+
+@client.event
+async def on_reaction_clear(m, rs):
+	schan = getspecialchannel(m.server)
+	rlist = ''
+	for r in rs:
+		try:
+			name = r.emoji.name
+			cemt = True
+		except AttributeError:
+			name = r.emoji
+			cemt = False
+		rlist += str(r.count) + ' '
+		if cemt:
+			rlist += '{name} ({id})\n'.format(
+					name=emotename,
+					id=r.id,
+				)
+		else:
+			rlist += name + '\n'
+	embed = discord.Embed(
+		title='REACTIONS CLEAR FROM MESSAGE {m.id} IN {c.mention}'.format(
+			m=m,
+			c=m.channel,
+		),
+		description=m.content,
+		colour=m.author.colour,
+	)
+	embed.add_field(name='Reactions', value=rlist)
+	await client.send_message(schan, embed=embed)
 
 @client.event
 async def on_server_update(before, after):
@@ -2453,6 +2606,76 @@ async def on_server_update(before, after):
 		embed.add_field(name='Older Name', value=mdspecialchars(before.name))
 		embed.add_field(name='Newer Name', value=mdspecialchars(after.name))
 		await client.send_message(specialchannel, embed=embed)
+	if before.region != after.region:
+		embed = discord.Embed(description='VOICE REGION CHANGE')
+		embed.set_thumbnail(url=after.icon_url)
+		embed.add_field(name='Older Region', value=str(before.region))
+		embed.add_field(name='Newer Region', value=str(after.region))
+		await client.send_message(specialchannel, embed=embed)
+	if before.afk_timeout != after.afk_timeout:
+		b_m, b_s = divmod(before.afk_timeout, 60)
+		b_h, b_m = divmod(b_m, 60)
+		a_m, a_s = divmod(after.afk_timeout, 60)
+		a_h, a_s = divmod(a_m, 60)
+		embed = discord.Embed(description='AFK TIMEOUT CHANGE')
+		embed.set_thumbnail(url=after.icon_url)
+		embed.add_field(
+			name='Older Timeout',
+			value='{h}h {m}m {s}s'.format(h=b_h, m=b_m, s=b_s),
+		)
+		embed.add_field(
+			name='Newer Timeout',
+			value='{h}h {m}m {s}s'.format(h=a_h, m=a_m, s=a_s),
+		)
+		await client.send_message(specialchannel, embed=embed)
+	if before.afk_channel != after.afk_channel:
+		embed = discord.Embed(description='AFK CHANNEL CHANGE')
+		embed.set_thumbnail(url=after.icon_url)
+		embed.add_field(
+			name='Older Channel',
+			value='{0.mention} ({0.id})'.format(before.afk_channel),
+		)
+		embed.add_field(
+			name='Newer Channel',
+			value='{0.mention} ({0.id})'.format(after.afk_channel),
+		)
+		await client.send_message(specialchannel, embed=embed)
+	if before.verification_level != after.verification_level:
+		embed = discord.Embed(description='VERIFICATION LEVEL CHANGE')
+		embed.set_thumbnail(url=after.icon_url)
+		embed.add_field(
+			name='Older Level',
+			value=str(before.verification_level).title(),
+		)
+		embed.add_field(
+			name='Newer Level',
+			value=str(after.verification_level).title(),
+		)
+		await client.send_message(specialchannel, embed=embed)
+	if before.mfa_level != after.mfa_level:
+		if before.mfa_level == 0 and after.mfa_level == 1:
+			embed=discord.Embed(description='SERVER 2FA ENABLED')
+		elif before.mfa_level == 1 and after.mfa_level == 0:
+			embed=discord.Embed(description='SERVER 2FA DISABLED')
+		await client.send_message(specialchannel, embed=embed)
+
+@client.event
+async def on_server_emojis_update(b, a):
+	try:
+		schan = getspecialchannel(a[0].server)
+	except IndexError:
+		schan = getspecialchannel(b[0].server)
+	diff = list(set(b).symmetric_difference(set(a)))
+	elist = ''
+	for e in diff:
+		elist += '{str} – {1.name} ({1.id})\n'.format(str(e), e)
+	if len(b) > len(a):
+		desc = 'EMOTE REMOVE'
+	elif len(b) < len(a):
+		desc = 'EMOTE ADD'
+	embed = discord.Embed(description=desc)
+	embed.add_field(name='Emotes', value=elist)
+	await client.send_message(schan, embed=embed)
 
 @client.event
 async def on_voice_state_update(before, after):

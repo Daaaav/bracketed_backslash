@@ -174,6 +174,8 @@ def mdspecialchars(string, character='\\'):
 		'_', # italicize [2] and underline
 		'~', # hey have you ever wanted to make a shitty joke? just wrap it in two of these on each side!
 		'`', # oh hey we escaped these earlier
+		'<', # custom emotes and suppressing link embeds
+		'>', # custom emotes and suppressing link embeds [2]
 	]
 	try:
 		for char in specialchars:
