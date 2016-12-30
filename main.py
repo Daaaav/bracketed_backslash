@@ -2703,6 +2703,28 @@ async def on_voice_state_update(before, after):
 		# LEFT a voice channel.
 		await client.delete_channel_permissions(voicetextchannel, after)
 
+@client.event
+async def on_channel_create(c):
+	schan = getspecialchannel(c.server)
+	embed = discord.Embed(
+		description='{type} CHANNEL ADD\n{0.name} ({0.id})'.format(
+			c,
+			type=str(c.type).upper(),
+		),
+	)
+	await client.send_message(schan, embed=embed)
+
+@client.event
+async def on_channel_delete(c):
+	schan = getspecialchannel(c.server)
+	embed = discord.Embed(
+		description='{type} CHANNEL REMOVE\n{0.name} ({0.id})'.format(
+			c,
+			type=str(c.type).upper(),
+		),
+	)
+	await client.send_message(schan, embed=embed)
+
 exec(compile(open("functions.py", "rb").read(), "functions.py", 'exec'))
 
 client.run(token)
