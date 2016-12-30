@@ -2150,6 +2150,24 @@ async def on_message(message):
 			content = ''
 			embed = emb.error(t['no_permission'])
 		await reply(message, content, emb=embed)
+	elif command == 'bans':
+		bans = await client.get_bans(message.server)
+		ulist = ''
+		for u in bans:
+			ulist += (
+				'**{0.name}**#{0.discriminator} ({0.id})\n'
+				.format(u)
+			)
+		if len(ulist) > 2048:
+			# TODO: actually split this into multiple strings
+			pass
+		embed = discord.Embed(
+			name='Bans',
+			description=ulist,
+			colour=col.r_success,
+		)
+		embed.set_thumbnail(url=message.server.icon_url)
+		await reply(message, emb=embed)
 	else:
 		if altinvokeractive:
 			return # do not print error message if command is invalid
