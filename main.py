@@ -2695,25 +2695,17 @@ async def on_voice_state_update(before, after):
 
 	if before.voice.voice_channel in notcounting and (not after.voice.voice_channel in notcounting):
 		# JOINED a voice channel. If this is the second person, open the #voicechat channel!
-		if voicechatters == 2:
-			overwrite = discord.PermissionOverwrite()
-			overwrite.read_messages = True
-			overwrite.read_message_history = False
-			await client.edit_channel_permissions(voicetextchannel, after.server.default_role, overwrite)
-
-			logembed = emb.info('Opening <#256924583737819146> because there are now 2 people in voice chat.\nThis channel accompanies the voice chat; read the channel description for more info.')
-			await client.send_message(voicetextchannel, embed=logembed)
+		overwrite = discord.PermissionOverwrite()
+		overwrite.read_messages = True
+		overwrite.read_message_history = False
+		await client.edit_channel_permissions(voicetextchannel, after, overwrite)
 
 	elif (not before.voice.voice_channel in notcounting) and after.voice.voice_channel in notcounting:
 		# LEFT a voice channel. If they're now alone, close the #voicechat channel again.
-		if voicechatters == 1:
-			overwrite = discord.PermissionOverwrite()
-			overwrite.read_messages = False
-			overwrite.read_message_history = False
-			await client.edit_channel_permissions(voicetextchannel, after.server.default_role, overwrite)
-
-			logembed = emb.info('Closing <#256924583737819146> because there is now only one person left in voice chat')
-			await client.send_message(voicetextchannel, embed=logembed)
+		overwrite = discord.PermissionOverwrite()
+		overwrite.read_messages = None
+		overwrite.read_message_history = None
+		await client.edit_channel_permissions(voicetextchannel, after, overwrite)
 
 exec(compile(open("functions.py", "rb").read(), "functions.py", 'exec'))
 
