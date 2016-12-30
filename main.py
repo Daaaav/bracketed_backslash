@@ -2694,18 +2694,15 @@ async def on_voice_state_update(before, after):
 			voicechatters += len(chan.voice_members)
 
 	if before.voice.voice_channel in notcounting and (not after.voice.voice_channel in notcounting):
-		# JOINED a voice channel. If this is the second person, open the #voicechat channel!
+		# JOINED a voice channel.
 		overwrite = discord.PermissionOverwrite()
 		overwrite.read_messages = True
 		overwrite.read_message_history = False
 		await client.edit_channel_permissions(voicetextchannel, after, overwrite)
 
 	elif (not before.voice.voice_channel in notcounting) and after.voice.voice_channel in notcounting:
-		# LEFT a voice channel. If they're now alone, close the #voicechat channel again.
-		overwrite = discord.PermissionOverwrite()
-		overwrite.read_messages = None
-		overwrite.read_message_history = None
-		await client.edit_channel_permissions(voicetextchannel, after, overwrite)
+		# LEFT a voice channel.
+		await client.delete_channel_permissions(voicetextchannel, after)
 
 exec(compile(open("functions.py", "rb").read(), "functions.py", 'exec'))
 
