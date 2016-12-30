@@ -114,7 +114,7 @@ modificationtimes = [
 ]
 modificationtimecache = time.strftime(config.get_s('timeformat'), time.gmtime(max(modificationtimes)))
 
-client.max_messages = 999999999
+client.max_messages = 9999
 
 maineventloop = asyncio.get_event_loop()
 
