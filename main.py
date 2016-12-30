@@ -2697,7 +2697,6 @@ async def on_voice_state_update(before, after):
 		# JOINED a voice channel.
 		overwrite = discord.PermissionOverwrite()
 		overwrite.read_messages = True
-		overwrite.read_message_history = False
 		await client.edit_channel_permissions(voicetextchannel, after, overwrite)
 
 	elif (not before.voice.voice_channel in notcounting) and after.voice.voice_channel in notcounting:
