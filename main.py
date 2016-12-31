@@ -2668,7 +2668,7 @@ async def on_server_emojis_update(b, a):
 	diff = list(set(b).symmetric_difference(set(a)))
 	elist = ''
 	for e in diff:
-		elist += '{str} – {1.name} ({1.id})\n'.format(str(e), e)
+		elist += '{str} – {0.name} ({0.id})\n'.format(e, str=str(e))
 	if len(b) > len(a):
 		desc = 'EMOTE REMOVE'
 	elif len(b) < len(a):
