@@ -2632,12 +2632,12 @@ async def on_server_update(before, after):
 		embed = discord.Embed(description='AFK CHANNEL CHANGE')
 		embed.set_thumbnail(url=after.icon_url)
 		embed.add_field(
-			name='Older Channel',
-			value='{0.mention} ({0.id})'.format(before.afk_channel),
+			name='Older Channel: None' if before.afk_channel == None else 'Older Channel',
+			value='No Older Channel' if before.afk_channel == None else '{name} ({0.id})'.format(before.afk_channel, name=mdspecialchars(before.afk_channel.name)),
 		)
 		embed.add_field(
-			name='Newer Channel',
-			value='{0.mention} ({0.id})'.format(after.afk_channel),
+			name='Newer Channel: None' if after.afk_channel == None else 'Newer Channel',
+			value='No Newer Channel' if after.afk_channel == None else '{name} ({0.id})'.format(after.afk_channel, name=mdspecialchars(after.afk_channel.name)),
 		)
 		await client.send_message(specialchannel, embed=embed)
 	if before.verification_level != after.verification_level:
