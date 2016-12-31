@@ -2491,7 +2491,7 @@ async def on_reaction_add(r, u):
 		name=mdspecialchars(u.display_name),
 		discrim=u.discriminator,
 	)
-	if user.status == discord.Status.offline:
+	if u.status == discord.Status.offline:
 		mdetails += ' (Invisible)'
 	embed.add_field(
 		name='Member of Reaction',
