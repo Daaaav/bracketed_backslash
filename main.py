@@ -864,7 +864,8 @@ async def on_message(message):
 
 			if not matched:
 				content = 'Invalid arguments passed, or the command is not in the help list. Input `\help` for a list of valid commands to pass as arguments.'
-		await reply(message, content)
+		embed = discord.Embed(description=content, colour=col.r_success)
+		await reply(message, emb=embed)
 	elif command == 'restart':
 		if not is_operator(message.author):
 			embed = emb.error(t['op_only'])
