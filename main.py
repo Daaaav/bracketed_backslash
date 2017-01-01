@@ -1138,7 +1138,7 @@ async def on_message(message):
 		content = 'Game of hangman aborted. The word was: **{}**'.format(hangmanchosenword)
 		await client.send_message(botschannel, content)
 	elif command == 'source':
-		content = 'Source code to the bot: __https://gitgud.io/infoteddy/bracketed_backslash__'
+		content = 'Source code to the bot: https://gitgud.io/infoteddy/bracketed_backslash'
 		await reply(message, content)
 	elif command == 'findu' or command == 'findup':
 		if arguments == None:
