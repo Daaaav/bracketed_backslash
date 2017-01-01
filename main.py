@@ -2482,7 +2482,7 @@ async def on_reaction_add(r, u):
 		emotename = r.emoji
 	embed = discord.Embed(
 		title='REACTION ADDED TO MESSAGE (SENT {rtime} IN {c.mention})'.format(
-			rtime=reltime(time.mktime(r.message.timestamp.timetuple()))
+			rtime=reltime(time.mktime(r.message.timestamp.timetuple())),
 			c=r.message.channel,
 		),
 		description=r.message.content,
