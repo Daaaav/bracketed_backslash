@@ -2684,16 +2684,16 @@ async def on_voice_state_update(before, after):
 	if after.server.id != productionserver:
 		return
 
-	if before.voice.voice_channel != None:
-		if before.voice.voice_channel.id == '153368831329435648':
-			# JOINED a voice channel.
+	if before.voice.voice_channel == None:
+		if after.voice.voice_channel.id == '153368831329435648':
+			# JOINED the voice channel.
 			overwrite = discord.PermissionOverwrite()
 			overwrite.read_messages = True
 			await client.edit_channel_permissions(voicetextchannel, after, overwrite)
 
-	elif after.voice.voice_channel != None:
-		if after.voice.voice_channel == '153368831329435648':
-			# LEFT a voice channel.
+	elif after.voice.voice_channel == None:
+		if before.voice.voice_channel.id == '153368831329435648':
+			# LEFT the voice channel.
 			await client.delete_channel_permissions(voicetextchannel, after)
 
 @client.event
