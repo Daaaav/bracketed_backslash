@@ -2507,7 +2507,7 @@ async def on_reaction_add(r, u):
 			(
 				'{name} ({id})'.format(
 					name=emotename,
-					id=r.id,
+					id=r.emoji.id,
 				)
 			)
 		),
