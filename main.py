@@ -2471,7 +2471,7 @@ async def on_server_role_update(before, after):
 
 @client.event
 async def on_reaction_add(r, u):
-	if isprivatemessage(r.message.server):
+	if isprivatemessage(r.message.server) or logdisabled('reaction_add', r.message.server):
 		return
 	specialchannel = getspecialchannel(r.message.server)
 	try:
@@ -2481,12 +2481,17 @@ async def on_reaction_add(r, u):
 		iscustomemote = False
 		emotename = r.emoji
 	embed = discord.Embed(
-		title='REACTION ADD TO MESSAGE {m.id} IN {c.mention}'.format(
-			m=r.message,
+		title='REACTION ADDED TO MESSAGE (SENT {rtime} IN {c.mention})'.format(
+			rtime=reltime(time.mktime(r.message.timestamp.timetuple()))
 			c=r.message.channel,
 		),
 		description=r.message.content,
 		colour=u.colour,
+	)
+	embed.set_author(
+		u.display_name,
+		icon_url=u.avatar_url,
+		url=infourl('userid={}&messageid={}'.format(u.id, r.message.id))
 	)
 	mdetails = '**{name}**#{discrim}'.format(
 		name=mdspecialchars(u.display_name),
@@ -2517,7 +2522,7 @@ async def on_reaction_add(r, u):
 
 @client.event
 async def on_reaction_remove(r, u):
-	if isprivatemessage(r.message.server):
+	if isprivatemessage(r.message.server) or logdisabled('reaction_remove', r.message.server):
 		return
 	specialchannel = getspecialchannel(r.message.server)
 	try:
@@ -2527,12 +2532,17 @@ async def on_reaction_remove(r, u):
 		iscustomemote = False
 		emotename = r.emoji
 	embed = discord.Embed(
-		title='REACTION REMOVE FROM MESSAGE {m.id} IN {c.mention}'.format(
-			m=r.message,
+		title='REACTION REMOVED FROM MESSAGE (SENT {rtime} IN {c.mention})'.format(
+			rtime=reltime(time.mktime(r.message.timestamp.timetuple())),
 			c=r.message.channel,
 		),
 		description=r.message.content,
 		colour=u.colour,
+	)
+	embed.set_author(
+		u.display_name,
+		icon_url=u.avatar_url,
+		url=infourl('userid={}&messageid={}'.format(u.id, r.message.id))
 	)
 	mdetails = '**{name}**#{discrim}'.format(
 		name=mdspecialchars(u.display_name),
@@ -2563,6 +2573,8 @@ async def on_reaction_remove(r, u):
 
 @client.event
 async def on_reaction_clear(m, rs):
+	if isprivatemessage(m.server) or logdisabled('reaction_clear', m.server):
+		return
 	schan = getspecialchannel(m.server)
 	rlist = ''
 	for r in rs:
@@ -2581,13 +2593,14 @@ async def on_reaction_clear(m, rs):
 		else:
 			rlist += name + '\n'
 	embed = discord.Embed(
-		title='REACTIONS CLEAR FROM MESSAGE {m.id} IN {c.mention}'.format(
-			m=m,
+		title='REACTIONS CLEARED FROM MESSAGE (SENT {rtime} IN {c.mention})'.format(
+			rtime=reltime(time.mktime(m.timestamp.timetuple())),
 			c=m.channel,
 		),
 		description=m.content,
 		colour=m.author.colour,
 	)
+	embed.add_field(name='Message ID (temp)', value=m.id)
 	embed.add_field(name='Reactions', value=rlist)
 	await client.send_message(schan, embed=embed)
 
