@@ -2684,22 +2684,13 @@ async def on_voice_state_update(before, after):
 	if after.server.id != productionserver:
 		return
 
-	# notcounting = [None, '160641024811728896']
-	notcounting = [None]
-
-	# Count the amount of users in voice channels... But don't count modchat. It'd make no sense to open the public voicechat text channel once two mods are talking privately.
-	voicechatters = 0
-	for chan in after.server.channels:
-		if str(chan.type) == 'voice' and (not chan.id in notcounting):
-			voicechatters += len(chan.voice_members)
-
-	if before.voice.voice_channel in notcounting and (not after.voice.voice_channel in notcounting):
+	if before.voice.voice_channel.id == '153368831329435648':
 		# JOINED a voice channel.
 		overwrite = discord.PermissionOverwrite()
 		overwrite.read_messages = True
 		await client.edit_channel_permissions(voicetextchannel, after, overwrite)
 
-	elif (not before.voice.voice_channel in notcounting) and after.voice.voice_channel in notcounting:
+	elif after.voice.voice_channel == '153368831329435648':
 		# LEFT a voice channel.
 		await client.delete_channel_permissions(voicetextchannel, after)
 
