@@ -83,14 +83,6 @@ configs = {
 		'detachable': True,
 		'shown': True,
 	},
-	'meme_helplist_string': {
-		'default': 'meme',
-		'type': 'str',
-		'is_array': False,
-		'expl': 'The string to be entered after `\help` to get the list of meme commands.',
-		'detachable': False,
-		'shown': False,
-	},
 }
 
 s = {}
