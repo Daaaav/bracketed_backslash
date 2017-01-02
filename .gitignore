@@ -1,5 +1,6 @@
 *.conf
 *.json
+!strings.json
 .cache
 __pycache__
 eval.txt

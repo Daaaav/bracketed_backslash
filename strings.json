@@ -1,0 +1,419 @@
+{
+	"funnynumbers": [34, 37, 69],
+	"t": {
+		"owner_only": "Permission denied. This command can only be used by the owner.",
+		"op_only": "Permission denied. This command can only be used by an operator.",
+		"mod_only": "Permission denied. This command can only be used by a moderator or administrator.",
+		"specify_user": "Please specify a user ID, a username, a username and discriminator, or a nickname.",
+		"you_no_permission": "You don\u2019t have permission to do this.",
+		"no_permission": "I don\u2019t have permission to do this.",
+		"accepts_user": "Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.",
+		"production_only": "Production server only.",
+		"noprivate": "This command cannot be run inside of a private conversation.",
+		"its_meme": "It\u2019s a meme command."
+	},
+	"permissionlabels": [
+		["administrator", "Administrator"],
+		["manage_server", "Manage Server"],
+		["manage_channels", "Manage Channels"],
+		["manage_roles", "Manage Roles"],
+		["ban_members", "Ban Members"],
+		["kick_members", "Kick Members"],
+		["move_members", "Move Members"],
+		["deafen_members", "Deafen Members"],
+		["mute_members", "Mute Members"],
+		["manage_webhooks", "Manage Webhooks"],
+		["manage_nicknames", "Manage Nicknames"],
+		["manage_emojis", "Manage Custom Emotes"],
+		["manage_messages", "Manage Messages"],
+		["change_nickname", "Change Nickname"],
+		["mention_everyone", "Mention General Mentions"],
+		["external_emojis", "Use External Emotes"],
+		["attach_files", "Attach Files"],
+		["embed_links", "Embed Links"],
+		["send_tts_messages", "Use Text-to-Speech"],
+		["read_message_history", "Read Message History"],
+		["send_messages", "Send Messages"],
+		["add_reactions", "Add Reactions"],
+		["read_messages", "Read Messages"],
+		["use_voice_activation", "Use Voice Activity"],
+		["speak", "Speak"],
+		["connect", "Connect"],
+		["create_instant_invite", "Create Instant Invite"]
+	],
+	"cmds": [
+		{
+			"cat_name": "General Commands",
+			"cat_slug": "general",
+			"cat_desc": "",
+			"cat_shown": true,
+			"commands": [
+				{
+					"name": "help",
+					"short": "Lists commands and their descriptions.",
+					"extra": "If an argument is given, `\\help` will look up in-depth description of the argument."
+				},
+				{
+					"name": "source",
+					"short": "Gives the link to the bot\u2019s source code.",
+					"extra": ""
+				},
+				{
+					"name": "echo",
+					"short": "Echoes your input.",
+					"extra": ""
+				},
+				{
+					"name": "info",
+					"short": "Gives information about a user.",
+					"extra": "Remind Info Teddy to do more than just permissions for the user."
+				},
+				{
+					"name": "findu",
+					"short": "Find a user by all or part of the nickname or username case-insensitively, or the discriminator, or mention, or ID.",
+					"extrafull": "Find a user by all or part of the nickname or username case-insensitively, or the discriminator, or mention, or ID. Displays various information about the matched user. If no argument is given, will match caller instead."
+				},
+				{
+					"name": "hangman",
+					"short": "Initiate a game of Hangman. Send via private message with a custom word. Use `\\stophangman` to stop.",
+					"extra": "Ported from DavBot."
+				},
+				{
+					"name": "stophangman",
+					"short": "Stop the current game of hangman.",
+					"extra": "Can only be done by the one who started the game or a moderator."
+				},
+				{
+					"name": "invite",
+					"short": "Links to servers \\[\\\\\\] can be used on.",
+					"extra": "The master instance of \\[\\\\\\] can only be used on those servers."
+				},
+				{
+					"name": "countpins",
+					"short": "Count the amount of pins in a channel.",
+					"extra": "If no channel mention is given, will use the current channel instead."
+				},
+				{
+					"name": "countallpins",
+					"short": "Count the amount of pins in all channels.",
+					"extra": ""
+				},
+				{
+					"name": "math",
+					"short": "Does real math with no arbitrary precision.",
+					"extra": "**Syntax**: `\\math <number> <operand> <number>`"
+				}
+			]
+		},
+		{
+			"cat_name": "Bot Commands",
+			"cat_slug": "bot",
+			"cat_desc": "",
+			"cat_shown": true,
+			"commands": [
+				{
+					"name": "botok",
+					"short": "Pings the bot.",
+					"extra": ""
+				},
+				{
+					"name": "version",
+					"short": "Gives the bot version and versions of libraries.",
+					"extra": ""
+				},
+				{
+					"name": "uptime",
+					"short": "Gives the bot uptime and host uptime.",
+					"extra": ""
+				},
+				{
+					"name": "restart",
+					"short": "Restarts the bot.",
+					"extra": ""
+				},
+				{
+					"name": "kill",
+					"short": "Kills the bot.",
+					"extra": ""
+				},
+				{
+					"name": "config",
+					"short": "Manages configurable settings in the bot.",
+					"extra": "You can use the following options:\n`\\config list` \u2013 Show all the settings and their values.\n`\\config reload` \u2013 Reloads the configuration file.\n`\\config get <KEY>` \u2013 Show extended information about a specific setting and how it is configured, given its key.\n`\\config set <KEY> <VALUE>` \u2013 Update the value of a given non-array setting.\n`\\config insert <KEY> <VALUE>` \u2013 Insert a value into an array setting.\n`\\config remove <KEY> <VALUE>` \u2013 Remove a value from an array setting.\n`\\config detach <KEY> \u2013 Make this setting no longer use the master value, and use a server-specific value instead.\n`\\config reattach <KEY> \u2013 Make this setting use the master value.\n`\\config default <KEY>` \u2013 Sets the setting back to default."
+				},
+				{
+					"name": "gamestatus",
+					"short": "Sets the game status",
+					"extra": ""
+				},
+				{
+					"name": "eval",
+					"short": "Evaluates your argument as code.",
+					"extra": ""
+				},
+				{
+					"name": "evalawait",
+					"short": "Evaluates your argument as code and precedes it with `await`.",
+					"extra": ""
+				},
+				{
+					"name": "evalawaitfile",
+					"short": "Evaluates `eval.txt` as code and precedes it with `await`.",
+					"extra": ""
+				},
+				{
+					"name": "setvar",
+					"short": "Sets a global variable.",
+					"extra": "**Syntax**: `\\setvar <VARIABLE> <ASSIGNMENT>"
+				}
+			]
+		},
+		{
+			"cat_name": "Moderation Commands",
+			"cat_slug": "mod",
+			"cat_desc": "",
+			"cat_shown": true,
+			"commands": [
+				{
+					"name": "kick",
+					"short": "Kicks a member from the server.",
+					"extra": ""
+				},
+				{
+					"name": "serverban",
+					"short": "Bans a member from the server.",
+					"extra": ""
+				},
+				{
+					"name": "unserverban",
+					"short": "Unbans a user from the server.",
+					"extra": ""
+				},
+				{
+					"name": "softban",
+					"short": "Adds to a member the `Banned` role.",
+					"extra": ""
+				},
+				{
+					"name": "nononly",
+					"short": "Adds to a member the `Nonsense-Only` Role.",
+					"extra": ""
+				},
+				{
+					"name": "nogenmen",
+					"short": "Adds to a member the `No General Mentions` Role.",
+					"extra": ""
+				},
+				{
+					"name": "nocedule",
+					"short": "Adds to a member the `No CE/DU/LE` role.",
+					"extra": ""
+				},
+				{
+					"name": "notts",
+					"short": "Adds to a member the `No TTS` role.",
+					"extra": ""
+				},
+				{
+					"name": "noreact",
+					"short": "Adds to a member the `No Reactions` role.",
+					"extra": ""
+				},
+				{
+					"name": "nonick",
+					"short": "Removes from a member the `tOLPer` role, and adds to the member the `tOLPer who can\u2019t change nickname` role.",
+					"extra": ""
+				},
+				{
+					"name": "voicemute",
+					"short": "Mutes a member in a voice channel.",
+					"extra": ""
+				},
+				{
+					"name": "voiceunmute",
+					"short": "Unmutes a member in a voice channel.",
+					"extra": ""
+				},
+				{
+					"name": "votevoicemute",
+					"short": "Starts a vote on whether to mute a member in a voice channel.",
+					"extra": ""
+				},
+				{
+					"name": "vy",
+					"short": "Votes yes in a voice mute vote.",
+					"extra": ""
+				},
+				{
+					"name": "vn",
+					"short": "Votes no in a voice mute vote.",
+					"extra": ""
+				},
+				{
+					"name": "vc",
+					"short": "Cancels a voice mute vote.",
+					"extra": ""
+				},
+				{
+					"name": "rolerst",
+					"short": "Resets the roles for a member back to the normal state.",
+					"extra": "Removes all restrictive roles from a user, and gives back the `tOLPer` role if necessary if run again."
+				},
+				{
+					"name": "rolecacherst",
+					"short": "Removes a member\u2019s roles from the role cache.",
+					"extra": "Only accepts a user ID."
+				},
+				{
+					"name": "expires",
+					"short": "Sets an expiry time for a member\u2019s restrictive role. It will carry out a role reset after the specified time has elapsed.",
+					"extra": "**Syntax**: `\\expires <TIME> [MEMBER]`\n\n\t`<TIME>`: A relative time in the format `[#d][#h][#m][#s]`. The units have to be in the correct order.\n\t**Examples**: `7d12h`, `1h`, `1d`, `1d2h3m4s`, `d20s`.\n\n\t`[MEMBER]`: The member to set the expiry time for. Matches by part of the nickname or username, or all of the discriminator, ID, or mention.\n\tIf not given, the latest member to have been given a restrictive role will instead be chosen."
+				},
+				{
+					"name": "expirylist",
+					"short": "Gives a list of all expiry timers that are currently running.",
+					"extra": ""
+				},
+				{
+					"name": "rolecacheadd",
+					"short": "Gives a user a role in the role cache.",
+					"extra": "**Syntax**: `\\rolecacheadd <ID> <ROLE ID>"
+				},
+				{
+					"name": "rolesync",
+					"short": "Resyncs the roles cache with the current roles every member has. Does not remove roles from members who have left the server.",
+					"extra": ""
+				},
+				{
+					"name": "rolecacheinfo",
+					"short": "Shows the roles that are stored in the role cache for a specific user.",
+					"extra": "Only accepts a user ID."
+				},
+				{
+					"name": "getrawmessagecontent",
+					"short": "Gets the raw content of a message and its embeds.",
+					"extra": "**Syntax**: `\\getrawmessagecontent <CHANNEL> <MESSAGE ID>\n\n\t`<CHANNEL>`: A channel mention.\n\t`<MESSAGE ID>`: The ID of the message.`"
+				}
+			]
+		},
+		{
+			"cat_name": "Contributor Moderator Commands",
+			"cat_slug": "contribmod",
+			"cat_desc": "",
+			"cat_shown": true,
+			"commands": [
+				{
+					"name": "addcontrib",
+					"short": "Makes a member a tOLP Contributor.",
+					"extra": ""
+				},
+				{
+					"name": "removecontrib",
+					"short": "Makes a member not a tOLP Contributor.",
+					"extra": ""
+				}
+			]
+		},
+		{
+			"cat_name": "Rules Commands",
+			"cat_slug": "rulesystem",
+			"cat_desc": "",
+			"cat_shown": true,
+			"commands": [
+				{
+					"name": "rules",
+					"short": "View the server’s rules.",
+					"extra": "**Syntax**: `\\rule [RULE NUMBER]`"
+				},
+				{
+					"name": "rulefind",
+					"short": "Find rules that contain a given search term.",
+					"extra": "**Syntax**: `\\rulefind <TERM>`\n**Example**: `\\rulefind spam`"
+				},
+				{
+					"name": "ruleadd",
+					"short": "Insert a given `<STRING>` to `[POSITION]`. If no position is given, it\u2019s appended at the end.",
+					"extra": "**Syntax**: `\\ruleadd [POSITION] <STRING>`\n**Examples**:\n\t`\\ruleadd No trolling` \u2013 Inserting a string with no position. This will be appended at the end.\n\t`\\ruleadd 1 The most important rule is not to follow this rule.` \u2013 Inserting a string, and making it rule 1."
+				},
+				{
+					"name": "ruleedit",
+					"short": "Edit a given rule.",
+					"extra": "**Syntax**: `\\ruleedit <RULE NUMBER> <STRING>`\n**Example**: `\\ruleedit 2 No trolling`"
+				},
+				{
+					"name": "rulemove",
+					"short": "Move a given rule to a different position, with nothing overwritten.",
+					"extra": "**Syntax**: `\\rulemove <RULE NUMBER> <NEW POSITION>`\n**Example**: `\\rulemove 2 4`"
+				},
+				{
+					"name": "ruleremove",
+					"short": "Remove a given rule.",
+					"extra": "**Syntax**: `\\ruleremove <RULE NUMBER>`\n**Example**: `\\ruleremove 2`"
+				},
+				{
+					"name": "rulemaint",
+					"short": "Toggle normal members being able to see the rules for this server.",
+					"extra": ""
+				}
+			]
+		},
+		{
+			"cat_name": "Meme Commands",
+			"cat_slug": "xd",
+			"cat_desc": "You found a secret, congratulations. The command to get this help message will change sometimes.",
+			"cat_shown": false,
+			"commands": [
+				{
+					"name": "",
+					"short": "Mentions you.",
+					"extra": "Don\u2019t type this command in if you don\u2019t want to be mentioned."
+				},
+				{
+					"name": "teddy",
+					"short": "The obvious counterpart to `\\info`.",
+					"extra": ""
+				},
+				{
+					"name": "samar",
+					"short": "The true name.",
+					"extra": ""
+				},
+				{
+					"name": "lui",
+					"short": "Obligatory \u201cpretty cool guy\u201d meme.",
+					"extra": ""
+				},
+				{
+					"name": "shiny",
+					"short": "He\u2019s a shiny trinket.",
+					"extra": ""
+				},
+				{
+					"name": "tainy",
+					"short": "Unobtaining is his name.",
+					"extra": ""
+				},
+				{
+					"name": "kys",
+					"short": "Will the bot listen?",
+					"extra": ""
+				},
+				{
+					"name": "*formatting*",
+					"short": "This is an example of italicized formatting.",
+					"extra": ""
+				},
+				{
+					"name": "/r/undertale",
+					"short": "NO CROPPED PORN AVATARS FOR YOU FUCK YOU.",
+					"extra": ""
+				},
+				{
+					"name": "fuckingdense",
+					"short": "Stop making fun of this guy! Person has children at age eighteen, after all.",
+					"extra": ""
+				}
+			]
+		}
+	]
+}
