@@ -29,7 +29,7 @@ fi
 
 while true; do
 	python main.py
-	if [ $? -eq 1 ]; then
+	if [ $? -eq 42 ]; then
 		exit 0
 	fi
 	echo -e "${LIGHTBLUE}bot exited with exit code ${LIGHTCYAN}$?${LIGHTBLUE} also restarting${NOCOLOR}" >&2

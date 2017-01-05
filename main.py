@@ -471,7 +471,7 @@ async def on_message(message):
 		logcommand(command, arguments, message)
 		await reply(message, emb=embed)
 		await client.logout()
-		sys.exit(1)
+		sys.exit(42)
 	elif command == 'config':
 		if not is_operator(message.author):
 			embed = emb.error(t['op_only'])
