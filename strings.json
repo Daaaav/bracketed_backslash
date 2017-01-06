@@ -274,7 +274,7 @@
 				{
 					"name": "expires",
 					"short": "Sets an expiry time for a member\u2019s restrictive role. It will carry out a role reset after the specified time has elapsed.",
-					"extra": "**Syntax**: `\\expires <TIME> [MEMBER]`\n\n\t`<TIME>`: A relative time in the format `[#d][#h][#m][#s]`. The units have to be in the correct order.\n\t**Examples**: `7d12h`, `1h`, `1d`, `1d2h3m4s`, `d20s`.\n\n\t`[MEMBER]`: The member to set the expiry time for. Matches by part of the nickname or username, or all of the discriminator, ID, or mention.\n\tIf not given, the latest member to have been given a restrictive role will instead be chosen."
+					"extra": "**Syntax**: `\\expires <TIME> [MEMBER]`\n\n\t`<TIME>`: A relative time in the format `[#d][#h][#m][#s]`. The units have to be in the correct order.\n\t**Examples**: `7d12h`, `1h`, `1d`, `1d2h3m4s`, `1d20s`.\n\n\t`[MEMBER]`: The member to set the expiry time for. Matches by part of the nickname or username, or all of the discriminator, ID, or mention.\n\tIf not given, the latest member to have been given a restrictive role will instead be chosen."
 				},
 				{
 					"name": "expirylist",
