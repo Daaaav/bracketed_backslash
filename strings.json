@@ -1,4 +1,5 @@
 {
+	"help_info_string": "`[\\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server.\nTo get accepted into the developer team, you have to be accepted by eighty-percent of the current members of the team.\nSpecial thanks to Shiny for making the current icon for the bot.\nThe bot is currently hosted on Info Teddy\u2019s personal computer.",
 	"funnynumbers": [34, 37, 69],
 	"t": {
 		"owner_only": "Permission denied. This command can only be used by the owner.",
