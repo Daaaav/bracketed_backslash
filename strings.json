@@ -365,6 +365,19 @@
 			]
 		},
 		{
+			"cat_name": "TNTGB Commands",
+			"cat_slug": "tntgb",
+			"cat_desc": "",
+			"cat_shown": true,
+			"commands": [
+				{
+					"name": "b",
+					"short": "Rolebans a member on TNTGB.",
+					"extra": "Use this command in the channel the mistake was made in. Takes a member representation (full or part of their name, or their discriminator, ID, whatever you want) as the first argument, and a reason as the second argument.\nIf you input a member name with spaces, you can separate the two arguments with a newline. Examples: `\b testuser using spaces`\n```\n\b some member\nwriting \"the\""
+				}
+			]
+		},
+		{
 			"cat_name": "Meme Commands",
 			"cat_slug": "xd",
 			"cat_desc": "You found a secret, congratulations. The command to get this help message will change sometimes.",
