@@ -58,6 +58,12 @@ def is_operator(member):
 		return True
 	return member.id == ownerid
 
+def is_tntgb_mod(member):
+	for role in member.roles:
+		if role.id == '266590337269497856': # TNTGB moderator role
+			return True
+	return False
+
 def get_member_input(server, input):
 	"""Tries to return a member object given a user input which could be anything that identifies that member.
 

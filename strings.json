@@ -9,6 +9,7 @@
 		"no_permission": "I don\u2019t have permission to do this.",
 		"accepts_user": "Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.",
 		"production_only": "Production server only.",
+		"tntgb_only": "This command can only be used on the TNTGB server.",
 		"noprivate": "This command cannot be run inside of a private conversation.",
 		"its_meme": "It\u2019s a meme command."
 	},

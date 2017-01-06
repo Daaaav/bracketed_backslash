@@ -131,12 +131,17 @@ maineventloop = asyncio.get_event_loop()
 
 @client.event
 async def on_ready():
-	global memberroles, rules, disabledrules, server, specialchannel_prod, botschannel, voicetextchannel, productionserver, rolexpires
+	global memberroles, rules, disabledrules, server, specialchannel_prod, botschannel, voicetextchannel, botschannel_tntgb, joinchannel_tntgb, productionserver, tntgbserver, rolexpires
 	productionserver = '153368829160849408'
+	tntgbserver = '242099933665034240'
 	server = discord.utils.get(client.servers, id=productionserver) # defines all server.* commands
+	server_tntgb = discord.utils.get(client.servers, id=tntgbserver)
 	specialchannel_prod = discord.utils.get(server.channels, id='234185735266238464')
 	botschannel = discord.utils.get(server.channels, id='201130047736643584')
 	voicetextchannel = discord.utils.get(server.channels, id='256924583737819146')
+	botschannel_tntgb = discord.utils.get(server_tntgb.channels, id='266626198249930764')
+	joinchannel_tntgb = discord.utils.get(server_tntgb.channels, id='266591127644143618')
+	banlogchannel_tntgb = discord.utils.get(server_tntgb.channels, id='242253449922609152')
 	logging.info('logged in as {} with id {}'.format(client.user.name, client.user.id))
 	await client.change_presence(game=discord.Game(name=config.get_s('gamestatus')))
 	embed = discord.Embed(title='🔌BOT CONNECTED', colour=server.me.colour)
@@ -403,6 +408,13 @@ async def on_message(message):
 	not (message.channel.id == '256924583737819146' and command in ['votevoicemute', 'vy', 'vn']):
 		if is_valid_command(command):
 			await client.add_reaction(message, discord.utils.get(message.server.emojis, id='262051482549878796'))
+		return
+	if message.server.id == tntgbserver and message.channel.id != botschannel_tntgb:
+		# Delete all new messages in the join channel on TNTGB
+		if message.channel.id == joinchannel_tntgb:
+			if command == 'join':
+				pass #nyi
+			await client.delete_message(message)
 		return
 	if not isprivate and command in config.get_s('disabledcommands', message.server.id):
 		embed = emb.error('This command is currently disabled{}.'.format(' on this server' if config.is_detached('disabledcommands', message.server.id) else ''))
@@ -1760,6 +1772,54 @@ async def on_message(message):
 		loadstrings()
 		embed = emb.success('Reloaded strings.')
 		await reply(message, emb=embed)
+	elif command == 'join':
+		embed = emb.error('What an odd place to be using this command!')
+		await reply(message, emb=embed)
+	elif command == 'b':
+		if message.server.id != tntgbserver:
+			embed = emb.error(t['tntgb_only'])
+			await reply(message, emb=embed)
+			return
+		if not is_tntgb_mod(message.author):
+			logfailedcommand(command, arguments, message)
+			embed = emb.error(t['mod_only'])
+			await reply(message, emb=embed)
+			return
+		# Who are we banning, and for what reason?
+		if arguments.find('\n') != -1:
+			splitargs = arguments.split('\n', 1)
+		elif arguments.find(' ') != -1:
+			splitargs = arguments.split(' ', 1)
+		else:
+			splitargs = [arguments, '(no given reason)']
+
+		specialchannel = getspecialchannel(message.channel.server)
+		try:
+			targetmember = get_member_input(message.server, splitargs[0])
+			if targetmember != None and is_tntgb_mod(targetmember):
+				embed = emb.warning('Unbanning oldest two members not supported yet!')
+				await client.send_message(specialchannel, embed=embed)
+			else:
+				await client.replace_roles(targetmember,
+					discord.utils.get(message.server.roles,
+						id='243076976565288960'
+					)
+				)
+				content = '⛔ {} has been banned by {} in {} for {}'.format(
+					targetmember.mention,
+					message.author.display_name,
+					message.channel.mention,
+					splitargs[1]
+				)
+				await client.send_message(banlogchannel_tntgb, content)
+		except (AttributeError,TypeError):
+			embed = emb.error(t['specify_user'])
+			await client.send_message(specialchannel, embed=embed)
+
+		# Now delete the calling message
+		await client.delete_message(message)
+		return
+
 	else:
 		if altinvokeractive:
 			return # do not print error message if command is invalid
