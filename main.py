@@ -131,7 +131,7 @@ maineventloop = asyncio.get_event_loop()
 
 @client.event
 async def on_ready():
-	global memberroles, rules, disabledrules, server, specialchannel_prod, botschannel, voicetextchannel, botschannel_tntgb, joinchannel_tntgb, productionserver, tntgbserver, rolexpires
+	global memberroles, rules, disabledrules, server, specialchannel_prod, botschannel, voicetextchannel, botschannel_tntgb, joinchannel_tntgb, banlogchannel_tntgb, productionserver, tntgbserver, rolexpires
 	productionserver = '153368829160849408'
 	tntgbserver = '242099933665034240'
 	server = discord.utils.get(client.servers, id=productionserver) # defines all server.* commands
