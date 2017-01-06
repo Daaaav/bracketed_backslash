@@ -409,7 +409,7 @@ async def on_message(message):
 		if is_valid_command(command):
 			await client.add_reaction(message, discord.utils.get(message.server.emojis, id='262051482549878796'))
 		return
-	if message.server.id == tntgbserver and message.channel != botschannel_tntgb and not is_tntgb_mod(message.author):
+	if not isprivate and message.server.id == tntgbserver and message.channel != botschannel_tntgb and not is_tntgb_mod(message.author):
 		# Delete all new messages in the join channel on TNTGB
 		if message.channel.id == joinchannel_tntgb:
 			if command == 'join':
