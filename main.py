@@ -2363,6 +2363,8 @@ async def on_voice_state_update(before, after):
 
 @client.event
 async def on_channel_create(c):
+	if isprivatemessage(c) or logdisabled('channel_add', c.server):
+		return
 	schan = getspecialchannel(c.server)
 	embed = discord.Embed(
 		description='{type} CHANNEL ADD\n{0.name} ({0.id})'.format(
@@ -2374,6 +2376,8 @@ async def on_channel_create(c):
 
 @client.event
 async def on_channel_delete(c):
+	if isprivatemessage(c) or logdisabled('channel_remove', c.server):
+		return
 	schan = getspecialchannel(c.server)
 	embed = discord.Embed(
 		description='{type} CHANNEL REMOVE\n{0.name} ({0.id})'.format(
