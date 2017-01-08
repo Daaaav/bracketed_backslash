@@ -353,7 +353,11 @@ async def on_message(message):
 					await client.send_message(message.channel, msg)
 					return
 				else:
-					content = '**{}** is incorrect! {} attempts left.\n{}'.format(hangmanguessed.upper(), hangmanattempts, hangmanworddisp(hangmanchosenword))
+					if hangmanattempts == 1:
+						hangmans = 'attempt'
+					else:
+						hangmans = 'attempts'
+					content = '**{}** is incorrect! {} {} left.\n{}'.format(hangmanguessed.upper(), hangmanattempts, hangmans, hangmanworddisp(hangmanchosenword))
 					msg = msg_start + content
 					await client.send_message(message.channel, msg)
 					return
