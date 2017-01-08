@@ -2200,7 +2200,7 @@ async def on_reaction_remove(r, u):
 		colour=u.colour,
 	)
 	embed.set_author(
-		u.display_name,
+		name=u.display_name,
 		icon_url=u.avatar_url,
 		url=infourl('userid={}&messageid={}'.format(u.id, r.message.id))
 	)
