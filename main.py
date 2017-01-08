@@ -1851,7 +1851,11 @@ async def on_message_delete(message): # when a message gets deleted
 		if os.path.isfile(attachcache + '/' + message.attachments[0]['id'] + '_' + message.attachments[0]['filename']):
 			filetoattach = attachcache + '/' + message.attachments[0]['id'] + '_' + message.attachments[0]['filename']
 			content = '_📎The attachment for message {} is attached._'.format(message.id)
-			await client.send_file(destination=specialchannel, content=content, fp=filetoattach, filename=message.attachments[0]['filename'])
+			try:
+				await client.send_file(destination=specialchannel, content=content, fp=filetoattach, filename=message.attachments[0]['filename'])
+			except discord.HTTPException:
+				content = '_Failed to upload the attachment for message {id}._'.format(id=message.id)
+				await client.send_message(specialchannel, content)
 		else:
 			content = '_The attachment for message {} was not found in the message attachments cache._'.format(message.id)
 			await client.send_message(specialchannel, content)
