@@ -647,7 +647,7 @@ async def on_message(message):
 	elif command == 'echo':
 		if arguments == None:
 			arguments = ''
-		displayarguments = arguments.replace('@', '@​')[:2000-len(msg_start)]
+		displayarguments = clean_arguments[:2000-len(msg_start)]
 		await reply(message, displayarguments)
 	elif command == '':
 		content = (
