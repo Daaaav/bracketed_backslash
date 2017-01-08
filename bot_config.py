@@ -167,7 +167,7 @@ def get_shown(skey):
 	return configs[skey]['shown']
 
 def saveconfig():
-	with open('config.json', 'w') as outfile:
+	with open('bot_config.json', 'w') as outfile:
 		json.dump(s, outfile)
 
 def loaddefaultsettings():
@@ -182,7 +182,7 @@ def load():
 	loaddefaultsettings()
 
 	try:
-		with open('config.json', 'r') as infile:
+		with open('bot_config.json', 'r') as infile:
 			loadedconfig = json.load(infile)
 
 		for loadedsetting in loadedconfig:
