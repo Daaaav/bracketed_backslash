@@ -42,7 +42,7 @@ import col
 import emb
 import images
 
-bot_config.load()
+config.load()
 
 # set bot version
 botversion = '1.0'
@@ -75,16 +75,16 @@ algeraden = False
 os.environ['TZ'] = 'UTC'
 time.tzset()
 
-boottime = time.strftime(bot_config.get_s('timeformat'))
+boottime = time.strftime(config.get_s('timeformat'))
 boottimeunix = time.time()
 
 token_config = open('bot_token.conf', 'r')
-token = token_bot_config.readline(60).split('\n')[0] # read sixty characters also FUCKING NEWLINES
-token_bot_config.close() # this is probably a good idea i should do
+token = token_config.readline(60).split('\n')[0] # read sixty characters also FUCKING NEWLINES
+token_config.close() # this is probably a good idea i should do
 
 ownerid_config = open('ownerid.conf', 'r')
-ownerid = ownerid_bot_config.readline(18).split('\n')[0]
-ownerid_bot_config.close()
+ownerid = ownerid_config.readline(18).split('\n')[0]
+ownerid_config.close()
 
 
 memberroles = {}
@@ -120,12 +120,12 @@ loadstrings()
 modificationtimes = [
 	os.path.getmtime('main.py'),
 	os.path.getmtime('functions.py'),
-	os.path.getmtime('bot_config.py'),
+	os.path.getmtime('config.py'),
 	os.path.getmtime('emb.py'),
 	os.path.getmtime('col.py'),
 	os.path.getmtime('images.py'),
 ]
-modificationtimecache = time.strftime(bot_config.get_s('timeformat'), time.gmtime(max(modificationtimes)))
+modificationtimecache = time.strftime(config.get_s('timeformat'), time.gmtime(max(modificationtimes)))
 
 client.max_messages = 9999
 
@@ -145,7 +145,7 @@ async def on_ready():
 	joinchannel_tntgb = discord.utils.get(server_tntgb.channels, id='266591127644143618')
 	banlogchannel_tntgb = discord.utils.get(server_tntgb.channels, id='242253449922609152')
 	logging.info('logged in as {} with id {}'.format(client.user.name, client.user.id))
-	await client.change_presence(game=discord.Game(name=bot_config.get_s('gamestatus')))
+	await client.change_presence(game=discord.Game(name=config.get_s('gamestatus')))
 	embed = discord.Embed(title='🔌BOT CONNECTED', colour=server.me.colour)
 	embed.add_field(name='Startup Time', value=reltime(boottimeunix))
 	await client.send_message(specialchannel_prod, embed=embed)
@@ -277,10 +277,10 @@ async def on_message(message):
 					f.write(img)
 					f.close()
 
-	if not isprivate and message.author.id in bot_config.get_s('blacklist', message.server.id):
+	if not isprivate and message.author.id in config.get_s('blacklist', message.server.id):
 		return
 
-	if isprivate and message.author.id in bot_config.get_s('blacklist'):
+	if isprivate and message.author.id in config.get_s('blacklist'):
 		return
 
 	if message.content.startswith(invoker): # does the message start with command invoker
@@ -427,12 +427,12 @@ async def on_message(message):
 				pass #nyi
 			await client.delete_message(message)
 		return
-	if not isprivate and command in bot_config.get_s('disabledcommands', message.server.id):
-		embed = emb.error('This command is currently disabled{}.'.format(' on this server' if bot_config.is_detached('disabledcommands', message.server.id) else ''))
+	if not isprivate and command in config.get_s('disabledcommands', message.server.id):
+		embed = emb.error('This command is currently disabled{}.'.format(' on this server' if config.is_detached('disabledcommands', message.server.id) else ''))
 		await reply(message, emb=embed)
 		return
 
-	if isprivate and command in bot_config.get_s('disabledcommands'):
+	if isprivate and command in config.get_s('disabledcommands'):
 		embed = emb_error('This command is currently disabled.')
 		await reply(message, emb=embed)
 
@@ -511,22 +511,22 @@ async def on_message(message):
 			await reply(message, content)
 			return
 		elif arguments == 'reload':
-			bot_config.load()
+			config.load()
 			logcommand(command, arguments, message)
-			embed = emb.success('Reloaded bot_config.')
+			embed = emb.success('Reloaded config.')
 			await reply(message, emb=embed)
 			return
 		elif arguments == 'list':
 			content = '```css'
-			for c in bot_config.s:
-				if not bot_config.get_shown(c):
+			for c in config.s:
+				if not config.get_shown(c):
 					continue
 				try:
-					content += '\n{} [{}] = {}'.format(c, bot_config.get_type(c) + ('*' if bot_config.is_array(c) else ''), bot_config.get_s(c, message.server.id) if not bot_config.is_array(c) else '[{}]'.format(len(bot_config.get_s(c, message.server.id))))
-					if bot_config.is_detached(c, message.server.id):
+					content += '\n{} [{}] = {}'.format(c, config.get_type(c) + ('*' if config.is_array(c) else ''), config.get_s(c, message.server.id) if not config.is_array(c) else '[{}]'.format(len(config.get_s(c, message.server.id))))
+					if config.is_detached(c, message.server.id):
 						content += ' [local value]'
 				except AttributeError:
-					content += '\n{} [{}] = {}'.format(c, bot_config.get_type(c) + ('*' if bot_config.is_array(c) else ''), bot_config.get_s(c) if not bot_config.is_array(c) else '[{}]'.format(len(bot_config.get_s(c))))
+					content += '\n{} [{}] = {}'.format(c, config.get_type(c) + ('*' if config.is_array(c) else ''), config.get_s(c) if not config.is_array(c) else '[{}]'.format(len(config.get_s(c))))
 			content += '\n```'
 			await reply(message, content)
 			return
@@ -534,116 +534,116 @@ async def on_message(message):
 		splitargs = arguments.split(' ', 2)
 
 		if splitargs[0] == 'set':
-			if not bot_config.exists(splitargs[1]):
+			if not config.exists(splitargs[1]):
 				embed = emb.error('That setting does not exist')
 				await reply(message, emb=embed)
 				return
-			if bot_config.is_array(splitargs[1]):
+			if config.is_array(splitargs[1]):
 				embed = emb.error('That doesn’t work for an array')
 				await reply(message, emb=embed)
 				return
-			if bot_config.get_type(splitargs[1]) == 'int' and not splitargs[2].isdigit():
+			if config.get_type(splitargs[1]) == 'int' and not splitargs[2].isdigit():
 				embed = emb.error('Integer expected')
 				await reply(message, emb=embed)
 				return
 			try:
-				bot_config.set_s(splitargs[1], splitargs[2], message.server.id)
+				config.set_s(splitargs[1], splitargs[2], message.server.id)
 			except AttributeError:
-				bot_config.set_s(splitargs[1], splitargs[2])
-			bot_config.saveconfig()
+				config.set_s(splitargs[1], splitargs[2])
+			config.saveconfig()
 			logcommand(command, arguments, message)
 			embed = emb.success('Set `{}` to `{}`'.format(splitargs[1], wrapbackticks(splitargs[2])))
 			await reply(message, emb=embed)
 		elif splitargs[0] == 'get':
-			if not bot_config.exists(splitargs[1]):
+			if not config.exists(splitargs[1]):
 				embed = emb.error('That setting does not exist')
 				await reply(message, emb=embed)
 				return
 			try:
-				content = 'Key: `{}`   Type: `{}`   Array: `{}`   Detachable: `{}`   Using: `{}`\n'.format(splitargs[1], bot_config.get_type(splitargs[1]), bot_config.is_array(splitargs[1]), bot_config.is_detachable(splitargs[1]), ('Local value' if bot_config.is_detached(splitargs[1], message.server.id) else 'Master value'))
+				content = 'Key: `{}`   Type: `{}`   Array: `{}`   Detachable: `{}`   Using: `{}`\n'.format(splitargs[1], config.get_type(splitargs[1]), config.is_array(splitargs[1]), config.is_detachable(splitargs[1]), ('Local value' if config.is_detached(splitargs[1], message.server.id) else 'Master value'))
 			except AttributeError:
-				content = 'Key: `{}`   Type: `{}`   Array: `{}`   Detachable: `{}`   Using: `{}`\n'.format(splitargs[1], bot_config.get_type(splitargs[1]), bot_config.is_array(splitargs[1]), bot_config.is_detachable(splitargs[1]), 'Master value')
-			if bot_config.get_expl(splitargs[1]) != None:
-				content += 'Explanation: {}\n'.format(bot_config.get_expl(splitargs[1]))
+				content = 'Key: `{}`   Type: `{}`   Array: `{}`   Detachable: `{}`   Using: `{}`\n'.format(splitargs[1], config.get_type(splitargs[1]), config.is_array(splitargs[1]), config.is_detachable(splitargs[1]), 'Master value')
+			if config.get_expl(splitargs[1]) != None:
+				content += 'Explanation: {}\n'.format(config.get_expl(splitargs[1]))
 			content += 'Value:'
 
-			if bot_config.is_array(splitargs[1]):
+			if config.is_array(splitargs[1]):
 				try:
-					for val in bot_config.get_s(splitargs[1], message.server.id):
+					for val in config.get_s(splitargs[1], message.server.id):
 						content += ' `{}`,'.format(val)
 				except AttributeError:
-					for val in bot_config.get_s(splitargs[1]):
+					for val in config.get_s(splitargs[1]):
 						content += ' `{}`,'.format(val)
 			else:
 				try:
-					content += ' `{}`\nDefault: `{}`'.format(bot_config.get_s(splitargs[1], message.server.id), bot_config.get_default(splitargs[1]))
+					content += ' `{}`\nDefault: `{}`'.format(config.get_s(splitargs[1], message.server.id), config.get_default(splitargs[1]))
 				except AttributeError:
-					content += ' `{}`\nDefault: `{}`'.format(bot_config.get_s(splitargs[1]), bot_config.get_default(splitargs[1]))
+					content += ' `{}`\nDefault: `{}`'.format(config.get_s(splitargs[1]), config.get_default(splitargs[1]))
 			await reply(message, content)
 		elif splitargs[0] == 'insert' or splitargs[0] == 'remove':
-			if not bot_config.exists(splitargs[1]):
+			if not config.exists(splitargs[1]):
 				embed = emb.error('That setting does not exist')
 				await reply(message, emb=embed)
 				return
-			if not bot_config.is_array(splitargs[1]):
+			if not config.is_array(splitargs[1]):
 				embed = emb.error('That doesn’t work for something that is not an array')
 				await reply(message, emb=embed)
 				return
-			if bot_config.get_type(splitargs[1]) == 'int' and not splitargs[2].isdigit():
+			if config.get_type(splitargs[1]) == 'int' and not splitargs[2].isdigit():
 				embed = emb.error('Integer expected')
 				await reply(message, emb=embed)
 				return
 			if splitargs[0] == 'insert':
 				try:
-					bot_config.insert_s(splitargs[1], splitargs[2], message.server.id)
+					config.insert_s(splitargs[1], splitargs[2], message.server.id)
 				except AttributeError:
-					bot_config.insert_s(splitargs[1], splitargs[2])
+					config.insert_s(splitargs[1], splitargs[2])
 				embed = emb.success('Inserted `{}` into array `{}`'.format(wrapbackticks(splitargs[2]), splitargs[1]))
 			else:
 				try:
-					bot_config.remove_s(splitargs[1], splitargs[2], message.server.id)
+					config.remove_s(splitargs[1], splitargs[2], message.server.id)
 				except AttributeError:
-					bot_config.remove_s(splitargs[1], splitargs[2])
+					config.remove_s(splitargs[1], splitargs[2])
 				embed = emb.success('Removed `{}` from array `{}`'.format(wrapbackticks(splitargs[2]), splitargs[1]))
-			bot_config.saveconfig()
+			config.saveconfig()
 			logcommand(command, arguments, message)
 			await reply(message, emb=embed)
 		elif splitargs[0] == 'detach' or splitargs[0] == 'reattach':
-			if not bot_config.exists(splitargs[1]):
+			if not config.exists(splitargs[1]):
 				embed = emb.error('That setting does not exist')
 				await reply(message, emb=embed)
 				return
-			if not bot_config.is_detachable(splitargs[1]):
+			if not config.is_detachable(splitargs[1]):
 				embed = emb.error('That setting cannot have an independent local value.')
 				await reply(message, emb=embed)
 				return
 			if splitargs[0] == 'detach':
 				try:
-					bot_config.detach(splitargs[1], message.server.id)
+					config.detach(splitargs[1], message.server.id)
 					embed = emb.success('Setting `{}` now uses a local value for this server.'.format(splitargs[1]))
 				except AttributeError:
 					embed = emb.error('Can’t detach values for non-servers.')
 			else:
 				try:
-					bot_config.reattach(splitargs[1], message.server.id)
+					config.reattach(splitargs[1], message.server.id)
 					embed = emb.success('Setting `{}` is now using the master value again on this server.'.format(splitargs[1]))
 				except AttributeError:
 					embed = emb.error('Can’t reattach values for non-servers.')
-			bot_config.saveconfig()
+			config.saveconfig()
 			logcommand(command, arguments, message)
 			await reply(message, emb=embed)
 		elif splitargs[0] == 'default':
-			if not bot_config.exists(splitargs[1]):
+			if not config.exists(splitargs[1]):
 				embed = emb.error('That setting does not exist')
 				await reply(message, emb=embed)
 				return
 			try:
-				bot_config.restore_default(splitargs[1], message.server.id)
+				config.restore_default(splitargs[1], message.server.id)
 			except AttributeError:
-				bot_config.restore_default(splitargs[1])
-			bot_config.saveconfig()
+				config.restore_default(splitargs[1])
+			config.saveconfig()
 			logcommand(command, arguments, message)
-			embed = emb.success('Set `{}` back to default value of `{}`'.format(splitargs[1], wrapbackticks(bot_config.get_default(splitargs[1]))))
+			embed = emb.success('Set `{}` back to default value of `{}`'.format(splitargs[1], wrapbackticks(config.get_default(splitargs[1]))))
 			await reply(message, emb=embed)
 		else:
 			embed = emb.error('`{}` was not recognized'.format(splitargs[0]))
@@ -785,8 +785,8 @@ async def on_message(message):
 		embed.add_field(name=displaygameurlstatus, value=displaygameurl)
 		embed.add_field(name='Status', value='Do Not Disturb' if str(targetmember.status) == 'dnd' else str(targetmember.status).title())
 		embed.add_field(name='Default Avatar', value=str(targetmember.default_avatar).title())
-		embed.add_field(name='Joined Server At', value=time.strftime(bot_config.get_s('timeformat', message.server.id), targetmember.joined_at.timetuple()))
-		embed.add_field(name='Joined Discord At', value=time.strftime(bot_config.get_s('timeformat', message.server.id), targetmember.created_at.timetuple()))
+		embed.add_field(name='Joined Server At', value=time.strftime(config.get_s('timeformat', message.server.id), targetmember.joined_at.timetuple()))
+		embed.add_field(name='Joined Discord At', value=time.strftime(config.get_s('timeformat', message.server.id), targetmember.created_at.timetuple()))
 		embed.add_field(name='Color', value='_(default)_' if str(targetmember.colour) == '#000000' else str(targetmember.colour).upper())
 		# IMPORTANT: in `embed.add_field()`, `name` or `value` cannot be an empty string or you will get a 400 bad request when sending it
 		# (i learned that the hard way)
@@ -925,7 +925,7 @@ async def on_message(message):
 					if str(chan.type) == 'voice':
 						voicechatters += len(chan.voice_members)
 
-				if voicechatters < bot_config.get_s('votevmute_minmembers', message.server.id):
+				if voicechatters < config.get_s('votevmute_minmembers', message.server.id):
 					embed = emb.warning('There are not enough members in voice channels to start a vote.')
 					await reply(message, emb=embed)
 					return
@@ -936,7 +936,7 @@ async def on_message(message):
 					'opponents': []
 				}
 				content = 'A vote has been started to voice mute <@{}>.\nTo vote in favor of muting, type **`\\vy`**.\nTo vote against muting, type **`\\vn`**.\nModerators can cancel the vote by typing **`\\vc`**.'.format(targetmember.id)
-				await replyattach(message, images.votebar(1/voicechatters*100, 0, bot_config.get_s('votevmute_threshold', message.server.id)), 'temp.png', content)
+				await replyattach(message, images.votebar(1/voicechatters*100, 0, config.get_s('votevmute_threshold', message.server.id)), 'temp.png', content)
 				return
 		except AttributeError:
 			embed = emb.error(t['specify_user'])
@@ -998,16 +998,16 @@ async def on_message(message):
 			percpro = numproponents/voicechatters*100
 			percopp = numopponents /voicechatters*100
 
-			if percpro >= bot_config.get_s('votevmute_threshold', message.server.id):
+			if percpro >= config.get_s('votevmute_threshold', message.server.id):
 				targetmember = get_member_input(message.server, mutee)
 				await client.server_voice_state(targetmember, mute=1)
 				content += '\n{}% of the members have now voted in favor of muting, so <@{}> is now voice muted.'.format(round(percpro,1), mutee)
 				del votemutes[mutee]
-			elif percopp > 100-bot_config.get_s('votevmute_threshold', message.server.id):
+			elif percopp > 100-config.get_s('votevmute_threshold', message.server.id):
 				content += '\n{}% of the members have now voted against muting, so <@{}> is not getting voice muted.'.format(round(percopp,1), mutee)
 				del votemutes[mutee]
 
-			await replyattach(message, images.votebar(percpro, percopp, bot_config.get_s('votevmute_threshold', message.server.id)), 'temp.png', content)
+			await replyattach(message, images.votebar(percpro, percopp, config.get_s('votevmute_threshold', message.server.id)), 'temp.png', content)
 			return
 		await reply(message, emb=embed)
 	elif command == 'vc':
@@ -1507,9 +1507,9 @@ async def on_message(message):
 		embed.set_footer(text='Uptime Statistics', icon_url=client.user.avatar_url)
 		embed.add_field(name='Boot Time', value=boottime)
 		try:
-			now = bot_config.get_s('timeformat', message.server.id)
+			now = config.get_s('timeformat', message.server.id)
 		except AttributeError:
-			now = bot_config.get_s('timeformat')
+			now = config.get_s('timeformat')
 		embed.add_field(name='Current Time', value=time.strftime(now))
 		embed.add_field(name='Bot Uptime', value=reltime(boottimeunix, True))
 		embed.add_field(name='Host Uptime', value=hostuptime.decode('utf-8'))
