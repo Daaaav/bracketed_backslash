@@ -1621,8 +1621,11 @@ async def on_message(message):
 		content = ''
 		for chan in message.server.channels:
 			if str(chan.type) == 'text':
-				pins = await client.pins_from(chan)
-				content += '{} – {} pins, {} remaining\n'.format(chan.mention, len(pins), 50-len(pins))
+				try:
+					pins = await client.pins_from(chan)
+					content += '{} – {} pins, {} remaining\n'.format(chan.mention, len(pins), 50-len(pins))
+				except discord.errors.Forbidden:
+					content += '{} - Unable to get data\n'.format(chan.mention)
 		await reply(message, content)
 	elif command == 'math':
 		# what kind of stupid language uses elif instead of elseif or else if?
