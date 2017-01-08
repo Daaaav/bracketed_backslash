@@ -2,6 +2,7 @@
 
 import json
 import copy
+import logging
 
 # types can be:
 # bln: boolean
@@ -182,7 +183,7 @@ def load():
 	loaddefaultsettings()
 
 	try:
-		with open('config.json', 'r') as infile:
+		with open('bot_config.json', 'r') as infile:
 			loadedconfig = json.load(infile)
 
 		for loadedsetting in loadedconfig:
