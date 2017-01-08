@@ -37,7 +37,7 @@ import subprocess
 import re
 from threading import Timer
 
-import bot_config
+import config
 import col
 import emb
 import images
