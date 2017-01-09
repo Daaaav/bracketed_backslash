@@ -2251,7 +2251,7 @@ async def on_reaction_clear(m, rs):
 		if cemt:
 			rlist += '{name} ({id})\n'.format(
 					name=cemt,
-					id=r.id,
+					id=r.emoji.id,
 				)
 		else:
 			rlist += name + '\n'
