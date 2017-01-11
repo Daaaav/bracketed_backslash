@@ -1309,7 +1309,11 @@ async def kick(client, message, **kwargs): # Aliases: \serverban \unserverban
 
 @shadow()
 async def bans(client, message, **kwargs):
-	bans = await client.get_bans(message.server)
+	try:
+		bans = await client.get_bans(message.server)
+	except discord.errors.Forbidden:
+		embed = emb.error(t['no_permission'])
+		await reply(message, emb=embed)
 	ulist = ''
 	for u in bans:
 		ulist += (
