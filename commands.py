@@ -1314,6 +1314,7 @@ async def bans(client, message, **kwargs):
 	except discord.errors.Forbidden:
 		embed = emb.error(t['no_permission'])
 		await reply(message, emb=embed)
+		return
 	ulist = ''
 	for u in bans:
 		ulist += (
