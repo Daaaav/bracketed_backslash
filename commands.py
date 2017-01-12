@@ -653,7 +653,7 @@ async def expirylist(client, message, **kwargs):
 	embed = emb.info(content)
 	await reply(message, emb=embed)
 
-@shadow()
+@shadow(auth=is_mod)
 async def rolecacherst(client, message, **kwargs):
 	if not is_mod(message.author):
 		embed = emb.error(t['mod_only'])
