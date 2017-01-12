@@ -263,7 +263,7 @@ def shadow(auth=None, aliases=None):
 		commands[name] = [func, auth, aliases]
 	return living_shadow
 
-@client.event()
+@client.event
 async def on_message(m):
 	if m.author == client.user:
 		return
@@ -329,7 +329,7 @@ async def on_message(m):
 		fn = (
 			'{atchcche}/{id}_{fn}'
 		).format(
-			atcche=attachcache,
+			atchche=attachcache,
 			id=m.attachments[0]['id'],
 			fn=m.attachments[0]['filename'],
 		)
