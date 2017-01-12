@@ -375,6 +375,11 @@
 					"name": "b",
 					"short": "Rolebans a member on TNTGB.",
 					"extra": "Use this command in the channel the mistake was made in. Takes a member representation (full or part of their name, or their discriminator, ID, whatever you want) as the first argument, and a reason as the second argument.\nIf you input a member name with spaces, you can separate the two arguments with a newline.\n**Examples:** ```\\b testuser using spaces\n``````\n\\b some member\nwriting \"the\"```"
+				},
+				{
+					"name": "tntgb_maint",
+					"short": "An admin toolbox of maintenance features specifically for TNTGB.",
+					"extra": "Assumes you know what you\u2019re doing. Can only be used by an administrator.\n**Options:**\n`\\tntgb_maint liftmsg` \u2013 Edit a message in the ban log channel to change the \"⛔\" into \"[LIFTED]\", but don\u2019t announce it."
 				}
 			]
 		},

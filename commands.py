@@ -1374,4 +1374,27 @@ async def b(client, message, **kwargs):
 	# Now delete the calling message
 	await client.delete_message(message)
 
+@shadow(auth=is_admin)
+async def tntgb_maint(client, message, **kwargs):
+	if message.server.id != tntgbserver:
+		embed = emb.error(t['tntgb_only'])
+		await reply(message, emb=embed)
+		return
+	splitargs = kwargs['arguments'].split(' ')
+	
+	try:
+		if splitargs[0] == 'liftmsg':
+			getmessage = await client.get_message(banlogchannel_tntgb, splitargs[1])
+			content = getmessage.content
+			if content.find('⛔') == -1:
+				embed = emb.error('Cannot find the ⛔!')
+				await reply(message, emb=embed)
+				return
+			content = content.replace('⛔', '[LIFTED]', 1)
+			await client.edit_message(getmessage, new_content=content)
+		embed = emb.success('Nothing appears to have gone wrong')
+		await reply(message, emb=embed)
+	except:
+		embed = emb.error('You don’t know what you’re doing, do you.')
+		await reply(message, emb=embed)
 
