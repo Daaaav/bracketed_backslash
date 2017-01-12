@@ -1381,7 +1381,7 @@ async def tntgb_maint(client, message, **kwargs):
 		await reply(message, emb=embed)
 		return
 	splitargs = kwargs['arguments'].split(' ')
-	
+
 	try:
 		if splitargs[0] == 'liftmsg':
 			getmessage = await client.get_message(banlogchannel_tntgb, splitargs[1])
