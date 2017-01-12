@@ -304,7 +304,7 @@ async def on_message(m):
 		fn = (
 			'{atchcche}/{id}_{fn}'
 		).format(
-			atcche=attachcache,
+			atchche=attachcache,
 			id=m.attachments[0]['id'],
 			fn=m.attachments[0]['filename'],
 		)
@@ -347,7 +347,7 @@ async def on_message(m):
 		altinvokeractive = True
 		hangmaninvokeractive = False
 		pass
-	elif message.content.startswith(hangmaninvoker):
+	elif m.content.startswith(hangmaninvoker):
 		hangmaninvokeractive = True
 		pass
 	else:
