@@ -72,11 +72,6 @@ async def kill(client, message, **kwargs):
 
 @shadow(auth=is_operator, aliases=['config'])
 async def configure(client, message, **kwargs):
-	if not is_operator(message.author):
-		embed = emb.error(t['op_only'])
-		logfailedcommand(kwargs['command'], kwargs['arguments'], message)
-		await reply(message, emb=embed)
-		return
 	if kwargs['arguments'] == None:
 		content = (
 			'You can use the following options:\n'
