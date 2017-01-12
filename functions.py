@@ -268,6 +268,8 @@ def updaterolecache(member, serverid=None):
 	global memberroles
 	if serverid == None:
 		serverid = member.server.id
+	if not serverid in memberroles:
+		memberroles[serverid] = {}
 	memberroles[serverid][str(member.id)] = list(rolelist(member.roles))
 
 def removerolecache(memberid, serverid):
