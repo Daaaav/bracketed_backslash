@@ -640,8 +640,6 @@ async def on_message(m):
 				func = commands[c]
 				break
 		else:
-			cmdisalias = False
-		if not cmdisalias:
 			e = emb.warning(
 				(
 					'Invalid command. Input `\help` for'
