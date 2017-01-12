@@ -1088,7 +1088,7 @@ async def on_reaction_remove(r, u):
 			(
 				'{name} ({id})'.format(
 					name=emotename,
-					id=r.id,
+					id=r.emoji.id,
 				)
 			)
 		),
