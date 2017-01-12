@@ -376,7 +376,7 @@ async def softban(client, message, **kwargs):
 	await reply(message, content, emb=embed)
 
 @shadow(auth=is_mod, aliases=['nogenmen', 'nocedule', 'notts', 'noreact'])
-async def nononly(client, message, **kwargs): # Aliases: \nogenmen \nocedule \notts \noreact
+async def nononly(client, message, **kwargs):
 	if message.server.id != productionserver:
 		embed = emb.error(t['production_only'])
 		await reply(message, emb=embed)
@@ -428,7 +428,7 @@ async def nonick(client, message, **kwargs):
 	return
 
 @shadow(auth=is_mod, aliases=['voiceunmute'])
-async def voicemute(client, message, **kwargs): # Alias: \voiceunmute
+async def voicemute(client, message, **kwargs):
 	targetmember = get_member_input(message.server, kwargs['arguments'])
 	content = None
 	try:
@@ -489,7 +489,7 @@ async def votevoicemute(client, message, **kwargs):
 	await reply(message, emb=embed)
 
 @shadow(aliases=['vn'])
-async def vy(client, message, **kwargs): # Alias: \vn
+async def vy(client, message, **kwargs):
 	if len(votemutes) == 0:
 		embed = emb.error('There are currently no votes running.')
 	elif len(votemutes) > 1:
@@ -746,7 +746,7 @@ async def rolecacheinfo(client, message, **kwargs):
 	await reply(message, content)
 
 @shadow(aliases=['rule'])
-async def rules(client, message, **kwargs): # Alias: \rule
+async def rules(client, message, **kwargs):
 	if isprivatemessage(message.server):
 		content = 'Rules:\n**1.** I am always right.\n**2.** If I am not right, rule 1 applies.'
 		await reply(message, content)
@@ -782,7 +782,7 @@ async def rules(client, message, **kwargs): # Alias: \rule
 	await reply(message, content)
 
 @shadow()
-async def rulefind(client, message, **kwargs): # Alias: \rulesfind
+async def rulefind(client, message, **kwargs):
 	if isprivatemessage(message.server):
 		embed = emb.error('Alright, this isn’t a server, this is our private conversation. I run on multiple servers with different rules, you know.')
 		await reply(message, emb=embed)
@@ -814,7 +814,7 @@ async def rulefind(client, message, **kwargs): # Alias: \rulesfind
 	await reply(message, content)
 
 @shadow(aliases=['addrule'])
-async def ruleadd(client, message, **kwargs): # Alias: \addrule
+async def ruleadd(client, message, **kwargs):
 	if not is_mod(message.author):
 		# Okay, so they're not allowed to mess with the rules - but we want to respond to some particular things as well.
 		splitargs = kwargs['arguments'].split(' ', 1)
@@ -856,7 +856,7 @@ async def ruleadd(client, message, **kwargs): # Alias: \addrule
 	await reply(message, emb=embed)
 
 @shadow(auth=is_mod, aliases=['editrule'])
-async def ruleedit(client, message, **kwargs): # Alias: \editrule
+async def ruleedit(client, message, **kwargs):
 	if kwargs['arguments'] == None:
 		embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
 		await reply(message, emb=embed)
@@ -884,7 +884,7 @@ async def ruleedit(client, message, **kwargs): # Alias: \editrule
 	await reply(message, emb=embed)
 
 @shadow(auth=is_mod, aliases=['moverule'])
-async def rulemove(client, message, **kwargs): # Alias: \moverule
+async def rulemove(client, message, **kwargs):
 	if kwargs['arguments'] == None:
 		embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
 		await reply(message, emb=embed)
@@ -915,7 +915,7 @@ async def rulemove(client, message, **kwargs): # Alias: \moverule
 	await reply(message, emb=embed)
 
 @shadow(auth=is_mod, aliases=['removerule'])
-async def ruleremove(client, message, **kwargs): # Alias: \removerule
+async def ruleremove(client, message, **kwargs):
 	if kwargs['arguments'] == None:
 		embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
 		await reply(message, emb=embed)
@@ -1099,7 +1099,7 @@ async def getrawmessagecontent(client, message, **kwargs):
 	await reply(message, emb=embed)
 
 @shadow(aliases=['removecontrib'])
-async def addcontrib(client, message, **kwargs): # Alias: \removecontrib
+async def addcontrib(client, message, **kwargs):
 	if isprivate:
 		embed = emb.error(t['noprivate'])
 		await reply(message, emb=embed)
@@ -1223,7 +1223,7 @@ async def gamestatus(client, message, **kwargs):
 	embed = emb.success('Set game status to: ``{}``'.format(wrapbackticks(kwargs['arguments'])))
 
 @shadow(aliases=['eval', 'evalfile', 'evalawaitfile', 'setvar'])
-async def evalawait(client, message, **kwargs): # Aliases: \evalawait \evalfile \evalawaitfile \setvar
+async def evalawait(client, message, **kwargs):
 	if message.author.id != ownerid:
 		logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 		embed = emb.error(t['owner_only'])
@@ -1263,7 +1263,7 @@ async def evalawait(client, message, **kwargs): # Aliases: \evalawait \evalfile 
 		await reply(message, emb=embed)
 
 @shadow(aliases=['serverban', 'unserverban'])
-async def kick(client, message, **kwargs): # Aliases: \serverban \unserverban
+async def kick(client, message, **kwargs):
 	targetmember = get_member_input(message.server, kwargs['arguments'])
 	try:
 		if kwargs['command'] == 'kick':
