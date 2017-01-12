@@ -159,14 +159,14 @@ async def on_ready():
 		for ser in memberroles:
 			if config.get_s('rolecachemode', ser) == 0:
 				continue
-			warnings = ''
+			rcwarnings = ''
 			for mem in client.get_server(ser).members:
 				if not str(mem.id) in memberroles[ser]:
-					warnings += '\nUser {}#{} ({}) is not in the cache! (They’re suddenly in the server.) Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
+					rcwarnings += '\nUser {}#{} ({}) is not in the cache! (They’re suddenly in the server.) Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
 					memberroles[ser][str(mem.id)] = list(rolelist(mem.roles)) # Possibly redundant list() tbh, just making sure since I can't test and I don't know python well enough to know whether it's redundant
 					continue
 				if set(memberroles[ser][str(mem.id)]) != set(rolelist(mem.roles)):
-					warnings += (
+					rcwarnings += (
 						'\n'
 						'User {}#{} ({}) has different roles than in the cache! Maybe you want to correct things.\n'
 						'    **`Cached:`** {}\n'
@@ -176,21 +176,21 @@ async def on_ready():
 						listroles_id(memberroles[ser][str(mem.id)]),
 						listroles(mem.roles),
 					)
-			if warnings != '':
+			if rcwarnings != '':
 				logging.warn('Role cache warnings for server {}: {}'.format(
-						ser, warnings
+						ser, rcwarnings
 					)
 				)
-				warnings = (
+				rcwarnings = (
 					'**User role cache warning.**\n'
 					'Full warning output has been sent to the terminal.\n'
-					+ warnings
+					+ rcwarnings
 				)
 				await client.send_message(
 					getspecialchannel(
 						discord.utils.get(client.servers, id=ser)
 					),
-					warnings[:1900]
+					rcwarnings[:1900]
 				)
 
 	except FileNotFoundError:
@@ -350,7 +350,7 @@ async def on_message(m):
 				# cache the image
 				dfn = '{embedcache}/{m.id}_{n}_{fn}'.format(
 					embedcache=embedcache,
-					m=message,
+					m=m,
 					n=n,
 					fn=fn,
 				)
@@ -372,7 +372,7 @@ async def on_message(m):
 		altinvokeractive = True
 		hangmaninvokeractive = False
 		pass
-	elif message.content.startswith(hangmaninvoker):
+	elif m.content.startswith(hangmaninvoker):
 		hangmaninvokeractive = True
 		pass
 	else:
@@ -603,7 +603,7 @@ async def on_message(m):
 		return
 
 	if priv and command in config.get_s('disabledcommands'):
-		e = emb_error('This command is currently disabled.')
+		e = emb.error('This command is currently disabled.')
 		await reply(m, emb=e)
 
 	# Commands that cannot be the name of a function

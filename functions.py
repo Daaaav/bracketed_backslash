@@ -264,8 +264,10 @@ def rolelist(roles):
 
 	return rlist
 
-def updaterolecache(member, serverid=member.server.id):
+def updaterolecache(member, serverid=None):
 	global memberroles
+	if serverid == None:
+		serverid = member.server.id
 	memberroles[serverid][str(member.id)] = list(rolelist(member.roles))
 
 def removerolecache(memberid, serverid):

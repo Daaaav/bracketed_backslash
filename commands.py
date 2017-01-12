@@ -1221,6 +1221,7 @@ async def calc(client, message, **kwargs):
 async def gamestatus(client, message, **kwargs):
 	await client.change_presence(game=discord.Game(name=kwargs['arguments']))
 	embed = emb.success('Set game status to: ``{}``'.format(wrapbackticks(kwargs['arguments'])))
+	await reply(message, emb=embed)
 
 @shadow(aliases=['eval', 'evalfile', 'evalawaitfile', 'setvar'])
 async def evalawait(client, message, **kwargs):
