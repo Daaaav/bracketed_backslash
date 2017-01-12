@@ -201,7 +201,7 @@ async def on_ready():
 			# Convert it to the new system where all servers can use it!
 			logging.info('CONVERTING OLD members.json TO memberroles.json')
 			memberroles = {productionserver: memberrolesold}
-			
+
 			with open('memberroles.json', 'w') as outfile:
 				json.dump(memberroles, outfile)
 
