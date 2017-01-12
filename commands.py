@@ -655,12 +655,7 @@ async def expirylist(client, message, **kwargs):
 
 @shadow(auth=is_mod)
 async def rolecacherst(client, message, **kwargs):
-	if not is_mod(message.author):
-		embed = emb.error(t['mod_only'])
-		logfailedcommand(kwargs['command'], kwargs['arguments'], message)
-		await reply(message, emb=embed)
-		return
-	elif message.server.id != productionserver:
+	if message.server.id != productionserver:
 		embed = emb.error(t['production_only'])
 		await reply(message, emb=embed)
 		return
