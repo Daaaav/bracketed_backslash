@@ -12,7 +12,8 @@
 		"production_only": "Production server only.",
 		"tntgb_only": "This command can only be used on the TNTGB server.",
 		"noprivate": "This command cannot be run inside of a private conversation.",
-		"its_meme": "It\u2019s a meme command."
+		"its_meme": "It\u2019s a meme command.",
+		"rolecachedisabled": "The role cache is disabled on this server."
 	},
 	"permissionlabels": [
 		["administrator", "Administrator"],

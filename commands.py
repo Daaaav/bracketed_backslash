@@ -655,8 +655,8 @@ async def expirylist(client, message, **kwargs):
 
 @shadow(auth=is_mod)
 async def rolecacherst(client, message, **kwargs):
-	if message.server.id != productionserver:
-		embed = emb.error(t['production_only'])
+	if config.get_s('rolecachemode', message.server.id) == 0:
+		embed = emb.error(t['rolecachedisabled'])
 		await reply(message, emb=embed)
 		return
 	elif kwargs['arguments'] == None:
@@ -668,7 +668,7 @@ async def rolecacherst(client, message, **kwargs):
 		await reply(message, emb=embed)
 		return
 
-	if removerolecache(kwargs['arguments']):
+	if removerolecache(kwargs['arguments'], message.server.id):
 		embed = emb.success('Member {} successfully removed from role cache.'.format(kwargs['arguments']))
 		await reply(message, emb=embed)
 		rolecachesave()
@@ -678,8 +678,8 @@ async def rolecacherst(client, message, **kwargs):
 
 @shadow(auth=is_mod)
 async def rolecacheadd(client, message, **kwargs):
-	if message.server.id != productionserver:
-		embed = emb.error(t['production_only'])
+	if config.get_s('rolecachemode', message.server.id) == 0:
+		embed = emb.error(t['rolecachedisabled'])
 		await reply(message, emb=embed)
 		return
 	elif kwargs['arguments'] == None:
@@ -698,12 +698,12 @@ async def rolecacheadd(client, message, **kwargs):
 		await reply(message, emb=embed)
 		return
 
-	if splitargs[0] not in memberroles:
+	if splitargs[0] not in memberroles[message.server.id]:
 		embed = emb.error('Member {} cannot be found in the role cache. Please note you have to enter an ID, not any form of name!'.format(kwargs['arguments']))
 		await reply(message, emb=embed)
 		return
 
-	memberroles[splitargs[0]].append(splitargs[1])
+	memberroles[message.server.id][splitargs[0]].append(splitargs[1])
 	rolecachesave()
 
 	embed = emb.success('Successfully added role {} to member {} in the role cache.'.format(splitargs[1], splitargs[0]))
@@ -717,13 +717,13 @@ async def rolesync(client, message, **kwargs):
 		logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 		await reply(message, emb=embed)
 		return
-	elif message.server.id != productionserver:
-		embed = emb.error(t['production_only'])
+	elif config.get_s('rolecachemode', message.server.id) == 0:
+		embed = emb.error(t['rolecachedisabled'])
 		await reply(message, emb=embed)
 		return
 
 	for mem in message.server.members:
-		updaterolecache(mem)
+		updaterolecache(mem, message.server.id)
 
 	rolecachesave()
 
@@ -732,16 +732,16 @@ async def rolesync(client, message, **kwargs):
 
 @shadow(auth=is_mod)
 async def rolecacheinfo(client, message, **kwargs):
-	if message.server.id != productionserver:
-		embed = emb.error(t['production_only'])
+	if config.get_s('rolecachemode', message.server.id) == 0:
+		embed = emb.error(t['rolecachedisabled'])
 		await reply(message, emb=embed)
 		return
-	if not kwargs['arguments'] in memberroles:
+	if not kwargs['arguments'] in memberroles[message.server.id]:
 		embed = emb.error('That member is not in the role cache.')
 		await reply(message, emb=embed)
 		return
 
-	content = 'According to the role cache, this member has the following roles: ' + listroles_id(memberroles[kwargs['arguments']])
+	content = 'According to the role cache, this member has the following roles: ' + listroles_id(memberroles[message.server.id][kwargs['arguments']])
 
 	await reply(message, content)
 
@@ -1221,6 +1221,7 @@ async def calc(client, message, **kwargs):
 async def gamestatus(client, message, **kwargs):
 	await client.change_presence(game=discord.Game(name=kwargs['arguments']))
 	embed = emb.success('Set game status to: ``{}``'.format(wrapbackticks(kwargs['arguments'])))
+	await reply(message, emb=embed)
 
 @shadow(aliases=['eval', 'evalfile', 'evalawaitfile', 'setvar'])
 async def evalawait(client, message, **kwargs):
