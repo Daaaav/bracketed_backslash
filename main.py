@@ -642,17 +642,14 @@ async def on_message(m):
 		else:
 			cmdisalias = False
 		if not cmdisalias:
-			if altinvokeractive:
-				return
-			else:
-				e = emb.warning(
-					(
-						'Invalid command. Input `\help` for'
-						' a list of valid commands.'
-					)
+			e = emb.warning(
+				(
+					'Invalid command. Input `\help` for'
+					' a list of valid commands.'
 				)
-				await reply(m, emb=e)
-				return
+			)
+			await reply(m, emb=e)
+			return
 	if func[1] != None:
 		if not func[1](m.author):
 			e = emb.error(t['you_no_permission'])
