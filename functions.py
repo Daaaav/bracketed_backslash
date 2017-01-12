@@ -264,14 +264,14 @@ def rolelist(roles):
 
 	return rlist
 
-def updaterolecache(member):
+def updaterolecache(member, serverid=member.server.id):
 	global memberroles
-	memberroles[str(member.id)] = list(rolelist(member.roles))
+	memberroles[serverid][str(member.id)] = list(rolelist(member.roles))
 
-def removerolecache(memberid):
+def removerolecache(memberid, serverid):
 	global memberroles
 	try:
-		del memberroles[memberid]
+		del memberroles[serverid][memberid]
 	except KeyError:
 		return False
 
@@ -280,7 +280,7 @@ def removerolecache(memberid):
 def rolecachesave():
 	global memberroles
 
-	with open('members.json', 'w') as outfile:
+	with open('memberroles.json', 'w') as outfile:
 		json.dump(memberroles, outfile)
 
 def rulesave():

@@ -10,6 +10,7 @@ import logging
 # str: string
 # did: generic Discord ID
 # uid: user/member Discord ID (members can be searched)
+# rid: role ID
 # cid: channel ID (channels can be mentioned)
 configs = {
 	'operators': {
@@ -52,6 +53,31 @@ configs = {
 		'detachable': True,
 		'shown': True,
 	},
+	'rolecachemode': {
+		'default': 0,
+		'type': 'int',
+		'is_array': False,
+		'expl': 'Sets the mode for the role cache. If enabled, any member who rejoins the server will be given back the roles they had before they left. Make sure to run `\\rolesync` after enabling this! `0` = disabled. `1` = enabled, and give default roles when new member hasn’t been seen on the server before. `2` = enabled, but if a new member hasn’t been seen on the server before, don’t give default roles.',
+		'detachable': True,
+		'shown': True,
+	},
+	'defaultroles': {
+		'default': [],
+		'type': 'rid',
+		'is_array': True,
+		'expl': 'The default roles that members will get upon their first entry. If `rolecachemode` is set to 1, these roles will be given instantly - if that option is set to `2`, they will be given after sending a message in the join channel.',
+		'detachable': True,
+		'shown': True,
+	},
+	'defaultbotroles': {
+		'default': [],
+		'type': 'rid',
+		'is_array': True,
+		'expl': 'The default roles that bots will get upon entry, if the rolecache is enabled.',
+		'detachable': True,
+		'shown': True,
+	},
+	# TODO: joinchannel for mode 2
 	'specialchannel': {
 		'default': '0',
 		'type': 'cid',

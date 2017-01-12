@@ -87,7 +87,7 @@ ownerid = ownerid_config.readline(18).split('\n')[0]
 ownerid_config.close()
 
 
-memberroles = {}
+memberroles = {} # Now no longer userid -> roleids, but serverid -> userids -> roleids
 minutemessageedits = {}
 
 rules = {}
@@ -152,45 +152,70 @@ async def on_ready():
 	await client.send_message(specialchannel_prod, embed=embed)
 
 	try:
-		with open('members.json', 'r') as infile:
+		with open('memberroles.json', 'r') as infile:
 			memberroles = json.load(infile)
 
 		# Now look what I've woken up to.
-		warnings = ''
-
-		for mem in client.get_server(productionserver).members:
-			if not str(mem.id) in memberroles:
-				warnings += '\nUser {}#{} ({}) is not in the cache! (They’re suddenly in the server.) Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
-				memberroles[str(mem.id)] = list(rolelist(mem.roles)) # Possibly redundant list() tbh, just making sure since I can't test and I don't know python well enough to know whether it's redundant
+		for ser in memberroles:
+			if config.get_s('rolecachemode', ser) == 0:
 				continue
-			if set(memberroles[str(mem.id)]) != set(rolelist(mem.roles)):
-				warnings += (
-					'\n'
-					'User {}#{} ({}) has different roles than in the cache! Maybe you want to correct things.\n'
-					'    **`Cached:`** {}\n'
-					'    **`Seen:`** {}'
-				).format(
-					mem.name, mem.discriminator, mem.id,
-					listroles_id(memberroles[str(mem.id)]),
-					listroles(mem.roles),
+			warnings = ''
+			for mem in client.get_server(ser).members:
+				if not str(mem.id) in memberroles[ser]:
+					warnings += '\nUser {}#{} ({}) is not in the cache! (They’re suddenly in the server.) Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
+					memberroles[ser][str(mem.id)] = list(rolelist(mem.roles)) # Possibly redundant list() tbh, just making sure since I can't test and I don't know python well enough to know whether it's redundant
+					continue
+				if set(memberroles[ser][str(mem.id)]) != set(rolelist(mem.roles)):
+					warnings += (
+						'\n'
+						'User {}#{} ({}) has different roles than in the cache! Maybe you want to correct things.\n'
+						'    **`Cached:`** {}\n'
+						'    **`Seen:`** {}'
+					).format(
+						mem.name, mem.discriminator, mem.id,
+						listroles_id(memberroles[ser][str(mem.id)]),
+						listroles(mem.roles),
+					)
+			if warnings != '':
+				logging.warn('Role cache warnings for server {}: {}'.format(
+						ser, warnings
+					)
 				)
-		if warnings != '':
-			logging.warn(warnings)
-			warnings = (
-				'**User role cache warning.**\n'
-				'Full warning output has been sent to the terminal.\n'
-				+ warnings
-			)
-			await client.send_message(specialchannel_prod, warnings[:1900])
+				warnings = (
+					'**User role cache warning.**\n'
+					'Full warning output has been sent to the terminal.\n'
+					+ warnings
+				)
+				await client.send_message(
+					getspecialchannel(
+						discord.utils.get(client.servers, id=ser)
+					),
+					warnings[:1900]
+				)
 
 	except FileNotFoundError:
-		logging.info('members file does not exist yet so creating it now')
-		memberroles = {}
+		# Maybe we do have an old members.json?
+		try:
+			with open('members.json', 'r') as infile:
+				memberrolesold = json.load(infile)
+			# Convert it to the new system where all servers can use it!
+			logging.info('CONVERTING OLD members.json TO memberroles.json')
+			memberroles = {productionserver: memberrolesold}
+			
+			with open('memberroles.json', 'w') as outfile:
+				json.dump(memberroles, outfile)
 
-		with open('members.json', 'w') as outfile:
-			json.dump(memberroles, outfile)
+			logging.info('Exiting (aka restarting) now to make the conversion go smoothly...')
+			await client.logout()
+			sys.exit(43)
+		except FileNotFoundError:
+			logging.info('memberroles file does not exist yet so creating it now')
+			memberroles = {}
 
-		await client.send_message(specialchannel_prod, 'Members file didn’t yet exist, created a new one. Please run `\\rolesync` to sync up the roles cache.')
+			with open('memberroles.json', 'w') as outfile:
+				json.dump(memberroles, outfile)
+
+			await client.send_message(specialchannel_prod, 'Members file didn’t yet exist, created a new one. Please run `\\rolesync` to sync up the roles cache.')
 
 	try:
 		with open('rules.json', 'r') as infile:
@@ -793,7 +818,7 @@ async def on_member_update(before, after):
 			for roleadded in rolesadded:
 				embed.add_field(name='Added Role', value=mdspecialchars('{} ({})'.format(roleadded.name, roleadded.id)))
 			await client.send_message(specialchannel, embed=embed)
-		if after.server.id == productionserver:
+		if config.get_s('rolecachemode', after.server.id) != 0:
 			updaterolecache(after)
 			rolecachesave()
 	if before.name != after.name and not logdisabled('member_username', after.server):
@@ -824,15 +849,22 @@ async def on_member_join(member):
 	embed.set_author(name=member.display_name)
 	embed.set_thumbnail(url=member.avatar_url)
 	await client.send_message(specialchannel, embed=embed)
-	if member.server.id == productionserver:
-		if is_bot(member):
-			await client.add_roles(member, discord.utils.get(member.server.roles, id='201129507967598592')) # bot role
-			return
+	if config.get_s('rolecachemode', member.server.id) == 1 and is_bot(member):
+		# Give them the bot roles!
+		addingtheseroles = []
+		for rid in config.get_s('defaultbotroles', member.server.id):
+			addingtheseroles.append(
+				discord.utils.get(member.server.roles, id=rid)
+			)
+		await client.add_roles(member, *addingtheseroles) # bot role
+		return
+
+	if config.get_s('rolecachemode', member.server.id) != 0 and member.server.id in memberroles:
 		# Are they in our database of members which had roles before?
-		if member.id in memberroles:
+		if member.id in memberroles[member.server.id]:
 			addingtheseroles = []
 			# They're found in the database! Give them the groups they should have
-			for rid in memberroles[member.id]:
+			for rid in memberroles[member.server.id][member.id]:
 				addingrole = discord.utils.get(member.server.roles, id=rid)
 				if addingrole.is_everyone:
 					continue
@@ -844,9 +876,14 @@ async def on_member_join(member):
 			value += listroles(addingtheseroles) + '_'
 			content += 'Given them back their roles:\n' + value
 			await client.send_message(specialchannel, content)
-		else:
-			# Not found, so they're just a tOLPer.
-			await client.add_roles(member, discord.utils.get(member.server.roles, id='231644869351833600')) # The tOLPer role
+		elif config.get_s('rolecachemode', member.server.id) == 1:
+			# Not found, so just give them the default roles
+			addingtheseroles = []
+			for rid in config.get_s('defaultroles', member.server.id):
+				addingtheseroles.append(
+					discord.utils.get(member.server.roles, id=rid)
+				)
+			await client.add_roles(member, *addingtheseroles)
 
 @client.event
 async def on_member_remove(member):
