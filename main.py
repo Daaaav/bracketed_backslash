@@ -636,7 +636,6 @@ async def on_message(m):
 		# Check if it's an alias
 		for c, p in commands.items():
 			if p[2] != None and command in p[2]:
-				cmdisalias = True
 				func = commands[c]
 				break
 		else:
