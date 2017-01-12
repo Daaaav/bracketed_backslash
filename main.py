@@ -1018,7 +1018,7 @@ async def on_reaction_add(r, u):
 		url=infourl('userid={}&messageid={}'.format(u.id, r.message.id))
 	)
 	mdetails = '**{name}**#{discrim}'.format(
-		name=mdspecialchars(u.display_name),
+		name=mdspecialchars(u.name),
 		discrim=u.discriminator,
 	)
 	if u.status == discord.Status.offline:
