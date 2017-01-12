@@ -238,41 +238,82 @@ def shadow(auth=None, aliases=None):
 		commands[name] = [func, auth, aliases]
 	return living_shadow
 
-@client.event
-async def on_message(message):
-	global msg_start, hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, hangmanstarter, guessedletters, algeraden, memberroles, rules, disabledrules, latestroled
+@client.event()
+async def on_message(m):
+	if m.author == client.user:
+		return
 
-	if message.author == client.user: # is the message sent by the bot
-		return # do nothing
-
-	specialchannel = getspecialchannel_reply(message)
-	displaymessagecontent = ('``{}``**`…`**'.format(wrapbackticks(message.content[:100]))) if len(message.content) > 100 else '``{}``'.format(wrapbackticks(message.content)).replace('\n', '``**`\\n`**``​')
-	if displaymessagecontent[-12:] == '``**`\\n`**``​':
-		displaymessagecontent += '``'
-	isprivate = isprivatemessage(message.server) # cant use isprivatemessage = isprivatemessage(), otherwise python will think "holy fuck a variable was referenced before assignment"
+	global msg_start, hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, \
+	hangmanstarter, guessedletters, algeraden, memberroles, rules, disabledrules, latestroled
+	schan = getspecialchannel_reply(m)
+	indisp = (
+		'``{}``**`…`**'.format(wrapbackticks(m.content[:100]))
+	) if len(m.content) > 100 else (
+		'``{}``'.format(wrapbackticks(m.content))
+		.replace('\n', '``**`\\n`**``​')
+	)
+	if indisp[-12:] == '``**`\\n`**``​':
+		indisp += '``'
+	priv = isprivatemessage(m.server)
 
 	try:
-		if not isprivate and str(message.author.status) == 'offline' and not logdisabled('invisible_sentmessage', message.server):
-			embed = discord.Embed(title='👻INVISIBLE WHILE SENDING MESSAGE IN {}'.format(message.channel.mention), description=message.content, colour=message.author.colour)
-			embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url, url=infourl('userid={}&messageid={}'.format(message.author.id, message.id)))
-			await client.send_message(specialchannel, embed=embed)
+		if not priv and m.author.status == discord.Status.offline and \
+		not logdisabled('invisible_sentmessage', m.server):
+			e = discord.Embed(
+				title=(
+					':ghost:INVISIBLE WHILE SENDING MESSAGE IN {chanmen}'
+				).format(
+					chanmen=m.channel.mention
+				),
+				description=m.content,
+				colour=m.author.colour
+			)
+			e.set_author(
+				name=m.author.display_name,
+				icon_url=m.author.avatar_url,
+				url=infourl(
+					'userid={0.author.id}&messageid={0.id}'
+				).format(m)
+			)
+			await client.send_message(schan, embed=e)
 	except AttributeError:
 		return
 
-	if not isprivate and message.tts:
-		embed = discord.Embed(title='🎙Message {} was sent with TTS in {}'.format(message.id, message.channel.mention), description=message.content, colour=message.author.colour, timestamp=message.timestamp)
-		embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url)
-		embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=message.author.id))
-		await client.send_message(specialchannel, embed=embed)
+	if not priv and m.tts:
+		e = discord.Embed(
+			title=(
+				':microphone2:Message {0.id} was sent with TTS'
+				' in {0.channel.mention}'
+			).format(m),
+			description=m.content,
+			colour=m.author.colour,
+			timestamp=m.timestamp
+		)
+		e.set_author(
+			name=m.author.display_name,
+			icon_url=m.author.avatar_url
+		)
+		e.add_field(
+			name='Message author',
+			value='<@!{id}> ({id})'.format(id=m.author.id)
+		)
+		await client.send_message(schan, embed=e)
 
-	if message.attachments != []:
-		actuallyretrieving = await fetch(message.attachments[0]['url'])
-		with open(attachcache + '/' + message.attachments[0]['id'] + '_' + message.attachments[0]['filename'], 'wb') as f:
-			f.write(actuallyretrieving)
+	if m.attachments != []:
+		a = await fetch(m.attachments[0]['url'])
+		fn = (
+			'{atchcche}/{id}_{fn}'
+		).format(
+			atcche=attachcache,
+			id=m.attachments[0]['id'],
+			fn=m.attachments[0]['filename'],
+		)
+		with open(fn, 'wb') as f:
+			f.write(a)
 			f.close()
 
-	if message.embeds != []:
-		for n, e in enumerate(message.embeds):
+	if m.embeds != []:
+		for n, e in enumerate(m.embeds):
 			if e['type'] == 'image':
 				# get the filename from the url
 				# i.e. the part after the last forward slash
@@ -282,21 +323,27 @@ async def on_message(message):
 				img = await fetch(e['thumbnail']['proxy_url'])
 
 				# cache the image
-				with open('{embedcache}/{m.id}_{n}_{fn}'.format(embedcache=embedcache, m=message, n=n, fn=fn), 'wb') as f:
+				dfn = '{embedcache}/{m.id}_{n}_{fn}'.format(
+					embedcache=embedcache,
+					m=message,
+					n=n,
+					fn=fn,
+				)
+				with open(dfn, 'wb') as f:
 					f.write(img)
 					f.close()
 
-	if not isprivate and message.author.id in config.get_s('blacklist', message.server.id):
+	if not priv and m.author.id in config.get_s('blacklist', m.server.id):
 		return
 
-	if isprivate and message.author.id in config.get_s('blacklist'):
+	if priv and m.author.id in config.get_s('blacklist'):
 		return
 
-	if message.content.startswith(invoker): # does the message start with command invoker
+	if m.content.startswith(invoker):
 		altinvokeractive = False
 		hangmaninvokeractive = False
-		pass # continue, go on
-	elif message.content.startswith(altinvoker): # does the message start with alt invoker
+		pass
+	elif m.content.startswith(altinvoker):
 		altinvokeractive = True
 		hangmaninvokeractive = False
 		pass
@@ -306,49 +353,72 @@ async def on_message(message):
 	else:
 		return
 
-	if isprivate:
+	if priv:
 		invokesymbol = '@'
-	elif is_mod(message.author):
+	elif is_mod(m.author):
 		invokesymbol = '#'
 	else:
 		invokesymbol = '$'
 	if hangmaninvokeractive:
 		if not hangmanactive:
 			return
-		if is_mod(message.author):
-			msg_start = '**`>`**``{}``**`#`**{}\n'.format(wrapbackticks(message.author.name), displaymessagecontent)
+		if is_mod(m.author):
+			msg_start = (
+				'**`>`**``{name}``**`#`**{indisp}\n'
+			).format(
+				name=wrapbackticks(m.author.name),
+				indisp=indisp,
+			)
 		else:
-			msg_start = '**`>`**``{}``**`$`**{}\n'.format(wrapbackticks(message.author.name), displaymessagecontent)
-		if isprivate:
-			embed = emb.error('Guesses are not accepted via PM.')
-			await client.send_message(message.channel, msg_start, embed=embed)
-		if message.channel.id != '201130047736643584':
+			msg_start = (
+				'**`>`**``{name}``**`$`**{indisp}\n'
+			).format(
+				name=wrapbackticks(m.author.name),
+				indisp=indisp,
+			)
+		if priv:
+			e = emb.error('Guesses are not accepted via PM.')
+			await client.send_message(m.channel, msg_start, embed=e)
+		if m.channel.id != '201130047736643584':
 			return
-		hangmanguessed = message.content[1:]
+		hangmanguessed = m.content[1:]
 
 		if len(hangmanguessed) == 1:
 			# Have we already used that letter? And is it a valid letter?
 			if alphabet.find(hangmanguessed.upper()) == -1:
-				embed = emb.error('The character ``{}`` is invalid.'.format(wrapbackticks(hangmanguessed.upper())))
-				await client.send_message(message.channel, msg_start, embed=embed)
+				e = emb.error(
+					'The character ``{}`` is invalid.'
+					.format(wrapbackticks(hangmanguessed.upper()))
+				)
+				await client.send_message(m.channel, msg_start, embed=e)
 				return
 			if guessedletters[alphabet.find(hangmanguessed.upper())]:
-				embed = emb.error('The letter **{}** has already been used.'.format(hangmanguessed.upper()))
-				await client.send_message(message.channel, msg_start, embed=embed)
+				e = emb.error(
+					'The letter **{}** has already been used.'
+					.format(hangmanguessed.upper())
+				)
+				await client.send_message(m.channel, msg_start, embed=e)
 				return
 			# Ok, so does this letter occur in the word?
 			if hangmanchosenword.upper().find(hangmanguessed.upper()) != -1:
 				# Set the guessed letter correctly
 				guessedletters[alphabet.find(hangmanguessed.upper())] = True
 
-				content = '**{}** is correct!\n{}'.format(hangmanguessed.upper(), hangmanworddisp(hangmanchosenword))
-				msg = msg_start + content
-				await client.send_message(message.channel, msg)
+				con = '**{ltr}** is correct!\n{worddisp}'.format(
+						ltr=hangmanguessed.upper(),
+						worddisp=hangmanworddisp(hangmanchosenword)
+					)
+				msg = msg_start + con
+				await client.send_message(m.channel, msg)
 
 				if algeraden:
 					hangmanactive = False
-					content = 'You guessed the word correctly! You made {} mistakes in total.'.format(hangmantotalattempts-hangmanattempts)
-					await client.send_message(message.channel, content)
+					con = (
+						'You guessed the word correctly!'
+						' You made {n} mistakes in total.'
+						.format(n=hangmantotalattempts-hangmanattempts)
+					)
+					await client.send_message(m.channel, con)
 					return
 			else:
 				# Set the guessed letter correctly, and it has to be a letter
@@ -357,62 +427,109 @@ async def on_message(message):
 
 				if hangmanattempts == 0:
 					hangmanactive = False
-					content = '**{}** is incorrect! Game over. The word was: **{}**'.format(hangmanguessed.upper(), hangmanchosenword)
-					msg = msg_start + content
-					await client.send_message(message.channel, msg)
+					con = (
+						'**{ltr}** is incorrect! Game over.'
+						' The word was: **{word}**'
+					).format(
+						ltr=hangmanguessed.upper(),
+						word=hangmanchosenword,
+					)
+					msg = msg_start + con
+					await client.send_message(m.channel, msg)
 					return
 				else:
-					if hangmanattempts == 1:
-						hangmans = 'attempt'
+					if hangmanattempts != 1:
+						plural = 's'
 					else:
-						hangmans = 'attempts'
-					content = '**{}** is incorrect! {} {} left.\n{}'.format(hangmanguessed.upper(), hangmanattempts, hangmans, hangmanworddisp(hangmanchosenword))
-					msg = msg_start + content
-					await client.send_message(message.channel, msg)
+						plural = ''
+					con = (
+						'**{ltr}** is incorrect!'
+						' {attempts} attempt{pl} left.\n'
+						'{worddisp}'
+					).format(
+						ltr=hangmanguessed.upper(),
+						attempts=hangmanattempts,
+						pl=plural,
+						worddisp=hangmanworddisp(hangmanchosenword),
+					)
+					msg = msg_start + con
+					await client.send_message(m.channel, msg)
 					return
 		else:
 			# We're guessing the entire word. Well, is it the word?
 			if hangmanguessed.lower() == hangmanchosenword.lower():
 				hangmanactive = False
-				content = 'You guessed the word ({}) correctly! You made {} mistakes in total.'.format(hangmanchosenword, hangmantotalattempts-hangmanattempts)
-				msg = msg_start + content
-				await client.send_message(message.channel, msg)
+				con = (
+					'You guessed the word ({word}) correctly!'
+					' You made {n} mistakes in total.'
+				).format(
+					word=hangmanchosenword,
+					n=hangmantotalattempts-hangmanattempts,
+				)
+				msg = msg_start + con
+				await client.send_message(m.channel, msg)
 				return
 			elif len(hangmanguessed) != len(hangmanchosenword):
 				# We're not even trying. It's not the same length.
-				if len(hangmanguessed) == 0: # if before was "not even trying", this is -1 trying
-					embed = emb.error('You should probably enter in a letter.')
-					await client.send_message(message.channel, msg_start, embed=embed)
+
+				# if before was "not even trying", this is -1 trying
+				if len(hangmanguessed) == 0:
+					e = emb.error('You should probably enter in a letter.')
+					await client.send_message(m.channel, msg_start, embed=e)
 					return
-				embed = emb.error('**``{}``** isn’t even the same length as the correct word. Please try again.'.format(wrapbackticks(hangmanguessed)))
-				await client.send_message(message.channel, msg_start, embed=embed)
+				e = emb.error(
+					(
+						'**``{guess}``** isn’t even the same length'
+						' as the correct word. Please try again.'
+					).format(
+						guess=wrapbackticks(hangmanguessed)
+					)
+				)
+				await client.send_message(m.channel, msg_start, embed=e)
 				return
 			else:
 				hangmanattempts -= 1
 
 				if hangmanattempts == 0:
 					hangmanactive = False
-					msg = msg_start + content
-					content = '**{}** is not the word! Game over. The word was: **{}**'.format(hangmanguessed, hangmanchosenword)
-					await client.send_message(message.channel, msg)
+					con = (
+						'**{guess}** is not the word! Game over.'
+						' The word was: **{word}**'
+					).format(
+						guess=hangmanguessed,
+						word=hangmanchosenword,
+					)
+					msg = msg_start + con
+					await client.send_message(m.channel, msg)
 					return
 				else:
-					content = '**{}** is not the word! {} attempts left.\n{}'.format(hangmanguessed, hangmanattempts, hangmanworddisp(hangmanchosenword))
-					msg = msg_start + content
-					await client.send_message(message.channel, msg)
+					con = (
+						'**{guess}** is not the word!'
+						' {n} attempts left.\n{worddisp}'
+					).format(
+						guess=hangmanguessed,
+						n=hangmanattempts,
+						worddisp=hangmanworddisp(hangmanchosenword),
+					)
+					msg = msg_start + con
+					await client.send_message(m.channel, msg)
 					return
 
-		return # make sure it always returns
+		return
 
 	elif altinvokeractive:
-		command = message.content.split(altinvoker, 1)[1]
-		clean_command = message.clean_content.split(altinvoker, 1)[1]
-		msg_start = '**`>`**``{}``**`{}`**{}\n'.format(wrapbackticks(message.author.name), invokesymbol, displaymessagecontent) # shows what the user put in, without main invoker
+		command = m.content.split(altinvoker, 1)[1]
+		clean_command = m.clean_content.split(altinvoker, 1)[1]
 	else:
-		command = message.content.split(invoker, 1)[1] # removes invoker from the message
-		clean_command = message.clean_content.split(invoker, 1)[1]
-		msg_start = '**`>`**``{}``**`{}`**{}\n'.format(wrapbackticks(message.author.name), invokesymbol, displaymessagecontent) # shows what the user put in
-
+		command = m.content.split(invoker, 1)[1]
+		clean_command = m.clean_content.split(invoker, 1)[1]
+	msg_start = (
+		'**`>`**``{name}``**`{invsym}`**{indisp}\n'
+	).format(
+		name=wrapbackticks(m.author.name),
+		invsym=invokesymbol,
+		indisp=indisp,
+	)
 	try:
 		arguments = command.split(' ', 1)[1]
 		clean_arguments = clean_command.split(' ', 1)[1]
@@ -422,33 +539,52 @@ async def on_message(message):
 	command = command.split(' ', 1)[0]
 	clean_command = clean_command.split(' ', 1)[0]
 	# Prevent access to those who aren't supposed to send messages
-	if not isprivate and not is_mod(message.author) and message.channel.id != '201130047736643584' and message.server.id == productionserver and \
-	not (is_dev(message.author) and message.channel.id == '238423391571279872') and \
-	not command in ['rule','rules','rulefind','rulesfind'] and \
-	not (message.channel.id == '256924583737819146' and command in ['votevoicemute', 'vy', 'vn']):
+	# But react to the message as a hint to the message sender
+	if not priv and \
+	not is_mod(m.author) and \
+	m.channel.id != '201130047736643584' and \
+	m.server.id == productionserver and \
+	not (is_dev(m.author) and m.channel.id == '238423391571279872') and \
+	not command in ['rule', 'rules', 'rulefind', 'rulesfind'] and \
+	not (m.channel.id == '256924583737819146' and command in ['votevoicemute', 'vy', 'vn']):
 		if is_valid_command(command) and command != '':
-			await client.add_reaction(message, discord.utils.get(message.server.emojis, id='262051482549878796'))
+			await client.add_reaction(
+				m,
+				discord.utils.get(
+					m.server.emojis,
+					id='262051482549878796',
+				),
+			)
 		return
-	if not isprivate and message.server.id == tntgbserver and message.channel != botschannel_tntgb and not is_tntgb_mod(message.author):
+	if not priv and \
+	m.server.id == tntgbserver and \
+	m.channel != botschannel_tntgb and \
+	not is_tntgb_mod(m.author):
 		# Delete all new messages in the join channel on TNTGB
-		if message.channel.id == joinchannel_tntgb:
+		if m.channel.id == joinchannel_tntgb:
 			if command == 'join':
 				pass #nyi
-			await client.delete_message(message)
+			await client.delete_message(m)
 		return
-	if not isprivate and command in config.get_s('disabledcommands', message.server.id):
-		embed = emb.error('This command is currently disabled{}.'.format(' on this server' if config.is_detached('disabledcommands', message.server.id) else ''))
-		await reply(message, emb=embed)
+	if not priv and command in config.get_s('disabledcommands', m.server.id):
+		e = emb.error('This command is currently disabled{onthisserv}.'.format(
+			onthisserv=(
+				' on this server'
+				if config.is_detached('disabledcommands', m.server.id) else
+				'')
+			)
+		)
+		await reply(m, emb=e)
 		return
 
-	if isprivate and command in config.get_s('disabledcommands'):
-		embed = emb_error('This command is currently disabled.')
-		await reply(message, emb=embed)
+	if priv and command in config.get_s('disabledcommands'):
+		e = emb_error('This command is currently disabled.')
+		await reply(m, emb=e)
 
 	# Commands that cannot be the name of a function
 	if command == '':
-		content = (
-			'<@{}>\n'
+		con = m.author.mention + (
+			'\n'
 			'```fix\n'
 			'Luigi: have you ever by accident pressed another key at the same time you have pressed enter?\'\n'
 			'Luigi: ugh\n'
@@ -479,16 +615,19 @@ async def on_message(message):
 			'ShinyWolf07: ...\n'
 			'ShinyWolf07: sigh\n'
 			'Luigi: 10/10 would watch again```'
-			).format(message.author.id)
-		await reply(message, content)
+		)
+		await reply(m, con)
 		return
 	elif command == '*formatting*':
-		content = 'That’s italicized formatting.'
-		await reply(message, content)
+		con = 'That’s italicized formatting.'
+		await reply(m, con)
 		return
 	elif command == '/r/undertale':
-		content = 'They banned someone for posting an honest review of Undertale. Seriously, don’t go there if you don’t want to be censored.'
-		await reply(message, content)
+		con = (
+			'They banned someone for posting an honest review of Undertale.'
+			' Seriously, don’t go there if you don’t want to be censored.'
+		)
+		await reply(m, con)
 		return
 
 	if command in commands:
@@ -496,32 +635,36 @@ async def on_message(message):
 	else:
 		# Check if it's an alias
 		for c, p in commands.items():
-			if p[2] != None:
-				if command in p[2]:
-					cmdisalias = True
-					func = commands[c]
-					break
+			if p[2] != None and command in p[2]:
+				cmdisalias = True
+				func = commands[c]
+				break
 		else:
 			cmdisalias = False
 		if not cmdisalias:
 			if altinvokeractive:
-				return # do not print error message if command is invalid
+				return
 			else:
-				embed = emb.warning('Invalid command. Input `\help` for a list of valid commands.')
-				await reply(message, emb=embed)
+				e = emb.warning(
+					(
+						'Invalid command. Input `\help` for'
+						' a list of valid commands.'
+					)
+				)
+				await reply(m, emb=e)
 				return
 	if func[1] != None:
-		if not func[1](message.author):
-			embed = emb.error(t['you_no_permission'])
-			logfailedcommand(command, arguments, message)
-			await reply(message, emb=embed)
+		if not func[1](m.author):
+			e = emb.error(t['you_no_permission'])
+			logfailedcommand(command, arguments, m)
+			await reply(m, emb=e)
 			return
 	kwargs = {
 		'command': command,
 		'arguments': arguments,
 		'clean_arguments': clean_arguments,
 	}
-	await func[0](client, message, **kwargs)
+	await func[0](client, m, **kwargs)
 
 @client.event
 async def on_message_delete(message): # when a message gets deleted
