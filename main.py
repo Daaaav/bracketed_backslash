@@ -238,7 +238,7 @@ def shadow(auth=None, aliases=None):
 		commands[name] = [func, auth, aliases]
 	return living_shadow
 
-@client.event()
+@client.event
 async def on_message(m):
 	if m.author == client.user:
 		return
