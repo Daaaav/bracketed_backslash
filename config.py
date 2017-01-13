@@ -209,7 +209,7 @@ def load():
 	loaddefaultsettings()
 
 	try:
-		with open('bot_config.json', 'r') as infile:
+		with open('config.json', 'r') as infile:
 			loadedconfig = json.load(infile)
 
 		for loadedsetting in loadedconfig:
