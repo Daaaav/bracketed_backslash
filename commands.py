@@ -635,7 +635,7 @@ async def expires(client, message, **kwargs):
 	embed = emb.success('Roles for <@{}> will be reset {}'.format(targetmemberid, reltime(expirytime)))
 	await reply(message, emb=embed)
 
-@shadow(auth=is_mod)
+@shadow()
 async def expirylist(client, message, **kwargs):
 	if message.server.id != productionserver:
 		embed = emb.error(t['production_only'])

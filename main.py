@@ -281,28 +281,25 @@ async def on_message(m):
 		indisp += '``'
 	priv = isprivatemessage(m.server)
 
-	try:
-		if not priv and m.author.status == discord.Status.offline and \
-		not logdisabled('invisible_sentmessage', m.server):
-			e = discord.Embed(
-				title=(
-					':ghost:INVISIBLE WHILE SENDING MESSAGE IN {chanmen}'
-				).format(
-					chanmen=m.channel.mention
-				),
-				description=m.content,
-				colour=m.author.colour
-			)
-			e.set_author(
-				name=m.author.display_name,
-				icon_url=m.author.avatar_url,
-				url=infourl(
-					'userid={0.author.id}&messageid={0.id}'
-				).format(m)
-			)
-			await client.send_message(schan, embed=e)
-	except AttributeError:
-		return
+	if not priv and m.author.status == discord.Status.offline and \
+	not logdisabled('invisible_sentmessage', m.server):
+		e = discord.Embed(
+			title=(
+				':ghost:INVISIBLE WHILE SENDING MESSAGE IN {chanmen}'
+			).format(
+				chanmen=m.channel.mention
+			),
+			description=m.content,
+			colour=m.author.colour
+		)
+		e.set_author(
+			name=m.author.display_name,
+			icon_url=m.author.avatar_url,
+			url=infourl(
+				'userid={0.author.id}&messageid={0.id}'
+			).format(m)
+		)
+		await client.send_message(schan, embed=e)
 
 	if not priv and m.tts:
 		e = discord.Embed(
@@ -324,7 +321,7 @@ async def on_message(m):
 		)
 		await client.send_message(schan, embed=e)
 
-	if m.attachments != []:
+	if not priv and m.attachments != []:
 		a = await fetch(m.attachments[0]['url'])
 		fn = (
 			'{atchcche}/{id}_{fn}'
@@ -337,7 +334,7 @@ async def on_message(m):
 			f.write(a)
 			f.close()
 
-	if m.embeds != []:
+	if not priv and m.embeds != []:
 		for n, e in enumerate(m.embeds):
 			if e['type'] == 'image':
 				# get the filename from the url
@@ -1018,7 +1015,7 @@ async def on_reaction_add(r, u):
 		url=infourl('userid={}&messageid={}'.format(u.id, r.message.id))
 	)
 	mdetails = '**{name}**#{discrim}'.format(
-		name=mdspecialchars(u.display_name),
+		name=mdspecialchars(u.name),
 		discrim=u.discriminator,
 	)
 	if u.status == discord.Status.offline:
@@ -1069,7 +1066,7 @@ async def on_reaction_remove(r, u):
 		url=infourl('userid={}&messageid={}'.format(u.id, r.message.id))
 	)
 	mdetails = '**{name}**#{discrim}'.format(
-		name=mdspecialchars(u.display_name),
+		name=mdspecialchars(u.name),
 		discrim=u.discriminator,
 	)
 	if u.status == discord.Status.offline:
@@ -1088,7 +1085,7 @@ async def on_reaction_remove(r, u):
 			(
 				'{name} ({id})'.format(
 					name=emotename,
-					id=r.id,
+					id=r.emoji.id,
 				)
 			)
 		),
@@ -1236,7 +1233,7 @@ async def on_voice_state_update(before, after):
 
 @client.event
 async def on_channel_create(c):
-	if isprivatemessage(c) or logdisabled('channel_add', c.server):
+	if c.type == discord.ChannelType.private or logdisabled('channel_add', c.server):
 		return
 	schan = getspecialchannel(c.server)
 	embed = discord.Embed(
@@ -1249,7 +1246,7 @@ async def on_channel_create(c):
 
 @client.event
 async def on_channel_delete(c):
-	if isprivatemessage(c) or logdisabled('channel_remove', c.server):
+	if c.type == discord.ChannelType.private or logdisabled('channel_remove', c.server):
 		return
 	schan = getspecialchannel(c.server)
 	embed = discord.Embed(
