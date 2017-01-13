@@ -1233,7 +1233,7 @@ async def on_voice_state_update(before, after):
 
 @client.event
 async def on_channel_create(c):
-	if isprivatemessage(c) or logdisabled('channel_add', c.server):
+	if c.type == discord.ChannelType.private or logdisabled('channel_add', c.server):
 		return
 	schan = getspecialchannel(c.server)
 	embed = discord.Embed(
