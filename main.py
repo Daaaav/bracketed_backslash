@@ -1246,7 +1246,7 @@ async def on_channel_create(c):
 
 @client.event
 async def on_channel_delete(c):
-	if isprivatemessage(c) or logdisabled('channel_remove', c.server):
+	if c.type == discord.ChannelType.private or logdisabled('channel_remove', c.server):
 		return
 	schan = getspecialchannel(c.server)
 	embed = discord.Embed(
