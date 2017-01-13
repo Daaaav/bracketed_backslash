@@ -281,28 +281,25 @@ async def on_message(m):
 		indisp += '``'
 	priv = isprivatemessage(m.server)
 
-	try:
-		if not priv and m.author.status == discord.Status.offline and \
-		not logdisabled('invisible_sentmessage', m.server):
-			e = discord.Embed(
-				title=(
-					':ghost:INVISIBLE WHILE SENDING MESSAGE IN {chanmen}'
-				).format(
-					chanmen=m.channel.mention
-				),
-				description=m.content,
-				colour=m.author.colour
-			)
-			e.set_author(
-				name=m.author.display_name,
-				icon_url=m.author.avatar_url,
-				url=infourl(
-					'userid={0.author.id}&messageid={0.id}'
-				).format(m)
-			)
-			await client.send_message(schan, embed=e)
-	except AttributeError:
-		return
+	if not priv and m.author.status == discord.Status.offline and \
+	not logdisabled('invisible_sentmessage', m.server):
+		e = discord.Embed(
+			title=(
+				':ghost:INVISIBLE WHILE SENDING MESSAGE IN {chanmen}'
+			).format(
+				chanmen=m.channel.mention
+			),
+			description=m.content,
+			colour=m.author.colour
+		)
+		e.set_author(
+			name=m.author.display_name,
+			icon_url=m.author.avatar_url,
+			url=infourl(
+				'userid={0.author.id}&messageid={0.id}'
+			).format(m)
+		)
+		await client.send_message(schan, embed=e)
 
 	if not priv and m.tts:
 		e = discord.Embed(
