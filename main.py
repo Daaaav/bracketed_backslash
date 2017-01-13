@@ -321,7 +321,7 @@ async def on_message(m):
 		)
 		await client.send_message(schan, embed=e)
 
-	if m.attachments != []:
+	if not priv and m.attachments != []:
 		a = await fetch(m.attachments[0]['url'])
 		fn = (
 			'{atchcche}/{id}_{fn}'
@@ -334,7 +334,7 @@ async def on_message(m):
 			f.write(a)
 			f.close()
 
-	if m.embeds != []:
+	if not priv and m.embeds != []:
 		for n, e in enumerate(m.embeds):
 			if e['type'] == 'image':
 				# get the filename from the url
