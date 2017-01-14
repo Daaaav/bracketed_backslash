@@ -282,7 +282,7 @@ async def on_message(m):
 		indisp += '``'
 	priv = isprivatemessage(m.server)
 
-	if not priv and m.author.status == discord.Status.offline and \
+	if type(m.author) != discord.User and m.author.status == discord.Status.offline and \
 	not logdisabled('invisible_sentmessage', m.server):
 		e = discord.Embed(
 			title=(
