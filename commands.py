@@ -110,6 +110,8 @@ async def configure(client, message, **kwargs):
 
 	splitargs = kwargs['arguments'].split(' ', 2)
 
+	editingmaster = False
+
 	if splitargs[0] == 'set':
 		if not config.exists(splitargs[1]):
 			embed = emb.error('That setting does not exist')
@@ -125,11 +127,16 @@ async def configure(client, message, **kwargs):
 			return
 		try:
 			config.set_s(splitargs[1], splitargs[2], message.server.id)
+			editingmaster = config.is_detached(splitargs[1], message.server.id)
 		except AttributeError:
 			config.set_s(splitargs[1], splitargs[2])
 		config.saveconfig()
 		logcommand(kwargs['command'], kwargs['arguments'], message)
-		embed = emb.success('Set `{}` to `{}`'.format(splitargs[1], wrapbackticks(splitargs[2])))
+		embed = emb.success('Set `{}` to `{}`{}'.format(
+				splitargs[1], wrapbackticks(splitargs[2]),
+				t['editingmasterval'] if editingmaster else ''
+			)
+		)
 		await reply(message, emb=embed)
 	elif splitargs[0] == 'get':
 		if not config.exists(splitargs[1]):
@@ -173,15 +180,25 @@ async def configure(client, message, **kwargs):
 		if splitargs[0] == 'insert':
 			try:
 				config.insert_s(splitargs[1], splitargs[2], message.server.id)
+				editingmaster = config.is_detached(splitargs[1], message.server.id)
 			except AttributeError:
 				config.insert_s(splitargs[1], splitargs[2])
-			embed = emb.success('Inserted `{}` into array `{}`'.format(wrapbackticks(splitargs[2]), splitargs[1]))
+			embed = emb.success('Inserted `{}` into array `{}`'.format(
+					wrapbackticks(splitargs[2]), splitargs[1],
+					t['editingmasterval'] if editingmaster else ''
+				)
+			)
 		else:
 			try:
 				config.remove_s(splitargs[1], splitargs[2], message.server.id)
+				editingmaster = config.is_detached(splitargs[1], message.server.id)
 			except AttributeError:
 				config.remove_s(splitargs[1], splitargs[2])
-			embed = emb.success('Removed `{}` from array `{}`'.format(wrapbackticks(splitargs[2]), splitargs[1]))
+			embed = emb.success('Removed `{}` from array `{}`'.format(
+					wrapbackticks(splitargs[2]), splitargs[1],
+					t['editingmasterval'] if editingmaster else ''
+				)
+			)
 		config.saveconfig()
 		logcommand(kwargs['command'], kwargs['arguments'], message)
 		await reply(message, emb=embed)
