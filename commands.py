@@ -716,9 +716,7 @@ async def rolecacheadd(client, message, **kwargs):
 		return
 
 	if splitargs[0] not in memberroles[message.server.id]:
-		embed = emb.error('Member {} cannot be found in the role cache. Please note you have to enter an ID, not any form of name!'.format(kwargs['arguments']))
-		await reply(message, emb=embed)
-		return
+		memberroles[message.server.id][splitargs[0]] = []
 
 	memberroles[message.server.id][splitargs[0]].append(splitargs[1])
 	rolecachesave()
