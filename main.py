@@ -162,8 +162,9 @@ async def on_ready():
 			rcwarnings = ''
 			for mem in client.get_server(ser).members:
 				if not str(mem.id) in memberroles[ser]:
-					rcwarnings += '\nUser {}#{} ({}) is not in the cache! (They’re suddenly in the server.) Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
-					memberroles[ser][str(mem.id)] = list(rolelist(mem.roles)) # Possibly redundant list() tbh, just making sure since I can't test and I don't know python well enough to know whether it's redundant
+					if len(mem.roles) >= 2:
+						rcwarnings += '\nUser {}#{} ({}) is not in the cache! (They’re suddenly in the server.) Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
+						memberroles[ser][str(mem.id)] = list(rolelist(mem.roles)) # Possibly redundant list() tbh, just making sure since I can't test and I don't know python well enough to know whether it's redundant
 					continue
 				if set(memberroles[ser][str(mem.id)]) != set(rolelist(mem.roles)):
 					rcwarnings += (
@@ -373,6 +374,11 @@ async def on_message(m):
 		hangmaninvokeractive = True
 		pass
 	else:
+		# Not of the bot's interest, but is this in the join channel for this server?
+		if not priv and \
+		config.get_s('rolecachemode', m.server.id) == 2 and \
+		m.channel.id == config.get_s('joinchannel', m.server.id):
+			await client.delete_message(m)
 		return
 
 	if priv:
