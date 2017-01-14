@@ -177,6 +177,7 @@ async def reply(messageobject, message=None, emb=None):
 				'\tType: {chantype}\n'
 				'\tName: {chan.name}\n'
 				'\tID: {chan.id}\n'
+				'\n'
 				'The content of the rejected message is:\n'
 				'\t{con}\n'
 				'The rich embed of the rejected message is:\n'
