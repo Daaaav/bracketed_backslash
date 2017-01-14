@@ -687,6 +687,7 @@ async def on_message(m):
 		'command': command,
 		'arguments': arguments,
 		'clean_arguments': clean_arguments,
+		'invokesymbol': invokesymbol,
 	}
 	await func[0](client, m, **kwargs)
 
