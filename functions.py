@@ -147,10 +147,49 @@ async def reply(messageobject, message=None, emb=None):
 		else:
 			await client.send_message(messageobject.channel, '\n'.join(contentlines[cut:]))
 		return
-	if emb != None:
-		await client.send_message(messageobject.channel, msg_start + message, embed=emb)
-	else:
-		await client.send_message(messageobject.channel, msg_start + message)
+	try:
+		if emb != None:
+			await client.send_message(
+				messageobject.channel,
+				msg_start + message,
+				embed=emb,
+			)
+		else:
+			await client.send_message(messageobject.channel, msg_start + message)
+	except(discord.errors.HTTPException, discord.errors.Forbidden) as e:
+		if messageobject.channel.type == discord.ChannelType.private:
+			servinfo = '\t(direct message)\n'
+		else:
+			servinfo = (
+				'\tName: {0.name}\n'
+				'\tID: {0.id}\n'
+			).format(messageobject.server)
+		if emb == None:
+			dispemb = '\t(none)\n'
+		else:
+			dispemb = str(emb.to_dict())
+		logging.info(
+			(
+				'A message reply() was rejected, with exception {excpt}\n'
+				'The server it was attemped to be sent to is:\n'
+				'\t{servinfo}\n'
+				'The channel it was attempted to be sent to is:\n'
+				'\tType: {chantype}\n'
+				'\tName: {chan.name}\n'
+				'\tID: {chan.id}\n'
+				'The content of the rejected message is:\n'
+				'\t{con}\n'
+				'The rich embed of the rejected message is:\n'
+				'\t{emb}\n'
+			).format(
+				excpt=type(e).__name__,
+				servinfo=servinfo,
+				chantype=str(messageobject.channel.type).title(),
+				chan=messageobject.channel,
+				con=msg_start + message,
+				emb=dispemb,
+			)
+		)
 
 @client.event
 async def replyattach(messageobject, filetoattach, fname, message=''):
