@@ -507,5 +507,43 @@ def respondtorule(rule):
 		return 'Funny and original, nothing to see here.'
 	return 'Wow, you’re the FIRST one to come up with that. I wish I could be as funny as you, I dunno how I’m ever gonna top "rule {}", though. That shit is genius.'.format(rule)
 
+@client.event
+async def newmemberroles(member, specialchannel, bypassjoinchannel):
+	if config.get_s('rolecachemode', member.server.id) == 1 and is_bot(member):
+		# Give them the bot roles!
+		addingtheseroles = []
+		for rid in config.get_s('defaultbotroles', member.server.id):
+			addingtheseroles.append(
+				discord.utils.get(member.server.roles, id=rid)
+			)
+		await client.add_roles(member, *addingtheseroles) # bot role
+		return
+
+	if config.get_s('rolecachemode', member.server.id) != 0 and member.server.id in memberroles:
+		# Are they in our database of members which had roles before?
+		if member.id in memberroles[member.server.id]:
+			addingtheseroles = []
+			# They're found in the database! Give them the groups they should have
+			for rid in memberroles[member.server.id][member.id]:
+				addingrole = discord.utils.get(member.server.roles, id=rid)
+				if addingrole.is_everyone:
+					continue
+				addingtheseroles.append(addingrole)
+			await client.add_roles(member, *addingtheseroles)
+			content = '<@!{id}> ({id}) found in the role cache\n'.format(id=member.id)
+			value = '_{} role'.format(str(len(addingtheseroles)))
+			value += 's:' if len(addingtheseroles) != 1 else ':'
+			value += listroles(addingtheseroles) + '_'
+			content += 'Given them back their roles:\n' + value
+			await client.send_message(specialchannel, content)
+		elif config.get_s('rolecachemode', member.server.id) == 1 or bypassjoinchannel:
+			# Not found, so just give them the default roles
+			addingtheseroles = []
+			for rid in config.get_s('defaultroles', member.server.id):
+				addingtheseroles.append(
+					discord.utils.get(member.server.roles, id=rid)
+				)
+			await client.add_roles(member, *addingtheseroles)
+
 def setglobal(s, x):
 	globals()[s] = x

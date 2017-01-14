@@ -77,7 +77,14 @@ configs = {
 		'detachable': True,
 		'shown': True,
 	},
-	# TODO: joinchannel for mode 2
+	'joinchannel': {
+		'default': '0',
+		'type': 'cid',
+		'is_array': False,
+		'expl': 'The channel in which new members have to send a \join message before being given the default role(s).',
+		'detachable': True,
+		'shown': True,
+	},
 	'specialchannel': {
 		'default': '0',
 		'type': 'cid',

@@ -561,6 +561,14 @@ async def on_message(m):
 	command = command.split(' ', 1)[0]
 	clean_command = clean_command.split(' ', 1)[0]
 	# Prevent access to those who aren't supposed to send messages
+	if not priv and \
+	config.get_s('rolecachemode', m.server.id) == 2 and \
+	m.channel.id == config.get_s('joinchannel', m.server.id):
+		# Join channel
+		if command == 'join' and len(m.author.roles) <= 1:
+			await newmemberroles(m.author, getspecialchannel(m.server), True)
+		await client.delete_message(m)
+		return
 	# But react to the message as a hint to the message sender
 	if not priv and \
 	not is_mod(m.author) and \
@@ -582,11 +590,6 @@ async def on_message(m):
 	m.server.id == tntgbserver and \
 	m.channel != botschannel_tntgb and \
 	not is_tntgb_mod(m.author):
-		# Delete all new messages in the join channel on TNTGB
-		if m.channel.id == joinchannel_tntgb:
-			if command == 'join':
-				pass #nyi
-			await client.delete_message(m)
 		return
 	if not priv and command in config.get_s('disabledcommands', m.server.id):
 		e = emb.error('This command is currently disabled{onthisserv}.'.format(
@@ -846,41 +849,7 @@ async def on_member_join(member):
 	embed.set_author(name=member.display_name)
 	embed.set_thumbnail(url=member.avatar_url)
 	await client.send_message(specialchannel, embed=embed)
-	if config.get_s('rolecachemode', member.server.id) == 1 and is_bot(member):
-		# Give them the bot roles!
-		addingtheseroles = []
-		for rid in config.get_s('defaultbotroles', member.server.id):
-			addingtheseroles.append(
-				discord.utils.get(member.server.roles, id=rid)
-			)
-		await client.add_roles(member, *addingtheseroles) # bot role
-		return
-
-	if config.get_s('rolecachemode', member.server.id) != 0 and member.server.id in memberroles:
-		# Are they in our database of members which had roles before?
-		if member.id in memberroles[member.server.id]:
-			addingtheseroles = []
-			# They're found in the database! Give them the groups they should have
-			for rid in memberroles[member.server.id][member.id]:
-				addingrole = discord.utils.get(member.server.roles, id=rid)
-				if addingrole.is_everyone:
-					continue
-				addingtheseroles.append(addingrole)
-			await client.add_roles(member, *addingtheseroles)
-			content = '<@!{id}> ({id}) found in the role cache\n'.format(id=member.id)
-			value = '_{} role'.format(str(len(addingtheseroles)))
-			value += 's:' if len(addingtheseroles) != 1 else ':'
-			value += listroles(addingtheseroles) + '_'
-			content += 'Given them back their roles:\n' + value
-			await client.send_message(specialchannel, content)
-		elif config.get_s('rolecachemode', member.server.id) == 1:
-			# Not found, so just give them the default roles
-			addingtheseroles = []
-			for rid in config.get_s('defaultroles', member.server.id):
-				addingtheseroles.append(
-					discord.utils.get(member.server.roles, id=rid)
-				)
-			await client.add_roles(member, *addingtheseroles)
+	await newmemberroles(member, specialchannel, False)
 
 @client.event
 async def on_member_remove(member):
