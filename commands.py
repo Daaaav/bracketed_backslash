@@ -292,6 +292,7 @@ async def hangman(client, message, **kwargs):
 
 @shadow()
 async def stophangman(client, message, **kwargs):
+	global hangmanactive
 	if not hangmanactive:
 		embed = emb.error('Can’t abort hangman because it’s not running.')
 		await reply(message, emb=embed)
