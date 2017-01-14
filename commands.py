@@ -254,6 +254,7 @@ async def echo(client, message, **kwargs):
 
 @shadow()
 async def hangman(client, message, **kwargs):
+	global hangmanactive
 	if hangmanactive:
 		embed = emb.error('Hangman is already running. It can be aborted by the starter or by a mod with `\stophangman`.')
 		await reply(message, emb=embed)
