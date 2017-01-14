@@ -110,7 +110,7 @@ async def configure(client, message, **kwargs):
 
 	splitargs = kwargs['arguments'].split(' ', 2)
 
-	editingmaster = False
+	editingmaster = True
 
 	if splitargs[0] == 'set':
 		if not config.exists(splitargs[1]):
@@ -127,7 +127,7 @@ async def configure(client, message, **kwargs):
 			return
 		try:
 			config.set_s(splitargs[1], splitargs[2], message.server.id)
-			editingmaster = config.is_detached(splitargs[1], message.server.id)
+			editingmaster = not config.is_detached(splitargs[1], message.server.id)
 		except AttributeError:
 			config.set_s(splitargs[1], splitargs[2])
 		config.saveconfig()
@@ -180,7 +180,7 @@ async def configure(client, message, **kwargs):
 		if splitargs[0] == 'insert':
 			try:
 				config.insert_s(splitargs[1], splitargs[2], message.server.id)
-				editingmaster = config.is_detached(splitargs[1], message.server.id)
+				editingmaster = not config.is_detached(splitargs[1], message.server.id)
 			except AttributeError:
 				config.insert_s(splitargs[1], splitargs[2])
 			embed = emb.success('Inserted `{}` into array `{}`'.format(
@@ -191,7 +191,7 @@ async def configure(client, message, **kwargs):
 		else:
 			try:
 				config.remove_s(splitargs[1], splitargs[2], message.server.id)
-				editingmaster = config.is_detached(splitargs[1], message.server.id)
+				editingmaster = not config.is_detached(splitargs[1], message.server.id)
 			except AttributeError:
 				config.remove_s(splitargs[1], splitargs[2])
 			embed = emb.success('Removed `{}` from array `{}`'.format(
