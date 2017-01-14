@@ -172,7 +172,7 @@ async def reply(messageobject, message=None, emb=None):
 			(
 				'A message reply() was rejected, with exception {excpt}\n'
 				'The server it was attemped to be sent to is:\n'
-				'\t{servinfo}\n'
+				'{servinfo}\n'
 				'The channel it was attempted to be sent to is:\n'
 				'\tType: {chantype}\n'
 				'\tName: {chan.name}\n'
