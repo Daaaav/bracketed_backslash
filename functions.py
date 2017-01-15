@@ -512,11 +512,11 @@ async def autoExpiry():
 						),
 						thisexpiry['msgedit_message']
 					)
-					if thisexpires['msgedit_newcontent'] == '':
+					if thisexpiry['msgedit_newcontent'] == '':
 						await client.delete_message(getmessage)
 					else:
 						await client.edit_message(getmessage,
-							new_content=thisexpires['msgedit_newcontent']
+							new_content=thisexpiry['msgedit_newcontent']
 						)
 				if thisexpiry['msgpost_channel'] != '0':
 					# We want to announce it with a new message!
