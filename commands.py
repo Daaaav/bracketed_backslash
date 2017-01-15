@@ -648,9 +648,9 @@ async def expires(client, message, **kwargs):
 
 	rolexpires[message.server.id][targetmemberid] = {
 		'time': expirytime,
-		'msgedit_channel': '201130047736643584',
-		'msgedit_message': '270036485036703745',
-		'msgedit_newcontent': 'This message has just been edited for a test!',
+		'msgedit_channel': '0',
+		'msgedit_message': '0',
+		'msgedit_newcontent': '',
 		'msgpost_channel': '201130047736643584',
 		'msgpost_content': 'This feature works!',
 	}
