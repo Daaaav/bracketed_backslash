@@ -12,7 +12,7 @@ REM  Unfortunately Pyflakes doesn't understand exec(compile(open().read()))
 
 REM  Nor import. But hey, this works.
 @echo on
-C:\Users\U\AppData\Local\Programs\Python\Python35\Scripts\pyflakes concatenatedmain.py col.py config.py emb.py images.py server_configs.py
+C:\Users\U\AppData\Local\Programs\Python\Python35\Scripts\pyflakes concatenatedmain.py col.py config.py emb.py images.py
 
 @echo off
 pause
