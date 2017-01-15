@@ -1423,11 +1423,11 @@ async def tntgb_maint(client, message, **kwargs):
 @shadow(auth=is_operator)
 async def uploadfile(client, message, **kwargs):
 	global msg_start
-	if not os.path.abspath(kwargs['arguments']).startswith(os.getcwd()):
-		e = emb.error('Cannot access paths above working directory.')
-		await reply(message, emb=e)
-		return
 	try:
+		if not os.path.abspath(kwargs['arguments']).startswith(os.getcwd()):
+			e = emb.error('Cannot access paths above working directory.')
+			await reply(message, emb=e)
+			return
 		await client.send_file(
 			message.channel,
 			kwargs['arguments'],
@@ -1438,7 +1438,7 @@ async def uploadfile(client, message, **kwargs):
 		e = emb.error('That file does not exist.')
 	except IsADirectoryError:
 		e = emb.error('That file is a directory.')
-	except TypeError:
+	except AttributeError:
 		e = emb.error('You should probably enter in something.')
 	except:
 		e = emb.error('`Something happened : Something happened :(`')
