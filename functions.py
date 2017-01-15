@@ -494,6 +494,32 @@ async def autoExpiry():
 						rolecachesave()
 					else:
 						content += '\n<@!{}> was supposed to have their roles reset now, but they can be found neither on the server nor in the role cache!'.format(userid)
+
+				# Shorten the following thing so we don't have to keep typing it.
+				thisexpiry = rolexpires[serverid][userid]
+				if thisexpiry['msgedit_message'] != '0':
+					# We want to edit a message to reflect the ban!
+					getmessage = await client.get_message(
+						discord.utils.get(cserver.channels,
+							id=thisexpiry['msgedit_channel']
+						),
+						thisexpiry['msgedit_message']
+					)
+					if thisexpires['msgedit_newcontent'] == '':
+						await client.delete_message(getmessage)
+					else:
+						await client.edit_message(getmessage,
+							new_content=thisexpires['msgedit_newcontent']
+						)
+				if thisexpiry['msgpost_channel'] != '0':
+					# We want to announce it with a new message!
+					await client.send_message(
+						discord.utils.get(cserver.channels,
+							id=thisexpiry['msgpost_channel']
+						),
+						thisexpiry['msgpost_content']
+					)
+
 				successfulresets.append(userid)
 		for userid in successfulresets:
 			del rolexpires[serverid][userid]
