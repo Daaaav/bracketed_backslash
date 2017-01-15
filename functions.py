@@ -529,7 +529,7 @@ async def autoExpiry():
 
 				successfulresets.append(userid)
 		for userid in successfulresets:
-			del rolexpires[serverid][userid]
+			removeexpiryentry(serverid, userid)
 
 		if len(successfulresets) > 0:
 			if content == '':
@@ -554,10 +554,8 @@ async def removeRestrictiveRoles(member, server):
 			badroles.append(
 				discord.utils.get(server.roles, id=rid)
 			)
-		for rid in config.get_s(
-			'defaultbotroles' if member.bot else 'defaultroles',
-			server.id
-		):
+		for rid in config.get_s('defaultbotroles' if member.bot else 'defaultroles',
+		                        server.id):
 			addingtheseroles.append(
 				discord.utils.get(server.roles, id=rid)
 			)
@@ -586,6 +584,34 @@ async def removeRestrictiveRoles(member, server):
 			await client.remove_roles(member, *removingtheseroles)
 	except (AttributeError,TypeError) as e:
 		raise e
+
+def addexpiryentry(serverid, memberid, expirytime,
+                   e_channel='0', e_message='0', e_newcontent='',
+                   p_channel='0', p_content=''):
+	global rolexpires
+
+	if not serverid in rolexpires:
+		rolexpires[serverid] = {}
+
+	rolexpires[serverid][memberid] = {
+		'time': expirytime,
+		'msgedit_channel': e_channel,
+		'msgedit_message': e_message,
+		'msgedit_newcontent': e_newcontent,
+		'msgpost_channel': p_channel,
+		'msgpost_content': p_content,
+	}
+
+def removeexpiryentry(serverid, memberid):
+	global rolexpires
+
+	if not serverid in rolexpires:
+		return False
+
+	if not memberid in rolexpires[serverid]:
+		return False
+
+	del rolexpires[serverid][memberid]
 
 @client.event
 async def fetch(url):

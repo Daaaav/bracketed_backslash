@@ -596,19 +596,8 @@ async def vc(client, message, **kwargs):
 
 @shadow(auth=is_mod)
 async def rolerst(client, message, **kwargs):
-	if message.server.id != productionserver:
-		embed = emb.error(t['production_only'])
-		await reply(message, emb=embed)
-		return
-
 	try:
 		targetmember = get_member_input(message.server, kwargs['arguments'])
-		if not is_bot(targetmember) and not discord.utils.get(message.server.roles, id='231644869351833600') in targetmember.roles:
-			await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
-			embed = emb.warning('<@{}> didn’t have the tOLPer role, so I’ve added that back. To remove any restrictive roles, re-run this command.'.format(targetmember.id))
-			await reply(message, emb=embed)
-			return
-
 		await removeRestrictiveRoles(targetmember, message.server)
 	except(AttributeError, TypeError):
 		embed = emb.error(t['specify_user'])
@@ -643,17 +632,8 @@ async def expires(client, message, **kwargs):
 		targetmember = get_member_input(message.server, splitargs[1])
 		targetmemberid = targetmember.id
 
-	if not message.server.id in rolexpires:
-		rolexpires[message.server.id] = {}
+	addexpiryentry(message.server.id, targetmemberid, expirytime)
 
-	rolexpires[message.server.id][targetmemberid] = {
-		'time': expirytime,
-		'msgedit_channel': '201130047736643584',
-		'msgedit_message': '270036485036703745',
-		'msgedit_newcontent': 'This message has just been edited for a test!',
-		'msgpost_channel': '238423391571279872',
-		'msgpost_content': 'This feature works!',
-	}
 	rolexpiresave()
 	await handleExpiryTimer()
 
