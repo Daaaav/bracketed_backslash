@@ -442,7 +442,14 @@ async def handleExpiryTimer():
 		exptimer.cancel()
 		exptimer = None  # Because there's no Timer.isCanceled()
 
-	if len(rolexpires) == 0:
+	entriesleft = False
+
+	for serverid in rolexpires:  # Merge with next for maybe
+		if len(rolexpires[serverid]) > 0:
+			entriesleft = True
+			break
+
+	if not entriesleft:
 		# We're finished
 		logging.info('Did not set expiry timer because there\'s no expiry entry left')
 		return
