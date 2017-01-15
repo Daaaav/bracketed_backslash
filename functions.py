@@ -404,14 +404,15 @@ async def handleExpiryTimer():
 
 	if len(rolexpires) == 0:
 		# We're finished
-		logging.info('Did not set expiry timer')
+		logging.info('Did not set expiry timer because there\'s no expiry entry left')
 		return
 
 	timelowscore = 9999999999
 
-	for userid in rolexpires:
-		if rolexpires[userid] < timelowscore:
-			timelowscore = rolexpires[userid]
+	for serverid in rolexpires:
+		for userid in rolexpires[serverid]:
+			if rolexpires[serverid][userid]['time'] < timelowscore:
+				timelowscore = rolexpires[serverid][userid]['time']
 
 	if timelowscore <= int(time.time()):
 		logging.info('Immediately calling autoExpiry() because we’re overdue in resetting someone’s roles')
@@ -431,52 +432,85 @@ async def autoExpiry():
 	Actually resets roles
 	Calls back handleTimer to set the next timer
 	"""
-	global server, rolexpires, specialchannel_prod
+	# REMOVED FROM GLOBALS: server, specialchannel_prod
+	global rolexpires
 	now = int(time.time())
 
-	content = ''
-	successfulresets = []
-
 	# So apparently someone needs to be unbanned?
-	for userid in rolexpires:
-		if rolexpires[userid] <= now:
-			try:
-				await removeRestrictiveRoles(server.get_member(userid), server)
-				content += '\nRoles for <@!{}> reset.'.format(userid)
-			except (AttributeError, TypeError):
-				# Look if they are in the role cache, and reset it there instead.
-				if removerolecache(userid):
-					content += '\n<@!{}> was supposed to have their roles reset now, they aren’t on the server, but they’ve successfully been removed from the role cache.'.format(userid)
-					rolecachesave()
-				else:
-					content += '\n<@!{}> was supposed to have their roles reset now, but they can be found neither on the server nor in the role cache!'.format(userid)
-			successfulresets.append(userid)
-	for userid in successfulresets:
-		del rolexpires[userid]
+	for serverid in rolexpires:
+		content = ''
+		successfulresets = []
+
+		cserver = discord.utils.get(client.servers, id=serverid)
+		for userid in rolexpires[serverid]:
+			if rolexpires[serverid][userid]['time'] <= now:
+				try:
+					await removeRestrictiveRoles(cserver.get_member(userid), cserver)
+					content += '\nRoles for <@!{}> reset.'.format(userid)
+				except (AttributeError, TypeError):
+					# Look if they are in the role cache, and reset it there instead.
+					if removerolecache(userid, serverid):
+						content += '\n<@!{}> was supposed to have their roles reset now, they aren’t on the server, but they’ve successfully been removed from the role cache.'.format(userid)
+						rolecachesave()
+					else:
+						content += '\n<@!{}> was supposed to have their roles reset now, but they can be found neither on the server nor in the role cache!'.format(userid)
+				successfulresets.append(userid)
+		for userid in successfulresets:
+			del rolexpires[serverid][userid]
+
+		if len(successfulresets) > 0:
+			if content == '':
+				content = '\n(never mind, nobody has been found!)'
+
+			content = '**Auto expiry:**' + content
+
+			await client.send_message(getspecialchannel(cserver), content)
 
 	rolexpiresave()
-
-	if content == '':
-		content = '\n(never mind, nobody has been found!)'
-
-	content = '**Auto expiry:**' + content
-
-	await client.send_message(specialchannel_prod, content)
 
 	await handleExpiryTimer()
 
 @client.event
 async def removeRestrictiveRoles(member, server):
+	badroles = []
+	removingtheseroles = []
+	addingtheseroles = []
+	otherroles = []
 	try:
-		await client.remove_roles(member,
-			discord.utils.get(server.roles, id='173240966575161344'), # nonsense-only
-			discord.utils.get(server.roles, id='216647716531339264'), # no general mentions
-			discord.utils.get(server.roles, id='222046096216686592'), # no cedule
-			discord.utils.get(server.roles, id='215954720555139073'), # no tts
-			discord.utils.get(server.roles, id='220643748508467220'), # banned
-			discord.utils.get(server.roles, id='236925451216355338'), # tolper who cant change nickname
-			discord.utils.get(server.roles, id='241183168269516800'), # no reactions
-		)
+		for rid in config.get_s('restrictiveroles', server.id):
+			badroles.append(
+				discord.utils.get(server.roles, id=rid)
+			)
+		for rid in config.get_s(
+			'defaultbotroles' if member.bot else 'defaultroles',
+			server.id
+		):
+			addingtheseroles.append(
+				discord.utils.get(server.roles, id=rid)
+			)
+		for role in member.roles:
+			if role in badroles:
+				# This member has that bad role, we need to get rid of it!
+				removingtheseroles.append(role)
+				continue
+			if role in addingtheseroles:
+				# Oh, we already have that one
+				addingtheseroles.remove(role)
+			if not role.is_everyone:
+				# If we're going to need to replace roles, keep these the same!
+				otherroles.append(role)
+		if len(addingtheseroles) == 0 and len(removingtheseroles) == 0:
+			# Well what are we doing here?
+			return
+		if len(addingtheseroles) > 0 and len(removingtheseroles) > 0:
+			# Replace - luckily the union of these is this simple!
+			await client.replace_roles(member, *addingtheseroles, *otherroles)
+		elif len(addingtheseroles) > 0:
+			# Only adding
+			await client.add_roles(member, *addingtheseroles)
+		else:
+			# Only removing
+			await client.remove_roles(member, *removingtheseroles)
 	except (AttributeError,TypeError) as e:
 		raise e
 

@@ -620,11 +620,7 @@ async def rolerst(client, message, **kwargs):
 
 @shadow(auth=is_mod)
 async def expires(client, message, **kwargs):
-	if message.server.id != productionserver:
-		embed = emb.error(t['production_only'])
-		await reply(message, emb=embed)
-		return
-	elif kwargs['arguments'] == None:
+	if kwargs['arguments'] == None:
 		embed = emb.error('Please input at least a relative time.')
 		await reply(message, emb=embed)
 		return
@@ -647,7 +643,17 @@ async def expires(client, message, **kwargs):
 		targetmember = get_member_input(message.server, splitargs[1])
 		targetmemberid = targetmember.id
 
-	rolexpires[targetmemberid] = expirytime
+	if not message.server.id in rolexpires:
+		rolexpires[message.server.id] = {}
+
+	rolexpires[message.server.id][targetmemberid] = {
+		'time': expirytime,
+		'msgedit_channel': '0',
+		'msgedit_message': '0',
+		'msgedit_newcontent': '',
+		'msgpost_channel': '0',
+		'msgpost_content': '',
+	}
 	rolexpiresave()
 	await handleExpiryTimer()
 
@@ -656,15 +662,14 @@ async def expires(client, message, **kwargs):
 
 @shadow()
 async def expirylist(client, message, **kwargs):
-	if message.server.id != productionserver:
-		embed = emb.error(t['production_only'])
-		await reply(message, emb=embed)
-		return
-
 	content = ''
 
-	for memberid in rolexpires:
-		content += '<@{}>: {}\n'.format(memberid, reltime(rolexpires[memberid]))
+	if message.server.id in rolexpires:
+		for memberid in rolexpires[message.server.id]:
+			content += '<@{}>: {}\n'.format(
+				memberid,
+				reltime(rolexpires[message.server.id][memberid]['time'])
+			)
 
 	if content == '':
 		content = 'No expiry timers are currently running.'

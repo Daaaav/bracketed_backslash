@@ -95,7 +95,7 @@ disabledrules = []
 
 votemutes = {} # userid -> dict with `starttime`, `proponents`*, `opponents`*
 
-rolexpires = {} # userid -> unixtime
+rolexpires = {} # Now no longer userid -> unixtime, but serverid -> userids -> dict with 'time'
 latestroled = None  # ID of the latest person that has been given a restrictive role
 exptimer = None  # threading.Timer object
 

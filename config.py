@@ -77,6 +77,14 @@ configs = {
 		'detachable': True,
 		'shown': True,
 	},
+	'restrictiveroles': {
+		'default': [],
+		'type': 'rid',
+		'is_array': True,
+		'expl': 'Roles that are considered to be restrictive roles that should be removed when resetting a member’s roles.',
+		'detachable': True,
+		'shown': True,
+	},
 	'joinchannel': {
 		'default': '0',
 		'type': 'cid',
