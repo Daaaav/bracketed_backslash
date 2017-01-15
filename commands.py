@@ -1176,6 +1176,7 @@ async def countpins(client, message, **kwargs):
 
 @shadow()
 async def countallpins(client, message, **kwargs):
+	await client.send_typing(message.channel)
 	if isprivatemessage(message.server):
 		embed = emb.error('No channels to iterate through, try `\countpins` instead')
 		await reply(message, emb=embed)
