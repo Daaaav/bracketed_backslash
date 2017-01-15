@@ -1387,10 +1387,7 @@ async def b(client, message, **kwargs):
 
 	if not banningmod:
 		# Also set an expiry timer
-		if int(targetmember.discriminator) == 9600:
-			expirytime = parsereltime('20s')
-		else:
-			expirytime = parsereltime('5d')
+		expirytime = parsereltime('5d')
 
 		addexpiryentry(message.server.id, targetmember.id, expirytime,
 			e_channel=sentmessage.channel.id, e_message=sentmessage.id,
