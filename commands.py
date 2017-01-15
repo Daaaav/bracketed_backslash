@@ -1122,7 +1122,7 @@ async def getrawmessagecontent(client, message, **kwargs):
 
 @shadow(aliases=['removecontrib'])
 async def addcontrib(client, message, **kwargs):
-	if isprivate:
+	if isprivatemessage(message.server):
 		embed = emb.error(t['noprivate'])
 		await reply(message, emb=embed)
 		return
@@ -1176,7 +1176,7 @@ async def countpins(client, message, **kwargs):
 
 @shadow()
 async def countallpins(client, message, **kwargs):
-	if isprivate:
+	if isprivatemessage(message.server):
 		embed = emb.error('No channels to iterate through, try `\countpins` instead')
 		await reply(message, emb=embed)
 		return
