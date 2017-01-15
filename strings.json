@@ -174,6 +174,11 @@
 					"name": "reloadstrings",
 					"short": "Reloads strings.",
 					"extra": ""
+				},
+				{
+					"name": "uploadfile",
+					"short": "Uploads a file from the current working directory of the bot.",
+					"extra": "Made so Dav999 could stop asking me to upload so much files. Also, try not to upload a file that\u2019s too large, it\u2019ll basically slow down the entire bot."
 				}
 			]
 		},
