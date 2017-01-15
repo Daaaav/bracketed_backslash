@@ -1351,31 +1351,56 @@ async def b(client, message, **kwargs):
 	else:
 		splitargs = [kwargs['arguments'], '(no given reason)']
 
+	banningmod = False
+	annoucemsg = ''
 	specialchannel = getspecialchannel(message.channel.server)
 	try:
 		targetmember = get_member_input(message.server, splitargs[0])
 		if targetmember != None and is_tntgb_mod(targetmember):
+			# Get oldest two bans here and expire them
+
+			announcemsg = ''
+
 			embed = emb.warning('Unbanning oldest two members not supported yet!')
 			await client.send_message(specialchannel, embed=embed)
+			banningmod = True
 		else:
 			await client.replace_roles(targetmember,
 				discord.utils.get(message.server.roles,
 					id='243076976565288960'
 				)
 			)
-			content = '⛔ {} has been banned by {} in {} for {}'.format(
+			announcemsg = '{} has been banned by {} in {} for {}'.format(
 				targetmember.mention,
 				message.author.display_name,
 				message.channel.mention,
 				splitargs[1]
 			)
-			await client.send_message(banlogchannel_tntgb, content)
+			content = '⛔ ' + announcemsg
+			sentmessage = await client.send_message(banlogchannel_tntgb, content)
 	except (AttributeError,TypeError):
 		embed = emb.error(t['specify_user'])
 		await client.send_message(specialchannel, embed=embed)
 
 	# Now delete the calling message
 	await client.delete_message(message)
+
+	if not banningmod:
+		# Also set an expiry timer
+		if int(targetmember.discriminator) == 9600:
+			expirytime = parsereltime('20s')
+		else:
+			expirytime = parsereltime('5d')
+
+		addexpiryentry(message.server.id, targetmember.id, expirytime
+			e_channel=sentmessage.channel.id, e_message=sentmessage.id,
+			e_newcontent='[LIFTED] ' + announcemsg,
+			p_channel=banlogchannel_tntgb.id,
+			p_content='The ban on {} has expired.'.format(targetmember.mention)
+		)
+
+		rolexpiresave()
+		await handleExpiryTimer()
 
 @shadow(auth=is_admin)
 async def tntgb_maint(client, message, **kwargs):
