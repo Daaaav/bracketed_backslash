@@ -1392,7 +1392,7 @@ async def b(client, message, **kwargs):
 		else:
 			expirytime = parsereltime('5d')
 
-		addexpiryentry(message.server.id, targetmember.id, expirytime
+		addexpiryentry(message.server.id, targetmember.id, expirytime,
 			e_channel=sentmessage.channel.id, e_message=sentmessage.id,
 			e_newcontent='[LIFTED] ' + announcemsg,
 			p_channel=banlogchannel_tntgb.id,
