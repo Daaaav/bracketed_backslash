@@ -1465,6 +1465,7 @@ async def b(client, message, **kwargs):
 				splitargs[1],
 				message.channel.mention
 			)
+			await client.send_message(banlogchannel_tntgb, announcemsg)
 			banningmod = True
 		else:
 			await client.replace_roles(targetmember,
