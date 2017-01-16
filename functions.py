@@ -505,19 +505,7 @@ async def autoExpiry():
 				# Shorten the following thing so we don't have to keep typing it.
 				thisexpiry = rolexpires[serverid][userid]
 				if thisexpiry['msgedit_message'] != '0':
-					# We want to edit a message to reflect the ban!
-					getmessage = await client.get_message(
-						discord.utils.get(cserver.channels,
-							id=thisexpiry['msgedit_channel']
-						),
-						thisexpiry['msgedit_message']
-					)
-					if thisexpiry['msgedit_newcontent'] == '':
-						await client.delete_message(getmessage)
-					else:
-						await client.edit_message(getmessage,
-							new_content=thisexpiry['msgedit_newcontent']
-						)
+					await editexpirymessage(cserver, thisexpiry)
 				if thisexpiry['msgpost_channel'] != '0':
 					# We want to announce it with a new message!
 					await client.send_message(
@@ -585,6 +573,19 @@ async def removeRestrictiveRoles(member, server):
 	except (AttributeError,TypeError) as e:
 		raise e
 
+def editexpirymessage(cserver, thisexpiry):
+	# We want to edit a message to reflect the ban!
+	getmessage = await client.get_message(
+		discord.utils.get(cserver.channels,
+			id=thisexpiry['msgedit_channel']
+		),
+		thisexpiry['msgedit_message']
+	)
+	if thisexpiry['msgedit_newcontent'] == '':
+		await client.delete_message(getmessage)
+	else:
+		await client.edit_message(getmessage, new_content=thisexpiry['msgedit_newcontent'])
+
 def addexpiryentry(serverid, memberid, expirytime,
                    e_channel='0', e_message='0', e_newcontent='',
                    p_channel='0', p_content=''):
@@ -612,6 +613,24 @@ def removeexpiryentry(serverid, memberid):
 		return False
 
 	del rolexpires[serverid][memberid]
+
+def getearliestexpiry(serverid):  # Returns: [userid, entry]
+	global rolexpires
+
+	if not serverid in rolexpires or len(rolexpires[serverid]) == 0:
+		return None
+	
+	timelowscore = 9999999999
+	earliestuserid = '0'
+	earliestexpiry = None  # Entry
+
+	for userid in rolexpires[serverid]:
+		if rolexpires[serverid][userid]['time'] < timelowscore:
+			timelowscore = rolexpires[serverid][userid]['time']
+			earliestuserid = userid
+			earliestexpiry = rolexpires[serverid][userid]
+	
+	return [earliestuserid, earliestexpiry]
 
 @client.event
 async def fetch(url):

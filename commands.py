@@ -1337,7 +1337,7 @@ async def join(client, message, **kwargs):
 	embed = emb.error('What an odd place to be using this command!')
 	await reply(message, emb=embed)
 
-@shadow(auth=is_tntgb_mod)
+@shadow(auth=is_tntgb_mod, aliases=['b_mod'])
 async def b(client, message, **kwargs):
 	if message.server.id != tntgbserver:
 		embed = emb.error(t['tntgb_only'])
@@ -1357,12 +1357,62 @@ async def b(client, message, **kwargs):
 	try:
 		targetmember = get_member_input(message.server, splitargs[0])
 		if targetmember != None and is_tntgb_mod(targetmember):
+			if kwargs['command'] != 'b_mod':
+				embed = emb.warning('{} is a mod, please use `\\b_mod` instead to cause the oldest two bans to be lifted!')
+				await client.send_message(specialchannel, embed=embed)
+				return
+
 			# Get oldest two bans here and expire them
+			expiredmentions = []
 
-			announcemsg = ''
+			# Technical messages:
+			content = 'Lifted bans:'
 
-			embed = emb.warning('Unbanning oldest two members not supported yet!')
+			for i in range(0,2):
+				currentexpiry = getearliestexpiry(message.server.id)
+
+				try:
+					await removeRestrictiveRoles(
+						message.server.get_member(currentexpiry[0]),
+						message.server
+					)
+					content +='\n<@!{}> lifted normally'.format(
+						currentexpiry[0]
+					)
+				except (AttributeError, TypeError):
+					# Look in the role cache
+					if removerolecache(currentexpiry[0], message.server.id):
+						rolecachesave()
+						content += '\n<@!{}> lifted via role cache'.format(
+							currentexpiry[0]
+						)
+					else:
+						content += (
+							'\n<@!{}> cannot be found '
+							'in the role cache!'
+						).format(currentexpiry[0])
+				# Shorten this again
+				thisexpiry = currentexpiry[1]
+				if thisexpiry['msgedit_message'] != '0':
+					await editexpirymessage(message.server, thisexpiry)
+				removeexpiryentry(message.server.id, currentexpiry[0])
+				expiredmentions.append('<@!{}>'.format(currentexpiry[0]))
+
+			# Send administration info
+			embed = emb.info(content)
 			await client.send_message(specialchannel, embed=embed)
+
+			# Now annouce it to the world
+			announcemsg = (
+				'The bans on {} and {} have been lifted '
+				'by {}, after {} has been {} in {}.'
+			).format(
+				expiredmentions[0], expiredmentions[1],
+				message.author.display_name,
+				targetmember.mention,
+				splitargs[1],
+				message.channel.mention
+			)
 			banningmod = True
 		else:
 			await client.replace_roles(targetmember,
@@ -1370,7 +1420,7 @@ async def b(client, message, **kwargs):
 					id='243076976565288960'
 				)
 			)
-			announcemsg = '{} has been banned by {} in {} for {}'.format(
+			announcemsg = '{} has been banned by {} in {} for {}.'.format(
 				targetmember.mention,
 				message.author.display_name,
 				message.channel.mention,
