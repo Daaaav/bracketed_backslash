@@ -651,7 +651,7 @@ async def expiryremove(client, message, **kwargs):
 		embed = emb.error('Please enter something.')
 		await reply(message, emb=embed)
 		return
-	
+
 	try:
 		targetmember = get_member_input(message.server, kwargs['arguments'])
 		if removeexpiryentry(message.server.id, targetmember.id):
@@ -1515,7 +1515,7 @@ async def revertban(client, message, **kwargs):
 		targetmember = get_member_input(message.server, kwargs['arguments'])
 
 		await removeRestrictiveRoles(targetmember, message.server)
-		
+
 		embed = emb.info('Ban on {} was reverted by {}.'.format(
 				targetmember.mention, message.author.mention
 			)
