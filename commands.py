@@ -1384,12 +1384,16 @@ async def b(client, message, **kwargs):
 	else:
 		splitargs = [kwargs['arguments'], '(no given reason)']
 
-	banningmod = False
+	banningnonmod = True
 	announcemsg = ''
 	specialchannel = getspecialchannel(message.channel.server)
 	try:
 		targetmember = get_member_input(message.server, splitargs[0])
-		if targetmember != None and is_tntgb_mod(targetmember):
+		if targetmember != None and is_tntgb_banned(targetmember):
+			embed = emb.warning('{} is already banned!'.format(targetmember.mention))
+			await client.send_message(specialchannel, embed=embed)
+			banningnonmod = False  # See this as "don't set expiry timer"
+		elif targetmember != None and is_tntgb_mod(targetmember):
 			if kwargs['command'] != 'b_mod':
 				embed = emb.warning(
 					(
@@ -1473,7 +1477,7 @@ async def b(client, message, **kwargs):
 				message.channel.mention
 			)
 			await client.send_message(banlogchannel_tntgb, announcemsg)
-			banningmod = True
+			banningnonmod = False
 		else:
 			await client.replace_roles(targetmember,
 				discord.utils.get(message.server.roles,
@@ -1495,7 +1499,7 @@ async def b(client, message, **kwargs):
 	# Now delete the calling message
 	await client.delete_message(message)
 
-	if not banningmod:
+	if banningnonmod:
 		# Also set an expiry timer
 		expirytime = parsereltime('5d')
 
