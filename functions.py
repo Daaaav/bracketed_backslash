@@ -573,7 +573,8 @@ async def removeRestrictiveRoles(member, server):
 	except (AttributeError,TypeError) as e:
 		raise e
 
-def editexpirymessage(cserver, thisexpiry):
+@client.event
+async def editexpirymessage(cserver, thisexpiry):
 	# We want to edit a message to reflect the ban!
 	getmessage = await client.get_message(
 		discord.utils.get(cserver.channels,
