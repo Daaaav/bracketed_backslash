@@ -619,7 +619,7 @@ def getearliestexpiry(serverid):  # Returns: [userid, entry]
 
 	if not serverid in rolexpires or len(rolexpires[serverid]) == 0:
 		return None
-	
+
 	timelowscore = 9999999999
 	earliestuserid = '0'
 	earliestexpiry = None  # Entry
@@ -629,7 +629,7 @@ def getearliestexpiry(serverid):  # Returns: [userid, entry]
 			timelowscore = rolexpires[serverid][userid]['time']
 			earliestuserid = userid
 			earliestexpiry = rolexpires[serverid][userid]
-	
+
 	return [earliestuserid, earliestexpiry]
 
 @client.event

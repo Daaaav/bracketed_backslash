@@ -1375,10 +1375,10 @@ async def b(client, message, **kwargs):
 					continue
 
 				try:
-					await removeRestrictiveRoles(
-						message.server.get_member(currentexpiry[0]),
-						message.server
-					)
+					#await removeRestrictiveRoles(
+					#	message.server.get_member(currentexpiry[0]),
+					#	message.server
+					#)
 					content +='\n<@!{}> lifted normally'.format(
 						currentexpiry[0]
 					)
@@ -1397,8 +1397,8 @@ async def b(client, message, **kwargs):
 				# Shorten this again
 				thisexpiry = currentexpiry[1]
 				if thisexpiry['msgedit_message'] != '0':
-					await editexpirymessage(message.server, thisexpiry)
-				removeexpiryentry(message.server.id, currentexpiry[0])
+					#await editexpirymessage(message.server, thisexpiry)
+				#removeexpiryentry(message.server.id, currentexpiry[0])
 				expiredmentions.append('<@!{}>'.format(currentexpiry[0]))
 
 			# Send administration info
@@ -1430,6 +1430,8 @@ async def b(client, message, **kwargs):
 				splitargs[1],
 				message.channel.mention
 			)
+			# Turns out I forgot to make it send the message yet, but that's alright
+			# I wanted to comment it out anyway
 			banningmod = True
 		else:
 			await client.replace_roles(targetmember,
