@@ -1378,7 +1378,7 @@ async def b(client, message, **kwargs):
 		splitargs = [kwargs['arguments'], '(no given reason)']
 
 	banningmod = False
-	annoucemsg = ''
+	announcemsg = ''
 	specialchannel = getspecialchannel(message.channel.server)
 	try:
 		targetmember = get_member_input(message.server, splitargs[0])
