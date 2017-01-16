@@ -1397,6 +1397,7 @@ async def b(client, message, **kwargs):
 				# Shorten this again
 				thisexpiry = currentexpiry[1]
 				if thisexpiry['msgedit_message'] != '0':
+					pass
 					#await editexpirymessage(message.server, thisexpiry)
 				#removeexpiryentry(message.server.id, currentexpiry[0])
 				expiredmentions.append('<@!{}>'.format(currentexpiry[0]))
