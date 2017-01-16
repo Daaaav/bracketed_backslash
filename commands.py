@@ -660,6 +660,7 @@ async def expiryremove(client, message, **kwargs):
 					targetmember.id
 				)
 			)
+			rolexpiresave()
 		else:
 			embed = emb.error(
 				'Could not find <@!{}> in the expiry list.'.format(
