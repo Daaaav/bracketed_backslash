@@ -1371,6 +1371,9 @@ async def b(client, message, **kwargs):
 			for i in range(0,2):
 				currentexpiry = getearliestexpiry(message.server.id)
 
+				if currentexpiry == None:
+					continue
+
 				try:
 					await removeRestrictiveRoles(
 						message.server.get_member(currentexpiry[0]),
@@ -1403,11 +1406,25 @@ async def b(client, message, **kwargs):
 			await client.send_message(specialchannel, embed=embed)
 
 			# Now annouce it to the world
+			if len(expiredmentions) == 2:
+				whose = 'The bans on {} and {} have'.format(
+					expiredmentions[0], expiredmentions[1]
+				)
+			elif len(expiredmentions) == 1:
+				whose = 'The ban on {} has'.format(
+					expiredmentions[0]
+				)
+			elif len(expiredmentions) == 0:
+				whose = 'All remaining bans (0) have'
+			else:
+				whose = 'An inexplicable number of bans ({}) has'.format(
+					len(expiredmentions)
+				)
 			announcemsg = (
-				'The bans on {} and {} have been lifted '
-				'by {}, after {} has been {} in {}.'
+				'{} been lifted by {}, '
+				'after {} has been {} in {}.'
 			).format(
-				expiredmentions[0], expiredmentions[1],
+				whose,
 				message.author.display_name,
 				targetmember.mention,
 				splitargs[1],
