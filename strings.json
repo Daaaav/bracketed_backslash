@@ -383,6 +383,16 @@
 					"extra": "Use this command in the channel the mistake was made in. Takes a member representation (full or part of their name, or their discriminator, ID, whatever you want) as the first argument, and a reason as the second argument.\nIf you input a member name with spaces, you can separate the two arguments with a newline.\n**Examples:** ```\\b testuser using spaces\n``````\n\\b some member\nwriting \"the\"```"
 				},
 				{
+					"name": "b_mod",
+					"short": "Same as `\\b`, but allows lifting the oldest two bans by banning a moderator.",
+					"extra": "That\u2019s basically the only difference, it lifts the protection on banning mods (because unbanning two members can\u2019t be undone as simply)"
+				},
+				{
+					"name": "revertban",
+					"short": "Reverts a ban on TNTGB.",
+					"extra": "Removes the original ban log entry as well! Takes a member representation."
+				},
+				{
 					"name": "tntgb_maint",
 					"short": "An admin toolbox of maintenance features specifically for TNTGB.",
 					"extra": "Assumes you know what you\u2019re doing. Can only be used by an administrator.\n**Options:**\n`\\tntgb_maint liftmsg` \u2013 Edit a message in the ban log channel to change the \"⛔\" into \"[LIFTED]\", but don\u2019t announce it."

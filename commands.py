@@ -629,8 +629,13 @@ async def expires(client, message, **kwargs):
 			return
 		targetmemberid = latestroled
 	else:
-		targetmember = get_member_input(message.server, splitargs[1])
-		targetmemberid = targetmember.id
+		try:
+			targetmember = get_member_input(message.server, splitargs[1])
+			targetmemberid = targetmember.id
+		except AttributeError:
+			embed = emb.error(t['specify_user'])
+			await reply(message, emb=embed)
+			return
 
 	addexpiryentry(message.server.id, targetmemberid, expirytime)
 
@@ -639,6 +644,27 @@ async def expires(client, message, **kwargs):
 
 	embed = emb.success('Roles for <@{}> will be reset {}'.format(targetmemberid, reltime(expirytime)))
 	await reply(message, emb=embed)
+
+@shadow(auth=is_mod)
+async def expiryremove(client, message, **kwargs):
+	if kwargs['arguments'] == None:
+		embed = emb.error('Please enter something.')
+		await reply(message, emb=embed)
+		return
+	
+	try:
+		targetmember = get_member_input(message.server, kwargs['arguments'])
+		if removeexpiryentry(message.server.id, targetmember.id):
+			embed = emb.success(
+				'Roles for <@{}> will no longer automatically expire.'.format(
+					targetmemberid
+				)
+			)
+			await reply(message, emb=embed)
+	except AttributeError:
+		embed = emb.error(t['specify_user'])
+		await reply(message, emb=embed)
+		return
 
 @shadow()
 async def expirylist(client, message, **kwargs):
@@ -1474,6 +1500,48 @@ async def b(client, message, **kwargs):
 
 		rolexpiresave()
 		await handleExpiryTimer()
+
+@shadow(auth=is_tntgb_mod, aliases=['banrevert'])
+async def revertban(client, message, **kwargs):
+	global rolexpires
+
+	if message.server.id != tntgbserver:
+		embed = emb.error(t['tntgb_only'])
+		await reply(message, emb=embed)
+		return
+
+	specialchannel = getspecialchannel(message.channel.server)
+	try:
+		targetmember = get_member_input(message.server, kwargs['arguments'])
+
+		await removeRestrictiveRoles(targetmember, message.server)
+		
+		embed = emb.info('Ban on {} was reverted by {}.'.format(
+				targetmember.mention, message.author.mention
+			)
+		)
+		await client.send_message(specialchannel, embed=embed)
+
+		# That member is also in the role cache. Right?
+		if message.server.id not in rolexpires or \
+		targetmember.id not in rolexpires[message.server.id]:
+			embed = emb.warning('Could not find {} in the role cache!'.format(
+					targetmember.mention
+				)
+			)
+			return
+
+		# It's even longer this time
+		thisexpiry = rolexpires[message.server.id][targetmember.id]
+		if thisexpiry['msgedit_message'] != '0':
+			thisexpiry['msgedit_newcontent'] = ''
+			await editexpirymessage(message.server, thisexpiry)
+
+		removeexpiryentry(message.server.id, targetmember.id)
+		rolexpiresave()
+	except (AttributeError,TypeError):
+		embed = emb.error(t['specify_user'])
+		await client.send_message(specialchannel, embed=embed)
 
 @shadow(auth=is_admin)
 async def tntgb_maint(client, message, **kwargs):

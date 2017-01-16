@@ -614,6 +614,7 @@ def removeexpiryentry(serverid, memberid):
 		return False
 
 	del rolexpires[serverid][memberid]
+	return True
 
 def getearliestexpiry(serverid):  # Returns: [userid, entry]
 	global rolexpires
