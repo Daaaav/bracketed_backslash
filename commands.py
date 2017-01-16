@@ -662,7 +662,7 @@ async def expiryremove(client, message, **kwargs):
 			)
 		else:
 			embed = emb.error(
-				'Could not find <@!{}> in the role cache.'.format(
+				'Could not find <@!{}> in the expiry list.'.format(
 					targetmember.id
 				)
 			)
