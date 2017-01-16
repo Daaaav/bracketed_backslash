@@ -1358,8 +1358,17 @@ async def b(client, message, **kwargs):
 		targetmember = get_member_input(message.server, splitargs[0])
 		if targetmember != None and is_tntgb_mod(targetmember):
 			if kwargs['command'] != 'b_mod':
-				embed = emb.warning('{} is a mod, please use `\\b_mod` instead to cause the oldest two bans to be lifted!')
+				embed = emb.warning(
+					(
+						'{} is a mod, please use `\\b_mod` instead '
+						'to cause the oldest two bans to be lifted!'
+					).format(targetmember.mention)
+				)
 				await client.send_message(specialchannel, embed=embed)
+
+				# We're doing this in a public channel
+				await client.delete_message(message)
+
 				return
 
 			# Get oldest two bans here and expire them
