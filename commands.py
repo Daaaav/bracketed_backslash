@@ -1620,14 +1620,14 @@ async def tntgb_maint(client, message, **kwargs):
 						return
 					content = content.replace('⛔', '[LIFTED]', 1)
 
-					addexpiryentry(message.server.id, targetmember.id, expirytime,
+					addexpiryentry(message.server.id, userid, newexpires,
 						e_channel=getmessage.channel.id, e_message=getmessage.id,
 						e_newcontent=content,
 						p_channel=banlogchannel_tntgb.id,
 						p_content='The ban on <@!{}> has expired.'.format(userid)
 					)
 				else:
-					addexpiryentry(message.server.id, targetmember.id, expirytime,
+					addexpiryentry(message.server.id, userid, newexpires,
 						e_channel='0', e_message='0',
 						e_newcontent='',
 						p_channel=banlogchannel_tntgb.id,
