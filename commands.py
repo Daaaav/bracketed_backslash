@@ -1405,6 +1405,7 @@ async def b(client, message, **kwargs):
 
 				# We're doing this in a public channel
 				await client.delete_message(message)
+				messages_deleted_by_bot.append(message)
 
 				return
 
@@ -1498,6 +1499,7 @@ async def b(client, message, **kwargs):
 
 	# Now delete the calling message
 	await client.delete_message(message)
+	messages_deleted_by_bot.append(message)
 
 	if banningnonmod:
 		# Also set an expiry timer

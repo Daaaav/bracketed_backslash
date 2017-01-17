@@ -90,6 +90,8 @@ ownerid_config.close()
 memberroles = {} # Now no longer userid -> roleids, but serverid -> userids -> roleids
 minutemessageedits = {}
 
+messages_deleted_by_bot = []
+
 rules = {}
 disabledrules = []
 
@@ -379,6 +381,7 @@ async def on_message(m):
 		config.get_s('rolecachemode', m.server.id) == 2 and \
 		m.channel.id == config.get_s('joinchannel', m.server.id):
 			await client.delete_message(m)
+			messages_deleted_by_bot.append(m)
 		return
 
 	if priv:
@@ -574,6 +577,7 @@ async def on_message(m):
 		if command == 'join' and len(m.author.roles) <= 1:
 			await newmemberroles(m.author, getspecialchannel(m.server), True)
 		await client.delete_message(m)
+		messages_deleted_by_bot.append(m)
 		return
 	# But react to the message as a hint to the message sender
 	if not priv and \
@@ -718,6 +722,25 @@ async def on_message_delete(message): # when a message gets deleted
 		else:
 			content = '_The attachment for message {} was not found in the message attachments cache._'.format(message.id)
 			await client.send_message(specialchannel, content)
+	deletthreshold = datetime.timedelta(
+		seconds=config.get_s('deleted_message_resend_timer', message.server.id),
+	)
+	if (datetime.datetime.now() - message.timestamp) < deletthreshold and \
+	not message.author.bot:
+		if message in messages_deleted_by_bot:
+			messages_deleted_by_bot.remove(message)
+			return
+		embed = discord.Embed(
+			title='UNDELETED MESSAGE',
+			description=message.content,
+			colour=message.author.colour,
+			timestamp=message.timestamp,
+		)
+		embed.set_author(
+			name=message.author.display_name,
+			icon_url=message.author.avatar_url,
+		)
+		await client.send_message(message.channel, embed=embed)
 
 @client.event
 async def on_message_edit(before, after): # when a message gets edited
@@ -774,6 +797,7 @@ async def on_message_edit(before, after): # when a message gets edited
 					# Ok, that's enough editing.
 					try:
 						await client.delete_message(after)
+						messages_deleted_by_bot.append(after)
 						embed = discord.Embed(title='📝📝📝📝📝Message {} was edited too many times in {} and has been deleted by me'.format(after.id, after.channel.mention), description=after.content, colour=after.author.colour, timestamp=datetime.datetime.now())
 						embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url)
 						embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=after.author.id))

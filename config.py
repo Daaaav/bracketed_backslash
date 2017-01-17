@@ -125,6 +125,14 @@ configs = {
 		'detachable': True,
 		'shown': True,
 	},
+	'deleted_message_resend_timer': {
+		'default': 10,
+		'type': 'int',
+		'is_array': False,
+		'expl': 'The time, in seconds, of how much to wait to not resend a deleted message.',
+		'detachable': True,
+		'shown': False,
+	},
 }
 
 s = {}
