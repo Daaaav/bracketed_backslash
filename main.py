@@ -718,6 +718,22 @@ async def on_message_delete(message): # when a message gets deleted
 		else:
 			content = '_The attachment for message {} was not found in the message attachments cache._'.format(message.id)
 			await client.send_message(specialchannel, content)
+	deletthreshold = datetime.timedelta(
+		seconds=config.get_s('deleted_message_resend_timer', message.server.id),
+	)
+	if (datetime.datetime.now() - message.timestamp) < deletthreshold and \
+	not message.author.bot:
+		embed = discord.Embed(
+			title='UNDELETED MESSAGE',
+			description=message.content,
+			colour=message.author.colour,
+			timestamp=message.timestamp,
+		)
+		embed.set_author(
+			name=message.author.display_name,
+			icon_url=message.author.avatar_url,
+		)
+		await client.send_message(message.channel, embed=embed)
 
 @client.event
 async def on_message_edit(before, after): # when a message gets edited
