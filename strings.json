@@ -400,7 +400,7 @@
 				{
 					"name": "tntgb_maint",
 					"short": "An admin toolbox of maintenance features specifically for TNTGB.",
-					"extra": "Assumes you know what you\u2019re doing. Can only be used by an administrator.\n**Options:**\n`\\tntgb_maint liftmsg` \u2013 Edit a message in the ban log channel to change the \"⛔\" into \"[LIFTED]\", but don\u2019t announce it."
+					"extra": "Assumes you know what you\u2019re doing. Can only be used by an administrator.\n**Options:**\n`\\tntgb_maint liftmsg` \u2013 Edit a message in the ban log channel to change the \"⛔\" into \"[LIFTED]\", but don\u2019t announce it. Takes message ID.\n`\\tntgb_maint addtimer` \u2013 Adds an expiry timer for the first user mentioned in the message based on the timestamp of the message. If sent by the bot, it\u2019ll also automatically edit the message when the timer expires."
 				}
 			]
 		},

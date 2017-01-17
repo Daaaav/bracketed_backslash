@@ -1555,7 +1555,7 @@ async def revertban(client, message, **kwargs):
 		embed = emb.error(t['specify_user'])
 		await client.send_message(specialchannel, embed=embed)
 
-@shadow(auth=is_admin)
+@shadow(auth=is_admin, aliases=['tntgb_maint_p'])
 async def tntgb_maint(client, message, **kwargs):
 	if message.server.id != tntgbserver:
 		embed = emb.error(t['tntgb_only'])
@@ -1564,17 +1564,38 @@ async def tntgb_maint(client, message, **kwargs):
 	splitargs = kwargs['arguments'].split(' ')
 
 	try:
-		if splitargs[0] == 'liftmsg':
-			getmessage = await client.get_message(banlogchannel_tntgb, splitargs[1])
-			content = getmessage.content
-			if content.find('⛔') == -1:
-				embed = emb.error('Cannot find the ⛔!')
-				await reply(message, emb=embed)
-				return
-			content = content.replace('⛔', '[LIFTED]', 1)
-			await client.edit_message(getmessage, new_content=content)
-		embed = emb.success('Nothing appears to have gone wrong')
-		await reply(message, emb=embed)
+		while True:
+			if kwargs['command'] == 'tntgb_maint_p' and True:
+				break
+			output = ''
+			if splitargs[0] == 'liftmsg':
+				getmessage = await client.get_message(banlogchannel_tntgb, splitargs[1])
+				content = getmessage.content
+				if content.find('⛔') == -1:
+					embed = emb.error('Cannot find the ⛔!')
+					await reply(message, emb=embed)
+					return
+				content = content.replace('⛔', '[LIFTED]', 1)
+				await client.edit_message(getmessage, new_content=content)
+				output = 'Edited successfully.'
+			elif splitargs[0] == 'addtimer':
+				getmessage = await client.get_message(banlogchannel_tntgb, splitargs[1])
+				m = re.search('<@!?([0-9]+)>')
+				if m == None:
+					embed = emb.error('m is None! Maybe I couldn’t find the mention.')
+					await reply(message, emb=embed)
+					return
+				userid = m.group(1)
+				newexpires = parsereltime('5d',
+					now=time.mktime(getmessage.timestamp.timetuple())
+				)
+				output = 'I found this ID: '+userid+', and it expires '+reltime(newexpires)+'. Did I do it right?'
+
+			embed = emb.success('Nothing appears to have gone wrong. Output:\n'+output)
+			await reply(message, emb=embed)
+
+			if kwargs['command'] != 'tntgb_maint_p':
+				break
 	except:
 		embed = emb.error('You don’t know what you’re doing, do you.')
 		await reply(message, emb=embed)
