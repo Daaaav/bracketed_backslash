@@ -1565,10 +1565,27 @@ async def tntgb_maint(client, message, **kwargs):
 		return
 	splitargs = kwargs['arguments'].split(' ')
 
+	if kwargs['command'] == 'tntgb_maint_p':
+		embed = emb.info('Opening prompt for `{}`'.format(splitargs[0]))
+		await reply(message, emb=embed)
+
 	try:
 		while True:
-			if kwargs['command'] == 'tntgb_maint_p' and True:
-				break
+			if kwargs['command'] == 'tntgb_maint_p':
+				message2 = await client.wait_for_message(
+					timeout=120,
+					author=message.author,
+					channel=message.channel
+				)
+				if message2 == None:
+					embed = emb.info('Timed out, closing prompt')
+					await reply(message, emb=embed)
+					break
+				if message2.content == 'exit':
+					embed = emb.info('Ok, closing prompt')
+					await reply(message, emb=embed)
+					break
+				splitargs[1] = message2.content
 			output = ''
 			if splitargs[0] == 'liftmsg':
 				getmessage = await client.get_message(banlogchannel_tntgb, splitargs[1])
