@@ -1599,7 +1599,9 @@ async def tntgb_maint(client, message, **kwargs):
 			if kwargs['command'] != 'tntgb_maint_p':
 				break
 	except:
-		embed = emb.error('You don’t know what you’re doing, do you.')
+		embed = emb.error('You don’t know what you’re doing, do you.\n`{}`'.format(
+			traceback.format_exc())
+		)
 		await reply(message, emb=embed)
 
 @shadow(auth=is_operator)
