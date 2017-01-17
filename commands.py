@@ -1599,7 +1599,8 @@ async def tntgb_maint(client, message, **kwargs):
 				output = 'Edited successfully.'
 			elif splitargs[0] == 'addtimer':
 				getmessage = await client.get_message(banlogchannel_tntgb, splitargs[1])
-				m = re.search('<@!?([0-9]+)>', getmessage.content)
+				content = getmessage.content
+				m = re.search('<@!?([0-9]+)>', content)
 				if m == None:
 					embed = emb.error('m is None! Maybe I couldn’t find the mention.')
 					await reply(message, emb=embed)
@@ -1608,7 +1609,39 @@ async def tntgb_maint(client, message, **kwargs):
 				newexpires = parsereltime('5d',
 					now=time.mktime(getmessage.timestamp.timetuple())
 				)
-				output = 'I found this ID: '+userid+', and it expires '+reltime(newexpires)+'. Did I do it right?'
+
+				sentbybot = False
+				if getmessage.author == client.user:
+					sentbybot = True
+
+					if content.find('⛔') == -1:
+						embed = emb.error('Cannot find the ⛔!')
+						await reply(message, emb=embed)
+						return
+					content = content.replace('⛔', '[LIFTED]', 1)
+
+					addexpiryentry(message.server.id, targetmember.id, expirytime,
+						e_channel=getmessage.channel.id, e_message=getmessage.id,
+						e_newcontent=content,
+						p_channel=banlogchannel_tntgb.id,
+						p_content='The ban on <@!{}> has expired.'.format(userid)
+					)
+				else:
+					addexpiryentry(message.server.id, targetmember.id, expirytime,
+						e_channel='0', e_message='0',
+						e_newcontent='',
+						p_channel=banlogchannel_tntgb.id,
+						p_content='The ban on <@!{}> has expired.'.format(userid)
+					)
+					
+
+				output = 'I found the member <@!{}>, and it expires {}. Also, the message was {} sent by me. Did I do it right?'.format(
+					userid, reltime(newexpires),
+					"" if sentbybot else "not"
+				)
+
+				rolexpiresave()
+				await handleExpiryTimer()
 
 			embed = emb.success('Nothing appears to have gone wrong. Output:\n'+output)
 			await reply(message, emb=embed)
