@@ -1582,7 +1582,7 @@ async def tntgb_maint(client, message, **kwargs):
 				output = 'Edited successfully.'
 			elif splitargs[0] == 'addtimer':
 				getmessage = await client.get_message(banlogchannel_tntgb, splitargs[1])
-				m = re.search('<@!?([0-9]+)>')
+				m = re.search('<@!?([0-9]+)>', getmessage.content)
 				if m == None:
 					embed = emb.error('m is None! Maybe I couldn’t find the mention.')
 					await reply(message, emb=embed)
