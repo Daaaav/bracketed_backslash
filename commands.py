@@ -1634,7 +1634,6 @@ async def tntgb_maint(client, message, **kwargs):
 						p_channel=banlogchannel_tntgb.id,
 						p_content='The ban on <@!{}> has expired.'.format(userid)
 					)
-					
 
 				output = 'I found the member <@!{}>, and it expires {}. Also, the message was {} sent by me. Did I do it right?'.format(
 					userid, reltime(newexpires),
