@@ -1496,6 +1496,7 @@ async def b(client, message, **kwargs):
 	except (AttributeError,TypeError):
 		embed = emb.error(t['specify_user'])
 		await client.send_message(specialchannel, embed=embed)
+		banningnonmod = False
 
 	# Now delete the calling message
 	await client.delete_message(message)
