@@ -1657,9 +1657,17 @@ async def tntgb_maint(client, message, **kwargs):
 @shadow(auth=is_operator)
 async def uploadfile(client, message, **kwargs):
 	global msg_start
+	disalwfiles = ['bot_token.conf']
 	try:
 		if not os.path.abspath(kwargs['arguments']).startswith(os.getcwd()):
 			e = emb.error('Cannot access paths above working directory.')
+			await reply(message, emb=e)
+			return
+		elif kwargs['arguments'] in disalwfiles:
+			e = emb.error('Cannot upload ``{file}``.'.format(
+				file=kwargs['arguments'],
+				)
+			)
 			await reply(message, emb=e)
 			return
 		await client.send_file(
