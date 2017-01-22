@@ -1676,4 +1676,5 @@ async def uploadfile(client, message, **kwargs):
 		e = emb.error('You should probably enter in something.')
 	except:
 		e = emb.error('`Something happened : Something happened :(`')
+		raise
 	await reply(message, emb=e)
