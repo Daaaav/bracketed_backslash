@@ -774,9 +774,6 @@ async def on_message_edit(before, after): # when a message gets edited
 	# preliminary checkings
 	if before.content == after.content:
 		return # must be the message being pinned and/or embed(s) displaying
-	if before.author == client.user or after.author == client.user: # the bot doesnt edits its own messages, so throw a warning
-		logging.warn('this is the bots own message and the bot doesnt edit messages\nid of before: {}\nid of after: {}'.format(before.id, after.id))
-		return
 	# checks succeeded
 	if not logdisabled('message_edit', after.server):
 		if len(before.content) > 1024 or len(after.content) > 1024:
