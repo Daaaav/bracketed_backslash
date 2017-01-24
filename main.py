@@ -91,6 +91,7 @@ memberroles = {} # Now no longer userid -> roleids, but serverid -> userids -> r
 minutemessageedits = {}
 
 messages_deleted_by_bot = []
+deleted_messages = []
 
 rules = {}
 disabledrules = []
@@ -710,6 +711,7 @@ async def on_message(m):
 
 @client.event
 async def on_message_delete(message): # when a message gets deleted
+	deleted_messages.append(message)
 	if isprivatemessage(message.server):
 		return
 	if message.author == client.user: # is the deleted message originally sent by the bot
@@ -1269,6 +1271,44 @@ async def on_channel_delete(c):
 		),
 	)
 	await client.send_message(schan, embed=embed)
+
+@client.event
+async def on_socket_raw_receive(payload):
+	try:
+		event = json.loads(payload)
+	except TypeError:
+		return
+
+	# Events to check
+	ckevnts = [
+		'MESSAGE_DELETE',
+	]
+	if event['t'] not in ckevnts:
+		return
+
+	# Check if on_message_delete() was already called by this message
+	# If it was, then return
+	await asyncio.sleep(1) # Info Teddy's strategy to avoid race conditions
+	for m in deleted_messages:
+		if m.id == event['d']['id']:
+			deleted_messages.remove(m)
+			return
+
+	if event['t'] == 'MESSAGE_DELETE':
+		mchan = client.get_channel(event['d']['channel_id'])
+		schan = getspecialchannel(
+			mchan.server
+		)
+		e = discord.Embed(
+			title='UNCACHED MESSAGE DELETED IN {0.mention}'.format(mchan),
+			url=infourl('messageid=' + event['d']['id']),
+			description=(
+				'Since this message is uncached, I can’t give you'
+				' any more information than its ID and its channel.'
+			),
+			colour=mchan.server.me.colour,
+		)
+		await client.send_message(schan, embed=e)
 
 exec(compile(open("functions.py", "rb").read(), "functions.py", 'exec'))
 exec(compile(open("commands.py", "rb").read(), "commands.py", 'exec'))
