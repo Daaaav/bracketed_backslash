@@ -259,7 +259,16 @@ async def on_ready():
 	await handleExpiryTimer()
 
 	for chan in client.get_all_channels():
-		async for m in client.logs_from(chan):
+		try:
+			msgs = client.logs_from(chan)
+		except discord.errors.Forbidden:
+			logging.info(
+				(
+					'Failed to retrieve message history for'
+					' {serv.name} ({serv.id})#{chan.name} ({chan.id}).'
+				).format(serv=chan.server, chan=chan)
+			)
+		async for m in msgs:
 			client.messages.append(m)
 
 commands = {}
