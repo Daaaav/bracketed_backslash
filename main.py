@@ -258,6 +258,10 @@ async def on_ready():
 
 	await handleExpiryTimer()
 
+	for chan in client.get_all_channels():
+		async for m in client.logs_from(chan):
+			client.messages.append(m)
+
 commands = {}
 
 def shadow(auth=None, aliases=None):
