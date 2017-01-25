@@ -1285,9 +1285,12 @@ async def on_socket_raw_receive(payload):
 
 	# Check if on_message_delete() was already called by this message
 	# If it was, then return
-	await asyncio.sleep(1) # Info Teddy's strategy to avoid race conditions
+	if discord.utils.find(lambda m: m.id == event['d']['id'], client.messages) != None:
+		# If the message lingers in deleted_messages, it doesn't really matter for now
+		return
 	for m in deleted_messages:
 		if m.id == event['d']['id']:
+			# on_message_delete was faster
 			deleted_messages.remove(m)
 			return
 
