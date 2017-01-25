@@ -1285,6 +1285,12 @@ async def on_socket_raw_receive(payload):
 
 	# Check if on_message_delete() was already called by this message
 	# If it was, then return
+	logging.info('TEMPORARY DEBUG THING: {}, {}, {}'.format(
+			event['d']['id'],
+			discord.utils.find(lambda m: m.id == event['d']['id'], client.messages),
+			discord.utils.find(lambda m: m == event['d']['id'], client.messages)
+		)
+	)
 	if discord.utils.find(lambda m: m.id == event['d']['id'], client.messages) != None:
 		# If the message lingers in deleted_messages, it doesn't really matter for now
 		return
