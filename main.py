@@ -755,6 +755,9 @@ async def on_message_delete(message): # when a message gets deleted
 			name=message.author.display_name,
 			icon_url=message.author.avatar_url,
 		)
+		embed.set_footer(
+			text='This message was resent as it was deleted too recently.',
+		)
 		await client.send_message(message.channel, embed=embed)
 
 @client.event
