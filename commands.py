@@ -254,7 +254,7 @@ async def echo(client, message, **kwargs):
 
 @shadow()
 async def hangman(client, message, **kwargs):
-	global hangmanactive
+	global hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, hangmanstarter, guessedletters, algeraden
 	if hangmanactive:
 		embed = emb.error('Hangman is already running. It can be aborted by the starter or by a mod with `\stophangman`.')
 		await reply(message, emb=embed)
@@ -369,6 +369,7 @@ async def findu(client, message, **kwargs): # TODO: Implement aliases. \findup i
 
 @shadow(auth=is_mod)
 async def softban(client, message, **kwargs):
+	global latestroled
 	if message.server.id != productionserver:
 		embed = emb.error(t['production_only'])
 		await reply(message, emb=embed)
@@ -396,6 +397,7 @@ async def softban(client, message, **kwargs):
 
 @shadow(auth=is_mod, aliases=['nogenmen', 'nocedule', 'notts', 'noreact'])
 async def nononly(client, message, **kwargs):
+	global latestroled
 	if message.server.id != productionserver:
 		embed = emb.error(t['production_only'])
 		await reply(message, emb=embed)
@@ -428,6 +430,7 @@ async def nononly(client, message, **kwargs):
 
 @shadow(auth=is_mod)
 async def nonick(client, message, **kwargs):
+	global latestroled
 	if message.server.id != productionserver:
 		embed = emb.error(t['production_only'])
 		await reply(message, emb=embed)
