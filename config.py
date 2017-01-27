@@ -234,6 +234,7 @@ def input_to_type(input, type):
 			return True
 		else:
 			return False
+	return input
 
 def saveconfig():
 	with open('config.json', 'w') as outfile:
