@@ -747,9 +747,12 @@ async def on_message_delete(message): # when a message gets deleted
 	not message.author.bot:
 		embed = discord.Embed(
 			title='UNDELETED MESSAGE',
-			description=message.content,
+			description=(message.content if
+				config.get_s('deleted_message_resend_content', message.server.id)
+				else None
+			),
 			colour=message.author.colour,
-			timestamp=message.timestamp,
+			#timestamp=message.timestamp,
 		)
 		embed.set_author(
 			name=message.author.display_name,

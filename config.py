@@ -133,6 +133,14 @@ configs = {
 		'detachable': True,
 		'shown': False,
 	},
+	'deleted_message_resend_content': {
+		'default': False,
+		'type': 'bln',
+		'is_array': False,
+		'expl': 'Set to True to include the content of a deleted message when resending it before the `deleted_message_resend_timer` runs out, set to False to not include the original content.',
+		'detachable': True,
+		'shown': False,
+	},
 }
 
 s = {}
@@ -146,30 +154,28 @@ def set_s(skey, value, serverid=None):
 	if is_array(skey):
 		raise TypeError('Array options cannot be set using the standard config.set_s() function!')
 		return
-	if get_type(skey) == 'int':
-		value = int(value)
 	if serverid != None and serverid in s[skey]:
-		s[skey][serverid] = value
+		s[skey][serverid] = input_to_type_key(value, skey)
 	else:
-		s[skey]['master'] = value
+		s[skey]['master'] = input_to_type_key(value, skey)
 
 def insert_s(skey, value, serverid=None):
 	if not is_array(skey):
 		raise TypeError('You cannot insert something into an option that isn\'t an array')
 		return
 	if serverid != None and serverid in s[skey]:
-		s[skey][serverid].append(value)
+		s[skey][serverid].append(input_to_type_key(value, skey))
 	else:
-		s[skey]['master'].append(value)
+		s[skey]['master'].append(input_to_type_key(value, skey))
 
 def remove_s(skey, value, serverid=None):
 	if not is_array(skey):
 		raise TypeError('You cannot remove something from an option that isn\'t an array')
 		return
 	if serverid != None and serverid in s[skey]:
-		s[skey][serverid].remove(value)
+		s[skey][serverid].remove(input_to_type_key(value, skey))
 	else:
-		s[skey]['master'].remove(value)
+		s[skey]['master'].remove(input_to_type_key(value, skey))
 
 def restore_default(skey, serverid=None):
 	if is_array(skey) and serverid != None and serverid in s[skey]:
@@ -184,7 +190,7 @@ def detach(skey, serverid):
 		raise ValueError('Setting {} is not detachable'.format(skey))
 		return
 	if not is_detached(skey, serverid):
-		s[skey][serverid] = get_default(skey)
+		s[skey][serverid] = copy.deepcopy(get_default(skey))
 
 def reattach(skey, serverid):
 	if is_detached(skey, serverid):
@@ -215,6 +221,19 @@ def get_expl(skey):
 
 def get_shown(skey):
 	return configs[skey]['shown']
+
+def input_to_type_key(input, skey):
+	return input_to_type(input, get_type(skey))
+
+def input_to_type(input, type):
+	if type == 'int':
+		return int(input)
+	if type == 'bln':
+		if input or input.lower() == 'true' or input.lower() == 't' or \
+		input.lower() == 'yes' or input.lower() == 'y' or input == '1':
+			return True
+		else:
+			return False
 
 def saveconfig():
 	with open('config.json', 'w') as outfile:

@@ -76,6 +76,7 @@ async def configure(client, message, **kwargs):
 		content = (
 			'You can use the following options:\n'
 			'`\config list`\n'
+			'`\config listhidden`\n'
 			'`\config reload`\n'
 			'`\config get <key>`\n'
 			'`\config set <key> <value>` (not for arrays)\n'
@@ -93,10 +94,11 @@ async def configure(client, message, **kwargs):
 		embed = emb.success('Reloaded config.')
 		await reply(message, emb=embed)
 		return
-	elif kwargs['arguments'] == 'list':
+	elif kwargs['arguments'] == 'list' or kwargs['arguments'] == 'listhidden':
 		content = '```css'
 		for c in config.s:
-			if not config.get_shown(c):
+			if (kwargs['arguments'] == 'list' and not config.get_shown(c)) or \
+			(kwargs['arguments'] == 'listhidden' and config.get_shown(c)):
 				continue
 			try:
 				content += '\n{} [{}] = {}'.format(c, config.get_type(c) + ('*' if config.is_array(c) else ''), config.get_s(c, message.server.id) if not config.is_array(c) else '[{}]'.format(len(config.get_s(c, message.server.id))))
@@ -133,7 +135,9 @@ async def configure(client, message, **kwargs):
 		config.saveconfig()
 		logcommand(kwargs['command'], kwargs['arguments'], message)
 		embed = emb.success('Set `{}` to `{}`{}'.format(
-				splitargs[1], wrapbackticks(splitargs[2]),
+				splitargs[1], wrapbackticks(
+					config.input_to_type_key(splitargs[2], splitargs[1])
+				),
 				t['editingmasterval'] if editingmaster else ''
 			)
 		)
@@ -184,7 +188,9 @@ async def configure(client, message, **kwargs):
 			except AttributeError:
 				config.insert_s(splitargs[1], splitargs[2])
 			embed = emb.success('Inserted `{}` into array `{}`'.format(
-					wrapbackticks(splitargs[2]), splitargs[1],
+					wrapbackticks(
+						config.input_to_type_key(splitargs[2], splitargs[1])
+					), splitargs[1],
 					t['editingmasterval'] if editingmaster else ''
 				)
 			)
@@ -195,7 +201,9 @@ async def configure(client, message, **kwargs):
 			except AttributeError:
 				config.remove_s(splitargs[1], splitargs[2])
 			embed = emb.success('Removed `{}` from array `{}`'.format(
-					wrapbackticks(splitargs[2]), splitargs[1],
+					wrapbackticks(
+						config.input_to_type_key(splitargs[2], splitargs[1])
+					), splitargs[1],
 					t['editingmasterval'] if editingmaster else ''
 				)
 			)
