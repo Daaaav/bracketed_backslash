@@ -745,21 +745,28 @@ async def on_message_delete(message): # when a message gets deleted
 	)
 	if (datetime.datetime.now() - message.timestamp) < deletthreshold and \
 	not message.author.bot:
-		embed = discord.Embed(
-			title='UNDELETED MESSAGE',
-			description=(message.content if
-				config.get_s('deleted_message_resend_content', message.server.id)
-				else None
-			),
-			colour=message.author.colour,
-			#timestamp=message.timestamp,
-		)
+		if config.get_s('deleted_message_resend_content', message.server.id):
+			embed = discord.Embed(
+				title='UNDELETED MESSAGE',
+				description=message.content,
+				colour=message.author.colour,
+				#timestamp=message.timestamp,
+			)
+			embed.set_footer(
+				text='This message was resent as it was deleted too recently.',
+			)
+		else:
+			embed = discord.Embed(
+				title='Message was deleted',
+				description=(
+					'This notification was sent because a message by this '
+					'user was deleted too recently.'
+				)
+				colour=message.author.colour,
+			)
 		embed.set_author(
 			name=message.author.display_name,
 			icon_url=message.author.avatar_url,
-		)
-		embed.set_footer(
-			text='This message was resent as it was deleted too recently.',
 		)
 		await client.send_message(message.channel, embed=embed)
 
