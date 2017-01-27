@@ -761,7 +761,7 @@ async def on_message_delete(message): # when a message gets deleted
 				description=(
 					'This notification was sent because a message by this '
 					'user was deleted too recently.'
-				)
+				),
 				colour=message.author.colour,
 			)
 		embed.set_author(
