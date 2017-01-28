@@ -229,8 +229,9 @@ def input_to_type(input, type):
 	if type == 'int':
 		return int(input)
 	if type == 'bln':
-		if input or input.lower() == 'true' or input.lower() == 't' or \
-		input.lower() == 'yes' or input.lower() == 'y' or input == '1':
+		if input or input == '1' or input.lower() in [
+			'true', 't', 'yes', 'y', 'on', 'enable', 'enabled'
+		]:
 			return True
 		else:
 			return False
