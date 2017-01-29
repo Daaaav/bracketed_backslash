@@ -1013,6 +1013,25 @@ async def on_server_role_update(before, after):
 		embed.add_field(name='Older Color', value='(default)' if before.colour.value == 0 else str(before.colour).upper())
 		embed.add_field(name='Newer Color', value='(default)' if after.colour.value == 0 else str(after.colour).upper())
 		await client.send_message(specialchannel, embed=embed)
+	if before.permissions != after.permissions:
+		diff = list(set(before.permissions).symmetric_difference(set(after.permissions)))
+		e = discord.Embed(
+			title='ROLE PERMISSIONS CHANGE',
+			description='**{name}** ({0.id})'.format(
+				after, name=mdspecialchars(after.name)
+			),
+			colour=after.colour,
+		)
+		e.add_field(name='Permission Updated', value=diff[0][0])
+		e.add_field(
+			name='Older Permission',
+			value=str(dict(before.permissions)[diff[0][0]]),
+		)
+		e.add_field(
+			name='Newer Permission',
+			value=str(dict(after.permissions)[diff[0][0]]),
+		)
+		await client.send_message(specialchannel, embed=e)
 
 
 @client.event
