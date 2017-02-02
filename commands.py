@@ -319,7 +319,7 @@ async def source(client, message, **kwargs):
 	content = 'Source code to the bot: https://gitgud.io/infoteddy/bracketed_backslash'
 	await reply(message, content)
 
-@shadow(aliases=['findup'])
+@shadow()
 async def findu(client, message, **kwargs):
 	if kwargs['arguments'] == None:
 		targetmember = message.author
