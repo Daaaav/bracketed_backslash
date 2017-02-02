@@ -320,7 +320,7 @@ async def source(client, message, **kwargs):
 	await reply(message, content)
 
 @shadow(aliases=['findup'])
-async def findu(client, message, **kwargs): # TODO: Implement aliases. \findup is an alias to \findu
+async def findu(client, message, **kwargs):
 	if kwargs['arguments'] == None:
 		targetmember = message.author
 	else:
