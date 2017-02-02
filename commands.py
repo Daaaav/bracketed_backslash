@@ -329,10 +329,7 @@ async def findu(client, message, **kwargs): # TODO: Implement aliases. \findup i
 		embed = emb.error('Unable to find that member. ' + t['specify_user'])
 		await reply(message, emb=embed)
 		return
-	if kwargs['command'] == 'findup':
-		displaymatch = '<@{}>'.format(targetmember.id)
-	else:
-		displaymatch = '__@{}__'.format(mdspecialchars(targetmember.display_name))
+	displaymatch = '<@{}>'.format(targetmember.id)
 	if targetmember.game == None:
 		memberhasgame = False
 		displaygamestatus = 'Not Playing'
@@ -355,7 +352,7 @@ async def findu(client, message, **kwargs): # TODO: Implement aliases. \findup i
 		else:
 			displaygameurlstatus = 'Stream Link'
 			displaygameurl = mdspecialchars(targetmember.game.url)
-	embed = discord.Embed(colour=targetmember.colour)
+	embed = discord.Embed(description='Matched ' + displaymatch, colour=targetmember.colour)
 	embed.set_image(url=targetmember.avatar_url)
 	embed.add_field(name='Nickname' if targetmember.nick != None else 'No Nickname', value=mdspecialchars(targetmember.nick) if targetmember.nick != None else 'No Nickname')
 	embed.add_field(name='Username', value=mdspecialchars(targetmember.name))
@@ -372,8 +369,7 @@ async def findu(client, message, **kwargs): # TODO: Implement aliases. \findup i
 	# IMPORTANT: in `embed.add_field()`, `name` or `value` cannot be an empty string or you will get a 400 bad request when sending it
 	# (i learned that the hard way)
 	# (that was about twenty restarts smh)
-	content = 'Matched ' + displaymatch
-	await reply(message, content, embed)
+	await reply(message, emb=embed)
 
 @shadow(auth=is_mod)
 async def softban(client, message, **kwargs):
