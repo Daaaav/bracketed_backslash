@@ -1275,33 +1275,32 @@ async def _eval(client, message, **kwargs):
 		embed = emb.error(t['owner_only'])
 		await reply(message, emb=embed)
 		return
-	else:
-		try:
-			if kwargs['command'] == 'eval':
-				evaluate = eval(kwargs['arguments'])
-				if inspect.isawaitable(evaluate):
-					evaluate = await evaluate
-			elif kwargs['command'] == 'evalfile':
-				evalfile = open('eval.txt', 'r')
-				evalstring = evalfile.read()
-				evaluate = eval(evalstring)
-				evalfile.close()
-			elif kwargs['command'] == 'setvar':
-				splitargs = kwargs['arguments'].split(' ', 1)
-				evaluate = eval(splitargs[1])
-				if inspect.isawaitable(evaluate):
-					evaluate = await evaluate
-				evaluate = setglobal(splitargs[0], evaluate)
-			content = '```py\n{}```'.format(wrapbackticks(str(evaluate)))
-		except Exception as e:
-			content = '```py\n{}```'.format(
-				wrapbackticks(
-					'{name}: {e}'.format(
-						name=type(e).__name__,
-						e=str(e),
-					)
+	try:
+		if kwargs['command'] == 'eval':
+			evaluate = eval(kwargs['arguments'])
+			if inspect.isawaitable(evaluate):
+				evaluate = await evaluate
+		elif kwargs['command'] == 'evalfile':
+			evalfile = open('eval.txt', 'r')
+			evalstring = evalfile.read()
+			evaluate = eval(evalstring)
+			evalfile.close()
+		elif kwargs['command'] == 'setvar':
+			splitargs = kwargs['arguments'].split(' ', 1)
+			evaluate = eval(splitargs[1])
+			if inspect.isawaitable(evaluate):
+				evaluate = await evaluate
+			evaluate = setglobal(splitargs[0], evaluate)
+		content = '```py\n{}```'.format(wrapbackticks(str(evaluate)))
+	except Exception as e:
+		content = '```py\n{}```'.format(
+			wrapbackticks(
+				'{name}: {e}'.format(
+					name=type(e).__name__,
+					e=str(e),
 				)
 			)
+		)
 	if content > 2000:
 		print((
 			'The result of your latest evaluation command is:\n'
