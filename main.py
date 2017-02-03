@@ -25,7 +25,6 @@ from aiohttp import ClientSession
 import os
 import os.path
 import sys
-import warnings
 import random
 import datetime
 import time
