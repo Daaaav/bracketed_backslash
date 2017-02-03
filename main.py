@@ -52,7 +52,7 @@ botversion = '1.0'
 # see https://docs.python.org/3/library/logging.html for more info.
 logging.basicConfig(level=logging.INFO)
 
-client = discord.Client() # defines all client.* commands
+client = discord.Client(max_messages=999999999) # defines all client.* commands
 
 cachelocation = './.cache'
 attachcache = cachelocation + '/' + 'attach' # define attachment caching location
@@ -130,8 +130,6 @@ modificationtimes = [
 	os.path.getmtime('images.py'),
 ]
 modificationtimecache = time.strftime(config.get_s('timeformat'), time.gmtime(max(modificationtimes)))
-
-client.max_messages = 9999
 
 maineventloop = asyncio.get_event_loop()
 
