@@ -271,7 +271,7 @@ async def on_ready():
 					' {serv.name} ({serv.id})#{chan.name} ({chan.id}).'
 				).format(serv=chan.server, chan=chan)
 			)
-	
+
 	# Now set up our own cache, that Discord.py won't remove messages from before telling us!
 	for m in client.messages:
 		owncache.append(m.id)
