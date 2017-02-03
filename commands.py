@@ -1302,9 +1302,7 @@ async def _eval(client, message, **kwargs):
 					)
 				)
 			)
-	try:
-		await reply(message, content)
-	except discord.errors.HTTPException:
+	if content > 2000:
 		print((
 			'The result of your latest evaluation command is:\n'
 			'{}\n'
@@ -1312,6 +1310,8 @@ async def _eval(client, message, **kwargs):
 		).format(content))
 		embed = emb.warning('Content too large to print. Printing to terminal instead.')
 		await reply(message, emb=embed)
+		return
+	await reply(message, content)
 
 @shadow(aliases=['serverban', 'unserverban'])
 async def kick(client, message, **kwargs):
