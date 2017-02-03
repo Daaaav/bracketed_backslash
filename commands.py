@@ -19,6 +19,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import inspect
+
 # This file contains all the bot commands as functions.
 
 @shadow()
@@ -1266,8 +1268,8 @@ async def gamestatus(client, message, **kwargs):
 	embed = emb.success('Set game status to: ``{}``'.format(wrapbackticks(kwargs['arguments'])))
 	await reply(message, emb=embed)
 
-@shadow(aliases=['eval', 'evalfile', 'evalawaitfile', 'setvar'])
-async def evalawait(client, message, **kwargs):
+@shadow(aliases=['evalfile', 'setvar'])
+async def _eval(client, message, **kwargs):
 	if message.author.id != ownerid:
 		logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 		embed = emb.error(t['owner_only'])
@@ -1277,24 +1279,29 @@ async def evalawait(client, message, **kwargs):
 		try:
 			if kwargs['command'] == 'eval':
 				evaluate = eval(kwargs['arguments'])
-			elif kwargs['command'] == 'evalawait':
-				evaluate = await eval(kwargs['arguments'])
+				if inspect.isawaitable(evaluate):
+					evaluate = await evaluate
 			elif kwargs['command'] == 'evalfile':
 				evalfile = open('eval.txt', 'r')
 				evalstring = evalfile.read()
 				evaluate = eval(evalstring)
 				evalfile.close()
-			elif kwargs['command'] == 'evalawaitfile':
-				evalfile = open('eval.txt', 'r')
-				evalstring = evalfile.read()
-				evaluate = await eval(evalstring)
-				evalfile.close()
 			elif kwargs['command'] == 'setvar':
 				splitargs = kwargs['arguments'].split(' ', 1)
-				evaluate = setglobal(splitargs[0], splitargs[1])
-			content = '```py\n{}```'.format(wrapbackticks(evaluate))
-		except:
-			content = '```py\n{}```'.format(wrapbackticks(traceback.format_exc()))
+				evaluate = eval(splitargs[1])
+				if inspect.isawaitable(evaluate):
+					evaluate = await evaluate
+				evaluate = setglobal(splitargs[0], evaluate)
+			content = '```py\n{}```'.format(wrapbackticks(str(evaluate)))
+		except Exception as e:
+			content = '```py\n{}```'.format(
+				wrapbackticks(
+					'{name}: {e}'.format(
+						name=type(e).__name__,
+						e=str(e),
+					)
+				)
+			)
 	try:
 		await reply(message, content)
 	except discord.errors.HTTPException:
