@@ -1301,7 +1301,7 @@ async def _eval(client, message, **kwargs):
 				)
 			)
 		)
-	if content > 2000:
+	if len(content) > 2000:
 		print((
 			'The result of your latest evaluation command is:\n'
 			'{}\n'
