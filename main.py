@@ -1370,6 +1370,10 @@ async def on_socket_raw_receive(payload):
 		)
 		await client.send_message(schan, embed=e)
 	elif event['t'] == 'MESSAGE_UPDATE':
+		# Check if the message is in the cachem and return if it is
+		if discord.utils.find(lambda m: m.id == event['d']['id'], client.messages) != None:
+			return
+
 		mchan = client.get_channel(event['d']['channel_id'])
 		schan = getspecialchannel(mchan.server)
 		athr = mchan.server.get_member(event['d']['author']['id'])
