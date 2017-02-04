@@ -1386,14 +1386,14 @@ async def on_socket_raw_receive(payload):
 				mchan,
 				rltm=reltime(
 					time.mktime(
-						datetime.datetime.utcfromtimestamp(
+						discord.utils.parse_time(
 							event['d']['timestamp']
 						).timetuple()
 					)
 				),
 				updtrltm=reltime(
 					time.mktime(
-						datetime.datetime.utcfromtimestamp(
+						discord.utils.parse_time(
 							event['d']['edited_timestamp']
 						).timetuple()
 					)
