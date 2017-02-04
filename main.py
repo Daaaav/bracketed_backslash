@@ -1435,6 +1435,7 @@ async def on_socket_raw_receive(payload):
 				' I can’t give you its older properties.'
 			)
 		)
+		await client.send_message(schan, embed=e)
 
 exec(compile(open("functions.py", "rb").read(), "functions.py", 'exec'))
 exec(compile(open("commands.py", "rb").read(), "commands.py", 'exec'))
