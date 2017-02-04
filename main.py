@@ -1258,6 +1258,22 @@ async def on_server_emojis_update(b, a):
 		desc = 'EMOTE REMOVE'
 	elif len(b) < len(a):
 		desc = 'EMOTE ADD'
+	else:
+		# Emote name change, get the emote in question
+		for befemo in b:
+			for aftemo in a:
+				if befemo.name != aftemo.name and befemo.id == aftemo.id:
+					embef = befemo
+					emaft = aftemo
+
+		embed = discord.Embed(
+			title='EMOTE NAME CHANGE',
+			description=str(emaft),
+		)
+		embed.add_field(name='Older Name', value=embef.name)
+		embed.add_field(name='Newer Name', value=emaft.name)
+		await client.send_message(schan, embed=embed)
+		return
 	embed = discord.Embed(description=desc)
 	embed.add_field(name='Emotes', value=elist)
 	await client.send_message(schan, embed=embed)
