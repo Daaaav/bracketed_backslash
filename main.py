@@ -1400,6 +1400,7 @@ async def on_socket_raw_receive(payload):
 				),
 			),
 			description=event['d']['content'],
+			colour=athr.colour,
 		)
 		e.set_author(
 			name=athr.display_name,
