@@ -1337,23 +1337,23 @@ async def on_socket_raw_receive(payload):
 	if event['t'] not in ckevnts:
 		return
 
-	# Check if on_message_delete() was already called by this message
-	# If it was, then return
-	if discord.utils.find(lambda m: m.id == event['d']['id'], client.messages) != None:
-		# If the message lingers in deleted_messages, it doesn't really matter for now
-		return
-	if event['d']['id'] in owncache:
-		# Already removed from the cache, but we still haven't run on_message_delete
-		# This happens all the time.
-		owncache.remove(event['d']['id'])
-		return
-	for m in deleted_messages:
-		if m.id == event['d']['id']:
-			# on_message_delete was faster
-			deleted_messages.remove(m)
-			return
-
 	if event['t'] == 'MESSAGE_DELETE':
+		# Check if on_message_delete() was already called by this message
+		# If it was, then return
+		if discord.utils.find(lambda m: m.id == event['d']['id'], client.messages) != None:
+			# If the message lingers in deleted_messages, it doesn't really matter for now
+			return
+		if event['d']['id'] in owncache:
+			# Already removed from the cache, but we still haven't run on_message_delete
+			# This happens all the time.
+			owncache.remove(event['d']['id'])
+			return
+		for m in deleted_messages:
+			if m.id == event['d']['id']:
+				# on_message_delete was faster
+				deleted_messages.remove(m)
+				return
+
 		mchan = client.get_channel(event['d']['channel_id'])
 		schan = getspecialchannel(
 			mchan.server
