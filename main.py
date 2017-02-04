@@ -1403,7 +1403,7 @@ async def on_socket_raw_receive(payload):
 		)
 		e.set_author(
 			name=athr.display_name,
-			icon_url=athr.icon_url,
+			icon_url=athr.avatar_url,
 			url=infourl(
 				(
 					'userid={uid}&messageid={mid}'
