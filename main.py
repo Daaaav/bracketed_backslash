@@ -1356,6 +1356,8 @@ async def on_socket_raw_receive(payload):
 				return
 
 		mchan = client.get_channel(event['d']['channel_id'])
+		if mchan.type == discord.ChannelType.private:
+			return
 		schan = getspecialchannel(
 			mchan.server
 		)
@@ -1375,6 +1377,8 @@ async def on_socket_raw_receive(payload):
 			return
 
 		mchan = client.get_channel(event['d']['channel_id'])
+		if mchan.type == discord.ChannelType.private:
+			return
 		schan = getspecialchannel(mchan.server)
 		athr = mchan.server.get_member(event['d']['author']['id'])
 		e = discord.Embed(
