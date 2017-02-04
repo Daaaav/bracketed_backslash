@@ -1368,6 +1368,68 @@ async def on_socket_raw_receive(payload):
 			colour=mchan.server.me.colour,
 		)
 		await client.send_message(schan, embed=e)
+	elif event['t'] == 'MESSAGE_UPDATE':
+		mchan = client.get_channel(event['d']['channel_id'])
+		schan = getspecialchannel(mchan.server)
+		athr = mchan.server.get_member(event['d']['author']['id'])
+		e = discord.Embed(
+			title=(
+				'UNCACHED MESSAGE UPDATED (SENT {rltm}, UPDATED {updtrltm},'
+				' IN {0.mention}).'
+				' NEWER CONTENT AND PROPERTIES:'
+			).format(
+				mchan,
+				rltm=reltime(
+					time.mktime(
+						datetime.datetime.utcfromtimestamp(
+							event['d']['timestamp']
+						).timetuple()
+					)
+				),
+				updtrltm=reltime(
+					time.mktime(
+						datetime.datetime.utcfromtimestamp(
+							event['d']['edited_timestamp']
+						).timetuple()
+					)
+				),
+			),
+			description=event['d']['content'],
+		)
+		e.set_author(
+			name=athr.display_name,
+			icon_url=athr.icon_url,
+			url=infourl(
+				(
+					'userid={uid}&messageid={mid}'
+				).format(
+					uid=athr.id,
+					mid=event['d']['id'],
+				),
+			)
+		)
+		e.add_field(
+			name='Pinned',
+			value='Yes' if event['d']['pinned'] else 'No',
+		)
+		e.add_field(
+			name='TTS',
+			value='Yes' if event['d']['tts'] else 'No',
+		)
+		e.add_field(
+			name='Rich Embed',
+			value=(
+				'``{}``'.format(wrapbackticks(str(event['d']['embeds']['rich'])))
+				if 'rich' in event['d']['embeds']
+				else '(none)'
+			),
+		)
+		e.set_footer(
+			text=(
+				'Since this message is uncached,'
+				' I can’t give you its older properties.'
+			)
+		)
 
 exec(compile(open("functions.py", "rb").read(), "functions.py", 'exec'))
 exec(compile(open("commands.py", "rb").read(), "commands.py", 'exec'))
