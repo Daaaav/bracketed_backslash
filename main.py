@@ -1333,6 +1333,7 @@ async def on_socket_raw_receive(payload):
 	# Events to check
 	ckevnts = [
 		'MESSAGE_DELETE',
+		'MESSAGE_UPDATE',
 	]
 	if event['t'] not in ckevnts:
 		return
