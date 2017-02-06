@@ -1699,3 +1699,37 @@ async def uploadfile(client, message, **kwargs):
 		e = emb.error('`Something happened : Something happened :(`')
 		raise
 	await reply(message, emb=e)
+
+@shadow(auth=is_mod, aliases=['blackunlist'])
+async def blacklist(client, message, **kwargs):
+	if isprivatemessage(message.server):
+		embed = emb.error(t['noprivate'])
+		await reply(message, emb=embed)
+		return
+	tgtmem = get_member_input(message.server, kwargs['arguments'])
+	if tgtmem == None:
+		embed = emb.error('Unable to find that member. ' + t['specify_user'])
+		await reply(message, emb=embed)
+		return
+	if not config.is_detached('blacklist', message.server.id):
+		config.detach('blacklist', message.server.id)
+	if kwargs['command'] == 'blacklist':
+		if tgtmem.id in config.get_s('blacklist', message.server.id):
+			embed = emb.error('{0.mention} is already blacklisted.'.format(tgtmem))
+			await reply(message, emb=embed)
+			return
+		config.insert_s('blacklist', tgtmem.id, message.server.id)
+		config.saveconfig()
+		embed = emb.success('Blacklisted {0.mention} from this server.'.format(tgtmem))
+		await reply(message, emb=embed)
+		return
+	elif kwargs['command'] == 'blackunlist':
+		if tgtmem.id not in config.get_s('blacklist', message.server.id):
+			embed = emb.error('{0.mention} is not blacklisted.'.format(tgtmem))
+			await reply(message, emb=embed)
+			return
+		config.remove_s('blacklist', tgtmem.id, message.server.id)
+		config.saveconfig()
+		embed = emb.success('Blackunlisted {0.mention} from this server.'.format(tgtmem))
+		await reply(message, emb=embed)
+		return
