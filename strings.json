@@ -312,6 +312,16 @@
 					"name": "getrawmessagecontent",
 					"short": "Gets the raw content of a message and its embeds.",
 					"extra": "**Syntax**: `\\getrawmessagecontent <CHANNEL> <MESSAGE ID>\n\n\t`<CHANNEL>`: A channel mention.\n\t`<MESSAGE ID>`: The ID of the message.`"
+				},
+				{
+					"name": "blacklist",
+					"short": "Blacklists a person from using the bot server-wide.",
+					"extra": "Yes, you can blacklist yourself. If you do that, you deserve it and everyone will laugh at you for doing so."
+				},
+				{
+					"name": "blackunlist",
+					"short": "Blackunlists a person, allowing one to use the bot once again.",
+					"extra": ""
 				}
 			]
 		},
