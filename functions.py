@@ -215,18 +215,6 @@ def wrapbackticks(string, character=u'​'):
 	except AttributeError:
 		return string
 
-def mdspecialchars(string, character='\\'):
-	"""Escapes Markdown formatting for use in message output to Discord
-	This does not escape emojis until I figure out how to detect fucking emojis
-	"""
-	specialchars = ['\\', '*', '_', '~', '`', '<', '>']
-	try:
-		for char in specialchars:
-			string = string.replace(char, '\\' + char)
-		return string
-	except AttributeError:
-		return string
-
 def isprivatemessage(server): # this is a function because so in the future more checks for if its a private message can ezily be added
 	if server == None:
 		return True
