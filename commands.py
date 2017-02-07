@@ -1467,8 +1467,8 @@ async def b(client, message, **kwargs):
 							currentexpiry[0],
 							message.server.id,
 							currentexpiry[0],
-							serverid in rolexpires,
-							memberid in rolexpires
+							message.server.id in rolexpires,
+							currentexpiry[0] in rolexpires
 						))
 						await client.send_message(specialchannel, embed=em)
 					except:
