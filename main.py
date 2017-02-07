@@ -1444,6 +1444,9 @@ async def on_socket_raw_receive(payload):
 		)
 		await client.send_message(schan, embed=e)
 
+# Read as: dump code from file ... here
+# So that we can have our existing functions without going across separate modules, and without
+# making main.py far too long.
 exec(compile(open("functions.py", "rb").read(), "functions.py", 'exec'))
 exec(compile(open("commands.py", "rb").read(), "commands.py", 'exec'))
 
