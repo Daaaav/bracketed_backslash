@@ -858,11 +858,11 @@ async def on_member_update(before, after):
 		if before.nick == None:
 			embed.add_field(name='No Older Nickname', value='_No Older Nickname_')
 		else:
-			embed.add_field(name='Older Nickname', value=mdspecialchars(before.nick))
+			embed.add_field(name='Older Nickname', value=utils.mdspecialchars(before.nick))
 		if after.nick == None:
 			embed.add_field(name='No Newer Nickname', value='_No Newer Nickname_')
 		else:
-			embed.add_field(name='Newer Nickname', value=mdspecialchars(after.nick))
+			embed.add_field(name='Newer Nickname', value=utils.mdspecialchars(after.nick))
 		await client.send_message(specialchannel, embed=embed)
 	if before.roles != after.roles:
 		# TODO: Handle it well when roles are both added and deleted!
@@ -871,7 +871,7 @@ async def on_member_update(before, after):
 			embed = discord.Embed(title='ROLE REMOVED FROM USER'.format(id=after.id), colour=rolesremoved[0].colour)
 			embed.set_author(name=after.display_name, icon_url=after.avatar_url, url=infourl('userid={}'.format(after.id)))
 			for roleremoved in rolesremoved:
-				embed.add_field(name='Removed Role', value=mdspecialchars('{} ({})'.format(roleremoved.name, roleremoved.id)))
+				embed.add_field(name='Removed Role', value=utils.mdspecialchars('{} ({})'.format(roleremoved.name, roleremoved.id)))
 			await client.send_message(specialchannel, embed=embed)
 		if len(before.roles) < len(after.roles) and not logdisabled('member_roleadd', after.server): # if a role has been added
 			rolesadded = list(set(after.roles).symmetric_difference(set(before.roles)))
@@ -879,7 +879,7 @@ async def on_member_update(before, after):
 			# i am fucking TRIGGERED that i have to set these values twice
 			embed.set_author(name=after.display_name, icon_url=after.avatar_url, url=infourl('userid={}'.format(after.id)))
 			for roleadded in rolesadded:
-				embed.add_field(name='Added Role', value=mdspecialchars('{} ({})'.format(roleadded.name, roleadded.id)))
+				embed.add_field(name='Added Role', value=utils.mdspecialchars('{} ({})'.format(roleadded.name, roleadded.id)))
 			await client.send_message(specialchannel, embed=embed)
 		if config.get_s('rolecachemode', after.server.id) != 0:
 			updaterolecache(after)
@@ -890,8 +890,8 @@ async def on_member_update(before, after):
 			description += ' AND DISCRIMINATOR 🔸'
 		embed = discord.Embed(title=description, colour=after.colour)
 		embed.set_author(name=after.display_name, icon_url=after.avatar_url, url=infourl('userid={}'.format(after.id)))
-		embed.add_field(name='Older Username', value=mdspecialchars(before.name))
-		embed.add_field(name='Newer Username', value=mdspecialchars(after.name))
+		embed.add_field(name='Older Username', value=utils.mdspecialchars(before.name))
+		embed.add_field(name='Newer Username', value=utils.mdspecialchars(after.name))
 		if before.discriminator != after.discriminator:
 			embed.add_field(name='Older Discriminator', value=before.discriminator, inline=False)
 			embed.add_field(name='Newer Discriminator', value=after.discriminator)
@@ -956,7 +956,7 @@ async def on_server_role_create(r):
 	schan = getspecialchannel(r.server)
 	embed = discord.Embed(
 		title='ROLE ADD AT {time}'.format(time=str(r.created_at)),
-		description=mdspecialchars(r.name),
+		description=utils.mdspecialchars(r.name),
 		colour=r.colour,
 	)
 	await client.send_message(schan, embed=embed)
@@ -966,7 +966,7 @@ async def on_server_role_delete(r):
 	schan = getspecialchannel(r.server)
 	embed = discord.Embed(
 		title='ROLE REMOVE',
-		description=mdspecialchars(r.name),
+		description=utils.mdspecialchars(r.name),
 		colour=r.colour,
 	)
 	embed.add_field(name='Original Creation Time', value=str(r.created_at))
@@ -976,16 +976,16 @@ async def on_server_role_delete(r):
 async def on_server_role_update(before, after):
 	specialchannel = getspecialchannel(before.server)
 	if before.name != after.name: # if the name changed
-		embed = discord.Embed(title='ROLE NAME CHANGE', description=mdspecialchars(after.name), colour=after.colour)
-		embed.add_field(name='Older Name', value=mdspecialchars(before.name))
-		embed.add_field(name='Newer Name', value=mdspecialchars(after.name))
+		embed = discord.Embed(title='ROLE NAME CHANGE', description=utils.mdspecialchars(after.name), colour=after.colour)
+		embed.add_field(name='Older Name', value=utils.mdspecialchars(before.name))
+		embed.add_field(name='Newer Name', value=utils.mdspecialchars(after.name))
 		await client.send_message(specialchannel, embed=embed)
 	if before.hoist != after.hoist: # if "display online members separately" changed
 		if before.hoist == 0 and after.hoist == 1: # if the role has been hoisted
 			embed = discord.Embed(
 				title='ROLE HOIST',
 				description='{name}\nID: {id}'.format(
-					name=mdspecialchars(after.name),
+					name=utils.mdspecialchars(after.name),
 					id=after.id,
 				),
 				colour=after.colour,
@@ -995,7 +995,7 @@ async def on_server_role_update(before, after):
 			embed = discord.Embed(
 				title='ROLE UNHOIST',
 				description='{name}\nID: {id}'.format(
-					name=mdspecialchars(after.name),
+					name=utils.mdspecialchars(after.name),
 					id=after.id,
 				),
 				colour=after.colour,
@@ -1016,7 +1016,7 @@ async def on_server_role_update(before, after):
 			msg = '**`>`**`role` **``{}``** `({}) has been moved up by {} roles ({} to {})`'.format(wrapbackticks(after.name), after.id, after.position - before.position, before.position, after.position)
 			await client.send_message(specialchannel, msg)
 	if before.colour != after.colour:
-		embed = discord.Embed(title='ROLE COLOR CHANGE', description=mdspecialchars(after.name), colour=after.colour)
+		embed = discord.Embed(title='ROLE COLOR CHANGE', description=utils.mdspecialchars(after.name), colour=after.colour)
 		embed.add_field(name='Older Color', value='(default)' if before.colour.value == 0 else str(before.colour).upper())
 		embed.add_field(name='Newer Color', value='(default)' if after.colour.value == 0 else str(after.colour).upper())
 		await client.send_message(specialchannel, embed=embed)
@@ -1025,7 +1025,7 @@ async def on_server_role_update(before, after):
 		e = discord.Embed(
 			title='ROLE PERMISSIONS CHANGE',
 			description='**{name}** ({0.id})'.format(
-				after, name=mdspecialchars(after.name)
+				after, name=utils.mdspecialchars(after.name)
 			),
 			colour=after.colour,
 		)
@@ -1066,7 +1066,7 @@ async def on_reaction_add(r, u):
 		url=infourl('userid={}&messageid={}'.format(u.id, r.message.id))
 	)
 	mdetails = '**{name}**#{discrim}'.format(
-		name=mdspecialchars(u.name),
+		name=utils.mdspecialchars(u.name),
 		discrim=u.discriminator,
 	)
 	if u.status == discord.Status.offline:
@@ -1117,7 +1117,7 @@ async def on_reaction_remove(r, u):
 		url=infourl('userid={}&messageid={}'.format(u.id, r.message.id))
 	)
 	mdetails = '**{name}**#{discrim}'.format(
-		name=mdspecialchars(u.name),
+		name=utils.mdspecialchars(u.name),
 		discrim=u.discriminator,
 	)
 	if u.status == discord.Status.offline:
@@ -1189,8 +1189,8 @@ async def on_server_update(before, after):
 	if before.name != after.name:
 		embed = discord.Embed(description='Server changed name')
 		embed.set_thumbnail(url=after.icon_url)
-		embed.add_field(name='Older Name', value=mdspecialchars(before.name))
-		embed.add_field(name='Newer Name', value=mdspecialchars(after.name))
+		embed.add_field(name='Older Name', value=utils.mdspecialchars(before.name))
+		embed.add_field(name='Newer Name', value=utils.mdspecialchars(after.name))
 		await client.send_message(specialchannel, embed=embed)
 	if before.region != after.region:
 		embed = discord.Embed(description='VOICE REGION CHANGE')
@@ -1219,11 +1219,11 @@ async def on_server_update(before, after):
 		embed.set_thumbnail(url=after.icon_url)
 		embed.add_field(
 			name='Older Channel: None' if before.afk_channel == None else 'Older Channel',
-			value='No Older Channel' if before.afk_channel == None else '{name} ({0.id})'.format(before.afk_channel, name=mdspecialchars(before.afk_channel.name)),
+			value='No Older Channel' if before.afk_channel == None else '{name} ({0.id})'.format(before.afk_channel, name=utils.mdspecialchars(before.afk_channel.name)),
 		)
 		embed.add_field(
 			name='Newer Channel: None' if after.afk_channel == None else 'Newer Channel',
-			value='No Newer Channel' if after.afk_channel == None else '{name} ({0.id})'.format(after.afk_channel, name=mdspecialchars(after.afk_channel.name)),
+			value='No Newer Channel' if after.afk_channel == None else '{name} ({0.id})'.format(after.afk_channel, name=utils.mdspecialchars(after.afk_channel.name)),
 		)
 		await client.send_message(specialchannel, embed=embed)
 	if before.verification_level != after.verification_level:
