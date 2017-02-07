@@ -131,6 +131,7 @@ modificationtimes = [
 	os.path.getmtime('emb.py'),
 	os.path.getmtime('col.py'),
 	os.path.getmtime('images.py'),
+	os.path.getmtime('utils.py'),
 ]
 modificationtimecache = time.strftime(config.get_s('timeformat'), time.gmtime(max(modificationtimes)))
 
