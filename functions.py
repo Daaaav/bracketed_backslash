@@ -219,15 +219,7 @@ def mdspecialchars(string, character='\\'):
 	"""Escapes Markdown formatting for use in message output to Discord
 	This does not escape emojis until I figure out how to detect fucking emojis
 	"""
-	specialchars = [
-		'\\', # this should be first otherwise you will get undesirable output
-		'*', # italicize and bold
-		'_', # italicize [2] and underline
-		'~', # hey have you ever wanted to make a shitty joke? just wrap it in two of these on each side!
-		'`', # oh hey we escaped these earlier
-		'<', # custom emotes and suppressing link embeds
-		'>', # custom emotes and suppressing link embeds [2]
-	]
+	specialchars = ['\\', '*', '_', '~', '`', '<', '>']
 	try:
 		for char in specialchars:
 			string = string.replace(char, '\\' + char)
