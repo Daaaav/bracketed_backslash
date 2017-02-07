@@ -40,6 +40,7 @@ import config
 import col
 import emb
 import images
+import utils
 
 config.load()
 
