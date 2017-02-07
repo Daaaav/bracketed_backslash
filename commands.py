@@ -345,20 +345,20 @@ async def findu(client, message, **kwargs):
 	if memberhasgame:
 		if targetmember.game.type == 0 or targetmember.game.type == None:
 			displaygamestatus = 'Playing'
-			displaygamename = mdspecialchars(targetmember.game.name)
+			displaygamename = utils.mdspecialchars(targetmember.game.name)
 		if targetmember.game.type == 1:
 			displaygamestatus = 'Streaming'
-			displaygamename = mdspecialchars(targetmember.game.name)
+			displaygamename = utils.mdspecialchars(targetmember.game.name)
 		if targetmember.game.url == None:
 			displaygameurlstatus = 'No Stream Link'
 			displaygameurl = 'No Stream Link'
 		else:
 			displaygameurlstatus = 'Stream Link'
-			displaygameurl = mdspecialchars(targetmember.game.url)
+			displaygameurl = utils.mdspecialchars(targetmember.game.url)
 	embed = discord.Embed(description='Matched ' + displaymatch, colour=targetmember.colour)
 	embed.set_image(url=targetmember.avatar_url)
-	embed.add_field(name='Nickname' if targetmember.nick != None else 'No Nickname', value=mdspecialchars(targetmember.nick) if targetmember.nick != None else 'No Nickname')
-	embed.add_field(name='Username', value=mdspecialchars(targetmember.name))
+	embed.add_field(name='Nickname' if targetmember.nick != None else 'No Nickname', value=utils.mdspecialchars(targetmember.nick) if targetmember.nick != None else 'No Nickname')
+	embed.add_field(name='Username', value=utils.mdspecialchars(targetmember.name))
 	embed.add_field(name='Discriminator', value='#{}'.format(targetmember.discriminator))
 	embed.add_field(name='User ID', value=targetmember.id)
 	embed.add_field(name='Bot', value='Yes' if is_bot(targetmember) else 'No')
