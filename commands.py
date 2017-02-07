@@ -1458,7 +1458,31 @@ async def b(client, message, **kwargs):
 				thisexpiry = currentexpiry[1]
 				if thisexpiry['msgedit_message'] != '0':
 					await editexpirymessage(message.server, thisexpiry)
-				removeexpiryentry(message.server.id, currentexpiry[0])
+				if not removeexpiryentry(message.server.id, currentexpiry[0]):
+					try:
+						em = emb.warning((
+							'Could not remove expiry entry for '
+							'<@!{}>! Debug: S:{} M:{} SI:{} MI:{}'
+						).format(
+							currentexpiry[0],
+							message.server.id,
+							currentexpiry[0],
+							serverid in rolexpires,
+							memberid in rolexpires
+						))
+						await client.send_message(specialchannel, embed=em)
+					except:
+						em = emb.error((
+							'Something happened : Something happened :('
+							'\n\nIn fact, you are seeing this because '
+							'Dav didn\'t know whether he should make '
+							'`rolexpires` global or not, and he made '
+							'precisely the wrong choice, or he made '
+							'some other kind of lame mistake. You '
+							'want to know which one, huh? Here it is:'
+							'\n{}'
+						).format(traceback.format_exc()))
+						await client.send_message(specialchannel, embed=em)
 				expiredmentions.append('<@!{}>'.format(currentexpiry[0]))
 
 			# Send administration info
@@ -1557,6 +1581,7 @@ async def revertban(client, message, **kwargs):
 					targetmember.mention
 				)
 			)
+			await client.send_message(specialchannel, embed=embed)
 			return
 
 		# It's even longer this time
