@@ -866,7 +866,15 @@ async def on_member_update(before, after):
 			embed.add_field(name='Newer Nickname', value=utils.mdspecialchars(after.nick))
 		await client.send_message(specialchannel, embed=embed)
 	if before.roles != after.roles:
-		# TODO: Handle it well when roles are both added and deleted!
+		# TODO: Make these better
+		if len(before.roles) == len(after.roles):
+			embed = discord.Embed(title='ROLES CHANGED FOR USER')
+			embed.set_author(
+				name=after.display_name,
+				icon_url=after.avatar_url,
+				url=infourl('userid={}'.format(after.id))
+			)
+			await client.send_message(specialchannel, embed=embed)
 		if len(before.roles) > len(after.roles) and not logdisabled('member_roleremove', after.server): # if a role has been removed
 			rolesremoved = list(set(before.roles).symmetric_difference(set(after.roles)))
 			embed = discord.Embed(title='ROLE REMOVED FROM USER'.format(id=after.id), colour=rolesremoved[0].colour)
