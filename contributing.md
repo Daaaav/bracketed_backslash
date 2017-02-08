@@ -1,8 +1,8 @@
 # Contributing
 Oh shit, this repository is actually public now.
-## People who aren’t [\] Developers
+## People who aren’t [\\] Developers
 Make a pull request. I’ll see if it works or something.
-## [\] Developers
+## [\\] Developers
 You have somehow become a developer. Just make sure your code is worth its merit.
 
 Please don’t push your changes to the `master` branch, unless you know what you
