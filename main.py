@@ -1272,7 +1272,7 @@ async def on_server_emojis_update(b, a):
 		# Emote name change, get the emote in question
 		for befemo in b:
 			for aftemo in a:
-				if befemo.name != aftemo.name and befemo.id == aftemo.id:
+				if befemo.id == aftemo.id and befemo.name != aftemo.name:
 					embef = befemo
 					emaft = aftemo
 
