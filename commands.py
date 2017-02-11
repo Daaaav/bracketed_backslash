@@ -72,7 +72,7 @@ async def kill(client, message, **kwargs):
 	await client.logout()
 	sys.exit(42)
 
-@shadow(auth=is_operator, aliases=['config'])
+@shadow(auth=is_operator)
 async def _config(client, message, **kwargs):
 	if kwargs['arguments'] == None:
 		content = (
