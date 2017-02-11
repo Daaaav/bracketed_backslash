@@ -1074,10 +1074,7 @@ async def on_reaction_add(r, u):
 		icon_url=u.avatar_url,
 		url=infourl('userid={}&messageid={}'.format(u.id, r.message.id))
 	)
-	mdetails = '**{name}**#{discrim}'.format(
-		name=utils.mdspecialchars(u.name),
-		discrim=u.discriminator,
-	)
+	mdetails = u.mention
 	if u.status == discord.Status.offline:
 		mdetails += ' (Invisible)'
 	embed.add_field(
@@ -1093,7 +1090,7 @@ async def on_reaction_add(r, u):
 			else
 			(
 				'{name} ({id})'.format(
-					name=emotename,
+					name=str(r.emoji),
 					id=r.emoji.id,
 				)
 			)
@@ -1125,12 +1122,7 @@ async def on_reaction_remove(r, u):
 		icon_url=u.avatar_url,
 		url=infourl('userid={}&messageid={}'.format(u.id, r.message.id))
 	)
-	mdetails = '**{name}**#{discrim}'.format(
-		name=utils.mdspecialchars(u.name),
-		discrim=u.discriminator,
-	)
-	if u.status == discord.Status.offline:
-		mdetails += ' (Invisible)'
+	mdetails = u.mention
 	embed.add_field(
 		name='Member of Reaction',
 		value=mdetails,
@@ -1144,7 +1136,7 @@ async def on_reaction_remove(r, u):
 			else
 			(
 				'{name} ({id})'.format(
-					name=emotename,
+					name=str(r.emoji),
 					id=r.emoji.id,
 				)
 			)
@@ -1272,7 +1264,7 @@ async def on_server_emojis_update(b, a):
 		# Emote name change, get the emote in question
 		for befemo in b:
 			for aftemo in a:
-				if befemo.name != aftemo.name and befemo.id == aftemo.id:
+				if befemo.id == aftemo.id and befemo.name != aftemo.name:
 					embef = befemo
 					emaft = aftemo
 
@@ -1450,6 +1442,26 @@ async def on_socket_raw_receive(payload):
 				' I can’t give you its older properties.'
 			)
 		)
+		await client.send_message(schan, embed=e)
+
+@client.event
+async def on_channel_update(b, a):
+	if a.type == discord.ChannelType.private:
+		return
+	schan = getspecialchannel(a.server)
+	if b.name != a.name:
+		e = discord.Embed(
+			title='{type} CHANNEL UPDATE'.format(type=str(a.type).upper()),
+			description=(
+				'**{name}** ({id})'
+			).format(
+				name=utils.mdspecialchars(a.name),
+				id=a.id,
+			),
+			colour=a.server.me.colour,
+		)
+		e.add_field(name='Older Name', value=utils.mdspecialchars(b.name))
+		e.add_field(name='Newer Name', value=utils.mdspecialchars(a.name))
 		await client.send_message(schan, embed=e)
 
 # Read as: dump code from file ... here

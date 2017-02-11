@@ -72,8 +72,8 @@ async def kill(client, message, **kwargs):
 	await client.logout()
 	sys.exit(42)
 
-@shadow(auth=is_operator, aliases=['config'])
-async def configure(client, message, **kwargs):
+@shadow(auth=is_operator)
+async def _config(client, message, **kwargs):
 	if kwargs['arguments'] == None:
 		content = (
 			'You can use the following options:\n'
@@ -115,6 +115,11 @@ async def configure(client, message, **kwargs):
 	splitargs = kwargs['arguments'].split(' ', 2)
 
 	editingmaster = True
+
+	if len(splitargs) == 1:
+		embed = emb.error('Too few arguments.')
+		await reply(message, emb=embed)
+		return
 
 	if splitargs[0] == 'set':
 		if not config.exists(splitargs[1]):

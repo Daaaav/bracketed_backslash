@@ -137,7 +137,6 @@ def get_member_input(server, input):
 
 	return targetmember
 
-@client.event
 async def reply(messageobject, message=None, emb=None):
 	# Removes the need for adding msg_start manually every time
 	if message == None:
@@ -198,7 +197,6 @@ async def reply(messageobject, message=None, emb=None):
 			)
 		)
 
-@client.event
 async def replyattach(messageobject, filetoattach, fname, message=''):
 	# Don't bother with handling >2000 character messages just yet
 	await client.send_file(destination=messageobject.channel, content = msg_start + message, fp=filetoattach, filename=fname)
@@ -414,7 +412,6 @@ def parsereltime(inputstr, relative=False, now=None):
 	else:
 		return now+total
 
-@client.event
 async def handleExpiryTimer():
 	"""Sets the timer correctly to the first event
 	If time is in the past, call autoExpiry immediately
@@ -458,7 +455,6 @@ async def handleExpiryTimer():
 def callAutoExpiry():
 	asyncio.run_coroutine_threadsafe(autoExpiry(), client.loop)
 
-@client.event
 async def autoExpiry():
 	"""Called by timers
 	Actually resets roles
@@ -516,7 +512,6 @@ async def autoExpiry():
 
 	await handleExpiryTimer()
 
-@client.event
 async def removeRestrictiveRoles(member, server):
 	badroles = []
 	removingtheseroles = []
@@ -558,7 +553,6 @@ async def removeRestrictiveRoles(member, server):
 	except (AttributeError,TypeError) as e:
 		raise e
 
-@client.event
 async def editexpirymessage(cserver, thisexpiry):
 	# We want to edit a message to reflect the ban!
 	getmessage = await client.get_message(
@@ -619,7 +613,6 @@ def getearliestexpiry(serverid):  # Returns: [userid, entry]
 
 	return [earliestuserid, earliestexpiry]
 
-@client.event
 async def fetch(url):
 	async with ClientSession() as session:
 		async with session.get(url) as response:
@@ -646,7 +639,6 @@ def respondtorule(rule):
 		return 'Funny and original, nothing to see here.'
 	return 'Wow, you’re the FIRST one to come up with that. I wish I could be as funny as you, I dunno how I’m ever gonna top "rule {}", though. That shit is genius.'.format(rule)
 
-@client.event
 async def newmemberroles(member, specialchannel, bypassjoinchannel):
 	if config.get_s('rolecachemode', member.server.id) == 1 and is_bot(member):
 		# Give them the bot roles!
