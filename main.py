@@ -1444,7 +1444,7 @@ async def on_socket_raw_receive(payload):
 			)
 		)
 		await client.send_message(schan, embed=e)
-	elif event['t'] == 'MESSAGE_REACTION_ADD':
+	elif event['t'] == 'MESSAGE_REACTION_REMOVE':
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(lambda m: m.id == event['d']['message_id'], client.messages) \
 		!= None:
@@ -1456,10 +1456,8 @@ async def on_socket_raw_receive(payload):
 		schan = getspecialchannel(mchan.server)
 		athr = mchan.server.get_member(event['d']['user_id'])
 		mdetails = athr.mention
-		if athr.status == discord.Status.offline:
-			mdetails += ' (Invisible)'
 		e = discord.Embed(
-			title='REACTION ADDED TO UNCACHED MESSAGE IN {0.mention}'.format(mchan),
+			title='REACTION REMOVED FROM UNCACHED MESSAGE IN {0.mention}'.format(mchan),
 			description=(
 				'Since this message is uncached, I can’t give you'
 				' any more information than its ID, author, and channel.'
