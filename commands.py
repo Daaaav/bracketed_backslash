@@ -116,6 +116,11 @@ async def _config(client, message, **kwargs):
 
 	editingmaster = True
 
+	if len(splitargs) == 1:
+		embed = emb.error('Too few arguments.')
+		await reply(message, emb=embed)
+		return
+
 	if splitargs[0] == 'set':
 		if not config.exists(splitargs[1]):
 			embed = emb.error('That setting does not exist')
