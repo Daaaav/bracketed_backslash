@@ -73,7 +73,7 @@ async def kill(client, message, **kwargs):
 	sys.exit(42)
 
 @shadow(auth=is_operator, aliases=['config'])
-async def configure(client, message, **kwargs):
+async def _config(client, message, **kwargs):
 	if kwargs['arguments'] == None:
 		content = (
 			'You can use the following options:\n'
