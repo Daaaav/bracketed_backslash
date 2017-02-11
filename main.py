@@ -1446,6 +1446,54 @@ async def on_socket_raw_receive(payload):
 			)
 		)
 		await client.send_message(schan, embed=e)
+	elif event['t'] == 'MESSAGE_REACTION_ADD':
+		# Check if the message is in the cache and return if it is
+		if discord.utils.find(lambda m: m.id == event['d']['message_id'], client.messages) \
+		!= None:
+			return
+
+		mchan = client.get_channel(event['d']['channel_id'])
+		if mchan.type == discord.ChannelType.private:
+			return
+		schan = getspecialchannel(mchan.server)
+		athr = mchan.server.get_member(event['d']['user_id'])
+		mdetails = athr.mention
+		if athr.status == discord.Status.offline:
+			mdetails += ' (Invisible)'
+		e = discord.Embed(
+			title='REACTION ADDED TO UNCACHED MESSAGE IN {0.mention}'.format(mchan),
+			description=(
+				'Since this message is uncached, I can’t give you'
+				' any more information than its ID, author, and channel.'
+			),
+			colour=mchan.server.me.colour,
+		)
+		e.set_author(
+			name=athr.display_name,
+			icon_url=athr.avatar_url,
+			url=infourl(
+				(
+					'userid={uid}&messageid={mid}'
+				).format(
+					uid=athr.id,
+					mid=event['d']['message_id'],
+				),
+			)
+		)
+		e.add_field(
+			name='Member of Reaction',
+			value=mdetails,
+		)
+		e.add_field(
+			name='Reaction',
+			value=(
+				'<:{name}:{id}>'
+			).format(
+				name=event['d']['emoji']['name'],
+				id=event['d']['emoji']['id'],
+			) if event['d']['emoji']['id'] != None else event['d']['emoji']['name'],
+		)
+		await client.send_message(schan, embed=e)
 	elif event['t'] == 'MESSAGE_REACTION_REMOVE':
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(lambda m: m.id == event['d']['message_id'], client.messages) \
