@@ -766,11 +766,11 @@ async def on_message_delete(message): # when a message gets deleted
 		else:
 			embed = discord.Embed(
 				title='Message was deleted',
-				description=(
-					'This notification was sent because a message by this '
-					'user was deleted too recently.'
-				),
 				colour=message.author.colour,
+			)
+			embed.set_footer(
+				text='This notification was sent because a message by this '
+				'user was deleted too recently.'
 			)
 		embed.set_author(
 			name=message.author.display_name,
