@@ -1388,7 +1388,7 @@ async def on_socket_raw_receive(payload):
 		athr = mchan.server.get_member(event['d']['author']['id'])
 		e = discord.Embed(
 			title=(
-				'UNCACHED MESSAGE UPDATED (SENT {rltm}, UPDATED {updtrltm},'
+				'UNCACHED MESSAGE UPDATED (SENT {rltm}'
 				' IN {0.mention}).'
 				' NEWER CONTENT AND PROPERTIES:'
 			).format(
@@ -1397,13 +1397,6 @@ async def on_socket_raw_receive(payload):
 					time.mktime(
 						discord.utils.parse_time(
 							event['d']['timestamp']
-						).timetuple()
-					)
-				),
-				updtrltm=reltime(
-					time.mktime(
-						discord.utils.parse_time(
-							event['d']['edited_timestamp']
 						).timetuple()
 					)
 				),
