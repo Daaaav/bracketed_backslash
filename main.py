@@ -1338,6 +1338,7 @@ async def on_socket_raw_receive(payload):
 		'MESSAGE_UPDATE',
 		'MESSAGE_REACTION_ADD',
 		'MESSAGE_REACTION_REMOVE',
+		'MESSAGE_REACTION_REMOVE_ALL',
 	]
 	if event['t'] not in ckevnts:
 		return
@@ -1489,6 +1490,29 @@ async def on_socket_raw_receive(payload):
 				name=event['d']['emoji']['name'],
 				id=event['d']['emoji']['id'],
 			) if event['d']['emoji']['id'] != None else event['d']['emoji']['name'],
+		)
+		await client.send_message(schan, embed=e)
+	elif event['t'] == 'MESSAGE_REACTION_REMOVE':
+		# Check if the message is in the cache and return if it is
+		if discord.utils.find(lambda m: m.id == event['d']['message_id'], client.messages) \
+		!= None:
+			return
+
+		mchan = client.get_channel(event['d']['channel_id'])
+		if mchan.type == discord.ChannelType.private:
+			return
+		schan = getspecialchannel(mchan.server)
+		e = discord.Embed(
+			title=(
+				'REACTIONS CLEARED FROM UNCACHED MESSAGE'
+				' IN {0.mention}'
+			).format(mchan),
+			url=infourl('messageid=' + event['d']['message_id']),
+			description=(
+				'Since this message is uncached, I can’t give you'
+				' any more information than its ID and its channel.'
+			),
+			colour=mchan.server.me.colour,
 		)
 		await client.send_message(schan, embed=e)
 
