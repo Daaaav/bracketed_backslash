@@ -1093,7 +1093,7 @@ async def on_reaction_add(r, u):
 			else
 			(
 				'{name} ({id})'.format(
-					name=emotename,
+					name=str(emoji),
 					id=r.emoji.id,
 				)
 			)
@@ -1144,7 +1144,7 @@ async def on_reaction_remove(r, u):
 			else
 			(
 				'{name} ({id})'.format(
-					name=emotename,
+					name=str(emote),
 					id=r.emoji.id,
 				)
 			)
