@@ -1074,10 +1074,7 @@ async def on_reaction_add(r, u):
 		icon_url=u.avatar_url,
 		url=infourl('userid={}&messageid={}'.format(u.id, r.message.id))
 	)
-	mdetails = '**{name}**#{discrim}'.format(
-		name=utils.mdspecialchars(u.name),
-		discrim=u.discriminator,
-	)
+	mdetails = u.mention
 	if u.status == discord.Status.offline:
 		mdetails += ' (Invisible)'
 	embed.add_field(
@@ -1125,10 +1122,7 @@ async def on_reaction_remove(r, u):
 		icon_url=u.avatar_url,
 		url=infourl('userid={}&messageid={}'.format(u.id, r.message.id))
 	)
-	mdetails = '**{name}**#{discrim}'.format(
-		name=utils.mdspecialchars(u.name),
-		discrim=u.discriminator,
-	)
+	mdetails = u.mention
 	embed.add_field(
 		name='Member of Reaction',
 		value=mdetails,
