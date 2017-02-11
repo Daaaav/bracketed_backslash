@@ -1492,7 +1492,7 @@ async def on_socket_raw_receive(payload):
 			) if event['d']['emoji']['id'] != None else event['d']['emoji']['name'],
 		)
 		await client.send_message(schan, embed=e)
-	elif event['t'] == 'MESSAGE_REACTION_REMOVE':
+	elif event['t'] == 'MESSAGE_REACTION_REMOVE_ALL':
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(lambda m: m.id == event['d']['message_id'], client.messages) \
 		!= None:
