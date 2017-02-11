@@ -1129,8 +1129,6 @@ async def on_reaction_remove(r, u):
 		name=utils.mdspecialchars(u.name),
 		discrim=u.discriminator,
 	)
-	if u.status == discord.Status.offline:
-		mdetails += ' (Invisible)'
 	embed.add_field(
 		name='Member of Reaction',
 		value=mdetails,
