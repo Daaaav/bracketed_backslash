@@ -297,10 +297,15 @@ async def on_message(m):
 	hangmanstarter, guessedletters, algeraden, memberroles, rules, disabledrules, latestroled
 	schan = getspecialchannel_reply(m)
 	indisp = (
-		'``{}``**`…`**'.format(wrapbackticks(m.content[:100]))
+		(
+			'``{}``**`…`**'
+		).format(
+			wrapbackticks(m.content[:100]).replace('discord.gg', 'discord\u200b.gg')
+		)
 	) if len(m.content) > 100 else (
 		'``{}``'.format(wrapbackticks(m.content))
 		.replace('\n', '``**`\\n`**``​')
+		.replace('discord.gg', 'discord\u200b.gg')
 	)
 	if indisp[-12:] == '``**`\\n`**``​':
 		indisp += '``'
