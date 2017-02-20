@@ -1287,20 +1287,23 @@ async def on_server_emojis_update(b, a):
 
 @client.event
 async def on_voice_state_update(before, after):
-	global productionserver, voicetextchannel
-
-	if after.server.id != productionserver:
+	voicetextchannel = after.server.get_channel(
+		config.get_s('voicechat_channel_text', after.server.id),
+	)
+	voicevoicechannel = after.server.get_channel(
+		config.get_s('voicechat_channel_voice', after.server.id),
+	)
+	if voicetextchannel == None or voicevoicechannel == None:
 		return
-
 	if after.voice.voice_channel != None \
-	and after.voice.voice_channel.id == '153368831329435648':
+	and after.voice.voice_channel == voicevoicechannel:
 		# JOINED the voice channel.
 		overwrite = discord.PermissionOverwrite()
 		overwrite.read_messages = True
 		await client.edit_channel_permissions(voicetextchannel, after, overwrite)
 
 	if before.voice.voice_channel != None \
-	and before.voice.voice_channel.id == '153368831329435648':
+	and before.voice.voice_channel == voicevoicechannel:
 		# LEFT the voice channel.
 		await client.delete_channel_permissions(voicetextchannel, after)
 
