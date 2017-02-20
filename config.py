@@ -149,6 +149,14 @@ configs = {
 		'detachable': True,
 		'shown': True,
 	},
+	'voicechat_channel_voice': {
+		'default': '0',
+		'type': 'cid',
+		'is_array': False,
+		'expl': 'The voice channel to have a text channel to accompany it.',
+		'detachable': True,
+		'shown': True,
+	},
 }
 
 s = {}
