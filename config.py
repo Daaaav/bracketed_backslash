@@ -278,35 +278,6 @@ def load():
 			s[loadedsetting] = {}
 			s[loadedsetting]['master'] = loadedconfig[loadedsetting]['master']
 			for loadedlocalsetting in loadedconfig[loadedsetting]:
-				# Here starts some type checking, in case someone decides to
-				# change one of the config options from a non-array to an array
-				# or vice versa, while the saved config file remains unchanged.
-				if is_array(loadedsetting) and not (
-					type(
-						loadedconfig[loadedsetting][loadedlocalsetting]
-					) is list
-				):
-					raise TypeError(
-						(
-							'Config {} is supposed to be an array, but '
-							'the saved value is not.'
-						).format(loadedsetting)
-					)
-					return
-				if not is_array(loadedsetting) and (
-					type(
-						loadedconfig[loadedsetting][loadedlocalsetting]
-					) is list
-				):
-					raise TypeError(
-						(
-							'Config {} is supposed to not be an array, '
-							'but the saved value is.'
-						).format(loadedsetting)
-					)
-					return
-				# End of type checking, now just save that value
-				# (but we've already done the master value)
 				if loadedlocalsetting != 'master':
 					s[loadedsetting][loadedlocalsetting] = loadedconfig[loadedsetting][loadedlocalsetting]
 	except FileNotFoundError:
