@@ -701,17 +701,17 @@ async def on_message(m):
 				func = commands[c]
 				break
 		else:
-			e = emb.warning(
-				(
-					'Invalid command. Input `\help` for'
-					' a list of valid commands.'
+			if (not priv and config.get_s('notify_invalidcmd', m.server.id)) or \
+			(priv and config.get_s('notify_invalidcmd')):
+				e = emb.warning(
+					(
+						'Invalid command. Input `\help` for'
+						' a list of valid commands.'
+					)
 				)
-			)
-			await reply(m, emb=e)
-			return
+				await reply(m, emb=e)
+				return
 	if func[1] != None and not func[1](m.author):
-		if (not priv and config.get_s('notify_invalidcmd', m.server.id)) or \
-		(priv and config.get_s('notify_invalidcmd')):
 			e = emb.error(t['you_no_permission'])
 			logfailedcommand(command, arguments, m)
 			await reply(m, emb=e)
