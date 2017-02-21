@@ -157,6 +157,17 @@ configs = {
 		'detachable': True,
 		'shown': True,
 	},
+	'notify_invalidcmd': {
+		'default': False,
+		'type': 'bln',
+		'is_array': False,
+		'expl': (
+			'If the bot should message on an invalid command,'
+			' instead of failing silently.'
+		),
+		'detachable': True,
+		'shown': True,
+	},
 }
 
 s = {}
