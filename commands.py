@@ -1490,6 +1490,8 @@ async def b(client, message, **kwargs):
 						await client.send_message(specialchannel, embed=em)
 				expiredmentions.append('<@!{}>'.format(currentexpiry[0]))
 
+			rolexpiresave()
+
 			# Send administration info
 			embed = emb.info(content)
 			await client.send_message(specialchannel, embed=embed)
