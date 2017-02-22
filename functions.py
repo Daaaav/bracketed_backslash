@@ -632,7 +632,8 @@ def infourl(query):
 	return 'https://tolp2.nl/showdiscordinfo.php?' + query
 
 def logdisabled(key, server):
-	return key in config.get_s('disabledlogs', server.id)
+	return               key in config.get_s('disabledlogs', server.id) or \
+	key.split('_')[0] + '_*' in config.get_s('disabledlogs', server.id)
 
 def respondtorule(rule):
 	if int(rule) == 37:
