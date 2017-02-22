@@ -874,7 +874,10 @@ async def on_member_update(before, after):
 		await client.send_message(specialchannel, embed=embed)
 	if before.roles != after.roles:
 		# TODO: Make these better
-		if len(before.roles) == len(after.roles):
+		if len(before.roles) == len(after.roles) and not (
+			logdisabled('member_roleadd', after.server) and \
+			logdisabled('member_roleremove', after.server
+		):
 			embed = discord.Embed(title='ROLES CHANGED FOR USER')
 			embed.set_author(
 				name=after.display_name,
