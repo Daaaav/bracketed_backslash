@@ -1606,7 +1606,7 @@ async def on_socket_raw_receive(payload):
 
 @client.event
 async def on_channel_update(b, a):
-	if a.type == discord.ChannelType.private or logdisabled('channel_update', a.server):
+	if a.type == discord.ChannelType.private or logdisabled('channel_rename', a.server):
 		return
 	schan = getspecialchannel(a.server)
 	if b.name != a.name:
