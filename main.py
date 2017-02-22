@@ -950,7 +950,7 @@ async def on_member_ban(member):
 
 @client.event
 async def on_member_unban(server, user):
-	if logdisabled('member_unban', member.server):
+	if logdisabled('member_unban', server):
 		return
 	specialchannel = getspecialchannel(server)
 	msg = '**`>`**<:doormat:239361673532669953>`user` **``{}``**`#{}` `({}) unbanned from server {} ({})`'.format(wrapbackticks(user.name), user.discriminator, user.id, server.name, server.id)
