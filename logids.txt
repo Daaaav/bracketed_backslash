@@ -3,6 +3,8 @@ message_pin
 message_unpin
 message_edit
 message_overedit
+message_deleteuncached
+message_updateuncached
 
 member_nickname
 member_username
@@ -10,6 +12,10 @@ member_roleadd
 member_roleremove
 member_avatar
 member_botavatar
+member_join
+member_remove
+member_ban
+member_unban
 
 invisible_typing
 invisible_sentmessage
@@ -17,8 +23,34 @@ invisible_sentmessage
 reaction_add
 reaction_remove
 reaction_clear
+reaction_adduncached
+reaction_removeuncached
+reaction_clearuncached
 
 channel_add
 channel_remove
+channel_update
 
-- More still need to be added -
+role_create
+role_delete
+role_rename
+role_hoist
+role_unhoist
+role_mentionable
+role_unmentionable
+role_hierarchy
+role_color
+role_permissions
+
+server_icon
+server_rename
+server_region
+server_afktimeout
+server_afkchannel
+server_verificationlevel
+server_2fa
+server_emotes
+
+
+We also need to get more consistent with the naming of these things. Channels were already "add" and "remove", but I think "create" would be more suitable for channels, and "delete" more consistent with messages being deleted. And "add" and "remove" sounds more suitable for tiny things that are added to and removed from bigger things, like reactions. For things like roles I'll use "create" and "delete" from now on, as they are really created and deleted and not simply added to or removed from a certain member. We may change "add" and "remove" for channels later and mass-change already set config options too.
+

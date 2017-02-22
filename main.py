@@ -921,24 +921,28 @@ async def on_member_update(before, after):
 
 @client.event
 async def on_member_join(member):
-	specialchannel = getspecialchannel(member.server)
-	embed = discord.Embed(description='➡<@!{id}> ({id}) joined server'.format(id=member.id), colour=member.server.me.colour, timestamp=datetime.datetime.now())
-	embed.set_author(name=member.display_name)
-	embed.set_thumbnail(url=member.avatar_url)
-	await client.send_message(specialchannel, embed=embed)
+	if not logdisabled('member_join', member.server):
+		specialchannel = getspecialchannel(member.server)
+		embed = discord.Embed(description='➡<@!{id}> ({id}) joined server'.format(id=member.id), colour=member.server.me.colour, timestamp=datetime.datetime.now())
+		embed.set_author(name=member.display_name)
+		embed.set_thumbnail(url=member.avatar_url)
+		await client.send_message(specialchannel, embed=embed)
 	await newmemberroles(member, specialchannel, False)
 
 @client.event
 async def on_member_remove(member):
-	specialchannel = getspecialchannel(member.server)
-	embed = discord.Embed(description='🚪<@!{id}> ({id}) removed from server'.format(id=member.id), colour=member.colour, timestamp=datetime.datetime.now())
-	embed.add_field(name='Originally joined server', value=reltime(time.mktime(member.joined_at.timetuple())))
-	embed.set_author(name=member.display_name, icon_url=member.avatar_url)
-	embed.set_thumbnail(url=member.avatar_url)
-	await client.send_message(specialchannel, embed=embed)
+	if not logdisabled('member_remove', member.server):
+		specialchannel = getspecialchannel(member.server)
+		embed = discord.Embed(description='🚪<@!{id}> ({id}) removed from server'.format(id=member.id), colour=member.colour, timestamp=datetime.datetime.now())
+		embed.add_field(name='Originally joined server', value=reltime(time.mktime(member.joined_at.timetuple())))
+		embed.set_author(name=member.display_name, icon_url=member.avatar_url)
+		embed.set_thumbnail(url=member.avatar_url)
+		await client.send_message(specialchannel, embed=embed)
 
 @client.event
 async def on_member_ban(member):
+	if logdisabled('member_ban', member.server):
+		return
 	specialchannel = getspecialchannel(member.server)
 
 	msg = '**`>`**👞🚪⛔`user` **``{}``**`#{}` `({}) banned from server {} ({})`'.format(wrapbackticks(member.name), member.discriminator, member.id, member.server.name, member.server.id)
@@ -946,6 +950,8 @@ async def on_member_ban(member):
 
 @client.event
 async def on_member_unban(server, user):
+	if logdisabled('member_unban', member.server):
+		return
 	specialchannel = getspecialchannel(server)
 	msg = '**`>`**<:doormat:239361673532669953>`user` **``{}``**`#{}` `({}) unbanned from server {} ({})`'.format(wrapbackticks(user.name), user.discriminator, user.id, server.name, server.id)
 	await client.send_message(specialchannel, msg)
@@ -967,6 +973,8 @@ async def on_typing(channel, user, when):
 
 @client.event
 async def on_server_role_create(r):
+	if logdisabled('role_create', r.server):
+		return
 	schan = getspecialchannel(r.server)
 	embed = discord.Embed(
 		title='ROLE ADD AT {time}'.format(time=str(r.created_at)),
@@ -977,6 +985,8 @@ async def on_server_role_create(r):
 
 @client.event
 async def on_server_role_delete(r):
+	if logdisabled('role_delete', r.server):
+		return
 	schan = getspecialchannel(r.server)
 	embed = discord.Embed(
 		title='ROLE REMOVE',
@@ -989,13 +999,18 @@ async def on_server_role_delete(r):
 @client.event
 async def on_server_role_update(before, after):
 	specialchannel = getspecialchannel(before.server)
-	if before.name != after.name: # if the name changed
+	# If the name changed
+	if before.name != after.name and not logdisabled('role_rename', before.server):
 		embed = discord.Embed(title='ROLE NAME CHANGE', description=utils.mdspecialchars(after.name), colour=after.colour)
 		embed.add_field(name='Older Name', value=utils.mdspecialchars(before.name))
 		embed.add_field(name='Newer Name', value=utils.mdspecialchars(after.name))
 		await client.send_message(specialchannel, embed=embed)
-	if before.hoist != after.hoist: # if "display online members separately" changed
-		if before.hoist == 0 and after.hoist == 1: # if the role has been hoisted
+	# If "display online members separately" changed
+	if before.hoist != after.hoist:
+		# If the role has been hoisted
+		if before.hoist == 0 and after.hoist == 1 and not logdisabled(
+			'role_hoist', before.server
+		):
 			embed = discord.Embed(
 				title='ROLE HOIST',
 				description='{name}\nID: {id}'.format(
@@ -1005,7 +1020,10 @@ async def on_server_role_update(before, after):
 				colour=after.colour,
 			)
 			await client.send_message(specialchannel, embed=embed)
-		if before.hoist == 1 and after.hoist == 0: # if the role has been lowered
+		# If the role has been lowered
+		if before.hoist == 1 and after.hoist == 0 and not logdisabled(
+			'role_unhoist', before.server
+		):
 			embed = discord.Embed(
 				title='ROLE UNHOIST',
 				description='{name}\nID: {id}'.format(
@@ -1015,26 +1033,40 @@ async def on_server_role_update(before, after):
 				colour=after.colour,
 			)
 			await client.send_message(specialchannel, embed=embed)
-	if before.mentionable != after.mentionable: # if "allow everyone to mention this role" changed
-		if before.mentionable == 0 and after.mentionable == 1: # if the role is now mentionable
+	# If "allow everyone to mention this role" changed
+	if before.mentionable != after.mentionable:
+		# If the role is now mentionable
+		if before.mentionable == 0 and after.mentionable == 1 and not logdisabled(
+			'role_mentionable', before.server
+		):
 			msg = '**`>`**`role` **``{}``** `({}) is now mentionable`'.format(wrapbackticks(after.name), after.id)
 			await client.send_message(specialchannel, msg)
-		if before.mentionable == 1 and after.mentionable == 0: # if the role is no longer mentionable
+		# If the role is no longer mentionable
+		if before.mentionable == 1 and after.mentionable == 0 and not logdisabled(
+			'role_unmentionable', before.server
+		):
 			msg = '**`>`**`role` **``{}``** `({}) is no longer mentionable`'.format(wrapbackticks(after.name), after.id)
 			await client.send_message(specialchannel, msg)
-	if before.position != after.position: # if the role has been moved up or down in the hierarchy
-		if before.position > after.position: # the role has been moved down
+	# If the role has been moved up or down in the hierarchy
+	if before.position != after.position and not logdisabled('role_hierarchy', before.server):
+		# The role has been moved down
+		if before.position > after.position:
 			msg = '**`>`**`role` **``{}``** `({}) has been moved down by {} roles ({} to {})`'.format(wrapbackticks(after.name), after.id, before.position - after.position, before.position, after.position)
 			await client.send_message(specialchannel, msg)
-		if before.position < after.position: # the role has been moved up
+		# The role has been moved up
+		if before.position < after.position:
 			msg = '**`>`**`role` **``{}``** `({}) has been moved up by {} roles ({} to {})`'.format(wrapbackticks(after.name), after.id, after.position - before.position, before.position, after.position)
 			await client.send_message(specialchannel, msg)
-	if before.colour != after.colour:
+	# If the role color has changed
+	if before.colour != after.colour and not logdisabled('role_color', before.server):
 		embed = discord.Embed(title='ROLE COLOR CHANGE', description=utils.mdspecialchars(after.name), colour=after.colour)
 		embed.add_field(name='Older Color', value='(default)' if before.colour.value == 0 else str(before.colour).upper())
 		embed.add_field(name='Newer Color', value='(default)' if after.colour.value == 0 else str(after.colour).upper())
 		await client.send_message(specialchannel, embed=embed)
-	if before.permissions != after.permissions:
+	# If any of the permissions has changed
+	if before.permissions != after.permissions and not logdisabled(
+		'role_permissions', before.server
+	):
 		diff = list(set(before.permissions).symmetric_difference(set(after.permissions)))
 		e = discord.Embed(
 			title='ROLE PERMISSIONS CHANGE',
@@ -1185,26 +1217,26 @@ async def on_reaction_clear(m, rs):
 @client.event
 async def on_server_update(before, after):
 	specialchannel = getspecialchannel(after)
-	if before.icon != after.icon:
+	if before.icon != after.icon and not logdisabled('server_icon', after):
 		embed = discord.Embed(description='Server changed icon')
 		embed.set_thumbnail(url=before.icon_url)
 		embed.add_field(name='Older Icon URL: None' if before.icon_url == '' else 'Older Icon URL (Thumbnail)', value='No Older Icon URL' if before.icon_url == '' else before.icon_url)
 		embed.add_field(name='Newer Icon URL: None' if after.icon_url == '' else 'Newer Icon URL (Inset Image)', value='No Newer Icon URL' if after.icon_url == '' else after.icon_url)
 		embed.set_image(url=after.icon_url)
 		await client.send_message(specialchannel, embed=embed)
-	if before.name != after.name:
+	if before.name != after.name and not logdisabled('server_rename', after):
 		embed = discord.Embed(description='Server changed name')
 		embed.set_thumbnail(url=after.icon_url)
 		embed.add_field(name='Older Name', value=utils.mdspecialchars(before.name))
 		embed.add_field(name='Newer Name', value=utils.mdspecialchars(after.name))
 		await client.send_message(specialchannel, embed=embed)
-	if before.region != after.region:
+	if before.region != after.region and not logdisabled('server_region', after):
 		embed = discord.Embed(description='VOICE REGION CHANGE')
 		embed.set_thumbnail(url=after.icon_url)
 		embed.add_field(name='Older Region', value=str(before.region))
 		embed.add_field(name='Newer Region', value=str(after.region))
 		await client.send_message(specialchannel, embed=embed)
-	if before.afk_timeout != after.afk_timeout:
+	if before.afk_timeout != after.afk_timeout and not logdisabled('server_afktimeout', after):
 		b_m, b_s = divmod(before.afk_timeout, 60)
 		b_h, b_m = divmod(b_m, 60)
 		a_m, a_s = divmod(after.afk_timeout, 60)
@@ -1220,7 +1252,7 @@ async def on_server_update(before, after):
 			value='{h}h {m}m {s}s'.format(h=a_h, m=a_m, s=a_s),
 		)
 		await client.send_message(specialchannel, embed=embed)
-	if before.afk_channel != after.afk_channel:
+	if before.afk_channel != after.afk_channel and not logdisabled('server_afkchannel', after):
 		embed = discord.Embed(description='AFK CHANNEL CHANGE')
 		embed.set_thumbnail(url=after.icon_url)
 		embed.add_field(
@@ -1232,7 +1264,9 @@ async def on_server_update(before, after):
 			value='No Newer Channel' if after.afk_channel == None else '{name} ({0.id})'.format(after.afk_channel, name=utils.mdspecialchars(after.afk_channel.name)),
 		)
 		await client.send_message(specialchannel, embed=embed)
-	if before.verification_level != after.verification_level:
+	if before.verification_level != after.verification_level and not logdisabled(
+		'server_verificationlevel', after
+	):
 		embed = discord.Embed(description='VERIFICATION LEVEL CHANGE')
 		embed.set_thumbnail(url=after.icon_url)
 		embed.add_field(
@@ -1244,7 +1278,7 @@ async def on_server_update(before, after):
 			value=str(after.verification_level).title(),
 		)
 		await client.send_message(specialchannel, embed=embed)
-	if before.mfa_level != after.mfa_level:
+	if before.mfa_level != after.mfa_level and not logdisabled('server_2fa', after):
 		if before.mfa_level == 0 and after.mfa_level == 1:
 			embed=discord.Embed(description='SERVER 2FA ENABLED')
 		elif before.mfa_level == 1 and after.mfa_level == 0:
@@ -1257,6 +1291,9 @@ async def on_server_emojis_update(b, a):
 		schan = getspecialchannel(a[0].server)
 	except IndexError:
 		schan = getspecialchannel(b[0].server)
+	if logdisabled('server_emotes', schan.server):
+		# We could split this into separate emotes_* log types
+		return
 	diff = list(set(b).symmetric_difference(set(a)))
 	elist = ''
 	for e in diff:
@@ -1351,7 +1388,14 @@ async def on_socket_raw_receive(payload):
 	if event['t'] not in ckevnts:
 		return
 
+	# We must first know what server it is
+	mchan = client.get_channel(event['d']['channel_id'])
+	if mchan.type == discord.ChannelType.private:
+		return
+
 	if event['t'] == 'MESSAGE_DELETE':
+		if not logdisabled('message_deleteuncached', mchan.server):
+			return
 		# Check if on_message_delete() was already called by this message
 		# If it was, then return
 		if discord.utils.find(lambda m: m.id == event['d']['id'], client.messages) != None:
@@ -1368,9 +1412,6 @@ async def on_socket_raw_receive(payload):
 				deleted_messages.remove(m)
 				return
 
-		mchan = client.get_channel(event['d']['channel_id'])
-		if mchan.type == discord.ChannelType.private:
-			return
 		schan = getspecialchannel(
 			mchan.server
 		)
@@ -1385,13 +1426,12 @@ async def on_socket_raw_receive(payload):
 		)
 		await client.send_message(schan, embed=e)
 	elif event['t'] == 'MESSAGE_UPDATE':
+		if not logdisabled('message_updateuncached', mchan.server):
+			return
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(lambda m: m.id == event['d']['id'], client.messages) != None:
 			return
 
-		mchan = client.get_channel(event['d']['channel_id'])
-		if mchan.type == discord.ChannelType.private:
-			return
 		schan = getspecialchannel(mchan.server)
 		athr = mchan.server.get_member(event['d']['author']['id'])
 		e = discord.Embed(
@@ -1448,14 +1488,13 @@ async def on_socket_raw_receive(payload):
 		)
 		await client.send_message(schan, embed=e)
 	elif event['t'] == 'MESSAGE_REACTION_ADD':
+		if not logdisabled('reaction_adduncached', mchan.server):
+			return
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(lambda m: m.id == event['d']['message_id'], client.messages) \
 		!= None:
 			return
 
-		mchan = client.get_channel(event['d']['channel_id'])
-		if mchan.type == discord.ChannelType.private:
-			return
 		schan = getspecialchannel(mchan.server)
 		athr = mchan.server.get_member(event['d']['user_id'])
 		mdetails = athr.mention
@@ -1496,14 +1535,13 @@ async def on_socket_raw_receive(payload):
 		)
 		await client.send_message(schan, embed=e)
 	elif event['t'] == 'MESSAGE_REACTION_REMOVE':
+		if not logdisabled('reaction_removeuncached', mchan.server):
+			return
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(lambda m: m.id == event['d']['message_id'], client.messages) \
 		!= None:
 			return
 
-		mchan = client.get_channel(event['d']['channel_id'])
-		if mchan.type == discord.ChannelType.private:
-			return
 		schan = getspecialchannel(mchan.server)
 		athr = mchan.server.get_member(event['d']['user_id'])
 		mdetails = athr.mention
@@ -1542,14 +1580,13 @@ async def on_socket_raw_receive(payload):
 		)
 		await client.send_message(schan, embed=e)
 	elif event['t'] == 'MESSAGE_REACTION_REMOVE_ALL':
+		if not logdisabled('reaction_clearuncached', mchan.server):
+			return
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(lambda m: m.id == event['d']['message_id'], client.messages) \
 		!= None:
 			return
 
-		mchan = client.get_channel(event['d']['channel_id'])
-		if mchan.type == discord.ChannelType.private:
-			return
 		schan = getspecialchannel(mchan.server)
 		e = discord.Embed(
 			title=(
@@ -1567,7 +1604,7 @@ async def on_socket_raw_receive(payload):
 
 @client.event
 async def on_channel_update(b, a):
-	if a.type == discord.ChannelType.private:
+	if a.type == discord.ChannelType.private or logdisabled('channel_update', a.server):
 		return
 	schan = getspecialchannel(a.server)
 	if b.name != a.name:
