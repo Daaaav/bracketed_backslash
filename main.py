@@ -724,9 +724,9 @@ async def on_message(m):
 	}
 	try:
 		await func[0](client, m, **kwargs)
-	except Exception as e:
-		eb = emb.error(t['generic_error'])
-		await reply(m, emb=eb)
+	except Exception:
+		e = emb.error(t['generic_error'])
+		await reply(m, emb=e)
 		raise
 
 @client.event
