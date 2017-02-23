@@ -722,7 +722,12 @@ async def on_message(m):
 		'clean_arguments': clean_arguments,
 		'invokesymbol': invokesymbol,
 	}
-	await func[0](client, m, **kwargs)
+	try:
+		await func[0](client, m, **kwargs)
+	except Exception as e:
+		eb = emb.error(t['generic_error'])
+		await reply(m, emb=eb)
+		raise
 
 @client.event
 async def on_message_delete(message): # when a message gets deleted

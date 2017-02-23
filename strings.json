@@ -14,7 +14,8 @@
 		"noprivate": "This command cannot be run inside of a private conversation.",
 		"its_meme": "It\u2019s a meme command.",
 		"rolecachedisabled": "The role cache is disabled on this server.",
-		"editingmasterval": "\n⚠ Master value edited"
+		"editingmasterval": "\n⚠ Master value edited",
+		"generic_error": "A fault did occur.\nKindly inform any bot-programming human what you did want to occur if this fault didn\u2019t obstruct this bot’s normal functions.\nIf a function of yours _is_ to program this bot, kindly ask this bot\u2019s host for any logs from this fault."
 	},
 	"permissionlabels": [
 		["administrator", "Administrator"],
