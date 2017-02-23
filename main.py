@@ -710,7 +710,7 @@ async def on_message(m):
 					)
 				)
 				await reply(m, emb=e)
-				return
+			return
 	if func[1] != None and not func[1](m.author):
 		e = emb.error(t['you_no_permission'])
 		logfailedcommand(command, arguments, m)
