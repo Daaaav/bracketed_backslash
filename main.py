@@ -290,7 +290,7 @@ def shadow(auth=None, aliases=None):
 async def on_message(m):
 	owncache.append(m.id)
 
-	if m.author == client.user:
+	if m.author == client.user or m.author.bot:
 		return
 
 	global msg_start, hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, \
