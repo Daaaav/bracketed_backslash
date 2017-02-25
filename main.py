@@ -290,7 +290,7 @@ def shadow(auth=None, aliases=None):
 async def on_message(m):
 	owncache.append(m.id)
 
-	if m.author == client.user:
+	if m.author == client.user or m.author.bot:
 		return
 
 	global msg_start, hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, \
@@ -710,19 +710,24 @@ async def on_message(m):
 					)
 				)
 				await reply(m, emb=e)
-				return
-	if func[1] != None and not func[1](m.author):
-			e = emb.error(t['you_no_permission'])
-			logfailedcommand(command, arguments, m)
-			await reply(m, emb=e)
 			return
+	if func[1] != None and not func[1](m.author):
+		e = emb.error(t['you_no_permission'])
+		logfailedcommand(command, arguments, m)
+		await reply(m, emb=e)
+		return
 	kwargs = {
 		'command': command,
 		'arguments': arguments,
 		'clean_arguments': clean_arguments,
 		'invokesymbol': invokesymbol,
 	}
-	await func[0](client, m, **kwargs)
+	try:
+		await func[0](client, m, **kwargs)
+	except Exception:
+		e = emb.error(t['generic_error'])
+		await reply(m, emb=e)
+		raise
 
 @client.event
 async def on_message_delete(message): # when a message gets deleted
