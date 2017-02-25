@@ -1529,7 +1529,7 @@ async def b(client, message, **kwargs):
 					id='243076976565288960'
 				)
 			)
-			announcemsg = '{} has been banned by {} in {} for {}.'.format(
+			announcemsg = '{} has been banned for 5 days by {} in {} for {}.'.format(
 				targetmember.mention,
 				message.author.display_name,
 				message.channel.mention,
