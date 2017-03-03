@@ -1581,10 +1581,10 @@ async def selfban(client, message, **kwargs):
 		messages_deleted_by_bot.append(message)
 
 		return
-	
+
 	if kwargs['arguments'] == None or kwargs['arguments'] == '':
 		kwargs['arguments'] = '(no given reason)'
-	
+
 	await client.replace_roles(message.author,
 		discord.utils.get(message.server.roles,
 			id='243076976565288960'
