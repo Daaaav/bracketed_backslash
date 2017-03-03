@@ -1627,7 +1627,7 @@ async def b_id(client, message, **kwargs):
 		await handleExpiryTimer()
 	else:
 		# Okay, they are on the server, so why not use \b?
-		b(client, message, **kwargs)
+		await b(client, message, **kwargs)
 
 @shadow(auth=is_tntgb_mod, aliases=['banrevert'])
 async def revertban(client, message, **kwargs):
