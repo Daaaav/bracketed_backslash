@@ -399,6 +399,11 @@
 					"extra": "Use this command in the channel the mistake was made in. Takes a member representation (full or part of their name, or their discriminator, ID, whatever you want) as the first argument, and a reason as the second argument.\nIf you input a member name with spaces, you can separate the two arguments with a newline.\n**Examples:** ```\\b testuser using spaces\n``````\n\\b some member\nwriting \"the\"```"
 				},
 				{
+					"name": "b_id",
+					"short": "Rolebans a member on TNTGB, given an ID. This can also ban members who have left the server.",
+					"extra": "Same as `\\b`, except it only accepts an ID."
+				},
+				{
 					"name": "b_mod",
 					"short": "Same as `\\b`, but allows lifting the oldest two bans by banning a moderator.",
 					"extra": "That\u2019s basically the only difference, it lifts the protection on banning mods (because unbanning two members can\u2019t be undone as simply)"
