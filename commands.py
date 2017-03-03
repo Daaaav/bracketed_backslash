@@ -1560,6 +1560,61 @@ async def b(client, message, **kwargs):
 		rolexpiresave()
 		await handleExpiryTimer()
 
+@shadow()
+async def selfban(client, message, **kwargs):
+	if message.server.id != tntgbserver:
+		embed = emb.error(t['tntgb_only'])
+		await reply(message, emb=embed)
+		return
+	if is_tntgb_banned(message.author):
+		# Wait, what?
+		embed = emb.warning('How, then? You are already banned!')
+		await reply(message, emb=embed)
+		return
+	if is_tntgb_mod(message.author):
+		specialchannel = getspecialchannel(message.channel.server)
+		embed = emb.warning('Sorry, moderators cannot use `\selfban`!')
+		await client.send_message(specialchannel, embed=embed)
+
+		# We're doing this in a public channel
+		await client.delete_message(message)
+		messages_deleted_by_bot.append(message)
+
+		return
+	
+	if kwargs['arguments'] == None or kwargs['arguments'] == '':
+		kwargs['arguments'] = '(no given reason)'
+	
+	await client.replace_roles(message.author,
+		discord.utils.get(message.server.roles,
+			id='243076976565288960'
+		)
+	)
+	announcemsg = '{} has carried out a self-ban for 5 days in {} for {}.'.format(
+		message.author.mention,
+		message.channel.mention,
+		kwargs['arguments']
+	)
+	content = '⛔ ' + announcemsg
+	sentmessage = await client.send_message(banlogchannel_tntgb, content)
+
+	# Now delete the calling message
+	await client.delete_message(message)
+	messages_deleted_by_bot.append(message)
+
+	# Also set an expiry timer
+	expirytime = parsereltime('5d')
+
+	addexpiryentry(message.server.id, message.author.id, expirytime,
+		e_channel=sentmessage.channel.id, e_message=sentmessage.id,
+		e_newcontent='[LIFTED] ' + announcemsg,
+		p_channel=banlogchannel_tntgb.id,
+		p_content='The ban on {} has expired.'.format(message.author.mention)
+	)
+
+	rolexpiresave()
+	await handleExpiryTimer()
+
 @shadow(auth=is_tntgb_mod, aliases=['b_left', 'b_offserver'])
 async def b_id(client, message, **kwargs):
 	if message.server.id != tntgbserver:

@@ -394,6 +394,11 @@
 			"cat_shown": true,
 			"commands": [
 				{
+					"name": "selfban",
+					"short": "Bans the caller on TNTGB without needing a moderator to do it.",
+					"extra": "Use this command in the channel the mistake was made in."
+				},
+				{
 					"name": "b",
 					"short": "Rolebans a member on TNTGB.",
 					"extra": "Use this command in the channel the mistake was made in. Takes a member representation (full or part of their name, or their discriminator, ID, whatever you want) as the first argument, and a reason as the second argument.\nIf you input a member name with spaces, you can separate the two arguments with a newline.\n**Examples:** ```\\b testuser using spaces\n``````\n\\b some member\nwriting \"the\"```"

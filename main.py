@@ -1404,7 +1404,7 @@ async def on_socket_raw_receive(payload):
 		return
 
 	if event['t'] == 'MESSAGE_DELETE':
-		if not logdisabled('message_deleteuncached', mchan.server):
+		if logdisabled('message_deleteuncached', mchan.server):
 			return
 		# Check if on_message_delete() was already called by this message
 		# If it was, then return
@@ -1436,7 +1436,7 @@ async def on_socket_raw_receive(payload):
 		)
 		await client.send_message(schan, embed=e)
 	elif event['t'] == 'MESSAGE_UPDATE':
-		if not logdisabled('message_updateuncached', mchan.server):
+		if logdisabled('message_updateuncached', mchan.server):
 			return
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(lambda m: m.id == event['d']['id'], client.messages) != None:
@@ -1498,7 +1498,7 @@ async def on_socket_raw_receive(payload):
 		)
 		await client.send_message(schan, embed=e)
 	elif event['t'] == 'MESSAGE_REACTION_ADD':
-		if not logdisabled('reaction_adduncached', mchan.server):
+		if logdisabled('reaction_adduncached', mchan.server):
 			return
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(lambda m: m.id == event['d']['message_id'], client.messages) \
@@ -1545,7 +1545,7 @@ async def on_socket_raw_receive(payload):
 		)
 		await client.send_message(schan, embed=e)
 	elif event['t'] == 'MESSAGE_REACTION_REMOVE':
-		if not logdisabled('reaction_removeuncached', mchan.server):
+		if logdisabled('reaction_removeuncached', mchan.server):
 			return
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(lambda m: m.id == event['d']['message_id'], client.messages) \
@@ -1590,7 +1590,7 @@ async def on_socket_raw_receive(payload):
 		)
 		await client.send_message(schan, embed=e)
 	elif event['t'] == 'MESSAGE_REACTION_REMOVE_ALL':
-		if not logdisabled('reaction_clearuncached', mchan.server):
+		if logdisabled('reaction_clearuncached', mchan.server):
 			return
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(lambda m: m.id == event['d']['message_id'], client.messages) \
