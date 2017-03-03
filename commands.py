@@ -1560,6 +1560,75 @@ async def b(client, message, **kwargs):
 		rolexpiresave()
 		await handleExpiryTimer()
 
+@shadow(auth=is_tntgb_mod, aliases=['b_left', 'b_offserver'])
+async def b_id(client, message, **kwargs):
+	if message.server.id != tntgbserver:
+		embed = emb.error(t['tntgb_only'])
+		await reply(message, emb=embed)
+		return
+	# Who are we banning, and for what reason?
+	if kwargs['arguments'].find('\n') != -1:
+		splitargs = kwargs['arguments'].split('\n', 1)
+	elif kwargs['arguments'].find(' ') != -1:
+		splitargs = kwargs['arguments'].split(' ', 1)
+	else:
+		splitargs = [kwargs['arguments'], '(no given reason)']
+
+	# Now look if we can actually find the member. We're only looking for IDs, though!
+	input = splitargs[0]
+	if input.startswith('<@!') and input.endswith('>'):
+		input = input[3:-1] # Extract the ID from it
+	elif input.startswith('<@') and input.endswith('>'):
+		input = input[2:-1] # Same
+
+	targetmember = message.server.get_member(input)
+
+	if targetmember == None:
+		# Just as I thought, they left
+		if not removerolecache(input, message.server.id):
+			embed = emb.error((
+				'Member {} cannot be found in the role cache. '
+				'Please note you have to enter an ID, not any form of name!'
+			).format(input))
+			await reply(message, emb=embed)
+			return
+
+		# Okay, removing their entry altogether was a bit drastic
+		memberroles[message.server.id][input] = []
+		memberroles[message.server.id][input].append('243076976565288960')
+
+		# Alright, just send a message about it now!
+		# The extra space is intentional, it's a 'hidden' indicator to 
+		# see whether the ban was made after the person left the server
+		announcemsg = '{}  has been banned for 5 days by {} in {} for {}.'.format(
+			targetmember.mention,
+			message.author.display_name,
+			message.channel.mention,
+			splitargs[1]
+		)
+		content = '⛔ ' + announcemsg
+		sentmessage = await client.send_message(banlogchannel_tntgb, content)
+
+		# Now delete the calling message
+		await client.delete_message(message)
+		messages_deleted_by_bot.append(message)
+
+		# Also set an expiry timer
+		expirytime = parsereltime('5d')
+
+		addexpiryentry(message.server.id, targetmember.id, expirytime,
+			e_channel=sentmessage.channel.id, e_message=sentmessage.id,
+			e_newcontent='[LIFTED] ' + announcemsg,
+			p_channel=banlogchannel_tntgb.id,
+			p_content='The ban on {} has expired.'.format(targetmember.mention)
+		)
+
+		rolexpiresave()
+		await handleExpiryTimer()
+	else:
+		# Okay, they are on the server, so why not use \b?
+		b(client, message, **kwargs)
+
 @shadow(auth=is_tntgb_mod, aliases=['banrevert'])
 async def revertban(client, message, **kwargs):
 	global rolexpires
