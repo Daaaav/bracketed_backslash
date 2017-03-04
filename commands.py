@@ -1655,8 +1655,8 @@ async def b_id(client, message, **kwargs):
 		# Alright, just send a message about it now!
 		# The extra space is intentional, it's a 'hidden' indicator to 
 		# see whether the ban was made after the person left the server
-		announcemsg = '{}  has been banned for 5 days by {} in {} for {}.'.format(
-			targetmember.mention,
+		announcemsg = '<@!{}>  has been banned for 5 days by {} in {} for {}.'.format(
+			input,
 			message.author.display_name,
 			message.channel.mention,
 			splitargs[1]
@@ -1671,11 +1671,11 @@ async def b_id(client, message, **kwargs):
 		# Also set an expiry timer
 		expirytime = parsereltime('5d')
 
-		addexpiryentry(message.server.id, targetmember.id, expirytime,
+		addexpiryentry(message.server.id, input, expirytime,
 			e_channel=sentmessage.channel.id, e_message=sentmessage.id,
 			e_newcontent='[LIFTED] ' + announcemsg,
 			p_channel=banlogchannel_tntgb.id,
-			p_content='The ban on {} has expired.'.format(targetmember.mention)
+			p_content='The ban on <@!{}> has expired.'.format(input)
 		)
 
 		rolexpiresave()
