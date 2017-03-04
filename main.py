@@ -626,7 +626,8 @@ async def on_message(m):
 	if not priv and \
 	m.server.id == tntgbserver and \
 	m.channel != botschannel_tntgb and \
-	not is_tntgb_mod(m.author):
+	not is_tntgb_mod(m.author) and \
+	command != 'selfban':
 		return
 	if not priv and command in config.get_s('disabledcommands', m.server.id):
 		e = emb.error('This command is currently disabled{onthisserv}.'.format(
