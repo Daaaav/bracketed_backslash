@@ -282,7 +282,21 @@ commands = {}
 
 def shadow(auth=None, aliases=None):
 	def living_shadow(func):
-		name = func.__name__.lstrip('_')
+		name = func.__name__
+		matchargs = [r'__[0-9a-f]{4}', name, re.IGNORECASE]
+		if re.match(*matchargs):
+			encodings = re.findall(*matchargs)
+			symbols = list(encodings)
+			count = 0
+			for i in symbols:
+				symbols[count] = chr(int(i[2:], 16))
+				count += 1
+			count = 0
+			for i in encodings:
+				name = name.replace(encodings[count], symbols[count])
+				count += 1
+		if name.startswith('_'):
+			name = name[1:]
 		commands[name] = [func, auth, aliases]
 	return living_shadow
 
