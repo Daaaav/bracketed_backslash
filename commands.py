@@ -1934,3 +1934,54 @@ async def __002Fr__002Fundertale(client, message, **kwargs):
 		' Seriously, don’t go there if you don’t want to be censored.'
 	)
 	await reply(message, con)
+
+@shadow(auth=is_operator)
+async def sudo(client, message, **kwargs):
+	try:
+		command = kwargs['arguments'].split(' ', 1)[0]
+	except AttributeError:
+		e = emb.error('You should probably put something in.')
+		await reply(message, emb=e)
+		return
+
+	# TODO: This is the command-parsing code copied from main.py, but with some changes.
+	# Put the command-parsing code in a function instead.
+	if message.content.startswith(invoker):
+		altinvokeractive = False
+	elif message.content.startswith(altinvoker):
+		altinvokeractive = True
+	if command in commands:
+		func = commands[command]
+	else:
+		# Check if it's an alias
+		for c, p in commands.items():
+			if p[2] != None and command in p[2]:
+				func = commands[c]
+				break
+		else:
+			e = emb.warning(
+				(
+					'Invalid command. Input `\help` for'
+					' a list of valid commands.'
+				)
+			)
+			await reply(message, emb=e)
+			return
+	if func[1] == is_host and not func[1](m.author):
+		e = emb.error(t['you_no_permission'])
+		logfailedcommand(kwargs['command'], kwargs['arguments'], message)
+		await reply(message, emb=e)
+		return
+	logcommand(kwargs['command'], kwargs['arguments'], message)
+	kwargs['command'] = command
+	if altinvokeractive:
+		clean_command = message.clean_content.split(altinvoker, 1)[1]
+	else:
+		clean_command = message.clean_content.split(invoker, 1)[1]
+	try:
+		kwargs['arguments'] = kwargs['arguments'].split(' ', 1)[1]
+		kwargs['clean_arguments'] = clean_command.split(' ', 2)[2]
+	except IndexError:
+		kwargs['arguments'] = None
+		kwargs['clean_arguments'] = None
+	await func[0](client, message, **kwargs)
