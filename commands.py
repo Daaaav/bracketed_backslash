@@ -1273,13 +1273,8 @@ async def gamestatus(client, message, **kwargs):
 	embed = emb.success('Set game status to: ``{}``'.format(wrapbackticks(kwargs['arguments'])))
 	await reply(message, emb=embed)
 
-@shadow(aliases=['evalfile', 'setvar'])
+@shadow(auth=is_host, aliases=['evalfile', 'setvar'])
 async def _eval(client, message, **kwargs):
-	if message.author.id != ownerid:
-		logfailedcommand(kwargs['command'], kwargs['arguments'], message)
-		embed = emb.error(t['owner_only'])
-		await reply(message, emb=embed)
-		return
 	try:
 		if kwargs['command'] == 'eval':
 			evaluate = eval(kwargs['arguments'])
