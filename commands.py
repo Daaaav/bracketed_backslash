@@ -1648,7 +1648,7 @@ async def b_id(client, message, **kwargs):
 		memberroles[message.server.id][input].append('243076976565288960')
 
 		# Alright, just send a message about it now!
-		# The extra space is intentional, it's a 'hidden' indicator to 
+		# The extra space is intentional, it's a 'hidden' indicator to
 		# see whether the ban was made after the person left the server
 		announcemsg = '<@!{}>  has been banned for 5 days by {} in {} for {}.'.format(
 			input,
