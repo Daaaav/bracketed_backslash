@@ -1931,3 +1931,11 @@ async def _(client, message, **kwargs):
 async def __002Aformatting__002A(client, message, **kwargs):
 	con = 'That’s italicized formatting.'
 	await reply(message, con)
+
+@shadow()
+async def __002Fr__002Fundertale(client, message, **kwargs):
+	con = (
+		'They banned someone for posting an honest review of Undertale.'
+		' Seriously, don’t go there if you don’t want to be censored.'
+	)
+	await reply(message, con)

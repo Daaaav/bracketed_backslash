@@ -658,15 +658,6 @@ async def on_message(m):
 		e = emb.error('This command is currently disabled.')
 		await reply(m, emb=e)
 
-	# Commands that cannot be the name of a function
-	if command == '/r/undertale':
-		con = (
-			'They banned someone for posting an honest review of Undertale.'
-			' Seriously, don’t go there if you don’t want to be censored.'
-		)
-		await reply(m, con)
-		return
-
 	if command in commands:
 		func = commands[command]
 	else:
