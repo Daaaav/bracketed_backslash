@@ -696,65 +696,96 @@ async def on_message(m):
 		raise
 
 @client.event
-async def on_message_delete(message): # when a message gets deleted
-	deleted_messages.append(message)
-	if isprivatemessage(message.server):
+async def on_message_delete(msg):
+	deleted_messages.append(msg)
+	if isprivatemessage(msg.server):
 		return
-	if message.author == client.user: # is the deleted message originally sent by the bot
-		logging.info('bot message {} by user {}#{} ({}) in channel {} ({}) at {} utc deleted, original content is \n{}'.format(message.id, message.author.name, message.author.discriminator, message.author.id, message.channel.id, message.channel.name, message.timestamp, message.content))
+	if msg.author == client.user:
+		logging.info(
+			(
+				'bot message {0.id} by user {1.name}#{1.discriminator} ({1.id})'
+				' in channel {2.id} ({2.name}) at {0.timestamp} utc deleted,'
+				' original content is \n{0.content}'
+			).format(msg, msg.author, msg.channel)
+		)
 		return
-	if message.content == '' and message.attachments == []:
+	if (msg.content == '' and msg.attachments == []) \
+	or logdisabled('message_delete', msg.server):
 		return
-	if logdisabled('message_delete', message.server):
-		return
-	specialchannel = getspecialchannel_reply(message)
-	embed = discord.Embed(title='🚫MESSAGE DELETED (SENT {} IN {})'.format(reltime(time.mktime(message.timestamp.timetuple())), message.channel.mention), description=message.content, colour=message.author.colour)
-	embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url, url=infourl('userid={}&messageid={}'.format(message.author.id, message.id)))
-	await client.send_message(specialchannel, embed=embed)
-	if message.attachments != []:
-		if os.path.isfile(attachcache + '/' + message.attachments[0]['id'] + '_' + message.attachments[0]['filename']):
-			filetoattach = attachcache + '/' + message.attachments[0]['id'] + '_' + message.attachments[0]['filename']
-			content = '_📎The attachment for message {} is attached._'.format(message.id)
-			try:
-				await client.send_file(destination=specialchannel, content=content, fp=filetoattach, filename=message.attachments[0]['filename'])
-			except discord.HTTPException:
-				content = '_Failed to upload the attachment for message {id}._'.format(id=message.id)
-				await client.send_message(specialchannel, content)
-		else:
-			content = '_The attachment for message {} was not found in the message attachments cache._'.format(message.id)
-			await client.send_message(specialchannel, content)
-	if message in messages_deleted_by_bot:
-		messages_deleted_by_bot.remove(message)
-		return
-	deletthreshold = datetime.timedelta(
-		seconds=config.get_s('deleted_message_resend_timer', message.server.id),
+	schan = getspecialchannel_reply(msg)
+	em = discord.Embed(
+		title=(
+			'\N{NO ENTRY SIGN}MESSAGE DELETED (SENT {reltime} IN {chan})'
+		).format(
+			reltime=reltime(time.mktime(msg.timestamp.timetuple())),
+			chan=msg.channel.mention
+		),
+		description=msg.content,
+		colour=msg.author.colour,
 	)
-	if (datetime.datetime.now() - message.timestamp) < deletthreshold and \
-	not message.author.bot:
-		if config.get_s('deleted_message_resend_content', message.server.id):
-			embed = discord.Embed(
+	em.set_author(
+		name=msg.author.display_name,
+		icon_url=msg.author.avatar_url,
+		url=infourl('userid={0.author.id}&messageid={0.id}'.format(msg)),
+	)
+	await client.send_message(schan, embed=em)
+	if msg.attachments != []:
+		fp = (
+				'{atchcche}/{id}_{fn}'
+		).format(
+			atchcche=attachcache,
+			id=msg.attachments[0]['id'],
+			fn=msg.attachments[0]['filename'],
+		)
+		if os.path.isfile(fp):
+			con = (
+				'_\N{PAPERCLIP}The attachment for message {0.id} is attached._'
+			).format(msg)
+			try:
+				await client.send_file(
+					destination=schan,
+					content=con,
+					fp=fp,
+					filename=msg.attachments[0]['filename'],
+				)
+			except discord.HTTPException:
+				con = (
+					'_Failed to upload the attachment for message {0.id}._'
+				).format(msg)
+				await client.send_message(schan, con)
+		else:
+			con = (
+				'_The attachment for message {0.id} was not found'
+				' in the message attachments cache._'
+			).format(msg)
+			await client.send_message(schan, con)
+	if msg in messages_deleted_by_bot:
+		messages_deleted_by_bot.remove(msg)
+		return
+	dthreshold = datetime.timedelta(
+		seconds=config.get_s('deleted_message_resend_timer', msg.server.id),
+	)
+	if (datetime.datetime.now() - msg.timestamp) < dthreshold and \
+	not msg.author.bot:
+		if config.get_s('deleted_message_resend_content', msg.server.id):
+			em = discord.Embed(
 				title='UNDELETED MESSAGE',
-				description=message.content,
-				colour=message.author.colour,
-				#timestamp=message.timestamp,
+				description=msg.content,
+				colour=msg.author.colour,
 			)
-			embed.set_footer(
+			em.set_footer(
 				text='This message was resent as it was deleted too recently.',
 			)
 		else:
-			embed = discord.Embed(
-				title='Message was deleted',
-				colour=message.author.colour,
+			em = discord.Embed(title='Message was deleted', colour=msg.author.colour)
+			em.set_footer(
+				text=(
+					'This notification was sent because a message by this'
+					' user was deleted too recently.'
+				),
 			)
-			embed.set_footer(
-				text='This notification was sent because a message by this '
-				'user was deleted too recently.'
-			)
-		embed.set_author(
-			name=message.author.display_name,
-			icon_url=message.author.avatar_url,
-		)
-		await client.send_message(message.channel, embed=embed)
+		em.set_author(name=msg.author.display_name, icon_url=msg.author.avatar_url)
+		await client.send_message(msg.channel, embed=em)
 
 @client.event
 async def on_message_edit(before, after): # when a message gets edited
