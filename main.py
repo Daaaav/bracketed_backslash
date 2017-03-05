@@ -659,43 +659,7 @@ async def on_message(m):
 		await reply(m, emb=e)
 
 	# Commands that cannot be the name of a function
-	if command == '':
-		con = m.author.mention + (
-			'\n'
-			'```fix\n'
-			'Luigi: have you ever by accident pressed another key at the same time you have pressed enter?\'\n'
-			'Luigi: ugh\n'
-			'ShinyWolf07: \\\n'
-			'ShinyWolf07: this\n'
-			'Luigi: is\n'
-			'Luigi: cancer\n'
-			'ShinyWolf07: I always do th\n'
-			'ShinyWolf07: its so annoyng\n'
-			'ShinyWolf07: \\\n'
-			'ShinyWolf07: UGh\\\n'
-			'Luigi: xd\n'
-			'Luigi: x\n'
-			'Luigi: d\n'
-			'Luigi: d\n'
-			'ShinyWolf07: xd\\\n'
-			'Luigi: x\n'
-			'ShinyWolf07: F***!!!!!|\n'
-			'Luigi: XD\n'
-			'ShinyWolf07: ARGH\\\n'
-			'Luigi: This is funny to watch you\n'
-			'Luigi: Did you make popcorn\n'
-			'ShinyWolf07: xd ikr \\\n'
-			'ShinyWolf07: ...\n'
-			'ShinyWolf07: -_-\\\n'
-			'ShinyWolf07: GAH\\\n'
-			'Luigi: don\'t you mean ...\\\n'
-			'ShinyWolf07: ...\n'
-			'ShinyWolf07: sigh\n'
-			'Luigi: 10/10 would watch again```'
-		)
-		await reply(m, con)
-		return
-	elif command == '*formatting*':
+	if command == '*formatting*':
 		con = 'That’s italicized formatting.'
 		await reply(m, con)
 		return
