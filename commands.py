@@ -1892,7 +1892,7 @@ async def blacklist(client, message, **kwargs):
 
 @shadow()
 async def _(client, message, **kwargs):
-	con = m.author.mention + (
+	con = message.author.mention + (
 		'\n'
 		'```fix\n'
 		'Luigi: have you ever by accident pressed another key at the same time you have pressed enter?\'\n'
@@ -1925,4 +1925,4 @@ async def _(client, message, **kwargs):
 		'ShinyWolf07: sigh\n'
 		'Luigi: 10/10 would watch again```'
 	)
-	await reply(m, con)
+	await reply(message, con)
