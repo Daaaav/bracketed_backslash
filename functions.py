@@ -70,6 +70,9 @@ def is_tntgb_banned(member):
 			return True
 	return False
 
+def is_host(member):
+	return member.id == ownerid
+
 def get_member_input(server, input):
 	"""Tries to return a member object given a user input which could be anything that identifies that member.
 
