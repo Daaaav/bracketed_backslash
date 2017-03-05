@@ -1926,3 +1926,8 @@ async def _(client, message, **kwargs):
 		'Luigi: 10/10 would watch again```'
 	)
 	await reply(message, con)
+
+@shadow()
+async def __002Aformatting__002A(client, message, **kwargs):
+	con = 'That’s italicized formatting.'
+	await reply(message, con)

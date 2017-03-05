@@ -659,11 +659,7 @@ async def on_message(m):
 		await reply(m, emb=e)
 
 	# Commands that cannot be the name of a function
-	if command == '*formatting*':
-		con = 'That’s italicized formatting.'
-		await reply(m, con)
-		return
-	elif command == '/r/undertale':
+	if command == '/r/undertale':
 		con = (
 			'They banned someone for posting an honest review of Undertale.'
 			' Seriously, don’t go there if you don’t want to be censored.'
