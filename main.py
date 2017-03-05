@@ -715,10 +715,10 @@ async def on_message_delete(msg):
 	schan = getspecialchannel_reply(msg)
 	em = discord.Embed(
 		title=(
-			'\N{NO ENTRY SIGN}MESSAGE DELETED (SENT {reltime} IN {chan})'
+			'\N{NO ENTRY SIGN}MESSAGE DELETED (SENT {reltime} IN #{chan})'
 		).format(
 			reltime=reltime(time.mktime(msg.timestamp.timetuple())),
-			chan=msg.channel.mention
+			chan=msg.channel.name
 		),
 		description=msg.content,
 		colour=msg.author.colour,
