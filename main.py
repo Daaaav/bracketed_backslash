@@ -726,8 +726,8 @@ async def on_message_delete(msg):
 	em.set_author(
 		name=msg.author.display_name,
 		icon_url=msg.author.avatar_url,
-		url=infourl('userid={0.author.id}&messageid={0.id}'.format(msg)),
 	)
+	em.set_footer(text=utils.id_summary(uid=msg.author.id, mid=msg.id, cid=msg.channel.id))
 	await client.send_message(schan, embed=em)
 	if msg.attachments != []:
 		fp = (
