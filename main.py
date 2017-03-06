@@ -718,7 +718,7 @@ async def on_message_delete(msg):
 			'\N{NO ENTRY SIGN}MESSAGE DELETED (SENT {reltime} IN #{chan})'
 		).format(
 			reltime=reltime(time.mktime(msg.timestamp.timetuple())),
-			chan=msg.channel.name,
+			chan=utils.mdspecialchars(msg.channel.name),
 		),
 		description=msg.content,
 		colour=msg.author.colour,
