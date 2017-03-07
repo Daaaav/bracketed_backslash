@@ -788,76 +788,111 @@ async def on_message_delete(msg):
 		await client.send_message(msg.channel, embed=em)
 
 @client.event
-async def on_message_edit(before, after): # when a message gets edited
-	if isprivatemessage(after.server):
+async def on_message_edit(old, new):
+	if isprivatemessage(old.server):
 		return
-	specialchannel = getspecialchannel_reply(after)
-	if before.pinned != after.pinned:
-		if not before.pinned and after.pinned and not logdisabled('message_pin', after.server): # if the message was pinned
-			embed = discord.Embed(title='📌MESSAGE PINNED (SENT {} IN {})'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), description=after.content, color=after.author.colour)
-			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
-			await client.send_message(specialchannel, embed=embed)
-		if before.pinned and not after.pinned and not logdisabled('message_unpin', after.server): # if the message was unpinned
-			embed = discord.Embed(title='📌MESSAGE UNPINNED (SENT {} IN {})'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), description=after.content, color=after.author.colour)
-			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
-			await client.send_message(specialchannel, embed=embed)
-	# preliminary checkings
-	if before.content == after.content:
-		return # must be the message being pinned and/or embed(s) displaying
-	# checks succeeded
-	if not logdisabled('message_edit', after.server):
-		if len(before.content) > 1024 or len(after.content) > 1024:
-			embed = discord.Embed(title='📝MESSAGE EDITED (SENT {} IN {}). The older content is:'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), description=before.content, colour=after.author.colour)
-			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
-			await client.send_message(specialchannel, embed=embed)
-			embed = discord.Embed(title='MESSAGE EDITED (SENT {} IN {}). The newer content is:'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), description=after.content, colour=after.author.colour)
-			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
-			await client.send_message(specialchannel, embed=embed)
+	schan = getspecialchannel_reply(new)
+	if not old.pinned and new.pinned and not logdisabled('message_pin', new.server):
+		em = discord.Embed(
+			title=(
+				'\N{PUSHPIN}MESSAGE PINNED (SENT {reltime} IN {chan})'
+			).format(
+				reltime=reltime(time.mktime(new.timestamp.timetuple())),
+				chan=new.channel.mention
+			),
+			description=new.content,
+			colour=new.author.colour,
+		)
+		em.set_author(
+			name=new.author.display_name,
+			icon_url=new.author.avatar_url,
+			url=infourl('userid={0.author.id}&messageid={0.id}'.format(new)),
+		)
+		await client.send_message(schan, embed=em)
+	if old.pinned and not new.pinned and not logdisabled('message_unpin', new.server):
+		em = discord.Embed(
+			title=(
+				'\N{PUSHPIN}MESSAGE UNPINNED (SENT {reltime} IN {chan})'
+			).format(
+				reltime=reltime(time.mktime(new.timestamp.timetuple())),
+				chan=new.channel.mention,
+			),
+			description=new.content,
+			colour=new.author.colour,
+		)
+		em.set_author(
+			name=new.author.display_name,
+			icon_url=new.author.avatar_url,
+			url=infourl('userid={0.author.id}&messageid={0.id}'.format(new)),
+		)
+		await client.send_message(schan, embed=em)
+
+	# Preliminary checkings
+	if old.content == new.content:
+		# Must be the message being pinned and/or embed(s) displaying
+		# Actually, TTS and rich embeds could also have changed,
+		# but this is just a refactor
+		return
+
+	if not logdisabled('message_edit', new.server):
+		if len(new.content) > 1024 or len(new.content) > 1024:
+			em = discord.Embed(
+				title=(
+					'\N{MEMO}MESSAGE EDITED (SENT {reltime} IN {chan}).'
+					' The older content is:'
+				).format(
+					reltime=reltime(time.mktime(new.timestamp.timetuple())),
+					chan=new.channel.mention,
+				),
+				description=old.content,
+				colour=old.author.colour,
+			)
+			em.set_author(
+				name=new.author.display_name,
+				icon_url=new.author.avatar_url,
+				url=infourl('userid={0.author.id}&messageid={0.id}'.format(new)),
+			)
+			await client.send_message(schan, embed=em)
+			em = discord.Embed(
+				title=(
+					'MESSAGE EDITED (SENT {reltime} IN {chan}).'
+					' The newer content is:'
+				).format(
+					reltime=reltime(time.mktime(new.timestamp.timetuple())),
+					chan=new.channel.mention,
+				),
+				description=new.content,
+				colour=new.author.colour,
+			)
+			em.set_author(
+				name=new.author.display_name,
+				icon_url=new.author.avatar_url,
+				url=infourl('userid={0.author.id}&messageid={0.id}'.format(new)),
+			)
+			await client.send_message(schan, embed=em)
 		else:
-			embed = discord.Embed(title='📝MESSAGE EDITED (SENT {} IN {})'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), colour=after.author.colour)
-			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
-			embed.add_field(name='Older Content', value=before.content, inline=False)
-			embed.add_field(name='Newer Content', value=after.content, inline=False)
-			await client.send_message(specialchannel, embed=embed)
-	if not logdisabled('message_overedit', after.server): # Turning off this logging also turns off the feature
+			em = discord.Embed(
+				title=(
+					'\N{MEMO}MESSAGE EDITED (SENT {reltime} IN {chan})'
+				).format(
+					reltime=reltime(time.mktime(new.timestamp.timetuple())),
+					chan=new.channel.mention,
+				),
+				colour=new.author.colour,
+			)
+			em.set_author(
+				name=new.author.display_name,
+				icon_url=new.author.avatar_url,
+				url=infourl('userid={0.author.id}&messageid={0.id}'.format(new)),
+			)
+			em.add_field(name='Older Content', value=old.content, inline=False)
+			em.add_field(name='Newer Content', value=new.content, inline=False)
+			await client.send_message(schan, embed=em)
+
+	# Turning off this logging also turns off the feature
+	if not logdisabled('message_overedit', new.server):
 		# Delete a message if it has been edited more than 5 times in 30 seconds
-		if not after.id in minutemessageedits:
-			minutemessageedits[after.id] = [int(time.time())]
-		else:
-			edittime = int(time.time())
-			while True:
-				if edittime in minutemessageedits[after.id]:
-					edittime += 0.1
-				else:
-					minutemessageedits[after.id].append(edittime)
-					break
-			if len(minutemessageedits[after.id]) >= 5:
-				for i in minutemessageedits[after.id][:]: # [:] because we may be removing elements from here
-					if i < (int(time.time())-30):
-						minutemessageedits[after.id].remove(i)
-				if len(minutemessageedits[after.id]) >= 5:
-					# Ok, that's enough editing.
-					try:
-						await client.delete_message(after)
-						messages_deleted_by_bot.append(after)
-						embed = discord.Embed(title='📝📝📝📝📝Message {} was edited too many times in {} and has been deleted by me'.format(after.id, after.channel.mention), description=after.content, colour=after.author.colour, timestamp=datetime.datetime.now())
-						embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url)
-						embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=after.author.id))
-					except discord.errors.NotFound:
-						embed = discord.Embed(title='📝📝📝📝📝Message {} was edited too many times in {} but they deleted it before I could'.format(after.id, after.channel.mention), description=after.content, colour=after.author.colour, timestamp=datetime.datetime.now())
-						embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url)
-						embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=after.author.id))
-					await client.send_message(specialchannel, embed=embed)
-					# Also actually reply
-					await client.send_message(after.channel, '<@!{}>. Were you going to stop editing that message?'.format(after.author.id))
-			# While we're at it, also clean up other messages.
-			for k in minutemessageedits.copy(): # Copying because we may be removing elements from here [2]
-				if k != after.id:
-					for i in minutemessageedits[k][:]:
-						if i < (int(time.time())-30):
-							minutemessageedits[k].remove(i)
-					if len(minutemessageedits[k]) == 0:
-						del minutemessageedits[k]
+		await utils.handle_minute_message_edits(new, schan)
 
 @client.event
 async def on_member_update(before, after):
