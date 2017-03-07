@@ -795,10 +795,10 @@ async def on_message_edit(old, new):
 	if not old.pinned and new.pinned and not logdisabled('message_pin', new.server):
 		em = discord.Embed(
 			title=(
-				'\N{PUSHPIN}MESSAGE PINNED (SENT {reltime} IN {chan})'
+				'\N{PUSHPIN}MESSAGE PINNED (SENT {reltime} IN #{chan})'
 			).format(
 				reltime=reltime(time.mktime(new.timestamp.timetuple())),
-				chan=new.channel.mention
+				chan=utils.mdspecialchars(new.channel.name),
 			),
 			description=new.content,
 			colour=new.author.colour,
@@ -814,10 +814,10 @@ async def on_message_edit(old, new):
 	if old.pinned and not new.pinned and not logdisabled('message_unpin', new.server):
 		em = discord.Embed(
 			title=(
-				'\N{PUSHPIN}MESSAGE UNPINNED (SENT {reltime} IN {chan})'
+				'\N{PUSHPIN}MESSAGE UNPINNED (SENT {reltime} IN #{chan})'
 			).format(
 				reltime=reltime(time.mktime(new.timestamp.timetuple())),
-				chan=new.channel.mention,
+				chan=utils.mdspecialchars(new.channel.name),
 			),
 			description=new.content,
 			colour=new.author.colour,
@@ -842,11 +842,11 @@ async def on_message_edit(old, new):
 		if len(new.content) > 1024 or len(new.content) > 1024:
 			em = discord.Embed(
 				title=(
-					'\N{MEMO}MESSAGE EDITED (SENT {reltime} IN {chan}).'
+					'\N{MEMO}MESSAGE EDITED (SENT {reltime} IN #{chan}).'
 					' The older content is:'
 				).format(
 					reltime=reltime(time.mktime(new.timestamp.timetuple())),
-					chan=new.channel.mention,
+					chan=utils.mdspecialchars(new.channel.name),
 				),
 				description=old.content,
 				colour=old.author.colour,
@@ -863,11 +863,11 @@ async def on_message_edit(old, new):
 			await client.send_message(schan, embed=em)
 			em = discord.Embed(
 				title=(
-					'MESSAGE EDITED (SENT {reltime} IN {chan}).'
+					'MESSAGE EDITED (SENT {reltime} IN #{chan}).'
 					' The newer content is:'
 				).format(
 					reltime=reltime(time.mktime(new.timestamp.timetuple())),
-					chan=new.channel.mention,
+					chan=utils.mdspecialchars(new.channel.name),
 				),
 				description=new.content,
 				colour=new.author.colour,
@@ -885,10 +885,10 @@ async def on_message_edit(old, new):
 		else:
 			em = discord.Embed(
 				title=(
-					'\N{MEMO}MESSAGE EDITED (SENT {reltime} IN {chan})'
+					'\N{MEMO}MESSAGE EDITED (SENT {reltime} IN #{chan})'
 				).format(
 					reltime=reltime(time.mktime(new.timestamp.timetuple())),
-					chan=new.channel.mention,
+					chan=utils.mdspecialchars(new.channel.name),
 				),
 				colour=new.author.colour,
 			)
