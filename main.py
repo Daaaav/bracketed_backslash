@@ -715,8 +715,9 @@ async def on_message_delete(msg):
 	schan = getspecialchannel_reply(msg)
 	em = discord.Embed(
 		title=(
-			'\N{NO ENTRY SIGN}MESSAGE DELETED (SENT {reltime} IN #{chan})'
+			'\N{NO ENTRY SIGN}MESSAGE {withatch}DELETED (SENT {reltime} IN #{chan})'
 		).format(
+			withatch='WITH ATTACHMENT ' if msg.attachments != [] else '',
 			reltime=reltime(time.mktime(msg.timestamp.timetuple())),
 			chan=utils.mdspecialchars(msg.channel.name),
 		),
