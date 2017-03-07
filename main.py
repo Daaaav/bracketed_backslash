@@ -806,7 +806,9 @@ async def on_message_edit(old, new):
 		em.set_author(
 			name=new.author.display_name,
 			icon_url=new.author.avatar_url,
-			url=infourl('userid={0.author.id}&messageid={0.id}'.format(new)),
+		)
+		em.set_footer(
+			text=utils.id_summary(uid=new.author.id, mid=new.id, cid=new.channel.id),
 		)
 		await client.send_message(schan, embed=em)
 	if old.pinned and not new.pinned and not logdisabled('message_unpin', new.server):
@@ -823,7 +825,9 @@ async def on_message_edit(old, new):
 		em.set_author(
 			name=new.author.display_name,
 			icon_url=new.author.avatar_url,
-			url=infourl('userid={0.author.id}&messageid={0.id}'.format(new)),
+		)
+		em.set_footer(
+			text=utils.id_summary(uid=new.author.id, mid=new.id, cid=new.channel.id),
 		)
 		await client.send_message(schan, embed=em)
 
@@ -850,7 +854,11 @@ async def on_message_edit(old, new):
 			em.set_author(
 				name=new.author.display_name,
 				icon_url=new.author.avatar_url,
-				url=infourl('userid={0.author.id}&messageid={0.id}'.format(new)),
+			)
+			em.set_footer(
+				text=utils.id_summary(
+					uid=new.author.id, mid=new.id, cid=new.channel.id,
+				),
 			)
 			await client.send_message(schan, embed=em)
 			em = discord.Embed(
@@ -867,7 +875,11 @@ async def on_message_edit(old, new):
 			em.set_author(
 				name=new.author.display_name,
 				icon_url=new.author.avatar_url,
-				url=infourl('userid={0.author.id}&messageid={0.id}'.format(new)),
+			)
+			em.set_footer(
+				text=utils.id_summary(
+					uid=new.author.id, mid=new.id, cid=new.channel.id,
+				),
 			)
 			await client.send_message(schan, embed=em)
 		else:
@@ -883,10 +895,14 @@ async def on_message_edit(old, new):
 			em.set_author(
 				name=new.author.display_name,
 				icon_url=new.author.avatar_url,
-				url=infourl('userid={0.author.id}&messageid={0.id}'.format(new)),
 			)
 			em.add_field(name='Older Content', value=old.content, inline=False)
 			em.add_field(name='Newer Content', value=new.content, inline=False)
+			em.set_footer(
+				text=utils.id_summary(
+					uid=new.author.id, mid=new.id, cid=new.channel.id,
+				),
+			)
 			await client.send_message(schan, embed=em)
 
 	# Turning off this logging also turns off the feature
