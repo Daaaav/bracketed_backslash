@@ -1985,3 +1985,26 @@ async def sudo(client, message, **kwargs):
 		kwargs['arguments'] = None
 		kwargs['clean_arguments'] = None
 	await func[0](client, message, **kwargs)
+
+@shadow(auth=is_channel_manager)
+async def setjoinchannel(client, message, **kwargs):
+	if isprivatemessage(message.server):
+		embed = emb.error(t['noprivate'])
+		await reply(message, emb=embed)
+		return
+	chan = client.get_channel(kwargs['arguments'][2:-1])
+	if not chan:
+		em = emb.error(
+			(
+				'Invalid channel. The channel must be a'
+				' channel mention, i.e. in `<#ID>` form.'
+			)
+		)
+		await reply(message, emb=em)
+		return
+	if not config.is_detached('joinchannel', message.server.id):
+		config.detach('joinchannel', message.server.id)
+	config.set_s('joinchannel', chan.id, message.server.id)
+	config.saveconfig()
+	em = emb.success('Set {0.mention} to be the join channel for this server.'.format(chan))
+	await reply(message, emb=em)
