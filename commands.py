@@ -1987,7 +1987,7 @@ async def sudo(client, message, **kwargs):
 	await func[0](client, message, **kwargs)
 
 @shadow(auth=is_channel_manager)
-async def setjoinchannel(client, message, **kwargs):
+async def joinchannel(client, message, **kwargs):
 	if isprivatemessage(message.server):
 		embed = emb.error(t['noprivate'])
 		await reply(message, emb=embed)
