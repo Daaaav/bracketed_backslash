@@ -1992,19 +1992,54 @@ async def joinchannel(client, message, **kwargs):
 		embed = emb.error(t['noprivate'])
 		await reply(message, emb=embed)
 		return
-	chan = client.get_channel(kwargs['arguments'][2:-1])
-	if not chan:
+	splitargs = kwargs['arguments'].split(' ')
+	if len(splitargs) != 2:
 		em = emb.error(
 			(
-				'Invalid channel. The channel must be a'
-				' channel mention, i.e. in `<#ID>` form.'
+				'Invalid amount of arguments passed.'
+				' Input `{invoker}help {command}` for more information.'
+			).format(
+				invoker=invoker,
+				command=kwargs['command'],
+			),
+		)
+	if splitargs[0] == 'set':
+		chan = client.get_channel(splitargs[1][2:-1])
+		if not chan:
+			em = emb.error(
+				(
+					'Invalid channel. The channel must be a'
+					' channel mention, i.e. in `<#ID>` form.'
+				)
+			)
+			await reply(message, emb=em)
+			return
+		if not config.is_detached('joinchannel', message.server.id):
+			config.detach('joinchannel', message.server.id)
+		config.set_s('joinchannel', chan.id, message.server.id)
+		config.saveconfig()
+		em = emb.success(
+			'Set {0.mention} to be the join channel for this server.'.format(chan)
+		)
+		await reply(message, emb=em)
+		return
+	elif splitargs[0] == 'unset':
+		if not config.is_detached('joinchannel', message.server.id):
+			config.detach('joinchannel', message.server.id)
+		config.restore_default('joinchannel', message.server.id)
+		config.saveconfig()
+		em = emb.success('Unset the join channel for this server.')
+		await reply(message, emb=em)
+		return
+	else:
+		em = emb.error(
+			(
+				'Invalid arguments.'
+				' Input `{invoker}help {command}` for more information.'
+			).format(
+				invoker=invoker,
+				command=kwargs['command'],
 			)
 		)
 		await reply(message, emb=em)
 		return
-	if not config.is_detached('joinchannel', message.server.id):
-		config.detach('joinchannel', message.server.id)
-	config.set_s('joinchannel', chan.id, message.server.id)
-	config.saveconfig()
-	em = emb.success('Set {0.mention} to be the join channel for this server.'.format(chan))
-	await reply(message, emb=em)
