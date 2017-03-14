@@ -287,14 +287,10 @@ def shadow(auth=None, aliases=None):
 		if re.match(*matchargs):
 			encodings = re.findall(*matchargs)
 			symbols = list(encodings)
-			count = 0
-			for i in symbols:
+			for count, i in enumerate(symbols):
 				symbols[count] = chr(int(i[2:], 16))
-				count += 1
-			count = 0
-			for i in encodings:
+			for count, i in enumerate(encodings):
 				name = name.replace(encodings[count], symbols[count])
-				count += 1
 		if name.startswith('_'):
 			name = name[1:]
 		commands[name] = [func, auth, aliases]
