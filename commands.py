@@ -1189,13 +1189,9 @@ async def countpins(client, message, **kwargs):
 		embed = emb.error('The channel doesn’t exist, has been deleted, or it’s not a channel at all. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=kwargs['command']))
 		await reply(message, emb=embed)
 
-@shadow()
+@shadow(servonly=True)
 async def countallpins(client, message, **kwargs):
 	await client.send_typing(message.channel)
-	if isprivatemessage(message.server):
-		embed = emb.error('No channels to iterate through, try `\countpins` instead')
-		await reply(message, emb=embed)
-		return
 	content = ''
 	for chan in message.server.channels:
 		if str(chan.type) == 'text':
