@@ -1835,12 +1835,8 @@ async def uploadfile(client, message, **kwargs):
 		raise
 	await reply(message, emb=e)
 
-@shadow(auth=is_mod, aliases=['blackunlist'])
+@shadow(auth=is_mod, aliases=['blackunlist'], servonly=True)
 async def blacklist(client, message, **kwargs):
-	if isprivatemessage(message.server):
-		embed = emb.error(t['noprivate'])
-		await reply(message, emb=embed)
-		return
 	tgtmem = get_member_input(message.server, kwargs['arguments'])
 	if tgtmem == None:
 		embed = emb.error('Unable to find that member. ' + t['specify_user'])
