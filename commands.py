@@ -826,12 +826,8 @@ async def rules(client, message, **kwargs):
 		n += 1
 	await reply(message, content)
 
-@shadow()
+@shadow(servonly=True)
 async def rulefind(client, message, **kwargs):
-	if isprivatemessage(message.server):
-		embed = emb.error('Alright, this isn’t a server, this is our private conversation. I run on multiple servers with different rules, you know.')
-		await reply(message, emb=embed)
-		return
 	if message.server.id in disabledrules and not is_mod(message.author):
 		embed = emb.error('The rules system is currently disabled for this server.')
 		await reply(message, emb=embed)
