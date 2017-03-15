@@ -794,12 +794,8 @@ async def rolecacheinfo(client, message, **kwargs):
 
 	await reply(message, content)
 
-@shadow(aliases=['rule'])
+@shadow(aliases=['rule'], servonly=True)
 async def rules(client, message, **kwargs):
-	if isprivatemessage(message.server):
-		content = 'Rules:\n**1.** I am always right.\n**2.** If I am not right, rule 1 applies.'
-		await reply(message, content)
-		return
 	if message.server.id in disabledrules and not is_mod(message.author):
 		embed = emb.error('The rules system is currently disabled for this server.')
 		await reply(message, emb=embed)
