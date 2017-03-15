@@ -1966,12 +1966,8 @@ async def sudo(client, message, **kwargs):
 		kwargs['clean_arguments'] = None
 	await func[0](client, message, **kwargs)
 
-@shadow(auth=is_channel_manager)
+@shadow(auth=is_channel_manager, servonly=True)
 async def joinchannel(client, message, **kwargs):
-	if isprivatemessage(message.server):
-		embed = emb.error(t['noprivate'])
-		await reply(message, emb=embed)
-		return
 	splitargs = kwargs['arguments'].split(' ')
 	if len(splitargs) != 2:
 		em = emb.error(
