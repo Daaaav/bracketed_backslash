@@ -280,7 +280,7 @@ async def on_ready():
 
 commands = {}
 
-def shadow(auth=None, aliases=None):
+def shadow(auth=None, aliases=None, servonly=False):
 	def living_shadow(func):
 		name = func.__name__
 		matchargs = [r'__[0-9a-f]{4}', name, re.IGNORECASE]
@@ -293,7 +293,7 @@ def shadow(auth=None, aliases=None):
 				name = name.replace(encodings[count], symbols[count])
 		if name.startswith('_'):
 			name = name[1:]
-		commands[name] = [func, auth, aliases]
+		commands[name] = [func, auth, aliases, servonly]
 	return living_shadow
 
 @client.event
@@ -673,6 +673,11 @@ async def on_message(m):
 				)
 				await reply(m, emb=e)
 			return
+
+	if m.channel.is_private and func[3]:
+		e = emb.error(t['noprivate'])
+		await reply(m, emb=e)
+		return
 	if func[1] != None and not func[1](m.author):
 		e = emb.error(t['you_no_permission'])
 		logfailedcommand(command, arguments, m)
