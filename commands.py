@@ -1139,12 +1139,8 @@ async def getrawmessagecontent(client, message, **kwargs):
 		embed = emb.error('Invalid channel or message ID given. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=kwargs['command']))
 	await reply(message, emb=embed)
 
-@shadow(aliases=['removecontrib'])
+@shadow(aliases=['removecontrib'], servonly=True)
 async def addcontrib(client, message, **kwargs):
-	if isprivatemessage(message.server):
-		embed = emb.error(t['noprivate'])
-		await reply(message, emb=embed)
-		return
 	if message.server.id != productionserver:
 		embed = emb.error(t['production_only'])
 		await reply(message, emb=embed)
