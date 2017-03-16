@@ -142,7 +142,7 @@ maineventloop = asyncio.get_event_loop()
 
 @client.event
 async def on_ready():
-	global memberroles, rules, disabledrules, server, specialchannel_prod, botschannel, voicetextchannel, botschannel_tntgb, joinchannel_tntgb, banlogchannel_tntgb, productionserver, tntgbserver, rolexpires
+	global memberroles, rules, disabledrules, server, specialchannel_prod, botschannel, voicetextchannel, botschannel_tntgb, joinchannel_tntgb, banlogchannel_tntgb, productionserver, tntgbserver, rolexpires, opserver
 	productionserver = '153368829160849408'
 	tntgbserver = '242099933665034240'
 	server = discord.utils.get(client.servers, id=productionserver) # defines all server.* commands
@@ -153,6 +153,7 @@ async def on_ready():
 	botschannel_tntgb = discord.utils.get(server_tntgb.channels, id='266626198249930764')
 	joinchannel_tntgb = discord.utils.get(server_tntgb.channels, id='266591127644143618')
 	banlogchannel_tntgb = discord.utils.get(server_tntgb.channels, id='242253449922609152')
+	opserver = discord.utils.find(lambda s: s.id == opserverid, client.servers)
 	logging.info('logged in as {} with id {}'.format(client.user.name, client.user.id))
 	await client.change_presence(game=discord.Game(name=config.get_s('gamestatus')))
 	embed = discord.Embed(title='🔌BOT CONNECTED', colour=server.me.colour)
