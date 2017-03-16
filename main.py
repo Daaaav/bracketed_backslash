@@ -86,6 +86,9 @@ ownerid_config = open('ownerid.conf', 'r')
 ownerid = ownerid_config.readline(18).split('\n')[0]
 ownerid_config.close()
 
+opserverid_config = open('opserverid.conf', 'r')
+opserverid = opserverid_config.readline(18).split('\n')[0]
+opserverid_config.close()
 
 memberroles = {} # Now no longer userid -> roleids, but serverid -> userids -> roleids
 minutemessageedits = {}
