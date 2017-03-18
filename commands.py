@@ -1985,6 +1985,7 @@ async def joinchannel(client, message, **kwargs):
 		except IndexError:
 			em = emb.error('You should probably enter in a channel.')
 			await reply(message, emb=em)
+			return
 		if not chan:
 			em = emb.error(
 				(
