@@ -1980,7 +1980,11 @@ async def joinchannel(client, message, **kwargs):
 			),
 		)
 	if splitargs[0] == 'set':
-		chan = client.get_channel(splitargs[1][2:-1])
+		try:
+			chan = client.get_channel(splitargs[1][2:-1])
+		except IndexError:
+			em = emb.error('You should probably enter in a channel.')
+			await reply(message, emb=em)
 		if not chan:
 			em = emb.error(
 				(
