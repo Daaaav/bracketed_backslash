@@ -331,7 +331,13 @@
 			"cat_slug": "admin",
 			"cat_desc": "Commands to manage the behind-the-scenes of the server.",
 			"cat_shown": true,
-			"commands": []
+			"commands": [
+				{
+					"name": "joinchannel",
+					"short": "Manages the join channel for the server.",
+					"extra": "**Syntax**: `\\joinchannel <set|unset|get> [CHANNEL]`\n\n\t`set`: Sets the join channel.\n\t`unset`: Unsets the join channel.\n\t`get`: Gives the current join channel.\n\t`[CHANNEL]`: A channel mention. Required when using `set`."
+				}
+			]
 		},
 		{
 			"cat_name": "Contributor Moderator Commands",
