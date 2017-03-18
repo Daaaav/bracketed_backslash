@@ -2007,6 +2007,27 @@ async def joinchannel(client, message, **kwargs):
 		em = emb.success('Unset the join channel for this server.')
 		await reply(message, emb=em)
 		return
+	elif splitargs[0] == 'get':
+		chanid = config.get_s('joinchannel', message.server.id)
+		if chanid == '0':
+			em = emb.info('There is no join channel set for this server.')
+		else:
+			chan = message.server.get_channel(chanid)
+			if chan:
+				em = emb.info(
+					(
+						'The join channel is set to {0.mention}'
+						' for this server.'
+					).format(chan)
+				)
+			else:
+				em = emb.info(
+					(
+						'The join channel is set to an invalid channel ID'
+						' of **{0}**.'
+					).format(chanid)
+				)
+		await reply(message, emb=em)
 	else:
 		em = emb.error(
 			(
