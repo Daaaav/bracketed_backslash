@@ -327,6 +327,13 @@
 			]
 		},
 		{
+			"cat_name": "Administration Commands",
+			"cat_slug": "admin",
+			"cat_desc": "Commands to manage the behind-the-scenes of the server.",
+			"cat_shown": true,
+			"commands": []
+		},
+		{
 			"cat_name": "Contributor Moderator Commands",
 			"cat_slug": "contribmod",
 			"cat_desc": "",
