@@ -270,17 +270,18 @@ async def on_ready():
 	await handleExpiryTimer()
 
 	for chan in client.get_all_channels():
-		msgs = client.logs_from(chan)
-		try:
-			async for m in msgs:
-				client.messages.append(m)
-		except discord.errors.Forbidden:
-			logging.info(
-				(
-					'Failed to retrieve message history for'
-					' {serv.name} ({serv.id})#{chan.name} ({chan.id}).'
-				).format(serv=chan.server, chan=chan)
-			)
+		if chan.type == discord.ChannelType.text:
+			msgs = client.logs_from(chan)
+			try:
+				async for m in msgs:
+					client.messages.append(m)
+			except discord.errors.Forbidden:
+				logging.info(
+					(
+						'Failed to retrieve message history for'
+						' {serv.name} ({serv.id})#{chan.name} ({chan.id}).'
+					).format(serv=chan.server, chan=chan)
+				)
 
 	# Now set up our own cache, that Discord.py won't remove messages from before telling us!
 	for m in client.messages:
