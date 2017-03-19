@@ -687,7 +687,7 @@ async def expiryremove(client, message, **kwargs):
 		await reply(message, emb=embed)
 		return
 
-@shadow()
+@shadow(servonly=True)
 async def expirylist(client, message, **kwargs):
 	content = ''
 
