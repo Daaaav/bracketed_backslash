@@ -331,7 +331,9 @@ async def findu(client, message, **kwargs):
 	if kwargs['arguments'] == None:
 		targetmember = message.author
 	else:
-		targetmember = get_member_input(message.server, kwargs['arguments'])
+		targetmember = utils.match_input(
+			'member', kwargs['arguments'], server=message.server
+		)
 	if targetmember == None:
 		embed = emb.error('Unable to find that member. ' + t['specify_user'])
 		await reply(message, emb=embed)
