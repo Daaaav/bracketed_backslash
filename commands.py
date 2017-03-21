@@ -1312,7 +1312,7 @@ async def _eval(client, message, **kwargs):
 
 @shadow(aliases=['serverban', 'unserverban'])
 async def kick(client, message, **kwargs):
-	targetmember = get_member_input(message.server, kwargs['arguments'])
+	targetmember = utils.match_input('member', kwargs['arguments'], server=message.server)
 	try:
 		if kwargs['command'] == 'kick':
 			if not message.author.server_permissions.kick_members:
