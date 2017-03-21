@@ -619,7 +619,9 @@ async def vc(client, message, **kwargs):
 @shadow(auth=is_mod)
 async def rolerst(client, message, **kwargs):
 	try:
-		targetmember = get_member_input(message.server, kwargs['arguments'])
+		targetmember = utils.match_input(
+			'member', kwargs['arguments'], server=message.server,
+		)
 		await removeRestrictiveRoles(targetmember, message.server)
 	except(AttributeError, TypeError):
 		embed = emb.error(t['specify_user'])
