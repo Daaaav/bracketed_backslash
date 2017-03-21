@@ -1161,7 +1161,7 @@ async def addcontrib(client, message, **kwargs):
 		return
 	contribmodrole = discord.utils.get(message.server.roles, id='249695436812713984')
 	contribrole = discord.utils.get(message.server.roles, id='241728185937559552')
-	targetmember = get_member_input(message.server, kwargs['arguments'])
+	targetmember = utils.match_input('member', kwargs['arguments'], server=message.server)
 	if not contribmodrole in message.author.roles:
 		embed = emb.error('Permission denied. This command can only be used by a tOLP Contributor Moderator.')
 		await reply(message, emb=embed)
