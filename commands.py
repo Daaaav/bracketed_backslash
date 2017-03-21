@@ -654,7 +654,9 @@ async def expires(client, message, **kwargs):
 		targetmemberid = latestroled
 	else:
 		try:
-			targetmember = get_member_input(message.server, splitargs[1])
+			targetmember = utils.match_input(
+				'member', splitargs[1], server=message.server,
+			)
 			targetmemberid = targetmember.id
 		except AttributeError:
 			embed = emb.error(t['specify_user'])
