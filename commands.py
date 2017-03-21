@@ -728,7 +728,7 @@ async def rolecacherst(client, message, **kwargs):
 		embed = emb.error('Please give an ID.')
 		await reply(message, emb=embed)
 		return
-	elif get_member_input(message.server, kwargs['arguments']) != None:
+	elif utils.match_input('member', kwargs['arguments'], server=message.server) != None:
 		embed = emb.error('That member is apparently still on this server! Not removing from the cache.')
 		await reply(message, emb=embed)
 		return
