@@ -1010,7 +1010,7 @@ async def rulemaint(client, message, **kwargs):
 
 @shadow()
 async def info(client, message, **kwargs):
-	persontocheck = get_member_input(message.server, kwargs['arguments'])
+	persontocheck = utils.match_input('member', kwargs['arguments'], server=message.server)
 	yesperm = '☑'
 	noperm = '❎'
 	try:
