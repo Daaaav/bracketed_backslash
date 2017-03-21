@@ -497,7 +497,7 @@ async def votevoicemute(client, message, **kwargs):
 		await reply(message, emb=embed)
 		return
 
-	targetmember = get_member_input(message.server, kwargs['arguments'])
+	targetmember = utils.match_input('member', kwargs['arguments'], server=message.server)
 	try:
 		if message.author.voice.voice_channel == None:
 			embed = emb.error('You have to be in a voice channel to be able to start a vote.')
