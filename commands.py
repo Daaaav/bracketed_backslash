@@ -470,7 +470,7 @@ async def nonick(client, message, **kwargs):
 
 @shadow(auth=is_mod, aliases=['voiceunmute'])
 async def voicemute(client, message, **kwargs):
-	targetmember = get_member_input(message.server, kwargs['arguments'])
+	targetmember = utils.match_input('member', kwargs['arguments'], server=message.server)
 	content = None
 	try:
 		if targetmember.voice.voice_channel == None:
