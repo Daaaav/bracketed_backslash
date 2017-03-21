@@ -1399,7 +1399,7 @@ async def b(client, message, **kwargs):
 	announcemsg = ''
 	specialchannel = getspecialchannel(message.channel.server)
 	try:
-		targetmember = get_member_input(message.server, splitargs[0])
+		targetmember = utils.match_input('member', splitargs[0], server=message.server)
 		if targetmember != None and is_tntgb_banned(targetmember):
 			embed = emb.warning('{} is already banned!'.format(targetmember.mention))
 			await client.send_message(specialchannel, embed=embed)
