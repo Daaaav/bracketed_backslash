@@ -453,7 +453,9 @@ async def nonick(client, message, **kwargs):
 		await reply(message, emb=embed)
 		return
 	try:
-		targetmember = get_member_input(message.server, kwargs['arguments'])
+		targetmember = utils.match_input(
+			'member', kwargs['arguments'], server=message.server,
+		)
 		await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='236925451216355338'))
 		await client.remove_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
 		latestroled = targetmember.id
