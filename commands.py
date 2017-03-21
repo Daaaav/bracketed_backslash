@@ -588,7 +588,7 @@ async def vy(client, message, **kwargs):
 		percopp = numopponents /voicechatters*100
 
 		if percpro >= config.get_s('votevmute_threshold', message.server.id):
-			targetmember = get_member_input(message.server, mutee)
+			targetmember = utils.match_input('member', mutee, server=message.server)
 			await client.server_voice_state(targetmember, mute=1)
 			content += '\n{}% of the members have now voted in favor of muting, so <@{}> is now voice muted.'.format(round(percpro,1), mutee)
 			del votemutes[mutee]
