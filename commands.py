@@ -1688,7 +1688,9 @@ async def revertban(client, message, **kwargs):
 
 	specialchannel = getspecialchannel(message.channel.server)
 	try:
-		targetmember = get_member_input(message.server, kwargs['arguments'])
+		targetmember = utils.match_input(
+			'member', kwargs['arguments'], server=message.server,
+		)
 
 		await removeRestrictiveRoles(targetmember, message.server)
 
