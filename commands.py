@@ -1853,7 +1853,7 @@ async def uploadfile(client, message, **kwargs):
 
 @shadow(auth=is_mod, aliases=['blackunlist'], servonly=True)
 async def blacklist(client, message, **kwargs):
-	tgtmem = get_member_input(message.server, kwargs['arguments'])
+	tgtmem = utils.match_input('member', kwargs['arguments'], server=message.server)
 	if tgtmem == None:
 		embed = emb.error('Unable to find that member. ' + t['specify_user'])
 		await reply(message, emb=embed)
