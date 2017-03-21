@@ -679,7 +679,9 @@ async def expiryremove(client, message, **kwargs):
 		return
 
 	try:
-		targetmember = get_member_input(message.server, kwargs['arguments'])
+		targetmember = utils.match_input(
+			'member', kwargs['arguments'], server=message.server,
+		)
 		if removeexpiryentry(message.server.id, targetmember.id):
 			embed = emb.success(
 				'Roles for <@{}> will no longer automatically expire.'.format(
