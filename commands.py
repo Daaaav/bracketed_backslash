@@ -753,7 +753,7 @@ async def rolecacheadd(client, message, **kwargs):
 		return
 
 	splitargs = kwargs['arguments'].split()
-	if get_member_input(message.server, splitargs[0]) != None:
+	if utils.match_input('member', splitargs[0], server=message.server) != None:
 		embed = emb.error('That member is apparently still on this server! Not doing anything.')
 		await reply(message, emb=embed)
 		return
