@@ -43,6 +43,7 @@ import images
 import utils
 import op_ids
 
+op_ids.load()
 config.load()
 
 # set bot version
