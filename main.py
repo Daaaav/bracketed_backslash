@@ -160,7 +160,10 @@ async def on_ready():
 	await client.change_presence(game=discord.Game(name=config.get_s('gamestatus')))
 	embed = discord.Embed(title='🔌BOT CONNECTED', colour=server.me.colour)
 	embed.add_field(name='Startup Time', value=reltime(boottimeunix))
-	await client.send_message(specialchannel_prod, embed=embed)
+	await client.send_message(
+		discord.Object(op_ids.ids['opserver_chans']['connections']),
+		embed=embed,
+	)
 
 	try:
 		with open('memberroles.json', 'r') as infile:
