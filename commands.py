@@ -264,8 +264,20 @@ async def echo(client, message, **kwargs):
 		arguments = ''
 	else:
 		arguments = kwargs['clean_arguments']
-	displayarguments = arguments[:2000-len(msg_start)]
-	await reply(message, displayarguments)
+	if (not message.channel.is_private and \
+	message.channel.permissions_for(message.server.me).embed_links) \
+	or message.channel.is_private:
+		displayarguments = arguments[:2048-len(msg_start)]
+		try:
+			echocolor = message.server.me.colour
+		except AttributeError:
+			echocolor = None
+		em = discord.Embed(description=displayarguments, colour=echocolor)
+		replyargs = {'emb': em}
+	else:
+		displayarguments = arguments[:2000-len(msg_start)]
+		replyargs = {'message': displayarguments}
+	await reply(message, **replyargs)
 
 @shadow()
 async def hangman(client, message, **kwargs):
