@@ -18,3 +18,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
+import logging
+
+ids = {}
+
+def load():
+	try:
+		with open('op_ids.json', 'r') as f:
+			ids = json.load(f)
+	except FileNotFoundError:
+		logging.error('op_ids.json not found. A lot of things might be broken.')
