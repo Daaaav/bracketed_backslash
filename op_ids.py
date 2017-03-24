@@ -25,6 +25,7 @@ import logging
 ids = {}
 
 def load():
+	global ids
 	try:
 		with open('op_ids.json', 'r') as f:
 			ids = json.load(f)
