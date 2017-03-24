@@ -66,8 +66,7 @@ def is_dev(member):
 	return False
 
 def is_operator(member):
-	if member.id in config.get_s('operators'):
-		return True
+	return member.id in op_ids.ids['operators']
 	return member.id == ownerid
 
 def is_tntgb_mod(member):
