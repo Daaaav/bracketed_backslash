@@ -84,10 +84,6 @@ token_config = open('bot_token.conf', 'r')
 token = token_config.readline(60).split('\n')[0] # read sixty characters also FUCKING NEWLINES
 token_config.close() # this is probably a good idea i should do
 
-ownerid_config = open('ownerid.conf', 'r')
-ownerid = ownerid_config.readline(18).split('\n')[0]
-ownerid_config.close()
-
 opserverid_config = open('opserverid.conf', 'r')
 opserverid = opserverid_config.readline(18).split('\n')[0]
 opserverid_config.close()
