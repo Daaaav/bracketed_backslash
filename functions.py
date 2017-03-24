@@ -82,7 +82,7 @@ def is_tntgb_banned(member):
 	return False
 
 def is_host(member):
-	return member.id == ownerid
+	return member.id == op_ids.ids['host']
 
 async def reply(messageobject, message=None, emb=None):
 	# Removes the need for adding msg_start manually every time
