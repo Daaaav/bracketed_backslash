@@ -271,7 +271,7 @@ async def echo(client, message, **kwargs):
 		try:
 			echocolor = message.server.me.colour
 		except AttributeError:
-			echocolor = None
+			echocolor = discord.Embed.Empty
 		em = discord.Embed(description=displayarguments, colour=echocolor)
 		replyargs = {'emb': em}
 	else:
