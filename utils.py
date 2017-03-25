@@ -161,12 +161,12 @@ def match_input(objtype, request, *, server=None, client=None):
 
 	# Is this a mention, or an emoji? If so, extract the ID from it
 	if request.startswith('<') and request.endswith('>'):
-		if (objtype == 'member' and request[1] == '@') or \
-		(objtype == 'channel' and request[1] == '#'):
-			request = request[2:-1]
-		elif (objtype == 'member' and request[1:3] == '@!') or \
+		if (objtype == 'member' and request[1:3] == '@!') or \
 		(objtype == 'role' and request[1:3] == '@&'):
 			request = request[3:-1]
+		elif (objtype == 'member' and request[1] == '@') or \
+		(objtype == 'channel' and request[1] == '#'):
+			request = request[2:-1]
 		elif objtype == 'emoji' and request[1] == request[-20] == ':':
 			request = request[-19:-1]
 
