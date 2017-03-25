@@ -143,6 +143,7 @@ async def reply(messageobject, message=None, emb=None):
 				emb=dispemb,
 			)
 		)
+		raise
 
 async def replyattach(messageobject, filetoattach, fname, message=''):
 	# Don't bother with handling >2000 character messages just yet
