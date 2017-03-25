@@ -1228,8 +1228,8 @@ async def countallpins(client, message, **kwargs):
 				content += '{} - Unable to get data\n'.format(chan.mention)
 	await reply(message, content)
 
-@shadow(aliases=['math'])
-async def calc(client, message, **kwargs):
+@shadow()
+async def _math(client, message, **kwargs):
 	# what kind of stupid language uses elif instead of elseif or else if?
 	try:
 		cmdbits = kwargs['arguments'].split() # should split it so [0] is number, [1] is operand, [2] is second number
