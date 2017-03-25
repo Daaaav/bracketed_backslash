@@ -1272,6 +1272,10 @@ async def _math(client, message, **kwargs):
 		embed = emb.error('Overflow error.')
 		await reply(message, emb=embed)
 		return
+	except ValueError:
+		embed = emb.error('You should probably enter in numbers.')
+		await reply(message, emb=embed)
+		return
 	# end
 	content = '{number1} {operand} {number2} = {out}'.format(number1=cmdbits[0], operand=cmdbits[1], number2=cmdbits[2], out=out)
 	embed = discord.Embed(title='Math Output', description=content, colour=col.r_success)
