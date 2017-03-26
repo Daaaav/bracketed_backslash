@@ -392,6 +392,147 @@ async def findu(client, message, **kwargs):
 	# (that was about twenty restarts smh)
 	await reply(message, emb=embed)
 
+@shadow(servonly=True)
+async def findc(client, message, **kwargs):
+	if not kwargs['arguments']:
+		# No channel for me to get? Have a list of the server's channels, then.
+
+		# Lists
+		tchans = ''
+		vchans = ''
+
+		# Generation of the lists
+		for c in sorted(message.server.channels, key=lambda c: c.position):
+			apnd = '**{name}** ({id})\n'.format(
+				name=utils.mdspecialchars(c.name),
+				id=c.id,
+			)
+			if c.type == discord.ChannelType.text:
+				tchans += apnd
+			elif c.type == discord.ChannelType.voice:
+				vchans += apnd
+
+		# Some servers can have no voice channels. You can't have no text channels, though.
+		vchans = '_(none)_' if not vchans else vchans
+
+		em = discord.Embed(colour=message.server.me.colour)
+		em.set_thumbnail(url=message.server.icon_url)
+
+		# Some servers have a lot of channels that can't be fit in one embed field.
+		# So, go ahead and paginate that.
+		# TODO: Maybe abstract pagination to a function or something.
+		if len(tchans) > 1024:
+			tchanl = tchans.split('\n')
+			tpages = []
+			result = ''
+			count = 0
+			for i in tchanl:
+				count += len(i + '\n')
+
+				if count > 1024:
+					# We've overstepped the boundary
+
+					count = len(i + '\n')
+					tpages += [result]
+					result = ''
+				result += i + '\n'
+			tpages += [result]
+			for c, i in enumerate(tpages):
+				em.add_field(
+					name='Text Channels' if not c else '\u200b',
+					value=i,
+					inline=False,
+				)
+		else:
+			em.add_field(name='Text Channels', value=tchans, inline=False)
+		if len(vchans) > 1024:
+			vchanl = vchans.split('\n')
+			vpages = []
+			result = ''
+			count = 0
+			for i in vchanl:
+				count += len(i + '\n')
+
+				if count > 1024:
+					# We've overstepped the boundary
+
+					count = len(i + '\n')
+					vpages += [result]
+					result = ''
+				result += i + '\n'
+			vpages += [result]
+			for c, i in enumerate(vpages):
+				em.add_field(
+					name='Voice Channels' if not c else '\u200b',
+					value=i,
+					inline=False,
+				)
+		else:
+			em.add_field(name='Voice Channels', value=vchans, inline=False)
+		await reply(message, emb=em)
+		return
+
+	tgt = utils.match_input('channel', kwargs['arguments'], server=message.server)
+	if not tgt:
+		em = emb.error('Unable to find that channel. ' + t['specify_channel'])
+		await reply(message, emb=em)
+		return
+
+	readbleby = 0
+	for i in message.server.members:
+		readbleby += 1 if tgt.permissions_for(i).read_messages else 0
+
+	em = discord.Embed(description='Matched ' + tgt.mention, colour=message.server.me.colour)
+	em.set_thumbnail(url=message.server.icon_url)
+	em.add_field(name='Name', value=utils.mdspecialchars(tgt.name))
+	em.add_field(name='ID', value=tgt.id)
+	em.add_field(name='Type', value=str(tgt.type).title())
+	em.add_field(name='Default', value='Yes' if tgt.is_default else 'No')
+	em.add_field(
+		name='Position',
+		value='{0} from the top of {1} list'.format(
+			str(tgt.position), str(tgt.type),
+		),
+	)
+	em.add_field(
+		name='Topic' if tgt.topic else 'No Topic',
+		value=tgt.topic if tgt.topic else 'No Topic',
+	)
+	em.add_field(
+		name='Created At',
+		value=time.strftime(
+			config.get_s('timeformat', message.server.id),
+			tgt.created_at.timetuple(),
+		),
+	)
+	em.add_field(
+		name='User Limit',
+		value='N/A' if tgt.type != discord.ChannelType.voice else str(tgt.user_limit),
+	)
+	em.add_field(
+		name='Voice Members',
+		value=(
+			'N/A' if tgt.type != discord.ChannelType.voice else
+			str(len(tgt.voice_members))
+		),
+	)
+	em.add_field(
+		name='Bitrate',
+		value=(
+			'N/A' if tgt.type != discord.ChannelType.voice else
+			str(int(tgt.bitrate / 1000)) + ' kbps'
+		),
+	)
+	em.add_field(name='Specific Overwrites', value=str(len(tgt.overwrites) - 1))
+	em.add_field(
+		name='Readable By',
+		value=(
+			'N/A' if tgt.type != discord.ChannelType.text else
+			str(readbleby) + ' members'
+		),
+	)
+	await reply(message, emb=em)
+
 @shadow(auth=is_mod)
 async def softban(client, message, **kwargs):
 	global latestroled
