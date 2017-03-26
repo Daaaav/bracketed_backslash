@@ -313,6 +313,19 @@ async def on_message(m):
 	if m.author == client.user or m.author.bot:
 		return
 
+	if m.channel.is_private:
+		e = discord.Embed(
+			description=m.content,
+			timestamp=m.timestamp,
+			colour=client.get_server(op_ids.ids['opserver']).me.colour,
+		)
+		e.set_author(name=m.author.name, icon_url=m.author.avatar_url)
+		e.set_footer(text=utils.id_summary(uid=m.author.id, mid=m.id, cid=m.channel.id))
+		await client.send_message(
+			client.get_channel(op_ids.ids['opserver_chans']['direct_messages']),
+			embed=e,
+		)
+
 	global msg_start, hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, \
 	hangmanstarter, guessedletters, algeraden, memberroles, rules, disabledrules, latestroled
 	schan = getspecialchannel_reply(m)
