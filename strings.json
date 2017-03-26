@@ -81,8 +81,8 @@
 				},
 				{
 					"name": "findc",
-					"short": "Find a channel by all or part of the name, or mention, or ID.",
-					"extrafull": "Find a channel by all or part of the name, or mention, or ID. Displays various information about the matched channel. If no argument is given, will give a list of channels instead."
+					"short": "Find a channel by all or part of the name case-insensitively, or mention, or ID.",
+					"extrafull": "Find a channel by all or part of the name case-insensitively, or mention, or ID. Displays various information about the matched channel. If no argument is given, will give a list of channels instead."
 				},
 				{
 					"name": "hangman",
