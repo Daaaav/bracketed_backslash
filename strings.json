@@ -6,6 +6,7 @@
 		"op_only": "Permission denied. This command can only be used by an operator.",
 		"mod_only": "Permission denied. This command can only be used by a moderator or administrator.",
 		"specify_user": "Please specify a user ID, a username, a username and discriminator, or a nickname.",
+		"specify_channel": "Please specify a channel ID, a name, or a mention.",
 		"you_no_permission": "You don\u2019t have permission to do this.",
 		"no_permission": "I don\u2019t have permission to do this.",
 		"accepts_user": "Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.",
@@ -77,6 +78,11 @@
 					"name": "findu",
 					"short": "Find a user by all or part of the nickname or username case-insensitively, or the discriminator, or mention, or ID.",
 					"extrafull": "Find a user by all or part of the nickname or username case-insensitively, or the discriminator, or mention, or ID. Displays various information about the matched user. If no argument is given, will match caller instead."
+				},
+				{
+					"name": "findc",
+					"short": "Find a channel by all or part of the name case-insensitively, or mention, or ID.",
+					"extrafull": "Find a channel by all or part of the name case-insensitively, or mention, or ID. Displays various information about the matched channel. If no argument is given, will give a list of channels instead."
 				},
 				{
 					"name": "hangman",
@@ -323,6 +329,19 @@
 					"name": "blackunlist",
 					"short": "Blackunlists a person, allowing one to use the bot once again.",
 					"extra": ""
+				}
+			]
+		},
+		{
+			"cat_name": "Administration Commands",
+			"cat_slug": "admin",
+			"cat_desc": "Commands to manage the behind-the-scenes of the server.",
+			"cat_shown": true,
+			"commands": [
+				{
+					"name": "joinchannel",
+					"short": "Manages the join channel for the server.",
+					"extra": "**Syntax**: `\\joinchannel <set|unset|get> [CHANNEL]`\n\n\t`set`: Sets the join channel.\n\t`unset`: Unsets the join channel.\n\t`get`: Gives the current join channel.\n\t`[CHANNEL]`: A channel mention. Required when using `set`."
 				}
 			]
 		},

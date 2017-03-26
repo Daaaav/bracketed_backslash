@@ -41,7 +41,9 @@ import col
 import emb
 import images
 import utils
+import op_ids
 
+op_ids.load()
 config.load()
 
 # set bot version
@@ -82,10 +84,9 @@ token_config = open('bot_token.conf', 'r')
 token = token_config.readline(60).split('\n')[0] # read sixty characters also FUCKING NEWLINES
 token_config.close() # this is probably a good idea i should do
 
-ownerid_config = open('ownerid.conf', 'r')
-ownerid = ownerid_config.readline(18).split('\n')[0]
-ownerid_config.close()
-
+opserverid_config = open('opserverid.conf', 'r')
+opserverid = opserverid_config.readline(18).split('\n')[0]
+opserverid_config.close()
 
 memberroles = {} # Now no longer userid -> roleids, but serverid -> userids -> roleids
 minutemessageedits = {}
@@ -139,7 +140,7 @@ maineventloop = asyncio.get_event_loop()
 
 @client.event
 async def on_ready():
-	global memberroles, rules, disabledrules, server, specialchannel_prod, botschannel, voicetextchannel, botschannel_tntgb, joinchannel_tntgb, banlogchannel_tntgb, productionserver, tntgbserver, rolexpires
+	global memberroles, rules, disabledrules, server, specialchannel_prod, botschannel, voicetextchannel, botschannel_tntgb, joinchannel_tntgb, banlogchannel_tntgb, productionserver, tntgbserver, rolexpires, opserver, opserver_botservers
 	productionserver = '153368829160849408'
 	tntgbserver = '242099933665034240'
 	server = discord.utils.get(client.servers, id=productionserver) # defines all server.* commands
@@ -150,11 +151,19 @@ async def on_ready():
 	botschannel_tntgb = discord.utils.get(server_tntgb.channels, id='266626198249930764')
 	joinchannel_tntgb = discord.utils.get(server_tntgb.channels, id='266591127644143618')
 	banlogchannel_tntgb = discord.utils.get(server_tntgb.channels, id='242253449922609152')
+	opserver = discord.utils.find(lambda s: s.id == opserverid, client.servers)
+	opserver_botservers = discord.utils.find(
+		lambda c: c.id == '291764490578558977',
+		opserver.channels,
+	)
 	logging.info('logged in as {} with id {}'.format(client.user.name, client.user.id))
 	await client.change_presence(game=discord.Game(name=config.get_s('gamestatus')))
 	embed = discord.Embed(title='🔌BOT CONNECTED', colour=server.me.colour)
 	embed.add_field(name='Startup Time', value=reltime(boottimeunix))
-	await client.send_message(specialchannel_prod, embed=embed)
+	await client.send_message(
+		discord.Object(op_ids.ids['opserver_chans']['connections']),
+		embed=embed,
+	)
 
 	try:
 		with open('memberroles.json', 'r') as infile:
@@ -262,17 +271,18 @@ async def on_ready():
 	await handleExpiryTimer()
 
 	for chan in client.get_all_channels():
-		msgs = client.logs_from(chan)
-		try:
-			async for m in msgs:
-				client.messages.append(m)
-		except discord.errors.Forbidden:
-			logging.info(
-				(
-					'Failed to retrieve message history for'
-					' {serv.name} ({serv.id})#{chan.name} ({chan.id}).'
-				).format(serv=chan.server, chan=chan)
-			)
+		if chan.type == discord.ChannelType.text:
+			msgs = client.logs_from(chan)
+			try:
+				async for m in msgs:
+					client.messages.append(m)
+			except discord.errors.Forbidden:
+				logging.info(
+					(
+						'Failed to retrieve message history for'
+						' {serv.name} ({serv.id})#{chan.name} ({chan.id}).'
+					).format(serv=chan.server, chan=chan)
+				)
 
 	# Now set up our own cache, that Discord.py won't remove messages from before telling us!
 	for m in client.messages:
@@ -280,10 +290,20 @@ async def on_ready():
 
 commands = {}
 
-def shadow(auth=None, aliases=None):
+def shadow(auth=None, aliases=None, servonly=False):
 	def living_shadow(func):
-		name = func.__name__.lstrip('_')
-		commands[name] = [func, auth, aliases]
+		name = func.__name__
+		matchargs = [r'__[0-9a-f]{4}', name, re.IGNORECASE]
+		if re.match(*matchargs):
+			encodings = re.findall(*matchargs)
+			symbols = list(encodings)
+			for count, i in enumerate(symbols):
+				symbols[count] = chr(int(i[2:], 16))
+			for count, i in enumerate(encodings):
+				name = name.replace(encodings[count], symbols[count])
+		if name.startswith('_'):
+			name = name[1:]
+		commands[name] = [func, auth, aliases, servonly]
 	return living_shadow
 
 @client.event
@@ -644,55 +664,6 @@ async def on_message(m):
 		e = emb.error('This command is currently disabled.')
 		await reply(m, emb=e)
 
-	# Commands that cannot be the name of a function
-	if command == '':
-		con = m.author.mention + (
-			'\n'
-			'```fix\n'
-			'Luigi: have you ever by accident pressed another key at the same time you have pressed enter?\'\n'
-			'Luigi: ugh\n'
-			'ShinyWolf07: \\\n'
-			'ShinyWolf07: this\n'
-			'Luigi: is\n'
-			'Luigi: cancer\n'
-			'ShinyWolf07: I always do th\n'
-			'ShinyWolf07: its so annoyng\n'
-			'ShinyWolf07: \\\n'
-			'ShinyWolf07: UGh\\\n'
-			'Luigi: xd\n'
-			'Luigi: x\n'
-			'Luigi: d\n'
-			'Luigi: d\n'
-			'ShinyWolf07: xd\\\n'
-			'Luigi: x\n'
-			'ShinyWolf07: F***!!!!!|\n'
-			'Luigi: XD\n'
-			'ShinyWolf07: ARGH\\\n'
-			'Luigi: This is funny to watch you\n'
-			'Luigi: Did you make popcorn\n'
-			'ShinyWolf07: xd ikr \\\n'
-			'ShinyWolf07: ...\n'
-			'ShinyWolf07: -_-\\\n'
-			'ShinyWolf07: GAH\\\n'
-			'Luigi: don\'t you mean ...\\\n'
-			'ShinyWolf07: ...\n'
-			'ShinyWolf07: sigh\n'
-			'Luigi: 10/10 would watch again```'
-		)
-		await reply(m, con)
-		return
-	elif command == '*formatting*':
-		con = 'That’s italicized formatting.'
-		await reply(m, con)
-		return
-	elif command == '/r/undertale':
-		con = (
-			'They banned someone for posting an honest review of Undertale.'
-			' Seriously, don’t go there if you don’t want to be censored.'
-		)
-		await reply(m, con)
-		return
-
 	if command in commands:
 		func = commands[command]
 	else:
@@ -712,6 +683,11 @@ async def on_message(m):
 				)
 				await reply(m, emb=e)
 			return
+
+	if m.channel.is_private and func[3]:
+		e = emb.error(t['noprivate'])
+		await reply(m, emb=e)
+		return
 	if func[1] != None and not func[1](m.author):
 		e = emb.error(t['you_no_permission'])
 		logfailedcommand(command, arguments, m)
@@ -731,137 +707,220 @@ async def on_message(m):
 		raise
 
 @client.event
-async def on_message_delete(message): # when a message gets deleted
-	deleted_messages.append(message)
-	if isprivatemessage(message.server):
+async def on_message_delete(msg):
+	deleted_messages.append(msg)
+	if isprivatemessage(msg.server):
 		return
-	if message.author == client.user: # is the deleted message originally sent by the bot
-		logging.info('bot message {} by user {}#{} ({}) in channel {} ({}) at {} utc deleted, original content is \n{}'.format(message.id, message.author.name, message.author.discriminator, message.author.id, message.channel.id, message.channel.name, message.timestamp, message.content))
+	if msg.author == client.user:
+		logging.info(
+			(
+				'bot message {0.id} by user {1.name}#{1.discriminator} ({1.id})'
+				' in channel {2.id} ({2.name}) at {0.timestamp} utc deleted,'
+				' original content is \n{0.content}'
+			).format(msg, msg.author, msg.channel)
+		)
 		return
-	if message.content == '' and message.attachments == []:
+	if (msg.content == '' and msg.attachments == []) \
+	or logdisabled('message_delete', msg.server):
 		return
-	if logdisabled('message_delete', message.server):
-		return
-	specialchannel = getspecialchannel_reply(message)
-	embed = discord.Embed(title='🚫MESSAGE DELETED (SENT {} IN {})'.format(reltime(time.mktime(message.timestamp.timetuple())), message.channel.mention), description=message.content, colour=message.author.colour)
-	embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url, url=infourl('userid={}&messageid={}'.format(message.author.id, message.id)))
-	await client.send_message(specialchannel, embed=embed)
-	if message.attachments != []:
-		if os.path.isfile(attachcache + '/' + message.attachments[0]['id'] + '_' + message.attachments[0]['filename']):
-			filetoattach = attachcache + '/' + message.attachments[0]['id'] + '_' + message.attachments[0]['filename']
-			content = '_📎The attachment for message {} is attached._'.format(message.id)
-			try:
-				await client.send_file(destination=specialchannel, content=content, fp=filetoattach, filename=message.attachments[0]['filename'])
-			except discord.HTTPException:
-				content = '_Failed to upload the attachment for message {id}._'.format(id=message.id)
-				await client.send_message(specialchannel, content)
-		else:
-			content = '_The attachment for message {} was not found in the message attachments cache._'.format(message.id)
-			await client.send_message(specialchannel, content)
-	if message in messages_deleted_by_bot:
-		messages_deleted_by_bot.remove(message)
-		return
-	deletthreshold = datetime.timedelta(
-		seconds=config.get_s('deleted_message_resend_timer', message.server.id),
+	schan = getspecialchannel_reply(msg)
+	em = discord.Embed(
+		title=(
+			'\N{NO ENTRY SIGN}MESSAGE {withatch}DELETED (SENT {reltime} IN #{chan})'
+		).format(
+			withatch='WITH ATTACHMENT ' if msg.attachments != [] else '',
+			reltime=reltime(time.mktime(msg.timestamp.timetuple())),
+			chan=utils.mdspecialchars(msg.channel.name),
+		),
+		description=msg.content,
+		colour=msg.author.colour,
 	)
-	if (datetime.datetime.now() - message.timestamp) < deletthreshold and \
-	not message.author.bot:
-		if config.get_s('deleted_message_resend_content', message.server.id):
-			embed = discord.Embed(
+	em.set_author(
+		name=msg.author.display_name,
+		icon_url=msg.author.avatar_url,
+	)
+	em.set_footer(text=utils.id_summary(uid=msg.author.id, mid=msg.id, cid=msg.channel.id))
+	await client.send_message(schan, embed=em)
+	if msg.attachments != []:
+		fp = (
+				'{atchcche}/{id}_{fn}'
+		).format(
+			atchcche=attachcache,
+			id=msg.attachments[0]['id'],
+			fn=msg.attachments[0]['filename'],
+		)
+		if os.path.isfile(fp):
+			con = (
+				'_\N{PAPERCLIP}The attachment for message {0.id} is attached._'
+			).format(msg)
+			try:
+				await client.send_file(
+					destination=schan,
+					content=con,
+					fp=fp,
+					filename=msg.attachments[0]['filename'],
+				)
+			except discord.HTTPException:
+				con = (
+					'_Failed to upload the attachment for message {0.id}._'
+				).format(msg)
+				await client.send_message(schan, con)
+		else:
+			con = (
+				'_The attachment for message {0.id} was not found'
+				' in the message attachments cache._'
+			).format(msg)
+			await client.send_message(schan, con)
+	if msg in messages_deleted_by_bot:
+		messages_deleted_by_bot.remove(msg)
+		return
+	dthreshold = datetime.timedelta(
+		seconds=config.get_s('deleted_message_resend_timer', msg.server.id),
+	)
+	if (datetime.datetime.now() - msg.timestamp) < dthreshold and \
+	not msg.author.bot:
+		if config.get_s('deleted_message_resend_content', msg.server.id):
+			em = discord.Embed(
 				title='UNDELETED MESSAGE',
-				description=message.content,
-				colour=message.author.colour,
-				#timestamp=message.timestamp,
+				description=msg.content,
+				colour=msg.author.colour,
 			)
-			embed.set_footer(
+			em.set_footer(
 				text='This message was resent as it was deleted too recently.',
 			)
 		else:
-			embed = discord.Embed(
-				title='Message was deleted',
-				colour=message.author.colour,
+			em = discord.Embed(title='Message was deleted', colour=msg.author.colour)
+			em.set_footer(
+				text=(
+					'This notification was sent because a message by this'
+					' user was deleted too recently.'
+				),
 			)
-			embed.set_footer(
-				text='This notification was sent because a message by this '
-				'user was deleted too recently.'
-			)
-		embed.set_author(
-			name=message.author.display_name,
-			icon_url=message.author.avatar_url,
-		)
-		await client.send_message(message.channel, embed=embed)
+		em.set_author(name=msg.author.display_name, icon_url=msg.author.avatar_url)
+		await client.send_message(msg.channel, embed=em)
 
 @client.event
-async def on_message_edit(before, after): # when a message gets edited
-	if isprivatemessage(after.server):
+async def on_message_edit(old, new):
+	if isprivatemessage(old.server):
 		return
-	specialchannel = getspecialchannel_reply(after)
-	if before.pinned != after.pinned:
-		if not before.pinned and after.pinned and not logdisabled('message_pin', after.server): # if the message was pinned
-			embed = discord.Embed(title='📌MESSAGE PINNED (SENT {} IN {})'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), description=after.content, color=after.author.colour)
-			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
-			await client.send_message(specialchannel, embed=embed)
-		if before.pinned and not after.pinned and not logdisabled('message_unpin', after.server): # if the message was unpinned
-			embed = discord.Embed(title='📌MESSAGE UNPINNED (SENT {} IN {})'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), description=after.content, color=after.author.colour)
-			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
-			await client.send_message(specialchannel, embed=embed)
-	# preliminary checkings
-	if before.content == after.content:
-		return # must be the message being pinned and/or embed(s) displaying
-	# checks succeeded
-	if not logdisabled('message_edit', after.server):
-		if len(before.content) > 1024 or len(after.content) > 1024:
-			embed = discord.Embed(title='📝MESSAGE EDITED (SENT {} IN {}). The older content is:'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), description=before.content, colour=after.author.colour)
-			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
-			await client.send_message(specialchannel, embed=embed)
-			embed = discord.Embed(title='MESSAGE EDITED (SENT {} IN {}). The newer content is:'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), description=after.content, colour=after.author.colour)
-			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
-			await client.send_message(specialchannel, embed=embed)
+	schan = getspecialchannel_reply(new)
+	if not old.pinned and new.pinned and not logdisabled('message_pin', new.server):
+		em = discord.Embed(
+			title=(
+				'\N{PUSHPIN}MESSAGE PINNED (SENT {reltime} IN #{chan})'
+			).format(
+				reltime=reltime(time.mktime(new.timestamp.timetuple())),
+				chan=utils.mdspecialchars(new.channel.name),
+			),
+			description=new.content,
+			colour=new.author.colour,
+		)
+		em.set_author(
+			name=new.author.display_name,
+			icon_url=new.author.avatar_url,
+		)
+		em.set_footer(
+			text=utils.id_summary(uid=new.author.id, mid=new.id, cid=new.channel.id),
+		)
+		await client.send_message(schan, embed=em)
+	if old.pinned and not new.pinned and not logdisabled('message_unpin', new.server):
+		em = discord.Embed(
+			title=(
+				'\N{PUSHPIN}MESSAGE UNPINNED (SENT {reltime} IN #{chan})'
+			).format(
+				reltime=reltime(time.mktime(new.timestamp.timetuple())),
+				chan=utils.mdspecialchars(new.channel.name),
+			),
+			description=new.content,
+			colour=new.author.colour,
+		)
+		em.set_author(
+			name=new.author.display_name,
+			icon_url=new.author.avatar_url,
+		)
+		em.set_footer(
+			text=utils.id_summary(uid=new.author.id, mid=new.id, cid=new.channel.id),
+		)
+		await client.send_message(schan, embed=em)
+
+	# Preliminary checkings
+	if old.content == new.content:
+		# Must be the message being pinned and/or embed(s) displaying
+		# Actually, TTS and rich embeds could also have changed,
+		# but this is just a refactor
+		return
+
+	if not logdisabled('message_edit', new.server):
+		if len(new.content) > 1024 or len(new.content) > 1024:
+			em = discord.Embed(
+				title=(
+					'\N{MEMO}MESSAGE EDITED (SENT {reltime} IN #{chan}).'
+					' The older content is:'
+				).format(
+					reltime=reltime(time.mktime(new.timestamp.timetuple())),
+					chan=utils.mdspecialchars(new.channel.name),
+				),
+				description=old.content,
+				colour=old.author.colour,
+			)
+			em.set_author(
+				name=new.author.display_name,
+				icon_url=new.author.avatar_url,
+			)
+			em.set_footer(
+				text=utils.id_summary(
+					uid=new.author.id, mid=new.id, cid=new.channel.id,
+				),
+			)
+			await client.send_message(schan, embed=em)
+			em = discord.Embed(
+				title=(
+					'MESSAGE EDITED (SENT {reltime} IN #{chan}).'
+					' The newer content is:'
+				).format(
+					reltime=reltime(time.mktime(new.timestamp.timetuple())),
+					chan=utils.mdspecialchars(new.channel.name),
+				),
+				description=new.content,
+				colour=new.author.colour,
+			)
+			em.set_author(
+				name=new.author.display_name,
+				icon_url=new.author.avatar_url,
+			)
+			em.set_footer(
+				text=utils.id_summary(
+					uid=new.author.id, mid=new.id, cid=new.channel.id,
+				),
+			)
+			await client.send_message(schan, embed=em)
 		else:
-			embed = discord.Embed(title='📝MESSAGE EDITED (SENT {} IN {})'.format(reltime(time.mktime(after.timestamp.timetuple())), after.channel.mention), colour=after.author.colour)
-			embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url, url=infourl('userid={}&messageid={}'.format(after.author.id, after.id)))
-			embed.add_field(name='Older Content', value=before.content, inline=False)
-			embed.add_field(name='Newer Content', value=after.content, inline=False)
-			await client.send_message(specialchannel, embed=embed)
-	if not logdisabled('message_overedit', after.server): # Turning off this logging also turns off the feature
+			em = discord.Embed(
+				title=(
+					'\N{MEMO}MESSAGE EDITED (SENT {reltime} IN #{chan})'
+				).format(
+					reltime=reltime(time.mktime(new.timestamp.timetuple())),
+					chan=utils.mdspecialchars(new.channel.name),
+				),
+				colour=new.author.colour,
+			)
+			em.set_author(
+				name=new.author.display_name,
+				icon_url=new.author.avatar_url,
+			)
+			em.add_field(name='Older Content', value=old.content, inline=False)
+			em.add_field(name='Newer Content', value=new.content, inline=False)
+			em.set_footer(
+				text=utils.id_summary(
+					uid=new.author.id, mid=new.id, cid=new.channel.id,
+				),
+			)
+			await client.send_message(schan, embed=em)
+
+	# Turning off this logging also turns off the feature
+	if not logdisabled('message_overedit', new.server):
 		# Delete a message if it has been edited more than 5 times in 30 seconds
-		if not after.id in minutemessageedits:
-			minutemessageedits[after.id] = [int(time.time())]
-		else:
-			edittime = int(time.time())
-			while True:
-				if edittime in minutemessageedits[after.id]:
-					edittime += 0.1
-				else:
-					minutemessageedits[after.id].append(edittime)
-					break
-			if len(minutemessageedits[after.id]) >= 5:
-				for i in minutemessageedits[after.id][:]: # [:] because we may be removing elements from here
-					if i < (int(time.time())-30):
-						minutemessageedits[after.id].remove(i)
-				if len(minutemessageedits[after.id]) >= 5:
-					# Ok, that's enough editing.
-					try:
-						await client.delete_message(after)
-						messages_deleted_by_bot.append(after)
-						embed = discord.Embed(title='📝📝📝📝📝Message {} was edited too many times in {} and has been deleted by me'.format(after.id, after.channel.mention), description=after.content, colour=after.author.colour, timestamp=datetime.datetime.now())
-						embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url)
-						embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=after.author.id))
-					except discord.errors.NotFound:
-						embed = discord.Embed(title='📝📝📝📝📝Message {} was edited too many times in {} but they deleted it before I could'.format(after.id, after.channel.mention), description=after.content, colour=after.author.colour, timestamp=datetime.datetime.now())
-						embed.set_author(name=after.author.display_name, icon_url=after.author.avatar_url)
-						embed.add_field(name='Message author', value='<@!{id}> ({id})'.format(id=after.author.id))
-					await client.send_message(specialchannel, embed=embed)
-					# Also actually reply
-					await client.send_message(after.channel, '<@!{}>. Were you going to stop editing that message?'.format(after.author.id))
-			# While we're at it, also clean up other messages.
-			for k in minutemessageedits.copy(): # Copying because we may be removing elements from here [2]
-				if k != after.id:
-					for i in minutemessageedits[k][:]:
-						if i < (int(time.time())-30):
-							minutemessageedits[k].remove(i)
-					if len(minutemessageedits[k]) == 0:
-						del minutemessageedits[k]
+		await utils.handle_minute_message_edits(new, schan)
 
 @client.event
 async def on_member_update(before, after):
@@ -935,6 +994,10 @@ async def on_member_join(member):
 	if not logdisabled('member_join', member.server):
 		specialchannel = getspecialchannel(member.server)
 		embed = discord.Embed(description='➡<@!{id}> ({id}) joined server'.format(id=member.id), colour=member.server.me.colour, timestamp=datetime.datetime.now())
+		embed.add_field(
+			name='This server now has',
+			value=str(member.server.member_count) + ' members',
+		)
 		embed.set_author(name=member.display_name)
 		embed.set_thumbnail(url=member.avatar_url)
 		await client.send_message(specialchannel, embed=embed)
@@ -946,6 +1009,10 @@ async def on_member_remove(member):
 		specialchannel = getspecialchannel(member.server)
 		embed = discord.Embed(description='🚪<@!{id}> ({id}) removed from server'.format(id=member.id), colour=member.colour, timestamp=datetime.datetime.now())
 		embed.add_field(name='Originally joined server', value=reltime(time.mktime(member.joined_at.timetuple())))
+		embed.add_field(
+			name='This server now has',
+			value=str(member.server.member_count) + ' members',
+		)
 		embed.set_author(name=member.display_name, icon_url=member.avatar_url)
 		embed.set_thumbnail(url=member.avatar_url)
 		await client.send_message(specialchannel, embed=embed)
@@ -1632,6 +1699,32 @@ async def on_channel_update(b, a):
 		e.add_field(name='Older Name', value=utils.mdspecialchars(b.name))
 		e.add_field(name='Newer Name', value=utils.mdspecialchars(a.name))
 		await client.send_message(schan, embed=e)
+
+@client.event
+async def on_server_join(serv):
+	em = discord.Embed(
+		title='BOT ADDED TO SERVER',
+		description='**{name}** ({id})'.format(
+			name=utils.mdspecialchars(serv.name),
+			id=serv.id,
+		),
+		colour=opserver.me.colour,
+	)
+	em.set_image(url=serv.icon_url)
+	await client.send_message(opserver_botservers, embed=em)
+
+@client.event
+async def on_server_remove(serv):
+	em = discord.Embed(
+		title='BOT REMOVED FROM SERVER',
+		description='**{name}** ({id})'.format(
+			name=utils.mdspecialchars(serv.name),
+			id=serv.id,
+		),
+		colour=opserver.me.colour,
+	)
+	em.set_image(url=serv.icon_url)
+	await client.send_message(opserver_botservers, embed=em)
 
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without

@@ -264,8 +264,20 @@ async def echo(client, message, **kwargs):
 		arguments = ''
 	else:
 		arguments = kwargs['clean_arguments']
-	displayarguments = arguments[:2000-len(msg_start)]
-	await reply(message, displayarguments)
+	if (not message.channel.is_private and \
+	message.channel.permissions_for(message.server.me).embed_links) \
+	or message.channel.is_private:
+		displayarguments = arguments[:2048-len(msg_start)]
+		try:
+			echocolor = message.server.me.colour
+		except AttributeError:
+			echocolor = discord.Embed.Empty
+		em = discord.Embed(description=displayarguments, colour=echocolor)
+		replyargs = {'emb': em}
+	else:
+		displayarguments = arguments[:2000-len(msg_start)]
+		replyargs = {'message': displayarguments}
+	await reply(message, **replyargs)
 
 @shadow()
 async def hangman(client, message, **kwargs):
@@ -331,7 +343,9 @@ async def findu(client, message, **kwargs):
 	if kwargs['arguments'] == None:
 		targetmember = message.author
 	else:
-		targetmember = get_member_input(message.server, kwargs['arguments'])
+		targetmember = utils.match_input(
+			'member', kwargs['arguments'], server=message.server
+		)
 	if targetmember == None:
 		embed = emb.error('Unable to find that member. ' + t['specify_user'])
 		await reply(message, emb=embed)
@@ -378,6 +392,147 @@ async def findu(client, message, **kwargs):
 	# (that was about twenty restarts smh)
 	await reply(message, emb=embed)
 
+@shadow(servonly=True)
+async def findc(client, message, **kwargs):
+	if not kwargs['arguments']:
+		# No channel for me to get? Have a list of the server's channels, then.
+
+		# Lists
+		tchans = ''
+		vchans = ''
+
+		# Generation of the lists
+		for c in sorted(message.server.channels, key=lambda c: c.position):
+			apnd = '**{name}** ({id})\n'.format(
+				name=utils.mdspecialchars(c.name),
+				id=c.id,
+			)
+			if c.type == discord.ChannelType.text:
+				tchans += apnd
+			elif c.type == discord.ChannelType.voice:
+				vchans += apnd
+
+		# Some servers can have no voice channels. You can't have no text channels, though.
+		vchans = '_(none)_' if not vchans else vchans
+
+		em = discord.Embed(colour=message.server.me.colour)
+		em.set_thumbnail(url=message.server.icon_url)
+
+		# Some servers have a lot of channels that can't be fit in one embed field.
+		# So, go ahead and paginate that.
+		# TODO: Maybe abstract pagination to a function or something.
+		if len(tchans) > 1024:
+			tchanl = tchans.split('\n')
+			tpages = []
+			result = ''
+			count = 0
+			for i in tchanl:
+				count += len(i + '\n')
+
+				if count > 1024:
+					# We've overstepped the boundary
+
+					count = len(i + '\n')
+					tpages += [result]
+					result = ''
+				result += i + '\n'
+			tpages += [result]
+			for c, i in enumerate(tpages):
+				em.add_field(
+					name='Text Channels' if not c else '\u200b',
+					value=i,
+					inline=False,
+				)
+		else:
+			em.add_field(name='Text Channels', value=tchans, inline=False)
+		if len(vchans) > 1024:
+			vchanl = vchans.split('\n')
+			vpages = []
+			result = ''
+			count = 0
+			for i in vchanl:
+				count += len(i + '\n')
+
+				if count > 1024:
+					# We've overstepped the boundary
+
+					count = len(i + '\n')
+					vpages += [result]
+					result = ''
+				result += i + '\n'
+			vpages += [result]
+			for c, i in enumerate(vpages):
+				em.add_field(
+					name='Voice Channels' if not c else '\u200b',
+					value=i,
+					inline=False,
+				)
+		else:
+			em.add_field(name='Voice Channels', value=vchans, inline=False)
+		await reply(message, emb=em)
+		return
+
+	tgt = utils.match_input('channel', kwargs['arguments'], server=message.server)
+	if not tgt:
+		em = emb.error('Unable to find that channel. ' + t['specify_channel'])
+		await reply(message, emb=em)
+		return
+
+	readbleby = 0
+	for i in message.server.members:
+		readbleby += 1 if tgt.permissions_for(i).read_messages else 0
+
+	em = discord.Embed(description='Matched ' + tgt.mention, colour=message.server.me.colour)
+	em.set_thumbnail(url=message.server.icon_url)
+	em.add_field(name='Name', value=utils.mdspecialchars(tgt.name))
+	em.add_field(name='ID', value=tgt.id)
+	em.add_field(name='Type', value=str(tgt.type).title())
+	em.add_field(name='Default', value='Yes' if tgt.is_default else 'No')
+	em.add_field(
+		name='Position',
+		value='{0} from the top of {1} list'.format(
+			str(tgt.position), str(tgt.type),
+		),
+	)
+	em.add_field(
+		name='Topic' if tgt.topic else 'No Topic',
+		value=tgt.topic if tgt.topic else 'No Topic',
+	)
+	em.add_field(
+		name='Created At',
+		value=time.strftime(
+			config.get_s('timeformat', message.server.id),
+			tgt.created_at.timetuple(),
+		),
+	)
+	em.add_field(
+		name='User Limit',
+		value='N/A' if tgt.type != discord.ChannelType.voice else str(tgt.user_limit),
+	)
+	em.add_field(
+		name='Voice Members',
+		value=(
+			'N/A' if tgt.type != discord.ChannelType.voice else
+			str(len(tgt.voice_members))
+		),
+	)
+	em.add_field(
+		name='Bitrate',
+		value=(
+			'N/A' if tgt.type != discord.ChannelType.voice else
+			str(int(tgt.bitrate / 1000)) + ' kbps'
+		),
+	)
+	em.add_field(name='Specific Overwrites', value=str(len(tgt.overwrites) - 1))
+	em.add_field(
+		name='Readable By',
+		value=(
+			'N/A' if tgt.type != discord.ChannelType.text else
+			str(readbleby) + ' members'
+		),
+	)
+	await reply(message, emb=em)
+
 @shadow(auth=is_mod)
 async def softban(client, message, **kwargs):
 	global latestroled
@@ -387,7 +542,9 @@ async def softban(client, message, **kwargs):
 		return
 
 	try:
-		targetmember = get_member_input(message.server, kwargs['arguments'])
+		targetmember = utils.match_input(
+			'member', kwargs['arguments'], server=message.server,
+		)
 		await client.remove_roles(targetmember,
 			discord.utils.get(message.server.roles, id='173240966575161344'), # nonsense-only
 			discord.utils.get(message.server.roles, id='216647716531339264'), # no general mentions
@@ -428,7 +585,9 @@ async def nononly(client, message, **kwargs):
 		'noreact': 'No Reactions',
 	}
 	try:
-		targetmember = get_member_input(message.server, kwargs['arguments'])
+		targetmember = utils.match_input(
+			'member', kwargs['arguments'], server=message.server,
+		)
 		await client.add_roles(targetmember, discord.utils.get(message.server.roles, id=roletoadd[kwargs['command']]))
 		latestroled = targetmember.id
 	except(AttributeError,TypeError):
@@ -447,7 +606,9 @@ async def nonick(client, message, **kwargs):
 		await reply(message, emb=embed)
 		return
 	try:
-		targetmember = get_member_input(message.server, kwargs['arguments'])
+		targetmember = utils.match_input(
+			'member', kwargs['arguments'], server=message.server,
+		)
 		await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='236925451216355338'))
 		await client.remove_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
 		latestroled = targetmember.id
@@ -462,7 +623,7 @@ async def nonick(client, message, **kwargs):
 
 @shadow(auth=is_mod, aliases=['voiceunmute'])
 async def voicemute(client, message, **kwargs):
-	targetmember = get_member_input(message.server, kwargs['arguments'])
+	targetmember = utils.match_input('member', kwargs['arguments'], server=message.server)
 	content = None
 	try:
 		if targetmember.voice.voice_channel == None:
@@ -489,7 +650,7 @@ async def votevoicemute(client, message, **kwargs):
 		await reply(message, emb=embed)
 		return
 
-	targetmember = get_member_input(message.server, kwargs['arguments'])
+	targetmember = utils.match_input('member', kwargs['arguments'], server=message.server)
 	try:
 		if message.author.voice.voice_channel == None:
 			embed = emb.error('You have to be in a voice channel to be able to start a vote.')
@@ -580,7 +741,7 @@ async def vy(client, message, **kwargs):
 		percopp = numopponents /voicechatters*100
 
 		if percpro >= config.get_s('votevmute_threshold', message.server.id):
-			targetmember = get_member_input(message.server, mutee)
+			targetmember = utils.match_input('member', mutee, server=message.server)
 			await client.server_voice_state(targetmember, mute=1)
 			content += '\n{}% of the members have now voted in favor of muting, so <@{}> is now voice muted.'.format(round(percpro,1), mutee)
 			del votemutes[mutee]
@@ -611,7 +772,9 @@ async def vc(client, message, **kwargs):
 @shadow(auth=is_mod)
 async def rolerst(client, message, **kwargs):
 	try:
-		targetmember = get_member_input(message.server, kwargs['arguments'])
+		targetmember = utils.match_input(
+			'member', kwargs['arguments'], server=message.server,
+		)
 		await removeRestrictiveRoles(targetmember, message.server)
 	except(AttributeError, TypeError):
 		embed = emb.error(t['specify_user'])
@@ -644,7 +807,9 @@ async def expires(client, message, **kwargs):
 		targetmemberid = latestroled
 	else:
 		try:
-			targetmember = get_member_input(message.server, splitargs[1])
+			targetmember = utils.match_input(
+				'member', splitargs[1], server=message.server,
+			)
 			targetmemberid = targetmember.id
 		except AttributeError:
 			embed = emb.error(t['specify_user'])
@@ -667,7 +832,9 @@ async def expiryremove(client, message, **kwargs):
 		return
 
 	try:
-		targetmember = get_member_input(message.server, kwargs['arguments'])
+		targetmember = utils.match_input(
+			'member', kwargs['arguments'], server=message.server,
+		)
 		if removeexpiryentry(message.server.id, targetmember.id):
 			embed = emb.success(
 				'Roles for <@{}> will no longer automatically expire.'.format(
@@ -687,7 +854,7 @@ async def expiryremove(client, message, **kwargs):
 		await reply(message, emb=embed)
 		return
 
-@shadow()
+@shadow(servonly=True)
 async def expirylist(client, message, **kwargs):
 	content = ''
 
@@ -714,7 +881,7 @@ async def rolecacherst(client, message, **kwargs):
 		embed = emb.error('Please give an ID.')
 		await reply(message, emb=embed)
 		return
-	elif get_member_input(message.server, kwargs['arguments']) != None:
+	elif utils.match_input('member', kwargs['arguments'], server=message.server) != None:
 		embed = emb.error('That member is apparently still on this server! Not removing from the cache.')
 		await reply(message, emb=embed)
 		return
@@ -739,7 +906,7 @@ async def rolecacheadd(client, message, **kwargs):
 		return
 
 	splitargs = kwargs['arguments'].split()
-	if get_member_input(message.server, splitargs[0]) != None:
+	if utils.match_input('member', splitargs[0], server=message.server) != None:
 		embed = emb.error('That member is apparently still on this server! Not doing anything.')
 		await reply(message, emb=embed)
 		return
@@ -794,12 +961,8 @@ async def rolecacheinfo(client, message, **kwargs):
 
 	await reply(message, content)
 
-@shadow(aliases=['rule'])
+@shadow(aliases=['rule'], servonly=True)
 async def rules(client, message, **kwargs):
-	if isprivatemessage(message.server):
-		content = 'Rules:\n**1.** I am always right.\n**2.** If I am not right, rule 1 applies.'
-		await reply(message, content)
-		return
 	if message.server.id in disabledrules and not is_mod(message.author):
 		embed = emb.error('The rules system is currently disabled for this server.')
 		await reply(message, emb=embed)
@@ -830,12 +993,8 @@ async def rules(client, message, **kwargs):
 		n += 1
 	await reply(message, content)
 
-@shadow()
+@shadow(servonly=True)
 async def rulefind(client, message, **kwargs):
-	if isprivatemessage(message.server):
-		embed = emb.error('Alright, this isn’t a server, this is our private conversation. I run on multiple servers with different rules, you know.')
-		await reply(message, emb=embed)
-		return
 	if message.server.id in disabledrules and not is_mod(message.author):
 		embed = emb.error('The rules system is currently disabled for this server.')
 		await reply(message, emb=embed)
@@ -1004,7 +1163,7 @@ async def rulemaint(client, message, **kwargs):
 
 @shadow()
 async def info(client, message, **kwargs):
-	persontocheck = get_member_input(message.server, kwargs['arguments'])
+	persontocheck = utils.match_input('member', kwargs['arguments'], server=message.server)
 	yesperm = '☑'
 	noperm = '❎'
 	try:
@@ -1147,19 +1306,15 @@ async def getrawmessagecontent(client, message, **kwargs):
 		embed = emb.error('Invalid channel or message ID given. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=kwargs['command']))
 	await reply(message, emb=embed)
 
-@shadow(aliases=['removecontrib'])
+@shadow(aliases=['removecontrib'], servonly=True)
 async def addcontrib(client, message, **kwargs):
-	if isprivatemessage(message.server):
-		embed = emb.error(t['noprivate'])
-		await reply(message, emb=embed)
-		return
 	if message.server.id != productionserver:
 		embed = emb.error(t['production_only'])
 		await reply(message, emb=embed)
 		return
 	contribmodrole = discord.utils.get(message.server.roles, id='249695436812713984')
 	contribrole = discord.utils.get(message.server.roles, id='241728185937559552')
-	targetmember = get_member_input(message.server, kwargs['arguments'])
+	targetmember = utils.match_input('member', kwargs['arguments'], server=message.server)
 	if not contribmodrole in message.author.roles:
 		embed = emb.error('Permission denied. This command can only be used by a tOLP Contributor Moderator.')
 		await reply(message, emb=embed)
@@ -1201,13 +1356,9 @@ async def countpins(client, message, **kwargs):
 		embed = emb.error('The channel doesn’t exist, has been deleted, or it’s not a channel at all. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=kwargs['command']))
 		await reply(message, emb=embed)
 
-@shadow()
+@shadow(servonly=True)
 async def countallpins(client, message, **kwargs):
 	await client.send_typing(message.channel)
-	if isprivatemessage(message.server):
-		embed = emb.error('No channels to iterate through, try `\countpins` instead')
-		await reply(message, emb=embed)
-		return
 	content = ''
 	for chan in message.server.channels:
 		if str(chan.type) == 'text':
@@ -1218,8 +1369,8 @@ async def countallpins(client, message, **kwargs):
 				content += '{} - Unable to get data\n'.format(chan.mention)
 	await reply(message, content)
 
-@shadow(aliases=['math'])
-async def calc(client, message, **kwargs):
+@shadow()
+async def _math(client, message, **kwargs):
 	# what kind of stupid language uses elif instead of elseif or else if?
 	try:
 		cmdbits = kwargs['arguments'].split() # should split it so [0] is number, [1] is operand, [2] is second number
@@ -1262,6 +1413,10 @@ async def calc(client, message, **kwargs):
 		embed = emb.error('Overflow error.')
 		await reply(message, emb=embed)
 		return
+	except ValueError:
+		embed = emb.error('You should probably enter in numbers.')
+		await reply(message, emb=embed)
+		return
 	# end
 	content = '{number1} {operand} {number2} = {out}'.format(number1=cmdbits[0], operand=cmdbits[1], number2=cmdbits[2], out=out)
 	embed = discord.Embed(title='Math Output', description=content, colour=col.r_success)
@@ -1273,13 +1428,8 @@ async def gamestatus(client, message, **kwargs):
 	embed = emb.success('Set game status to: ``{}``'.format(wrapbackticks(kwargs['arguments'])))
 	await reply(message, emb=embed)
 
-@shadow(aliases=['evalfile', 'setvar'])
+@shadow(auth=is_host, aliases=['evalfile', 'setvar'])
 async def _eval(client, message, **kwargs):
-	if message.author.id != ownerid:
-		logfailedcommand(kwargs['command'], kwargs['arguments'], message)
-		embed = emb.error(t['owner_only'])
-		await reply(message, emb=embed)
-		return
 	try:
 		if kwargs['command'] == 'eval':
 			evaluate = eval(kwargs['arguments'])
@@ -1319,7 +1469,7 @@ async def _eval(client, message, **kwargs):
 
 @shadow(aliases=['serverban', 'unserverban'])
 async def kick(client, message, **kwargs):
-	targetmember = get_member_input(message.server, kwargs['arguments'])
+	targetmember = utils.match_input('member', kwargs['arguments'], server=message.server)
 	try:
 		if kwargs['command'] == 'kick':
 			if not message.author.server_permissions.kick_members:
@@ -1406,7 +1556,7 @@ async def b(client, message, **kwargs):
 	announcemsg = ''
 	specialchannel = getspecialchannel(message.channel.server)
 	try:
-		targetmember = get_member_input(message.server, splitargs[0])
+		targetmember = utils.match_input('member', splitargs[0], server=message.server)
 		if targetmember != None and is_tntgb_banned(targetmember):
 			embed = emb.warning('{} is already banned!'.format(targetmember.mention))
 			await client.send_message(specialchannel, embed=embed)
@@ -1653,7 +1803,7 @@ async def b_id(client, message, **kwargs):
 		memberroles[message.server.id][input].append('243076976565288960')
 
 		# Alright, just send a message about it now!
-		# The extra space is intentional, it's a 'hidden' indicator to 
+		# The extra space is intentional, it's a 'hidden' indicator to
 		# see whether the ban was made after the person left the server
 		announcemsg = '<@!{}>  has been banned for 5 days by {} in {} for {}.'.format(
 			input,
@@ -1695,7 +1845,9 @@ async def revertban(client, message, **kwargs):
 
 	specialchannel = getspecialchannel(message.channel.server)
 	try:
-		targetmember = get_member_input(message.server, kwargs['arguments'])
+		targetmember = utils.match_input(
+			'member', kwargs['arguments'], server=message.server,
+		)
 
 		await removeRestrictiveRoles(targetmember, message.server)
 
@@ -1856,13 +2008,9 @@ async def uploadfile(client, message, **kwargs):
 		raise
 	await reply(message, emb=e)
 
-@shadow(auth=is_mod, aliases=['blackunlist'])
+@shadow(auth=is_mod, aliases=['blackunlist'], servonly=True)
 async def blacklist(client, message, **kwargs):
-	if isprivatemessage(message.server):
-		embed = emb.error(t['noprivate'])
-		await reply(message, emb=embed)
-		return
-	tgtmem = get_member_input(message.server, kwargs['arguments'])
+	tgtmem = utils.match_input('member', kwargs['arguments'], server=message.server)
 	if tgtmem == None:
 		embed = emb.error('Unable to find that member. ' + t['specify_user'])
 		await reply(message, emb=embed)
@@ -1888,4 +2036,185 @@ async def blacklist(client, message, **kwargs):
 		config.saveconfig()
 		embed = emb.success('Blackunlisted {0.mention} from this server.'.format(tgtmem))
 		await reply(message, emb=embed)
+		return
+
+@shadow()
+async def _(client, message, **kwargs):
+	con = message.author.mention + (
+		'\n'
+		'```fix\n'
+		'Luigi: have you ever by accident pressed another key at the same time you have pressed enter?\'\n'
+		'Luigi: ugh\n'
+		'ShinyWolf07: \\\n'
+		'ShinyWolf07: this\n'
+		'Luigi: is\n'
+		'Luigi: cancer\n'
+		'ShinyWolf07: I always do th\n'
+		'ShinyWolf07: its so annoyng\n'
+		'ShinyWolf07: \\\n'
+		'ShinyWolf07: UGh\\\n'
+		'Luigi: xd\n'
+		'Luigi: x\n'
+		'Luigi: d\n'
+		'Luigi: d\n'
+		'ShinyWolf07: xd\\\n'
+		'Luigi: x\n'
+		'ShinyWolf07: F***!!!!!|\n'
+		'Luigi: XD\n'
+		'ShinyWolf07: ARGH\\\n'
+		'Luigi: This is funny to watch you\n'
+		'Luigi: Did you make popcorn\n'
+		'ShinyWolf07: xd ikr \\\n'
+		'ShinyWolf07: ...\n'
+		'ShinyWolf07: -_-\\\n'
+		'ShinyWolf07: GAH\\\n'
+		'Luigi: don\'t you mean ...\\\n'
+		'ShinyWolf07: ...\n'
+		'ShinyWolf07: sigh\n'
+		'Luigi: 10/10 would watch again```'
+	)
+	await reply(message, con)
+
+@shadow()
+async def __002Aformatting__002A(client, message, **kwargs):
+	con = 'That’s italicized formatting.'
+	await reply(message, con)
+
+@shadow()
+async def __002Fr__002Fundertale(client, message, **kwargs):
+	con = (
+		'They banned someone for posting an honest review of Undertale.'
+		' Seriously, don’t go there if you don’t want to be censored.'
+	)
+	await reply(message, con)
+
+@shadow(auth=is_operator)
+async def sudo(client, message, **kwargs):
+	try:
+		command = kwargs['arguments'].split(' ', 1)[0]
+	except AttributeError:
+		e = emb.error('You should probably put something in.')
+		await reply(message, emb=e)
+		return
+
+	# TODO: This is the command-parsing code copied from main.py, but with some changes.
+	# Put the command-parsing code in a function instead.
+	if message.content.startswith(invoker):
+		altinvokeractive = False
+	elif message.content.startswith(altinvoker):
+		altinvokeractive = True
+	if command in commands:
+		func = commands[command]
+	else:
+		# Check if it's an alias
+		for c, p in commands.items():
+			if p[2] != None and command in p[2]:
+				func = commands[c]
+				break
+		else:
+			e = emb.warning(
+				(
+					'Invalid command. Input `\help` for'
+					' a list of valid commands.'
+				)
+			)
+			await reply(message, emb=e)
+			return
+	if func[1] == is_host and not func[1](m.author):
+		e = emb.error(t['you_no_permission'])
+		logfailedcommand(kwargs['command'], kwargs['arguments'], message)
+		await reply(message, emb=e)
+		return
+	logcommand(kwargs['command'], kwargs['arguments'], message)
+	kwargs['command'] = command
+	if altinvokeractive:
+		clean_command = message.clean_content.split(altinvoker, 1)[1]
+	else:
+		clean_command = message.clean_content.split(invoker, 1)[1]
+	try:
+		kwargs['arguments'] = kwargs['arguments'].split(' ', 1)[1]
+		kwargs['clean_arguments'] = clean_command.split(' ', 2)[2]
+	except IndexError:
+		kwargs['arguments'] = None
+		kwargs['clean_arguments'] = None
+	await func[0](client, message, **kwargs)
+
+@shadow(auth=is_channel_manager, servonly=True)
+async def joinchannel(client, message, **kwargs):
+	splitargs = kwargs['arguments'].split(' ')
+	if len(splitargs) != 2:
+		em = emb.error(
+			(
+				'Invalid amount of arguments passed.'
+				' Input `{invoker}help {command}` for more information.'
+			).format(
+				invoker=invoker,
+				command=kwargs['command'],
+			),
+		)
+	if splitargs[0] == 'set':
+		try:
+			chan = client.get_channel(splitargs[1][2:-1])
+		except IndexError:
+			em = emb.error('You should probably enter in a channel.')
+			await reply(message, emb=em)
+			return
+		if not chan:
+			em = emb.error(
+				(
+					'Invalid channel. The channel must be a'
+					' channel mention, i.e. in `<#ID>` form.'
+				)
+			)
+			await reply(message, emb=em)
+			return
+		if not config.is_detached('joinchannel', message.server.id):
+			config.detach('joinchannel', message.server.id)
+		config.set_s('joinchannel', chan.id, message.server.id)
+		config.saveconfig()
+		em = emb.success(
+			'Set {0.mention} to be the join channel for this server.'.format(chan)
+		)
+		await reply(message, emb=em)
+		return
+	elif splitargs[0] == 'unset':
+		if not config.is_detached('joinchannel', message.server.id):
+			config.detach('joinchannel', message.server.id)
+		config.restore_default('joinchannel', message.server.id)
+		config.saveconfig()
+		em = emb.success('Unset the join channel for this server.')
+		await reply(message, emb=em)
+		return
+	elif splitargs[0] == 'get':
+		chanid = config.get_s('joinchannel', message.server.id)
+		if chanid == '0':
+			em = emb.info('There is no join channel set for this server.')
+		else:
+			chan = message.server.get_channel(chanid)
+			if chan:
+				em = emb.info(
+					(
+						'The join channel is set to {0.mention}'
+						' for this server.'
+					).format(chan)
+				)
+			else:
+				em = emb.info(
+					(
+						'The join channel is set to an invalid channel ID'
+						' of **{0}**.'
+					).format(chanid)
+				)
+		await reply(message, emb=em)
+	else:
+		em = emb.error(
+			(
+				'Invalid arguments.'
+				' Input `{invoker}help {command}` for more information.'
+			).format(
+				invoker=invoker,
+				command=kwargs['command'],
+			)
+		)
+		await reply(message, emb=em)
 		return
