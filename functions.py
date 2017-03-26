@@ -583,10 +583,10 @@ def logdisabled(key, server):
 	checks = [key, key.split('_')[0] + '_*', '*']
 
 	if any(x in config.get_s('disabledlogs', server.id) for x in checks):
-		return False
-	if any(x in config.get_s('enabledlogs', server.id) for x in checks):
 		return True
-	return False
+	if any(x in config.get_s('enabledlogs', server.id) for x in checks):
+		return False
+	return True
 
 def respondtorule(rule):
 	if int(rule) == 37:
