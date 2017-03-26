@@ -2120,7 +2120,7 @@ async def sudo(client, message, **kwargs):
 			)
 			await reply(message, emb=e)
 			return
-	if func[1] == is_host and not func[1](m.author):
+	if func[1] == is_host and not func[1](message.author):
 		e = emb.error(t['you_no_permission'])
 		logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 		await reply(message, emb=e)
