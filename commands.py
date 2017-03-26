@@ -1360,7 +1360,7 @@ async def countpins(client, message, **kwargs):
 async def countallpins(client, message, **kwargs):
 	await client.send_typing(message.channel)
 	content = ''
-	for chan in message.server.channels:
+	for chan in sorted(message.server.channels, key=lambda c: c.position):
 		if str(chan.type) == 'text':
 			try:
 				pins = await client.pins_from(chan)
