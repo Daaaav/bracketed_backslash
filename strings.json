@@ -80,6 +80,11 @@
 					"extrafull": "Find a user by all or part of the nickname or username case-insensitively, or the discriminator, or mention, or ID. Displays various information about the matched user. If no argument is given, will match caller instead."
 				},
 				{
+					"name": "findc",
+					"short": "Find a channel by all or part of the name, or mention, or ID.",
+					"extrafull": "Find a channel by all or part of the name, or mention, or ID. Displays various information about the matched channel. If no argument is given, will give a list of channels instead."
+				},
+				{
 					"name": "hangman",
 					"short": "Initiate a game of Hangman. Send via private message with a custom word. Use `\\stophangman` to stop.",
 					"extra": "Ported from DavBot."
