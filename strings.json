@@ -6,6 +6,7 @@
 		"op_only": "Permission denied. This command can only be used by an operator.",
 		"mod_only": "Permission denied. This command can only be used by a moderator or administrator.",
 		"specify_user": "Please specify a user ID, a username, a username and discriminator, or a nickname.",
+		"specify_channel": "Please specify a channel ID, a name, or a mention.",
 		"you_no_permission": "You don\u2019t have permission to do this.",
 		"no_permission": "I don\u2019t have permission to do this.",
 		"accepts_user": "Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.",
