@@ -1447,15 +1447,8 @@ async def _eval(client, message, **kwargs):
 				evaluate = await evaluate
 			evaluate = setglobal(splitargs[0], evaluate)
 		content = '```py\n{}```'.format(wrapbackticks(str(evaluate)))
-	except Exception as e:
-		content = '```py\n{}```'.format(
-			wrapbackticks(
-				'{name}: {e}'.format(
-					name=type(e).__name__,
-					e=str(e),
-				)
-			)
-		)
+	except Exception:
+		content = '```py\n{}```'.format(wrapbackticks(traceback.format_exc()))
 	if len(content) > 2000:
 		print((
 			'The result of your latest evaluation command is:\n'
