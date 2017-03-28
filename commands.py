@@ -859,11 +859,11 @@ async def expirylist(client, message, **kwargs):
 	content = ''
 
 	if message.server.id in rolexpires:
-		for memberid in rolexpires[message.server.id]:
-			content += '<@{}>: {}\n'.format(
-				memberid,
-				reltime(rolexpires[message.server.id][memberid]['time'])
-			)
+		for k, v in sorted(
+			rolexpires[message.server.id].items(),
+			key=lambda i: i[1]['time'],
+		):
+			content += '<@{}>: {}\n'.format(k, reltime(v['time']))
 
 	if content == '':
 		content = 'No expiry timers are currently running.'
