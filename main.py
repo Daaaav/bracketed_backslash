@@ -945,6 +945,7 @@ async def on_member_update(before, after):
 			embed.add_field(name='No Older Nickname', value='_No Older Nickname_')
 		else:
 			embed.add_field(name='Older Nickname', value=utils.mdspecialchars(before.nick))
+		embed.add_field(name='\u200b', value='\u200b')
 		if after.nick == None:
 			embed.add_field(name='No Newer Nickname', value='_No Newer Nickname_')
 		else:
