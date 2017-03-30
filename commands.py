@@ -63,7 +63,7 @@ async def restart(client, message, **kwargs):
 	await reply(message, emb=embed)
 	await os.execl(__file__, '')
 
-@shadow(auth=is_operator)
+@shadow(auth=is_host)
 async def kill(client, message, **kwargs):
 	embed = emb.success('Killing.', True)
 	embed.add_field(name='Uptime', value=reltime(boottimeunix, True))
