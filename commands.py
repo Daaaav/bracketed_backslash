@@ -74,6 +74,13 @@ async def kill(client, message, **kwargs):
 
 @shadow(auth=is_operator)
 async def _config(client, message, **kwargs):
+	if message.server and \
+	message.server.id == op_ids.ids['opserver'] and \
+	not is_host(message.author):
+		embed = emb.error(t['no_permission'])
+		logfailedcommand(kwargs['command'], kwargs['arguments'], message)
+		await reply(message, emb=embed)
+		return
 	if kwargs['arguments'] == None:
 		content = (
 			'You can use the following options:\n'
