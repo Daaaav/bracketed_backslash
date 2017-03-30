@@ -54,7 +54,7 @@ async def _help(client, message, **kwargs):
 	embed = discord.Embed(description=content, colour=col.r_success)
 	await reply(message, emb=embed)
 
-@shadow(auth=is_operator)
+@shadow(auth=is_host)
 async def restart(client, message, **kwargs):
 	embed = emb.success('Restarting.', True)
 	embed.add_field(name='Uptime', value=reltime(boottimeunix, True))
