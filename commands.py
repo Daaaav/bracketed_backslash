@@ -24,7 +24,7 @@ import inspect
 # This file contains all the bot commands as functions.
 
 @shadow()
-async def help(client, message, **kwargs):
+async def _help(client, message, **kwargs):
 	content = (help_info_string + helplist(cmds))
 
 	# General
