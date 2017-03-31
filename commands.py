@@ -408,6 +408,10 @@ async def findc(client, message, **kwargs):
 		tchans = ''
 		vchans = ''
 
+		# Numbers
+		tchanc = 0
+		vchanc = 0
+
 		# Generation of the lists
 		for c in sorted(message.server.channels, key=lambda c: c.position):
 			apnd = '**{name}** ({id})\n'.format(
@@ -416,8 +420,10 @@ async def findc(client, message, **kwargs):
 			)
 			if c.type == discord.ChannelType.text:
 				tchans += apnd
+				tchanc += 1
 			elif c.type == discord.ChannelType.voice:
 				vchans += apnd
+				vchanc += 1
 
 		# Some servers can have no voice channels. You can't have no text channels, though.
 		vchans = '_(none)_' if not vchans else vchans
@@ -446,12 +452,17 @@ async def findc(client, message, **kwargs):
 			tpages += [result]
 			for c, i in enumerate(tpages):
 				em.add_field(
-					name='Text Channels' if not c else '\u200b',
+					name='Text Channels ({0})'.format(tchanc) \
+					if not c else '\u200b',
 					value=i,
 					inline=False,
 				)
 		else:
-			em.add_field(name='Text Channels', value=tchans, inline=False)
+			em.add_field(
+				name='Text Channels ({0})'.format(tchanc),
+				value=tchans,
+				inline=False,
+			)
 		if len(vchans) > 1024:
 			vchanl = vchans.split('\n')
 			vpages = []
@@ -470,12 +481,17 @@ async def findc(client, message, **kwargs):
 			vpages += [result]
 			for c, i in enumerate(vpages):
 				em.add_field(
-					name='Voice Channels' if not c else '\u200b',
+					name='Voice Channels ({0})'.format(vchanc) \
+					if not c else '\u200b',
 					value=i,
 					inline=False,
 				)
 		else:
-			em.add_field(name='Voice Channels', value=vchans, inline=False)
+			em.add_field(
+				name='Voice Channels ({0})'.format(vchanc),
+				value=vchans,
+				inline=False,
+			)
 		await reply(message, emb=em)
 		return
 
