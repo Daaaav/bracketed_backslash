@@ -711,6 +711,7 @@ async def on_message(m):
 		'arguments': arguments,
 		'clean_arguments': clean_arguments,
 		'invokesymbol': invokesymbol,
+		'sudo': False,
 	}
 	try:
 		await func[0](client, m, **kwargs)

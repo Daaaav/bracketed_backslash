@@ -2153,6 +2153,7 @@ async def sudo(client, message, **kwargs):
 	except IndexError:
 		kwargs['arguments'] = None
 		kwargs['clean_arguments'] = None
+	kwargs['sudo'] = True
 	await func[0](client, message, **kwargs)
 
 @shadow(auth=is_channel_manager, servonly=True)
