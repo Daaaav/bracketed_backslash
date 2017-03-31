@@ -1488,21 +1488,22 @@ async def kick(client, message, **kwargs):
 	targetmember = utils.match_input('member', kwargs['arguments'], server=message.server)
 	try:
 		if kwargs['command'] == 'kick':
-			if not message.author.server_permissions.kick_members:
+			if not message.author.server_permissions.kick_members and \
+			not kwargs['sudo']:
 				logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 				embed = emb.error(t['you_no_permission'])
 				await reply(message, emb=embed)
 				return
 			await client.kick(targetmember)
 		elif kwargs['command'] == 'serverban':
-			if not message.author.server_permissions.ban_members:
+			if not message.author.server_permissions.ban_members and not kwargs['sudo']:
 				logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 				embed = emb.error(t['you_no_permission'])
 				await reply(message, emb=embed)
 				return
 			await client.ban(targetmember, 0)
 		elif kwargs['command'] == 'serverunban':
-			if not message.author.server_permissions.ban_members:
+			if not message.author.server_permissions.ban_members and not kwargs['sudo']:
 				logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 				embed = emb.error(t['you_no_permission'])
 				await reply(message, emb=embed)
