@@ -158,7 +158,12 @@ async def on_ready():
 	)
 	logging.info('logged in as {} with id {}'.format(client.user.name, client.user.id))
 	await client.change_presence(game=discord.Game(name=config.get_s('gamestatus')))
-	embed = discord.Embed(title='🔌BOT CONNECTED', colour=server.me.colour)
+	embed = discord.Embed(
+		title='🔌BOT CONNECTED',
+		colour=discord.utils.find(
+			lambda s: s.id == op_ids.ids['opserver'], client.servers,
+		).me.colour,
+	)
 	embed.add_field(name='Startup Time', value=reltime(boottimeunix))
 	await client.send_message(
 		discord.Object(op_ids.ids['opserver_chans']['connections']),
