@@ -1428,7 +1428,9 @@ async def on_voice_state_update(before, after):
 	voicevoicechannel = after.server.get_channel(
 		config.get_s('voicechat_channel_voice', after.server.id),
 	)
-	if voicetextchannel == None or voicevoicechannel == None:
+	if voicetextchannel == None \
+	or voicevoicechannel == None \
+	or before.voice.voice_channel == after.voice.voice_channel:
 		return
 	if after.voice.voice_channel != None \
 	and after.voice.voice_channel == voicevoicechannel:
