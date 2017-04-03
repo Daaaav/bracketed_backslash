@@ -2236,3 +2236,23 @@ async def joinchannel(client, message, **kwargs):
 		)
 		await reply(message, emb=em)
 		return
+
+@shadow()
+async def pretentious(client, message, **kwargs):
+	meme_quote = (
+		'_Excerpt from <https://tolp2.nl/forum/index.php?topic=3733.msg67617#msg67617>:_\n'
+		'That\'s not what I\'m talking about, and you know that\'s not what I\'m talking'
+		' about.  Don\'t try and contort my words to fit your twisted narrative.  What you'
+		' just said is not your point, it\'s just something you pulled out of your ass to'
+		' try and save face, to make it seem like you won this argument.\n'
+		'\n'
+		'Well, the truth is that you didn\'t.  Not only is your cavalier disregard of'
+		' people\'s criticisms the bane of your level making ability, it\'s also a good'
+		' window into your greatest flaw: your pretentiousness.  You the most pretentious'
+		' person on this forum; you always try to "correct" people for tiny grammatical'
+		' errors and get the last word in on every argument, because you always know that'
+		' you\'re right.  The fact is, however, you\'re completely and utterly wrong in'
+		' everything you ever do.  You have never made anything good in your entire life,'
+		' and your contributions to tOLP2 are no exception.'
+	)
+	await reply(message, meme_quote)
