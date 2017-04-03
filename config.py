@@ -144,7 +144,7 @@ configs = {
 	'voicechat_channel_text': {
 		'default': '0',
 		'type': 'cid',
-		'is_array': False,
+		'is_array': True,
 		'expl': 'The text channel that accompanies the voice channel.',
 		'detachable': True,
 		'shown': True,
