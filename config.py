@@ -142,7 +142,7 @@ configs = {
 		'shown': False,
 	},
 	'voicechat_channel_text': {
-		'default': '0',
+		'default': [],
 		'type': 'cid',
 		'is_array': True,
 		'expl': 'The text channels that accompany the voice channels.',
