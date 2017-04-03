@@ -1421,28 +1421,32 @@ async def on_server_emojis_update(b, a):
 	await client.send_message(schan, embed=embed)
 
 @client.event
-async def on_voice_state_update(before, after):
-	voicetextchannel = after.server.get_channel(
-		config.get_s('voicechat_channel_text', after.server.id),
-	)
-	voicevoicechannel = after.server.get_channel(
-		config.get_s('voicechat_channel_voice', after.server.id),
-	)
-	if voicetextchannel == None \
-	or voicevoicechannel == None \
-	or before.voice.voice_channel == after.voice.voice_channel:
+async def on_voice_state_update(old, new):
+	if old.voice.voice_channel == new.voice.voice_channel:
 		return
-	if after.voice.voice_channel != None \
-	and after.voice.voice_channel == voicevoicechannel:
-		# JOINED the voice channel.
-		overwrite = discord.PermissionOverwrite()
-		overwrite.read_messages = True
-		await client.edit_channel_permissions(voicetextchannel, after, overwrite)
 
-	if before.voice.voice_channel != None \
-	and before.voice.voice_channel == voicevoicechannel:
-		# LEFT the voice channel.
-		await client.delete_channel_permissions(voicetextchannel, after)
+	vtcs = [
+		new.server.get_channel(i) for i in config.get_s(
+			'voicechat_channel_text', new.server.id,
+		)
+	]
+	vvcs = [
+		new.server.get_channel(i) for i in config.get_s(
+			'voicechat_channel_voice', new.server.id,
+		)
+	]
+
+	for vtc, vvc in zip(vtcs, vvcs):
+		if new.voice.voice_channel and new.voice.voice_channel == vvc:
+			# Joined the voice channel
+			ow = discord.PermissionOverwrite(read_messages=True)
+			await client.edit_channel_permissions(vtc, new, ow)
+			break
+
+		if old.voice.voice_channel and old.voice.voice_channel == vvc:
+			# Left the voice channel
+			await client.delete_channel_permissions(vtc, new)
+			break
 
 @client.event
 async def on_channel_create(c):
