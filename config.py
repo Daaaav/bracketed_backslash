@@ -153,7 +153,7 @@ configs = {
 		'default': '0',
 		'type': 'cid',
 		'is_array': True,
-		'expl': 'The voice channel to have a text channel to accompany it.',
+		'expl': 'The voice channels to have text channels to accompany them.',
 		'detachable': True,
 		'shown': True,
 	},
