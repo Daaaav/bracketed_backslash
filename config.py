@@ -150,7 +150,7 @@ configs = {
 		'shown': True,
 	},
 	'voicechat_channel_voice': {
-		'default': '0',
+		'default': [],
 		'type': 'cid',
 		'is_array': True,
 		'expl': 'The voice channels to have text channels to accompany them.',
