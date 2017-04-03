@@ -499,6 +499,11 @@
 					"name": "fuckingdense",
 					"short": "Stop making fun of this guy! Person has children at age eighteen, after all.",
 					"extra": ""
+				},
+				{
+					"name": "pretentious",
+					"short": "An entire wall of text about why Info Teddy sucks. In other news, the sky is blue, water is wet, and fire is hot.",
+					"extra": ""
 				}
 			]
 		}
