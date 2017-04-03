@@ -145,7 +145,7 @@ configs = {
 		'default': '0',
 		'type': 'cid',
 		'is_array': True,
-		'expl': 'The text channel that accompanies the voice channel.',
+		'expl': 'The text channels that accompany the voice channels.',
 		'detachable': True,
 		'shown': True,
 	},
