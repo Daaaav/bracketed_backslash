@@ -1478,7 +1478,7 @@ async def on_channel_delete(c):
 async def on_socket_raw_receive(payload):
 	try:
 		event = json.loads(payload)
-	except TypeError:
+	except UnicodeDecodeError:
 		return
 
 	# Events to check
