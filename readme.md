@@ -6,7 +6,7 @@ Dav999, written in Python for use on the
 This bot is in active development.
 # Installation Instructions
 ## Requirements
-- Python ≥3.5 is required.
+- Python ≥3.6 is required.
 - [`discord.py`](https://github.com/Rapptz/discord.py) is required.
 - [Pillow](https://github.com/python-pillow/Pillow) is required.
 
