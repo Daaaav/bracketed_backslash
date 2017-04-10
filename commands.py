@@ -61,7 +61,7 @@ async def restart(client, message, **kwargs):
 	embed.add_field(name='Messages in Cache', value=str(len(client.messages)))
 	logcommand(kwargs['command'], kwargs['arguments'], message)
 	await reply(message, emb=embed)
-	await os.execl(__file__, '')
+	os.execv(sys.executable, ['python'] + sys.argv)
 
 @shadow(auth=is_host)
 async def kill(client, message, **kwargs):
