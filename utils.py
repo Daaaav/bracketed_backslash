@@ -10,7 +10,7 @@ import __main__
 
 def mdspecialchars(string, character='\\'):
 	"""Return a Markdown-escaped version of a given string, for use in message output."""
-	notspecialchars = 'abcdefghijklmnopqrstuvwxyz0123456789'
+	notspecialchars = ' abcdefghijklmnopqrstuvwxyz0123456789'
 	try:
 		for i in string:
 			string = string.replace(i, character + i) \
