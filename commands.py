@@ -877,15 +877,31 @@ async def expiryremove(client, message, **kwargs):
 		await reply(message, emb=embed)
 		return
 
-@shadow(servonly=True)
+@shadow()
 async def expirylist(client, message, **kwargs):
-	content = ''
+	if message.channel.is_private:
+		if not kwargs['arguments']:
+			embed = emb.error('You should probably specify a server.')
+			await reply(message, emb=embed)
+			return
+		server = utils.match_input('server', kwargs['arguments'], client=client)
+		if not server or (message.author not in server.members and not kwargs['sudo']):
+			embed = emb.error(
+				(
+					'Either the bot isn’t in that server,'
+					' you aren’t in that server,'
+					' or that server doesn’t exist.'
+				),
+			)
+			await reply(message, emb=embed)
+			return
+		content = 'Expiry list for server **{0.name}** ({0.id}):\n'.format(server)
+	else:
+		server = message.server
+		content = ''
 
-	if message.server.id in rolexpires:
-		for k, v in sorted(
-			rolexpires[message.server.id].items(),
-			key=lambda i: i[1]['time'],
-		):
+	if server.id in rolexpires:
+		for k, v in sorted(rolexpires[server.id].items(), key=lambda i: i[1]['time']):
 			content += '<@{}>: {}\n'.format(k, reltime(v['time']))
 
 	if content == '':
