@@ -12,10 +12,11 @@ def mdspecialchars(string, character='\\'):
 	"""Return a Markdown-escaped version of a given string, for use in message output."""
 	notspecialchars = ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 	try:
+		newstring = ''
 		for i in string:
-			string = string.replace(i, character + i) \
+			newstring = string.replace(i, character + i) \
 			if not i in notspecialchars else string
-		return string
+		return newstring
 	except AttributeError:
 		return string
 
