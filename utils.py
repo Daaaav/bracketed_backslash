@@ -9,9 +9,7 @@ import discord
 import __main__
 
 def mdspecialchars(string, character='\\'):
-	"""Escapes Markdown formatting for use in message output to Discord
-	This does not escape emojis until I figure out how to detect fucking emojis
-	"""
+	"""Return a Markdown-escaped version of a given string, for use in message output."""
 	notspecialchars = 'abcdefghijklmnopqrstuvwxyz0123456789'
 	try:
 		for i in string:
