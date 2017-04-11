@@ -298,7 +298,7 @@
 				{
 					"name": "expirylist",
 					"short": "Gives a list of all expiry timers that are currently running.",
-					"extra": ""
+					"extra": "If run inside a direct message, it will take a server as an argument (which can be its ID, or part or all of its name), and will give an expiry list of that server if you are actually on that server."
 				},
 				{
 					"name": "rolecacheadd",
