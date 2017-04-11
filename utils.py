@@ -14,8 +14,7 @@ def mdspecialchars(string, character='\\'):
 	try:
 		newstring = ''
 		for i in string:
-			newstring = string.replace(i, character + i) \
-			if not i in notspecialchars else string
+			newstring += character + i if i not in notspecialchars else i
 		return newstring
 	except AttributeError:
 		return string
