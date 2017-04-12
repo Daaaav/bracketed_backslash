@@ -12,6 +12,7 @@ import logging
 # uid: user/member Discord ID (members can be searched)
 # rid: role ID
 # cid: channel ID (channels can be mentioned)
+# sid: server ID
 configs = {
 	'gamestatus': {
 		'default': '​',
@@ -167,6 +168,14 @@ configs = {
 		),
 		'detachable': True,
 		'shown': True,
+	},
+	'tntgb_servers': {
+		'default': [],
+		'type': 'sid',
+		'is_array': True,
+		'expl': 'The list of servers which have TNTGB running on them',
+		'detachable': False,
+		'shown': False,
 	},
 }
 
