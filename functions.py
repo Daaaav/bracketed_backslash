@@ -236,39 +236,31 @@ def rolelist(roles):
 	return rlist
 
 def updaterolecache(member, serverid=None):
-	global memberroles
 	if serverid == None:
 		serverid = member.server.id
-	if not serverid in memberroles:
-		memberroles[serverid] = {}
-	memberroles[serverid][str(member.id)] = list(rolelist(member.roles))
+	if not serverid in events.memberroles:
+		events.memberroles[serverid] = {}
+	events.memberroles[serverid][str(member.id)] = list(rolelist(member.roles))
 
 def removerolecache(memberid, serverid):
-	global memberroles
 	try:
-		del memberroles[serverid][memberid]
+		del events.memberroles[serverid][memberid]
 	except KeyError:
 		return False
 
 	return True
 
 def rolecachesave():
-	global memberroles
-
 	with open('memberroles.json', 'w') as outfile:
-		json.dump(memberroles, outfile)
+		json.dump(events.memberroles, outfile)
 
 def rulesave():
-	global rules
-
 	with open('rules.json', 'w') as outfile:
-		json.dump(rules, outfile)
+		json.dump(events.rules, outfile)
 
 def rolexpiresave():
-	global rolexpires
-
 	with open('rolexpires.json', 'w') as outfile:
-		json.dump(rolexpires, outfile)
+		json.dump(events.rolexpires, outfile)
 
 def listroles(lijst):
 	returnage = ''
@@ -365,7 +357,7 @@ async def handleExpiryTimer():
 	If time is in the past, call autoExpiry immediately
 	Can be called on startup, when changing something, or at the end of autoExpiry
 	"""
-	global exptimer, rolexpires
+	global exptimer
 
 	# Cancel the existing timer, if it's running
 	if exptimer != None:
@@ -374,8 +366,8 @@ async def handleExpiryTimer():
 
 	entriesleft = False
 
-	for serverid in rolexpires:  # Merge with next for maybe
-		if len(rolexpires[serverid]) > 0:
+	for serverid in events.rolexpires:  # Merge with next for maybe
+		if len(events.rolexpires[serverid]) > 0:
 			entriesleft = True
 			break
 
@@ -386,10 +378,10 @@ async def handleExpiryTimer():
 
 	timelowscore = 9999999999
 
-	for serverid in rolexpires:
-		for userid in rolexpires[serverid]:
-			if rolexpires[serverid][userid]['time'] < timelowscore:
-				timelowscore = rolexpires[serverid][userid]['time']
+	for serverid in events.rolexpires:
+		for userid in events.rolexpires[serverid]:
+			if events.rolexpires[serverid][userid]['time'] < timelowscore:
+				timelowscore = events.rolexpires[serverid][userid]['time']
 
 	if timelowscore <= int(time.time()):
 		logging.info('Immediately calling autoExpiry() because we’re overdue in resetting someone’s roles')
@@ -408,18 +400,16 @@ async def autoExpiry():
 	Actually resets roles
 	Calls back handleTimer to set the next timer
 	"""
-	# REMOVED FROM GLOBALS: server, specialchannel_prod
-	global rolexpires
 	now = int(time.time())
 
 	# So apparently someone needs to be unbanned?
-	for serverid in rolexpires:
+	for serverid in events.rolexpires:
 		content = ''
 		successfulresets = []
 
 		cserver = discord.utils.get(client.servers, id=serverid)
-		for userid in rolexpires[serverid]:
-			if rolexpires[serverid][userid]['time'] <= now:
+		for userid in events.rolexpires[serverid]:
+			if events.rolexpires[serverid][userid]['time'] <= now:
 				try:
 					await removeRestrictiveRoles(cserver.get_member(userid), cserver)
 					content += '\nRoles for <@!{}> reset.'.format(userid)
@@ -432,7 +422,7 @@ async def autoExpiry():
 						content += '\n<@!{}> was supposed to have their roles reset now, but they can be found neither on the server nor in the role cache!'.format(userid)
 
 				# Shorten the following thing so we don't have to keep typing it.
-				thisexpiry = rolexpires[serverid][userid]
+				thisexpiry = events.rolexpires[serverid][userid]
 				if thisexpiry['msgedit_message'] != '0':
 					await editexpirymessage(cserver, thisexpiry)
 				if thisexpiry['msgpost_channel'] != '0':
@@ -517,12 +507,10 @@ async def editexpirymessage(cserver, thisexpiry):
 def addexpiryentry(serverid, memberid, expirytime,
                    e_channel='0', e_message='0', e_newcontent='',
                    p_channel='0', p_content=''):
-	global rolexpires
+	if not serverid in events.rolexpires:
+		events.rolexpires[serverid] = {}
 
-	if not serverid in rolexpires:
-		rolexpires[serverid] = {}
-
-	rolexpires[serverid][memberid] = {
+	events.rolexpires[serverid][memberid] = {
 		'time': expirytime,
 		'msgedit_channel': e_channel,
 		'msgedit_message': e_message,
@@ -532,32 +520,28 @@ def addexpiryentry(serverid, memberid, expirytime,
 	}
 
 def removeexpiryentry(serverid, memberid):
-	global rolexpires
-
-	if not serverid in rolexpires:
+	if not serverid in events.rolexpires:
 		return False
 
-	if not memberid in rolexpires[serverid]:
+	if not memberid in events.rolexpires[serverid]:
 		return False
 
-	del rolexpires[serverid][memberid]
+	del events.rolexpires[serverid][memberid]
 	return True
 
 def getearliestexpiry(serverid):  # Returns: [userid, entry]
-	global rolexpires
-
-	if not serverid in rolexpires or len(rolexpires[serverid]) == 0:
+	if not serverid in events.rolexpires or len(events.rolexpires[serverid]) == 0:
 		return None
 
 	timelowscore = 9999999999
 	earliestuserid = '0'
 	earliestexpiry = None  # Entry
 
-	for userid in rolexpires[serverid]:
-		if rolexpires[serverid][userid]['time'] < timelowscore:
-			timelowscore = rolexpires[serverid][userid]['time']
+	for userid in events.rolexpires[serverid]:
+		if events.rolexpires[serverid][userid]['time'] < timelowscore:
+			timelowscore = events.rolexpires[serverid][userid]['time']
 			earliestuserid = userid
-			earliestexpiry = rolexpires[serverid][userid]
+			earliestexpiry = events.rolexpires[serverid][userid]
 
 	return [earliestuserid, earliestexpiry]
 
@@ -604,12 +588,12 @@ async def newmemberroles(member, specialchannel, bypassjoinchannel):
 		await client.add_roles(member, *addingtheseroles) # bot role
 		return
 
-	if config.get_s('rolecachemode', member.server.id) != 0 and member.server.id in memberroles:
+	if config.get_s('rolecachemode', member.server.id) != 0 and member.server.id in events.memberroles:
 		# Are they in our database of members which had roles before?
-		if member.id in memberroles[member.server.id]:
+		if member.id in events.memberroles[member.server.id]:
 			addingtheseroles = []
 			# They're found in the database! Give them the groups they should have
-			for rid in memberroles[member.server.id][member.id]:
+			for rid in events.memberroles[member.server.id][member.id]:
 				addingrole = discord.utils.get(member.server.roles, id=rid)
 				if addingrole.is_everyone:
 					continue

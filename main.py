@@ -97,7 +97,6 @@ opserverid_config = open('opserverid.conf', 'r')
 opserverid = opserverid_config.readline(18).split('\n')[0]
 opserverid_config.close()
 
-memberroles = {} # Now no longer userid -> roleids, but serverid -> userids -> roleids
 minutemessageedits = {}
 
 messages_deleted_by_bot = []
@@ -106,12 +105,8 @@ deleted_messages = []
 owncache = [] # Holds IDs because that's the only thing that's needed here, saves a lot of memory
               # and has better performance, because the cache can get yuge
 
-rules = {}
-disabledrules = []
-
 votemutes = {} # userid -> dict with `starttime`, `proponents`*, `opponents`*
 
-rolexpires = {} # Now no longer userid -> unixtime, but serverid -> userids -> dict with 'time'
 latestroled = None  # ID of the latest person that has been given a restrictive role
 exptimer = None  # threading.Timer object
 
@@ -146,161 +141,6 @@ modificationtimes = [
 modificationtimecache = time.strftime(config.get_s('timeformat'), time.gmtime(max(modificationtimes)))
 
 maineventloop = asyncio.get_event_loop()
-
-@client.event
-async def on_ready():
-	global memberroles, rules, disabledrules, server, specialchannel_prod, botschannel, voicetextchannel, botschannel_tntgb, joinchannel_tntgb, banlogchannel_tntgb, productionserver, tntgbserver, rolexpires, opserver, opserver_botservers
-	productionserver = '153368829160849408'
-	tntgbserver = '242099933665034240'
-	server = discord.utils.get(client.servers, id=productionserver) # defines all server.* commands
-	server_tntgb = discord.utils.get(client.servers, id=tntgbserver)
-	specialchannel_prod = discord.utils.get(server.channels, id='234185735266238464')
-	botschannel = discord.utils.get(server.channels, id='201130047736643584')
-	voicetextchannel = discord.utils.get(server.channels, id='256924583737819146')
-	botschannel_tntgb = discord.utils.get(server_tntgb.channels, id='266626198249930764')
-	joinchannel_tntgb = discord.utils.get(server_tntgb.channels, id='266591127644143618')
-	banlogchannel_tntgb = discord.utils.get(server_tntgb.channels, id='242253449922609152')
-	opserver = discord.utils.find(lambda s: s.id == opserverid, client.servers)
-	opserver_botservers = discord.utils.find(
-		lambda c: c.id == '291764490578558977',
-		opserver.channels,
-	)
-	logging.info('logged in as {} with id {}'.format(client.user.name, client.user.id))
-	await client.change_presence(game=discord.Game(name=config.get_s('gamestatus')))
-	embed = discord.Embed(
-		title='🔌BOT CONNECTED',
-		colour=discord.utils.find(
-			lambda s: s.id == op_ids.ids['opserver'], client.servers,
-		).me.colour,
-	)
-	embed.add_field(name='Startup Time', value=reltime(boottimeunix))
-	await client.send_message(
-		discord.Object(op_ids.ids['opserver_chans']['connections']),
-		embed=embed,
-	)
-
-	try:
-		with open('memberroles.json', 'r') as infile:
-			memberroles = json.load(infile)
-
-		# Now look what I've woken up to.
-		for ser in memberroles:
-			if config.get_s('rolecachemode', ser) == 0:
-				continue
-			rcwarnings = ''
-			for mem in client.get_server(ser).members:
-				if not str(mem.id) in memberroles[ser]:
-					if len(mem.roles) >= 2:
-						rcwarnings += '\nUser {}#{} ({}) is not in the cache! (They’re suddenly in the server.) Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
-						memberroles[ser][str(mem.id)] = list(rolelist(mem.roles)) # Possibly redundant list() tbh, just making sure since I can't test and I don't know python well enough to know whether it's redundant
-					continue
-				if set(memberroles[ser][str(mem.id)]) != set(rolelist(mem.roles)):
-					rcwarnings += (
-						'\n'
-						'User {}#{} ({}) has different roles than in the cache! Maybe you want to correct things.\n'
-						'    **`Cached:`** {}\n'
-						'    **`Seen:`** {}'
-					).format(
-						mem.name, mem.discriminator, mem.id,
-						listroles_id(memberroles[ser][str(mem.id)]),
-						listroles(mem.roles),
-					)
-			if rcwarnings != '':
-				logging.warn('Role cache warnings for server {}: {}'.format(
-						ser, rcwarnings
-					)
-				)
-				rcwarnings = (
-					'**User role cache warning.**\n'
-					'Full warning output has been sent to the terminal.\n'
-					+ rcwarnings
-				)
-				await client.send_message(
-					getspecialchannel(
-						discord.utils.get(client.servers, id=ser)
-					),
-					rcwarnings[:1900]
-				)
-
-	except FileNotFoundError:
-		# Maybe we do have an old members.json?
-		try:
-			with open('members.json', 'r') as infile:
-				memberrolesold = json.load(infile)
-			# Convert it to the new system where all servers can use it!
-			logging.info('CONVERTING OLD members.json TO memberroles.json')
-			memberroles = {productionserver: memberrolesold}
-
-			with open('memberroles.json', 'w') as outfile:
-				json.dump(memberroles, outfile)
-
-			logging.info('Exiting (aka restarting) now to make the conversion go smoothly...')
-			await client.logout()
-			sys.exit(43)
-		except FileNotFoundError:
-			logging.info('memberroles file does not exist yet so creating it now')
-			memberroles = {}
-
-			with open('memberroles.json', 'w') as outfile:
-				json.dump(memberroles, outfile)
-
-			await client.send_message(specialchannel_prod, 'Members file didn’t yet exist, created a new one. Please run `\\rolesync` to sync up the roles cache.')
-
-	try:
-		with open('rules.json', 'r') as infile:
-			rules = json.load(infile)
-	except FileNotFoundError:
-		logging.info('rules file does not exist yet so creating it now')
-		rules = {}
-
-		with open('rules.json', 'w') as outfile:
-			json.dump(rules, outfile)
-
-		await client.send_message(specialchannel_prod, 'Rules file didn’t exist yet, created a new one.')
-
-	try:
-		with open('disabledrules.json', 'r') as infile:
-			disabledrules = json.load(infile)
-	except FileNotFoundError:
-		logging.info('disabledrules file does not exist yet so creating it now')
-		disabledrules = []
-
-		with open('disabledrules.json', 'w') as outfile:
-			json.dump(disabledrules, outfile)
-
-		await client.send_message(specialchannel_prod, 'Disabledrules file didn’t exist yet, created a new one.')
-
-	try:
-		with open('rolexpires.json', 'r') as infile:
-			rolexpires = json.load(infile)
-	except FileNotFoundError:
-		logging.info('rolexpires file does not exist yet so creating it now')
-		rolexpires = {}
-
-		with open('rolexpires.json', 'w') as outfile:
-			json.dump(rolexpires, outfile)
-
-		await client.send_message(specialchannel_prod, 'Rolexpires file didn’t exist yet, created a new one.')
-
-	await handleExpiryTimer()
-
-	for chan in client.get_all_channels():
-		if chan.type == discord.ChannelType.text:
-			msgs = client.logs_from(chan)
-			try:
-				async for m in msgs:
-					client.messages.append(m)
-			except discord.errors.Forbidden:
-				logging.info(
-					(
-						'Failed to retrieve message history for'
-						' {serv.name} ({serv.id})#{chan.name} ({chan.id}).'
-					).format(serv=chan.server, chan=chan)
-				)
-
-	# Now set up our own cache, that Discord.py won't remove messages from before telling us!
-	for m in client.messages:
-		owncache.append(m.id)
 
 commands = {}
 
@@ -341,7 +181,7 @@ async def on_message(m):
 		)
 
 	global msg_start, hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, \
-	hangmanstarter, guessedletters, algeraden, memberroles, rules, disabledrules, latestroled
+	hangmanstarter, guessedletters, algeraden, latestroled
 	schan = getspecialchannel_reply(m)
 	indisp = (
 		(
@@ -657,7 +497,7 @@ async def on_message(m):
 	if not priv and \
 	not is_mod(m.author) and \
 	m.channel.id != '201130047736643584' and \
-	m.server.id == productionserver and \
+	m.server.id == events.productionserver and \
 	not (is_dev(m.author) and m.channel.id == '238423391571279872') and \
 	not command in ['rule', 'rules', 'rulefind', 'rulesfind'] and \
 	not (m.channel.id == '256924583737819146' and command in ['votevoicemute', 'vy', 'vn']):
@@ -671,8 +511,8 @@ async def on_message(m):
 			)
 		return
 	if not priv and \
-	m.server.id == tntgbserver and \
-	m.channel != botschannel_tntgb and \
+	m.server.id == events.tntgbserver and \
+	m.channel != events.botschannel_tntgb and \
 	not is_tntgb_mod(m.author) and \
 	command != 'selfban':
 		return
@@ -1743,10 +1583,10 @@ async def on_server_join(serv):
 			name=utils.mdspecialchars(serv.name),
 			id=serv.id,
 		),
-		colour=opserver.me.colour,
+		colour=events.opserver.me.colour,
 	)
 	em.set_image(url=serv.icon_url)
-	await client.send_message(opserver_botservers, embed=em)
+	await client.send_message(events.opserver_botservers, embed=em)
 
 @client.event
 async def on_server_remove(serv):
@@ -1756,10 +1596,10 @@ async def on_server_remove(serv):
 			name=utils.mdspecialchars(serv.name),
 			id=serv.id,
 		),
-		colour=opserver.me.colour,
+		colour=events.opserver.me.colour,
 	)
 	em.set_image(url=serv.icon_url)
-	await client.send_message(opserver_botservers, embed=em)
+	await client.send_message(events.opserver_botservers, embed=em)
 
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without

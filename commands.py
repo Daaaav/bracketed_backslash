@@ -319,7 +319,7 @@ async def hangman(client, message, **kwargs):
 	msg_start = '**`>`**``{}``**`{}`**``\{} {}``\n'.format(wrapbackticks(message.author.name), kwargs['invokesymbol'], wrapbackticks(kwargs['command'].split(' ')[0]), '*'*len(hangmanchosenword)) # you will never have mod/admin perms in private messages (probably), where the hangman will be started from, so for now theres no mod/admin check to make the input display different
 	content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "{}" followed by the letter (for example {}a) or the word. {} attempts left.\n{}'.format(hangmanstarter.id, hangmaninvoker, hangmaninvoker, hangmanattempts, hangmanworddisp(hangmanchosenword))
 	msg = msg_start + content
-	await client.send_message(botschannel, msg)
+	await client.send_message(events.botschannel, msg)
 
 	content = 'https://discord.gg/gj6YmtV'
 	await reply(message, content)
@@ -338,7 +338,7 @@ async def stophangman(client, message, **kwargs):
 
 	hangmanactive = False
 	content = 'Game of hangman aborted. The word was: **{}**'.format(hangmanchosenword)
-	await client.send_message(botschannel, content)
+	await client.send_message(events.botschannel, content)
 
 @shadow()
 async def source(client, message, **kwargs):
@@ -559,7 +559,7 @@ async def findc(client, message, **kwargs):
 @shadow(auth=is_mod)
 async def softban(client, message, **kwargs):
 	global latestroled
-	if message.server.id != productionserver:
+	if message.server.id != events.productionserver:
 		embed = emb.error(t['production_only'])
 		await reply(message, emb=embed)
 		return
@@ -589,7 +589,7 @@ async def softban(client, message, **kwargs):
 @shadow(auth=is_mod, aliases=['nogenmen', 'nocedule', 'notts', 'noreact'])
 async def nononly(client, message, **kwargs):
 	global latestroled
-	if message.server.id != productionserver:
+	if message.server.id != events.productionserver:
 		embed = emb.error(t['production_only'])
 		await reply(message, emb=embed)
 		return
@@ -624,7 +624,7 @@ async def nononly(client, message, **kwargs):
 @shadow(auth=is_mod)
 async def nonick(client, message, **kwargs):
 	global latestroled
-	if message.server.id != productionserver:
+	if message.server.id != events.productionserver:
 		embed = emb.error(t['production_only'])
 		await reply(message, emb=embed)
 		return
@@ -900,8 +900,8 @@ async def expirylist(client, message, **kwargs):
 		server = message.server
 		content = ''
 
-	if server.id in rolexpires:
-		for k, v in sorted(rolexpires[server.id].items(), key=lambda i: i[1]['time']):
+	if server.id in events.rolexpires:
+		for k, v in sorted(events.rolexpires[server.id].items(), key=lambda i: i[1]['time']):
 			content += '<@{}>: {}\n'.format(k, reltime(v['time']))
 
 	if content == '':
@@ -955,10 +955,10 @@ async def rolecacheadd(client, message, **kwargs):
 		await reply(message, emb=embed)
 		return
 
-	if splitargs[0] not in memberroles[message.server.id]:
-		memberroles[message.server.id][splitargs[0]] = []
+	if splitargs[0] not in events.memberroles[message.server.id]:
+		events.memberroles[message.server.id][splitargs[0]] = []
 
-	memberroles[message.server.id][splitargs[0]].append(splitargs[1])
+	events.memberroles[message.server.id][splitargs[0]].append(splitargs[1])
 	rolecachesave()
 
 	embed = emb.success('Successfully added role {} to member {} in the role cache.'.format(splitargs[1], splitargs[0]))
@@ -991,31 +991,31 @@ async def rolecacheinfo(client, message, **kwargs):
 		embed = emb.error(t['rolecachedisabled'])
 		await reply(message, emb=embed)
 		return
-	if not kwargs['arguments'] in memberroles[message.server.id]:
+	if not kwargs['arguments'] in events.memberroles[message.server.id]:
 		embed = emb.error('That member is not in the role cache.')
 		await reply(message, emb=embed)
 		return
 
-	content = 'According to the role cache, this member has the following roles: ' + listroles_id(memberroles[message.server.id][kwargs['arguments']])
+	content = 'According to the role cache, this member has the following roles: ' + listroles_id(events.memberroles[message.server.id][kwargs['arguments']])
 
 	await reply(message, content)
 
 @shadow(aliases=['rule'], servonly=True)
 async def rules(client, message, **kwargs):
-	if message.server.id in disabledrules and not is_mod(message.author):
+	if message.server.id in events.disabledrules and not is_mod(message.author):
 		embed = emb.error('The rules system is currently disabled for this server.')
 		await reply(message, emb=embed)
 		return
-	if not message.server.id in rules:
+	if not message.server.id in events.rules:
 		embed = emb.warning('Rules are not (yet) set for this server.')
 		await reply(message, emb=embed)
 		return
 	if kwargs['arguments'] != None and kwargs['arguments'].isdigit():
 		try:
-			rules[message.server.id][int(kwargs['arguments'])-1]
+			events.rules[message.server.id][int(kwargs['arguments'])-1]
 
 			# Oh, we survived this? That means the given specific rule exists!
-			content = 'Rule **{}** for server `{}`:\n{}'.format(int(kwargs['arguments']), wrapbackticks(message.server.name), rules[message.server.id][int(kwargs['arguments'])-1])
+			content = 'Rule **{}** for server `{}`:\n{}'.format(int(kwargs['arguments']), wrapbackticks(message.server.name), events.rules[message.server.id][int(kwargs['arguments'])-1])
 			await reply(message, content)
 			return
 		except IndexError:
@@ -1026,19 +1026,19 @@ async def rules(client, message, **kwargs):
 				return
 			pass
 	n = 1
-	content = 'Rules for server `{}`:{}'.format(wrapbackticks(message.server.name), ' (Disabled)' if message.server.id in disabledrules else '')
-	for rule in rules[message.server.id]:
+	content = 'Rules for server `{}`:{}'.format(wrapbackticks(message.server.name), ' (Disabled)' if message.server.id in events.disabledrules else '')
+	for rule in events.rules[message.server.id]:
 		content += '\n**{}.** {}'.format(n, rule)
 		n += 1
 	await reply(message, content)
 
 @shadow(servonly=True)
 async def rulefind(client, message, **kwargs):
-	if message.server.id in disabledrules and not is_mod(message.author):
+	if message.server.id in events.disabledrules and not is_mod(message.author):
 		embed = emb.error('The rules system is currently disabled for this server.')
 		await reply(message, emb=embed)
 		return
-	if not message.server.id in rules:
+	if not message.server.id in events.rules:
 		embed = emb.warning('Rules are not (yet) set for this server.')
 		await reply(message, emb=embed)
 		return
@@ -1049,7 +1049,7 @@ async def rulefind(client, message, **kwargs):
 	matched = False
 	n = 1
 	content = 'Rules for server **``{}``** matching **``{}``**:'.format(wrapbackticks(message.server.name), wrapbackticks(kwargs['arguments']))
-	for rule in rules[message.server.id]:
+	for rule in events.rules[message.server.id]:
 		if rule.lower().find(kwargs['arguments'].lower()) != -1:
 			content += '\n**{}.** {}'.format(n, rule)
 			matched = True
@@ -1069,7 +1069,7 @@ async def ruleadd(client, message, **kwargs):
 			content = respondtorule(splitargs[0])
 			await reply(message, content)
 			return
-		elif splitargs[0].isdigit() and int(splitargs[0]) > len(rules[message.server.id]):
+		elif splitargs[0].isdigit() and int(splitargs[0]) > len(events.rules[message.server.id]):
 			embed = emb.warning('Why are you mentioning the number if you want to add this as the last rule?')
 			await reply(message, emb=embed)
 			return
@@ -1084,20 +1084,20 @@ async def ruleadd(client, message, **kwargs):
 		embed = emb.error('I’m not going to think up any rules by myself.')
 		await reply(message, emb=embed)
 		return
-	if not message.server.id in rules:
-		rules[message.server.id] = []
+	if not message.server.id in events.rules:
+		events.rules[message.server.id] = []
 
 	splitargs = kwargs['arguments'].split(' ', 1)
 	if splitargs[0].isdigit():
-		if int(splitargs[0]) > len(rules[message.server.id]):
+		if int(splitargs[0]) > len(events.rules[message.server.id]):
 			content = '**Why are you mentioning the number if you’re adding this at the end?**\n'
 		else:
 			content = ''
-		rules[message.server.id].insert(int(splitargs[0])-1, splitargs[1])
+		events.rules[message.server.id].insert(int(splitargs[0])-1, splitargs[1])
 		content += 'New rule {} inserted:\n{}'.format(int(splitargs[0]), splitargs[1])      # Yes, this one is "inserted"...
 	else:
-		rules[message.server.id].append(kwargs['arguments'])
-		content = 'New rule {} added:\n{}'.format(len(rules[message.server.id]), kwargs['arguments']) # ...and this one is "added". That is on purpose, not an inconsistency.
+		events.rules[message.server.id].append(kwargs['arguments'])
+		content = 'New rule {} added:\n{}'.format(len(events.rules[message.server.id]), kwargs['arguments']) # ...and this one is "added". That is on purpose, not an inconsistency.
 	embed = emb.success(content)
 	rulesave()
 	await reply(message, emb=embed)
@@ -1108,7 +1108,7 @@ async def ruleedit(client, message, **kwargs):
 		embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
 		await reply(message, emb=embed)
 		return
-	if not message.server.id in rules:
+	if not message.server.id in events.rules:
 		embed = emb.error('No rules to edit.')
 		await reply(message, emb=embed)
 		return
@@ -1116,15 +1116,15 @@ async def ruleedit(client, message, **kwargs):
 	splitargs = kwargs['arguments'].split(' ', 1)
 	if splitargs[0].isdigit():
 		try:
-			rules[message.server.id][int(splitargs[0])-1]
+			events.rules[message.server.id][int(splitargs[0])-1]
 		except IndexError:
 			embed = emb.error('Rule {} does not appear to exist.'.format(int(splitargs[0])))
 			await reply(message, emb=embed)
 			return
 
-		embed = emb.success('Rule {} successfully edited from:\n{}\nTo:\n{}'.format(int(splitargs[0]), rules[message.server.id][int(splitargs[0])-1], splitargs[1]))
+		embed = emb.success('Rule {} successfully edited from:\n{}\nTo:\n{}'.format(int(splitargs[0]), events.rules[message.server.id][int(splitargs[0])-1], splitargs[1]))
 
-		rules[message.server.id][int(splitargs[0])-1] = splitargs[1]
+		events.rules[message.server.id][int(splitargs[0])-1] = splitargs[1]
 		rulesave()
 	else:
 		embed = emb.error('Invalid rule number given, just check the help entry.')
@@ -1136,7 +1136,7 @@ async def rulemove(client, message, **kwargs):
 		embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
 		await reply(message, emb=embed)
 		return
-	if not message.server.id in rules:
+	if not message.server.id in events.rules:
 		embed = emb.error('No rules to move.')
 		await reply(message, emb=embed)
 		return
@@ -1144,16 +1144,16 @@ async def rulemove(client, message, **kwargs):
 	splitargs = kwargs['arguments'].split(' ', 1)
 	if splitargs[0].isdigit() and splitargs[1].isdigit():
 		try:
-			rules[message.server.id][int(splitargs[0])-1]
-			rules[message.server.id][int(splitargs[1])-1]
+			events.rules[message.server.id][int(splitargs[0])-1]
+			events.rules[message.server.id][int(splitargs[1])-1]
 		except IndexError:
 			embed = emb.error('Either rule {} does not exist or {} is not a slot it can be moved to.'.format(int(splitargs[0]), int(splitargs[1])))
 			await reply(message, emb=embed)
 			return
 
-		rulecontent = rules[message.server.id][int(splitargs[0])-1]
-		rules[message.server.id].remove(rules[message.server.id][int(splitargs[0])-1])
-		rules[message.server.id].insert(int(splitargs[1])-1, rulecontent)
+		rulecontent = events.rules[message.server.id][int(splitargs[0])-1]
+		events.rules[message.server.id].remove(events.rules[message.server.id][int(splitargs[0])-1])
+		events.rules[message.server.id].insert(int(splitargs[1])-1, rulecontent)
 		rulesave()
 
 		embed = emb.success('Rule {} successfully moved to number {}.'.format(int(splitargs[0]), int(splitargs[1])))
@@ -1167,22 +1167,22 @@ async def ruleremove(client, message, **kwargs):
 		embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
 		await reply(message, emb=embed)
 		return
-	if not message.server.id in rules:
+	if not message.server.id in events.rules:
 		embed = emb.error('No rules to delete.')
 		await reply(message, emb=embed)
 		return
 
 	if kwargs['arguments'].isdigit():
 		try:
-			rules[message.server.id][int(kwargs['arguments'])-1]
+			events.rules[message.server.id][int(kwargs['arguments'])-1]
 		except IndexError:
 			embed = emb.error('Rule {} does not appear to exist.'.format(int(kwargs['arguments'])))
 			await reply(message, emb=embed)
 			return
 
-		embed = emb.success('Rule {} successfully removed:\n{}'.format(int(kwargs['arguments']), rules[message.server.id][int(kwargs['arguments'])-1]))
+		embed = emb.success('Rule {} successfully removed:\n{}'.format(int(kwargs['arguments']), events.rules[message.server.id][int(kwargs['arguments'])-1]))
 
-		rules[message.server.id].remove(rules[message.server.id][int(kwargs['arguments'])-1])
+		events.rules[message.server.id].remove(events.rules[message.server.id][int(kwargs['arguments'])-1])
 		rulesave()
 	else:
 		embed = emb.error('Invalid rule number given, just check the help entry.')
@@ -1190,14 +1190,14 @@ async def ruleremove(client, message, **kwargs):
 
 @shadow(auth=is_mod)
 async def rulemaint(client, message, **kwargs):
-	if message.server.id in disabledrules:
-		disabledrules.remove(message.server.id)
+	if message.server.id in events.disabledrules:
+		events.disabledrules.remove(message.server.id)
 		embed = emb.success('Rules system enabled for this server.')
 	else:
-		disabledrules.append(message.server.id)
+		events.disabledrules.append(message.server.id)
 		embed = emb.success('Rules system disabled for this server.')
 	with open('disabledrules.json', 'w') as outfile:
-		json.dump(disabledrules, outfile)
+		json.dump(events.disabledrules, outfile)
 	await reply(message, emb=embed)
 
 @shadow()
@@ -1347,7 +1347,7 @@ async def getrawmessagecontent(client, message, **kwargs):
 
 @shadow(aliases=['removecontrib'], servonly=True)
 async def addcontrib(client, message, **kwargs):
-	if message.server.id != productionserver:
+	if message.server.id != events.productionserver:
 		embed = emb.error(t['production_only'])
 		await reply(message, emb=embed)
 		return
@@ -1573,7 +1573,7 @@ async def join(client, message, **kwargs):
 
 @shadow(auth=is_tntgb_mod, aliases=['b_mod'])
 async def b(client, message, **kwargs):
-	if message.server.id != tntgbserver:
+	if message.server.id != events.tntgbserver:
 		embed = emb.error(t['tntgb_only'])
 		await reply(message, emb=embed)
 		return
@@ -1655,8 +1655,8 @@ async def b(client, message, **kwargs):
 							currentexpiry[0],
 							message.server.id,
 							currentexpiry[0],
-							message.server.id in rolexpires,
-							currentexpiry[0] in rolexpires
+							message.server.id in events.rolexpires,
+							currentexpiry[0] in events.rolexpires
 						))
 						await client.send_message(specialchannel, embed=em)
 					except:
@@ -1704,7 +1704,7 @@ async def b(client, message, **kwargs):
 				splitargs[1],
 				message.channel.mention
 			)
-			await client.send_message(banlogchannel_tntgb, announcemsg)
+			await client.send_message(events.banlogchannel_tntgb, announcemsg)
 			banningnonmod = False
 		else:
 			await client.replace_roles(targetmember,
@@ -1719,7 +1719,7 @@ async def b(client, message, **kwargs):
 				splitargs[1]
 			)
 			content = '⛔ ' + announcemsg
-			sentmessage = await client.send_message(banlogchannel_tntgb, content)
+			sentmessage = await client.send_message(events.banlogchannel_tntgb, content)
 	except (AttributeError,TypeError):
 		embed = emb.error(t['specify_user'])
 		await client.send_message(specialchannel, embed=embed)
@@ -1736,7 +1736,7 @@ async def b(client, message, **kwargs):
 		addexpiryentry(message.server.id, targetmember.id, expirytime,
 			e_channel=sentmessage.channel.id, e_message=sentmessage.id,
 			e_newcontent='[LIFTED] ' + announcemsg,
-			p_channel=banlogchannel_tntgb.id,
+			p_channel=events.banlogchannel_tntgb.id,
 			p_content='The ban on {} has expired.'.format(targetmember.mention)
 		)
 
@@ -1745,7 +1745,7 @@ async def b(client, message, **kwargs):
 
 @shadow()
 async def selfban(client, message, **kwargs):
-	if message.server.id != tntgbserver:
+	if message.server.id != events.tntgbserver:
 		embed = emb.error(t['tntgb_only'])
 		await reply(message, emb=embed)
 		return
@@ -1779,7 +1779,7 @@ async def selfban(client, message, **kwargs):
 		kwargs['arguments']
 	)
 	content = '⛔ ' + announcemsg
-	sentmessage = await client.send_message(banlogchannel_tntgb, content)
+	sentmessage = await client.send_message(events.banlogchannel_tntgb, content)
 
 	# Now delete the calling message
 	await client.delete_message(message)
@@ -1791,7 +1791,7 @@ async def selfban(client, message, **kwargs):
 	addexpiryentry(message.server.id, message.author.id, expirytime,
 		e_channel=sentmessage.channel.id, e_message=sentmessage.id,
 		e_newcontent='[LIFTED] ' + announcemsg,
-		p_channel=banlogchannel_tntgb.id,
+		p_channel=events.banlogchannel_tntgb.id,
 		p_content='The ban on {} has expired.'.format(message.author.mention)
 	)
 
@@ -1800,7 +1800,7 @@ async def selfban(client, message, **kwargs):
 
 @shadow(auth=is_tntgb_mod, aliases=['b_left', 'b_offserver'])
 async def b_id(client, message, **kwargs):
-	if message.server.id != tntgbserver:
+	if message.server.id != events.tntgbserver:
 		embed = emb.error(t['tntgb_only'])
 		await reply(message, emb=embed)
 		return
@@ -1832,8 +1832,8 @@ async def b_id(client, message, **kwargs):
 			return
 
 		# Okay, removing their entry altogether was a bit drastic
-		memberroles[message.server.id][input] = []
-		memberroles[message.server.id][input].append('243076976565288960')
+		events.memberroles[message.server.id][input] = []
+		events.memberroles[message.server.id][input].append('243076976565288960')
 
 		# Alright, just send a message about it now!
 		# The extra space is intentional, it's a 'hidden' indicator to
@@ -1845,7 +1845,7 @@ async def b_id(client, message, **kwargs):
 			splitargs[1]
 		)
 		content = '⛔ ' + announcemsg
-		sentmessage = await client.send_message(banlogchannel_tntgb, content)
+		sentmessage = await client.send_message(events.banlogchannel_tntgb, content)
 
 		# Now delete the calling message
 		await client.delete_message(message)
@@ -1857,7 +1857,7 @@ async def b_id(client, message, **kwargs):
 		addexpiryentry(message.server.id, input, expirytime,
 			e_channel=sentmessage.channel.id, e_message=sentmessage.id,
 			e_newcontent='[LIFTED] ' + announcemsg,
-			p_channel=banlogchannel_tntgb.id,
+			p_channel=events.banlogchannel_tntgb.id,
 			p_content='The ban on <@!{}> has expired.'.format(input)
 		)
 
@@ -1869,9 +1869,7 @@ async def b_id(client, message, **kwargs):
 
 @shadow(auth=is_tntgb_mod, aliases=['banrevert'])
 async def revertban(client, message, **kwargs):
-	global rolexpires
-
-	if message.server.id != tntgbserver:
+	if message.server.id != events.tntgbserver:
 		embed = emb.error(t['tntgb_only'])
 		await reply(message, emb=embed)
 		return
@@ -1891,8 +1889,8 @@ async def revertban(client, message, **kwargs):
 		await client.send_message(specialchannel, embed=embed)
 
 		# That member is also in the role cache. Right?
-		if message.server.id not in rolexpires or \
-		targetmember.id not in rolexpires[message.server.id]:
+		if message.server.id not in events.rolexpires or \
+		targetmember.id not in events.rolexpires[message.server.id]:
 			embed = emb.warning('Could not find {} in the role cache!'.format(
 					targetmember.mention
 				)
@@ -1901,7 +1899,7 @@ async def revertban(client, message, **kwargs):
 			return
 
 		# It's even longer this time
-		thisexpiry = rolexpires[message.server.id][targetmember.id]
+		thisexpiry = events.rolexpires[message.server.id][targetmember.id]
 		if thisexpiry['msgedit_message'] != '0':
 			thisexpiry['msgedit_newcontent'] = ''
 			await editexpirymessage(message.server, thisexpiry)
@@ -1914,7 +1912,7 @@ async def revertban(client, message, **kwargs):
 
 @shadow(auth=is_admin, aliases=['tntgb_maint_p'])
 async def tntgb_maint(client, message, **kwargs):
-	if message.server.id != tntgbserver:
+	if message.server.id != events.tntgbserver:
 		embed = emb.error(t['tntgb_only'])
 		await reply(message, emb=embed)
 		return
@@ -1943,7 +1941,7 @@ async def tntgb_maint(client, message, **kwargs):
 				splitargs[1] = message2.content
 			output = ''
 			if splitargs[0] == 'liftmsg':
-				getmessage = await client.get_message(banlogchannel_tntgb, splitargs[1])
+				getmessage = await client.get_message(events.banlogchannel_tntgb, splitargs[1])
 				content = getmessage.content
 				if content.find('⛔') == -1:
 					embed = emb.error('Cannot find the ⛔!')
@@ -1953,7 +1951,7 @@ async def tntgb_maint(client, message, **kwargs):
 				await client.edit_message(getmessage, new_content=content)
 				output = 'Edited successfully.'
 			elif splitargs[0] == 'addtimer':
-				getmessage = await client.get_message(banlogchannel_tntgb, splitargs[1])
+				getmessage = await client.get_message(events.banlogchannel_tntgb, splitargs[1])
 				content = getmessage.content
 				m = re.search('<@!?([0-9]+)>', content)
 				if m == None:
@@ -1978,14 +1976,14 @@ async def tntgb_maint(client, message, **kwargs):
 					addexpiryentry(message.server.id, userid, newexpires,
 						e_channel=getmessage.channel.id, e_message=getmessage.id,
 						e_newcontent=content,
-						p_channel=banlogchannel_tntgb.id,
+						p_channel=events.banlogchannel_tntgb.id,
 						p_content='The ban on <@!{}> has expired.'.format(userid)
 					)
 				else:
 					addexpiryentry(message.server.id, userid, newexpires,
 						e_channel='0', e_message='0',
 						e_newcontent='',
-						p_channel=banlogchannel_tntgb.id,
+						p_channel=events.banlogchannel_tntgb.id,
 						p_content='The ban on <@!{}> has expired.'.format(userid)
 					)
 
