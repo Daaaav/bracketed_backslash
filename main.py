@@ -128,16 +128,7 @@ def loadstrings():
 
 loadstrings()
 
-modificationtimes = [
-	os.path.getmtime('main.py'),
-	os.path.getmtime('functions.py'),
-	os.path.getmtime('commands.py'),
-	os.path.getmtime('config.py'),
-	os.path.getmtime('emb.py'),
-	os.path.getmtime('col.py'),
-	os.path.getmtime('images.py'),
-	os.path.getmtime('utils.py'),
-]
+modificationtimes = [os.path.getmtime(x) for x in os.listdir() if x.endswith('.py')]
 modificationtimecache = time.strftime(config.get_s('timeformat'), time.gmtime(max(modificationtimes)))
 
 maineventloop = asyncio.get_event_loop()
