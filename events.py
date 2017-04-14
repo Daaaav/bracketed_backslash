@@ -2,6 +2,7 @@
 
 import logging
 import json
+import sys
 
 import discord
 
@@ -54,7 +55,7 @@ async def on_ready():
 				if not str(mem.id) in memberroles[ser]:
 					if len(mem.roles) >= 2:
 						rcwarnings += '\nUser {}#{} ({}) is not in the cache! (They’re suddenly in the server.) Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
-						memberroles[ser][str(mem.id)] = list(rolelist(mem.roles)) # Possibly redundant list() tbh, just making sure since I can't test and I don't know python well enough to know whether it's redundant
+						memberroles[ser][str(mem.id)] = list(__main__.rolelist(mem.roles)) # Possibly redundant list() tbh, just making sure since I can't test and I don't know python well enough to know whether it's redundant
 					continue
 				if set(memberroles[ser][str(mem.id)]) != set(__main__.rolelist(mem.roles)):
 					rcwarnings += (
@@ -97,7 +98,7 @@ async def on_ready():
 				json.dump(memberroles, outfile)
 
 			logging.info('Exiting (aka restarting) now to make the conversion go smoothly...')
-			await client.logout()
+			await __main__.client.logout()
 			sys.exit(43)
 		except FileNotFoundError:
 			logging.info('memberroles file does not exist yet so creating it now')
@@ -130,7 +131,7 @@ async def on_ready():
 		with open('disabledrules.json', 'w') as outfile:
 			json.dump(disabledrules, outfile)
 
-		await client.send_message(specialchannel_prod, 'Disabledrules file didn’t exist yet, created a new one.')
+		await __main__.client.send_message(specialchannel_prod, 'Disabledrules file didn’t exist yet, created a new one.')
 
 	try:
 		with open('rolexpires.json', 'r') as infile:
