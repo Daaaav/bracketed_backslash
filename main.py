@@ -21,19 +21,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
 from aiohttp import ClientSession
-import os
-import os.path
-import sys
-import random
 import datetime
-import time
 import json
 import logging
 import math
-import traceback
-import subprocess
+import os
+import os.path
+import random
 import re
+import subprocess
+import sys
+import time
 from threading import Timer
+import traceback
 
 import discord
 
@@ -41,8 +41,8 @@ import config
 import col
 import emb
 import images
-import utils
 import op_ids
+import utils
 
 op_ids.load()
 config.load()
