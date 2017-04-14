@@ -185,6 +185,14 @@ configs = {
 		'detachable': True,
 		'shown': True,
 	},
+	'alloweverywhere': {
+		'default': True,
+		'type': 'bln',
+		'is_array': False,
+		'expl': 'Whether to take into account the allowedchannels option or not.',
+		'detachable': True,
+		'shown': True,
+	},
 }
 
 s = {}
