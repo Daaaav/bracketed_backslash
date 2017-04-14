@@ -182,7 +182,7 @@ configs = {
 		'type': 'cid',
 		'is_array': True,
 		'expl': 'The allowed channels non-staff members can use the bot in.',
-		'detachable': False,
+		'detachable': True,
 		'shown': True,
 	},
 }
