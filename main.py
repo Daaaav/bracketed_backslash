@@ -19,7 +19,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import discord
 import asyncio
 from aiohttp import ClientSession
 import os
@@ -35,6 +34,8 @@ import traceback
 import subprocess
 import re
 from threading import Timer
+
+import discord
 
 import config
 import col
