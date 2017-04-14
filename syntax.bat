@@ -13,7 +13,7 @@ REM  Unfortunately Pyflakes doesn't understand exec(compile(open().read()))
 ) >concatenatedmain.py
 
 REM  Nor import. But hey, this works.
-C:\Users\U\AppData\Local\Programs\Python\Python35\Scripts\pyflakes concatenatedmain.py col.py config.py emb.py images.py utils.py
+C:\Users\U\AppData\Local\Programs\Python\Python35\Scripts\pyflakes concatenatedmain.py col.py config.py emb.py images.py utils.py events.py
 
 echo ----
 pause
