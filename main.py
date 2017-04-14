@@ -500,6 +500,7 @@ async def on_message(m):
 	m.server.id == events.productionserver and \
 	not (is_dev(m.author) and m.channel.id == '238423391571279872') and \
 	not command in ['rule', 'rules', 'rulefind', 'rulesfind'] and \
+	not m.channel.id in config.get_s('allowedchannels', m.server.id) and \
 	not (m.channel.id == '256924583737819146' and command in ['votevoicemute', 'vy', 'vn']):
 		if is_valid_command(command) and command != '':
 			await client.add_reaction(
