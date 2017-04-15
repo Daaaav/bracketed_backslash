@@ -88,9 +88,9 @@ async def reply(messageobject, message=None, emb=None):
 	# Removes the need for adding msg_start manually every time
 	if message == None:
 		message = ''
-	if len(msg_start + message) >= 2000:
+	if len(events.msg_start + message) >= 2000:
 		# We can at least try in a totally not failsafe and kinda ugly way
-		content = msg_start + message
+		content = events.msg_start + message
 		contentlines = content.split('\n')
 		cut = math.floor(len(contentlines)/2)
 		await client.send_message(messageobject.channel, '\n'.join(contentlines[:cut]))
@@ -103,11 +103,11 @@ async def reply(messageobject, message=None, emb=None):
 		if emb != None:
 			await client.send_message(
 				messageobject.channel,
-				msg_start + message,
+				events.msg_start + message,
 				embed=emb,
 			)
 		else:
-			await client.send_message(messageobject.channel, msg_start + message)
+			await client.send_message(messageobject.channel, events.msg_start + message)
 	except(discord.errors.HTTPException, discord.errors.Forbidden) as e:
 		if messageobject.channel.type == discord.ChannelType.private:
 			servinfo = '\t(direct message)\n'
@@ -139,7 +139,7 @@ async def reply(messageobject, message=None, emb=None):
 				servinfo=servinfo,
 				chantype=str(messageobject.channel.type).title(),
 				chan=messageobject.channel,
-				con=msg_start + message,
+				con=events.msg_start + message,
 				emb=dispemb,
 			)
 		)
@@ -147,7 +147,7 @@ async def reply(messageobject, message=None, emb=None):
 
 async def replyattach(messageobject, filetoattach, fname, message=''):
 	# Don't bother with handling >2000 character messages just yet
-	await client.send_file(destination=messageobject.channel, content = msg_start + message, fp=filetoattach, filename=fname)
+	await client.send_file(destination=messageobject.channel, content = events.msg_start + message, fp=filetoattach, filename=fname)
 
 def wrapbackticks(string, character=u'​'):
 	"""escapes backticks for use in message output to discord
@@ -199,17 +199,15 @@ def is_valid_command(com):
 	return False
 
 def hangmanworddisp(theword):
-	global hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, hangmanstarter, guessedletters, algeraden
-
 	theoutput = ''
-	algeraden = True
+	events.algeraden = True
 
 	for i in range(0, len(theword)):
-		if guessedletters[alphabet.find(theword[i].upper())]:
+		if events.guessedletters[alphabet.find(theword[i].upper())]:
 			theoutput += '__**`{}`**__ '.format(theword[i])
 		else:
 			theoutput += '`_` '
-			algeraden = False
+			events.algeraden = False
 
 	# Now display already guessed letters.
 	theoutput += '    (used: '
@@ -217,7 +215,7 @@ def hangmanworddisp(theword):
 	notnone = False
 
 	for i in range(0, 26):
-		if guessedletters[i]:
+		if events.guessedletters[i]:
 			notnone = True
 			theoutput += alphabet[i]
 

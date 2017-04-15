@@ -274,7 +274,7 @@ async def echo(client, message, **kwargs):
 	if (not message.channel.is_private and \
 	message.channel.permissions_for(message.server.me).embed_links) \
 	or message.channel.is_private:
-		displayarguments = arguments[:2048-len(msg_start)]
+		displayarguments = arguments[:2048-len(events.msg_start)]
 		try:
 			echocolor = message.server.me.colour
 		except AttributeError:
@@ -282,14 +282,14 @@ async def echo(client, message, **kwargs):
 		em = discord.Embed(description=displayarguments, colour=echocolor)
 		replyargs = {'emb': em}
 	else:
-		displayarguments = arguments[:2000-len(msg_start)]
+		displayarguments = arguments[:2000-len(events.msg_start)]
 		replyargs = {'message': displayarguments}
 	await reply(message, **replyargs)
 
 @shadow()
 async def hangman(client, message, **kwargs):
-	global hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, hangmanstarter, guessedletters, algeraden
-	if hangmanactive:
+	global guessedletters
+	if events.hangmanactive:
 		embed = emb.error('Hangman is already running. It can be aborted by the starter or by a mod with `\stophangman`.')
 		await reply(message, emb=embed)
 		return
@@ -310,14 +310,14 @@ async def hangman(client, message, **kwargs):
 		await reply(message, emb=embed)
 		return
 
-	hangmanchosenword = kwargs['arguments']
-	hangmanattempts = 10
-	hangmantotalattempts = 10
-	hangmanactive = True
-	hangmanstarter = message.author
+	events.hangmanchosenword = kwargs['arguments']
+	events.hangmanattempts = 10
+	events.hangmantotalattempts = 10
+	events.hangmanactive = True
+	events.hangmanstarter = message.author
 	guessedletters = [False]*26
-	msg_start = '**`>`**``{}``**`{}`**``\{} {}``\n'.format(wrapbackticks(message.author.name), kwargs['invokesymbol'], wrapbackticks(kwargs['command'].split(' ')[0]), '*'*len(hangmanchosenword)) # you will never have mod/admin perms in private messages (probably), where the hangman will be started from, so for now theres no mod/admin check to make the input display different
-	content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "{}" followed by the letter (for example {}a) or the word. {} attempts left.\n{}'.format(hangmanstarter.id, hangmaninvoker, hangmaninvoker, hangmanattempts, hangmanworddisp(hangmanchosenword))
+	msg_start = '**`>`**``{}``**`{}`**``\{} {}``\n'.format(wrapbackticks(message.author.name), kwargs['invokesymbol'], wrapbackticks(kwargs['command'].split(' ')[0]), '*'*len(events.hangmanchosenword)) # you will never have mod/admin perms in private messages (probably), where the hangman will be started from, so for now theres no mod/admin check to make the input display different
+	content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "{}" followed by the letter (for example {}a) or the word. {} attempts left.\n{}'.format(events.hangmanstarter.id, hangmaninvoker, hangmaninvoker, events.hangmanattempts, hangmanworddisp(events.hangmanchosenword))
 	msg = msg_start + content
 	await client.send_message(events.botschannel, msg)
 
@@ -326,18 +326,17 @@ async def hangman(client, message, **kwargs):
 
 @shadow()
 async def stophangman(client, message, **kwargs):
-	global hangmanactive
-	if not hangmanactive:
+	if not events.hangmanactive:
 		embed = emb.error('Can’t abort hangman because it’s not running.')
 		await reply(message, emb=embed)
 		return
-	elif not is_mod(message.author) and message.author.id != hangmanstarter.id:
+	elif not is_mod(message.author) and message.author.id != events.hangmanstarter.id:
 		embed = emb.error('Can’t abort hangman because you haven’t started this game.')
 		await reply(message, emb=embed)
 		return
 
-	hangmanactive = False
-	content = 'Game of hangman aborted. The word was: **{}**'.format(hangmanchosenword)
+	events.hangmanactive = False
+	content = 'Game of hangman aborted. The word was: **{}**'.format(events.hangmanchosenword)
 	await client.send_message(events.botschannel, content)
 
 @shadow()
@@ -558,7 +557,6 @@ async def findc(client, message, **kwargs):
 
 @shadow(auth=is_mod)
 async def softban(client, message, **kwargs):
-	global latestroled
 	if message.server.id != events.productionserver:
 		embed = emb.error(t['production_only'])
 		await reply(message, emb=embed)
@@ -576,7 +574,7 @@ async def softban(client, message, **kwargs):
 			discord.utils.get(message.server.roles, id='241183168269516800'), # no reactions
 		)
 		await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='220643748508467220')) # The banned role
-		latestroled = targetmember.id
+		events.latestroled = targetmember.id
 	except(AttributeError, TypeError):
 		embed = emb.error(t['specify_user'])
 		await reply(message, emb=embed)
@@ -588,7 +586,6 @@ async def softban(client, message, **kwargs):
 
 @shadow(auth=is_mod, aliases=['nogenmen', 'nocedule', 'notts', 'noreact'])
 async def nononly(client, message, **kwargs):
-	global latestroled
 	if message.server.id != events.productionserver:
 		embed = emb.error(t['production_only'])
 		await reply(message, emb=embed)
@@ -612,7 +609,7 @@ async def nononly(client, message, **kwargs):
 			'member', kwargs['arguments'], server=message.server,
 		)
 		await client.add_roles(targetmember, discord.utils.get(message.server.roles, id=roletoadd[kwargs['command']]))
-		latestroled = targetmember.id
+		events.latestroled = targetmember.id
 	except(AttributeError,TypeError):
 		embed = emb.error(t['specify_user'])
 		await reply(message, emb=embed)
@@ -623,7 +620,6 @@ async def nononly(client, message, **kwargs):
 
 @shadow(auth=is_mod)
 async def nonick(client, message, **kwargs):
-	global latestroled
 	if message.server.id != events.productionserver:
 		embed = emb.error(t['production_only'])
 		await reply(message, emb=embed)
@@ -634,7 +630,7 @@ async def nonick(client, message, **kwargs):
 		)
 		await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='236925451216355338'))
 		await client.remove_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
-		latestroled = targetmember.id
+		events.latestroled = targetmember.id
 	except(AttributeError, TypeError):
 		embed = emb.error(t['specify_user'])
 		await reply(message, emb=embed)
@@ -823,11 +819,11 @@ async def expires(client, message, **kwargs):
 		return
 
 	if len(splitargs) < 2:
-		if latestroled == None:
+		if events.latestroled == None:
 			embed = emb.error('Nobody has gotten a restrictive role this session. Please provide any member identification instead.')
 			await reply(message, emb=embed)
 			return
-		targetmemberid = latestroled
+		targetmemberid = events.latestroled
 	else:
 		try:
 			targetmember = utils.match_input(
@@ -2008,7 +2004,6 @@ async def tntgb_maint(client, message, **kwargs):
 
 @shadow(auth=is_operator)
 async def uploadfile(client, message, **kwargs):
-	global msg_start
 	disalwfiles = ['bot_token.conf']
 	try:
 		if not os.path.abspath(kwargs['arguments']).startswith(os.getcwd()):
@@ -2025,7 +2020,7 @@ async def uploadfile(client, message, **kwargs):
 		await client.send_file(
 			message.channel,
 			kwargs['arguments'],
-			content=msg_start,
+			content=events.msg_start,
 		)
 		return
 	except FileNotFoundError:
