@@ -22,7 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import asyncio
 from aiohttp import ClientSession
 import datetime
-import inspect
 import json
 import logging
 import math
