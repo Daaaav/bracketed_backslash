@@ -1,8 +1,11 @@
 # encoding=utf-8
 
+import datetime
 import logging
 import json
+import os
 import sys
+import time
 
 import discord
 
@@ -592,3 +595,94 @@ async def on_message(m):
 		await __main__.reply(m, emb=e)
 		raise
 
+async def on_message_delete(msg):
+	__main__.deleted_messages.append(msg)
+	if __main__.isprivatemessage(msg.server):
+		return
+	if msg.author == __main__.client.user:
+		__main__.logging.info(
+			(
+				'bot message {0.id} by user {1.name}#{1.discriminator} ({1.id})'
+				' in channel {2.id} ({2.name}) at {0.timestamp} utc deleted,'
+				' original content is \n{0.content}'
+			).format(msg, msg.author, msg.channel)
+		)
+		return
+	if (msg.content == '' and msg.attachments == []) \
+	or __main__.logdisabled('message_delete', msg.server):
+		return
+	schan = __main__.getspecialchannel_reply(msg)
+	em = discord.Embed(
+		title=(
+			'\N{NO ENTRY SIGN}MESSAGE {withatch}DELETED (SENT {reltime} IN #{chan})'
+		).format(
+			withatch='WITH ATTACHMENT ' if msg.attachments != [] else '',
+			reltime=__main__.reltime(time.mktime(msg.timestamp.timetuple())),
+			chan=utils.mdspecialchars(msg.channel.name),
+		),
+		description=msg.content,
+		colour=msg.author.colour,
+	)
+	em.set_author(
+		name=msg.author.display_name,
+		icon_url=msg.author.avatar_url,
+	)
+	em.set_footer(text=utils.id_summary(uid=msg.author.id, mid=msg.id, cid=msg.channel.id))
+	await __main__.client.send_message(schan, embed=em)
+	if msg.attachments != []:
+		fp = (
+				'{atchcche}/{id}_{fn}'
+		).format(
+			atchcche=__main__.attachcache,
+			id=msg.attachments[0]['id'],
+			fn=msg.attachments[0]['filename'],
+		)
+		if os.path.isfile(fp):
+			con = (
+				'_\N{PAPERCLIP}The attachment for message {0.id} is attached._'
+			).format(msg)
+			try:
+				await __main__.client.send_file(
+					destination=schan,
+					content=con,
+					fp=fp,
+					filename=msg.attachments[0]['filename'],
+				)
+			except discord.HTTPException:
+				con = (
+					'_Failed to upload the attachment for message {0.id}._'
+				).format(msg)
+				await __main__.client.send_message(schan, con)
+		else:
+			con = (
+				'_The attachment for message {0.id} was not found'
+				' in the message attachments cache._'
+			).format(msg)
+			await __main__.client.send_message(schan, con)
+	if msg in __main__.messages_deleted_by_bot:
+		__main__.messages_deleted_by_bot.remove(msg)
+		return
+	dthreshold = datetime.timedelta(
+		seconds=config.get_s('deleted_message_resend_timer', msg.server.id),
+	)
+	if (datetime.datetime.now() - msg.timestamp) < dthreshold and \
+	not msg.author.bot:
+		if config.get_s('deleted_message_resend_content', msg.server.id):
+			em = discord.Embed(
+				title='UNDELETED MESSAGE',
+				description=msg.content,
+				colour=msg.author.colour,
+			)
+			em.set_footer(
+				text='This message was resent as it was deleted too recently.',
+			)
+		else:
+			em = discord.Embed(title='Message was deleted', colour=msg.author.colour)
+			em.set_footer(
+				text=(
+					'This notification was sent because a message by this'
+					' user was deleted too recently.'
+				),
+			)
+		em.set_author(name=msg.author.display_name, icon_url=msg.author.avatar_url)
+		await __main__.client.send_message(msg.channel, embed=em)
