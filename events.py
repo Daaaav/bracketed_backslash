@@ -808,3 +808,70 @@ async def on_message_edit(old, new):
 	if not __main__.logdisabled('message_overedit', new.server):
 		# Delete a message if it has been edited more than 5 times in 30 seconds
 		await utils.handle_minute_message_edits(new, schan)
+
+async def on_member_update(before, after):
+	specialchannel = __main__.getspecialchannel(after.server)
+	if before.nick != after.nick and not __main__.logdisabled('member_nickname', after.server):
+		embed = discord.Embed(title='🇳📟CHANGED NICKNAME'.format(id=after.id), colour=after.colour)
+		embed.set_author(name=after.display_name, icon_url=after.avatar_url, url=__main__.infourl('userid={}'.format(after.id)))
+		if before.nick == None:
+			embed.add_field(name='No Older Nickname', value='_No Older Nickname_')
+		else:
+			embed.add_field(name='Older Nickname', value=utils.mdspecialchars(before.nick))
+		embed.add_field(name='\u200b', value='\u200b')
+		if after.nick == None:
+			embed.add_field(name='No Newer Nickname', value='_No Newer Nickname_')
+		else:
+			embed.add_field(name='Newer Nickname', value=utils.mdspecialchars(after.nick))
+		await __main__.client.send_message(specialchannel, embed=embed)
+	if before.roles != after.roles:
+		# TODO: Make these better
+		if len(before.roles) == len(after.roles) and not (
+			__main__.logdisabled('member_roleadd', after.server) and \
+			__main__.logdisabled('member_roleremove', after.server)
+		):
+			embed = discord.Embed(title='ROLES CHANGED FOR USER')
+			embed.set_author(
+				name=after.display_name,
+				icon_url=after.avatar_url,
+				url=__main__.infourl('userid={}'.format(after.id))
+			)
+			await __main__.client.send_message(specialchannel, embed=embed)
+		if len(before.roles) > len(after.roles) and not __main__.logdisabled('member_roleremove', after.server): # if a role has been removed
+			rolesremoved = list(set(before.roles).symmetric_difference(set(after.roles)))
+			embed = discord.Embed(title='ROLE REMOVED FROM USER'.format(id=after.id), colour=rolesremoved[0].colour)
+			embed.set_author(name=after.display_name, icon_url=after.avatar_url, url=__main__.infourl('userid={}'.format(after.id)))
+			for roleremoved in rolesremoved:
+				embed.add_field(name='Removed Role', value=utils.mdspecialchars('{} ({})'.format(roleremoved.name, roleremoved.id)))
+			await __main__.client.send_message(specialchannel, embed=embed)
+		if len(before.roles) < len(after.roles) and not __main__.logdisabled('member_roleadd', after.server): # if a role has been added
+			rolesadded = list(set(after.roles).symmetric_difference(set(before.roles)))
+			embed = discord.Embed(title='ROLE ADDED TO USER'.format(id=after.id), colour=rolesadded[0].colour)
+			# i am fucking TRIGGERED that i have to set these values twice
+			embed.set_author(name=after.display_name, icon_url=after.avatar_url, url=__main__.infourl('userid={}'.format(after.id)))
+			for roleadded in rolesadded:
+				embed.add_field(name='Added Role', value=utils.mdspecialchars('{} ({})'.format(roleadded.name, roleadded.id)))
+			await __main__.client.send_message(specialchannel, embed=embed)
+		if config.get_s('rolecachemode', after.server.id) != 0:
+			__main__.updaterolecache(after)
+			__main__.rolecachesave()
+	if before.name != after.name and not __main__.logdisabled('member_username', after.server):
+		description = '🇺📟CHANGED USERNAME'.format(id=after.id)
+		if before.discriminator != after.discriminator:
+			description += ' AND DISCRIMINATOR 🔸'
+		embed = discord.Embed(title=description, colour=after.colour)
+		embed.set_author(name=after.display_name, icon_url=after.avatar_url, url=__main__.infourl('userid={}'.format(after.id)))
+		embed.add_field(name='Older Username', value=utils.mdspecialchars(before.name))
+		embed.add_field(name='Newer Username', value=utils.mdspecialchars(after.name))
+		if before.discriminator != after.discriminator:
+			embed.add_field(name='Older Discriminator', value=before.discriminator, inline=False)
+			embed.add_field(name='Newer Discriminator', value=after.discriminator)
+		await __main__.client.send_message(specialchannel, embed=embed)
+	if before.avatar_url != after.avatar_url and ((not __main__.logdisabled('member_botavatar', after.server)) if __main__.is_bot(after) else (not __main__.logdisabled('member_avatar', after.server))):
+		embed = discord.Embed(description='👥<@!{id}> ({id}) changed avatar'.format(id=after.id), colour=after.colour, timestamp=datetime.datetime.now())
+		embed.set_author(name=after.display_name, icon_url=after.avatar_url)
+		embed.set_thumbnail(url=before.avatar_url)
+		embed.set_image(url=after.avatar_url)
+		embed.add_field(name='Older Avatar URL: None' if before.avatar_url == '' else 'Older Avatar URL (Thumbnail)', value='No Older Avatar URL' if before.avatar_url == '' else before.avatar_url)
+		embed.add_field(name='Newer Avatar URL: None' if after.avatar_url == '' else 'Newer Avatar URL (Inset Image)', value='No Newer Avatar URL' if after.avatar_url == '' else after.avatar_url, inline=False)
+		await __main__.client.send_message(specialchannel, embed=embed)
