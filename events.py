@@ -930,3 +930,14 @@ async def on_typing(channel, user, when):
 		await __main__.client.send_message(specialchannel, embed=embed)
 	else:
 		return # practically unnecessary, but this is for if we want to do things when members type later
+
+async def on_server_role_create(r):
+	if __main__.logdisabled('role_create', r.server):
+		return
+	schan = __main__.getspecialchannel(r.server)
+	embed = discord.Embed(
+		title='ROLE ADD AT {time}'.format(time=str(r.created_at)),
+		description=utils.mdspecialchars(r.name),
+		colour=r.colour,
+	)
+	await __main__.client.send_message(schan, embed=embed)

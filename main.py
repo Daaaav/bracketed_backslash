@@ -146,18 +146,6 @@ def shadow(auth=None, aliases=None, servonly=False):
 	return living_shadow
 
 @client.event
-async def on_server_role_create(r):
-	if logdisabled('role_create', r.server):
-		return
-	schan = getspecialchannel(r.server)
-	embed = discord.Embed(
-		title='ROLE ADD AT {time}'.format(time=str(r.created_at)),
-		description=utils.mdspecialchars(r.name),
-		colour=r.colour,
-	)
-	await client.send_message(schan, embed=embed)
-
-@client.event
 async def on_server_role_delete(r):
 	if logdisabled('role_delete', r.server):
 		return
