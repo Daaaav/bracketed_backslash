@@ -146,43 +146,6 @@ def shadow(auth=None, aliases=None, servonly=False):
 	return living_shadow
 
 @client.event
-async def on_server_emojis_update(b, a):
-	try:
-		schan = getspecialchannel(a[0].server)
-	except IndexError:
-		schan = getspecialchannel(b[0].server)
-	if logdisabled('server_emotes', schan.server):
-		# We could split this into separate emotes_* log types
-		return
-	diff = list(set(b).symmetric_difference(set(a)))
-	elist = ''
-	for e in diff:
-		elist += '{str} – {0.name} ({0.id})\n'.format(e, str=str(e))
-	if len(b) > len(a):
-		desc = 'EMOTE REMOVE'
-	elif len(b) < len(a):
-		desc = 'EMOTE ADD'
-	else:
-		# Emote name change, get the emote in question
-		for befemo in b:
-			for aftemo in a:
-				if befemo.id == aftemo.id and befemo.name != aftemo.name:
-					embef = befemo
-					emaft = aftemo
-
-		embed = discord.Embed(
-			title='EMOTE NAME CHANGE',
-			description=str(emaft),
-		)
-		embed.add_field(name='Older Name', value=embef.name)
-		embed.add_field(name='Newer Name', value=emaft.name)
-		await client.send_message(schan, embed=embed)
-		return
-	embed = discord.Embed(description=desc)
-	embed.add_field(name='Emotes', value=elist)
-	await client.send_message(schan, embed=embed)
-
-@client.event
 async def on_voice_state_update(old, new):
 	if old.voice.voice_channel == new.voice.voice_channel:
 		return

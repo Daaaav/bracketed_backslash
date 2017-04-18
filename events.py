@@ -1236,3 +1236,39 @@ async def on_server_update(before, after):
 		elif before.mfa_level == 1 and after.mfa_level == 0:
 			embed=discord.Embed(description='SERVER 2FA DISABLED')
 		await __main__.client.send_message(specialchannel, embed=embed)
+
+async def on_server_emojis_update(b, a):
+	try:
+		schan = __main__.getspecialchannel(a[0].server)
+	except IndexError:
+		schan = __main__.getspecialchannel(b[0].server)
+	if __main__.logdisabled('server_emotes', schan.server):
+		# We could split this into separate emotes_* log types
+		return
+	diff = list(set(b).symmetric_difference(set(a)))
+	elist = ''
+	for e in diff:
+		elist += '{str} – {0.name} ({0.id})\n'.format(e, str=str(e))
+	if len(b) > len(a):
+		desc = 'EMOTE REMOVE'
+	elif len(b) < len(a):
+		desc = 'EMOTE ADD'
+	else:
+		# Emote name change, get the emote in question
+		for befemo in b:
+			for aftemo in a:
+				if befemo.id == aftemo.id and befemo.name != aftemo.name:
+					embef = befemo
+					emaft = aftemo
+
+		embed = discord.Embed(
+			title='EMOTE NAME CHANGE',
+			description=str(emaft),
+		)
+		embed.add_field(name='Older Name', value=embef.name)
+		embed.add_field(name='Newer Name', value=emaft.name)
+		await __main__.client.send_message(schan, embed=embed)
+		return
+	embed = discord.Embed(description=desc)
+	embed.add_field(name='Emotes', value=elist)
+	await __main__.client.send_message(schan, embed=embed)
