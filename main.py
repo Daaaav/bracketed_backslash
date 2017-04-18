@@ -146,15 +146,6 @@ def shadow(auth=None, aliases=None, servonly=False):
 	return living_shadow
 
 @client.event
-async def on_member_ban(member):
-	if logdisabled('member_ban', member.server):
-		return
-	specialchannel = getspecialchannel(member.server)
-
-	msg = '**`>`**👞🚪⛔`user` **``{}``**`#{}` `({}) banned from server {} ({})`'.format(wrapbackticks(member.name), member.discriminator, member.id, member.server.name, member.server.id)
-	await client.send_message(specialchannel, msg)
-
-@client.event
 async def on_member_unban(server, user):
 	if logdisabled('member_unban', server):
 		return

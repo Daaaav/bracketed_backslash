@@ -901,3 +901,11 @@ async def on_member_remove(member):
 		embed.set_author(name=member.display_name, icon_url=member.avatar_url)
 		embed.set_thumbnail(url=member.avatar_url)
 		await __main__.client.send_message(specialchannel, embed=embed)
+
+async def on_member_ban(member):
+	if __main__.logdisabled('member_ban', member.server):
+		return
+	specialchannel = __main__.getspecialchannel(member.server)
+
+	msg = '**`>`**👞🚪⛔`user` **``{}``**`#{}` `({}) banned from server {} ({})`'.format(__main__.wrapbackticks(member.name), member.discriminator, member.id, member.server.name, member.server.id)
+	await __main__.client.send_message(specialchannel, msg)
