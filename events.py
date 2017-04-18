@@ -916,3 +916,17 @@ async def on_member_unban(server, user):
 	specialchannel = __main__.getspecialchannel(server)
 	msg = '**`>`**<:doormat:239361673532669953>`user` **``{}``**`#{}` `({}) unbanned from server {} ({})`'.format(__main__.wrapbackticks(user.name), user.discriminator, user.id, server.name, server.id)
 	await __main__.client.send_message(specialchannel, msg)
+
+async def on_typing(channel, user, when):
+	try:
+		specialchannel = __main__.getspecialchannel(channel.server)
+	except AttributeError: # this would happen if the typing event is in a private message
+		return
+	if specialchannel.id == channel.server.default_channel.id:
+		specialchannel = channel
+	if str(user.status) == 'offline' and not __main__.logdisabled('invisible_typing', channel.server):
+		embed = discord.Embed(title='👻INVISIBLE WHILE TYPING IN {}'.format(channel.mention), colour=user.colour)
+		embed.set_author(name=user.display_name, icon_url=user.avatar_url, url=__main__.infourl('userid={}'.format(user.id)))
+		await __main__.client.send_message(specialchannel, embed=embed)
+	else:
+		return # practically unnecessary, but this is for if we want to do things when members type later

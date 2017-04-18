@@ -146,21 +146,6 @@ def shadow(auth=None, aliases=None, servonly=False):
 	return living_shadow
 
 @client.event
-async def on_typing(channel, user, when):
-	try:
-		specialchannel = getspecialchannel(channel.server)
-	except AttributeError: # this would happen if the typing event is in a private message
-		return
-	if specialchannel.id == channel.server.default_channel.id:
-		specialchannel = channel
-	if str(user.status) == 'offline' and not logdisabled('invisible_typing', channel.server):
-		embed = discord.Embed(title='👻INVISIBLE WHILE TYPING IN {}'.format(channel.mention), colour=user.colour)
-		embed.set_author(name=user.display_name, icon_url=user.avatar_url, url=infourl('userid={}'.format(user.id)))
-		await client.send_message(specialchannel, embed=embed)
-	else:
-		return # practically unnecessary, but this is for if we want to do things when members type later
-
-@client.event
 async def on_server_role_create(r):
 	if logdisabled('role_create', r.server):
 		return
