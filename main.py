@@ -146,26 +146,6 @@ def shadow(auth=None, aliases=None, servonly=False):
 	return living_shadow
 
 @client.event
-async def on_channel_update(b, a):
-	if a.type == discord.ChannelType.private or logdisabled('channel_rename', a.server):
-		return
-	schan = getspecialchannel(a.server)
-	if b.name != a.name:
-		e = discord.Embed(
-			title='{type} CHANNEL UPDATE'.format(type=str(a.type).upper()),
-			description=(
-				'**{name}** ({id})'
-			).format(
-				name=utils.mdspecialchars(a.name),
-				id=a.id,
-			),
-			colour=a.server.me.colour,
-		)
-		e.add_field(name='Older Name', value=utils.mdspecialchars(b.name))
-		e.add_field(name='Newer Name', value=utils.mdspecialchars(a.name))
-		await client.send_message(schan, embed=e)
-
-@client.event
 async def on_server_join(serv):
 	em = discord.Embed(
 		title='BOT ADDED TO SERVER',
