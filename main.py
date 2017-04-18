@@ -146,19 +146,6 @@ def shadow(auth=None, aliases=None, servonly=False):
 	return living_shadow
 
 @client.event
-async def on_server_join(serv):
-	em = discord.Embed(
-		title='BOT ADDED TO SERVER',
-		description='**{name}** ({id})'.format(
-			name=utils.mdspecialchars(serv.name),
-			id=serv.id,
-		),
-		colour=events.opserver.me.colour,
-	)
-	em.set_image(url=serv.icon_url)
-	await client.send_message(events.opserver_botservers, embed=em)
-
-@client.event
 async def on_server_remove(serv):
 	em = discord.Embed(
 		title='BOT REMOVED FROM SERVER',

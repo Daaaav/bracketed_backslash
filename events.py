@@ -1573,3 +1573,15 @@ async def on_channel_update(b, a):
 		e.add_field(name='Older Name', value=utils.mdspecialchars(b.name))
 		e.add_field(name='Newer Name', value=utils.mdspecialchars(a.name))
 		await __main__.client.send_message(schan, embed=e)
+
+async def on_server_join(serv):
+	em = discord.Embed(
+		title='BOT ADDED TO SERVER',
+		description='**{name}** ({id})'.format(
+			name=utils.mdspecialchars(serv.name),
+			id=serv.id,
+		),
+		colour=opserver.me.colour,
+	)
+	em.set_image(url=serv.icon_url)
+	await __main__.client.send_message(opserver_botservers, embed=em)
