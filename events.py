@@ -1089,3 +1089,48 @@ async def on_reaction_add(r, u):
 		),
 	)
 	await __main__.client.send_message(specialchannel, embed=embed)
+
+async def on_reaction_remove(r, u):
+	if __main__.isprivatemessage(r.message.server) or __main__.logdisabled('reaction_remove', r.message.server):
+		return
+	specialchannel = __main__.getspecialchannel(r.message.server)
+	try:
+		iscustomemote = True
+		emotename = r.emoji.name
+	except AttributeError:
+		iscustomemote = False
+		emotename = r.emoji
+	embed = discord.Embed(
+		title='REACTION REMOVED FROM MESSAGE (SENT {rtime} IN {c.mention})'.format(
+			rtime=__main__.reltime(time.mktime(r.message.timestamp.timetuple())),
+			c=r.message.channel,
+		),
+		description=r.message.content,
+		colour=u.colour,
+	)
+	embed.set_author(
+		name=u.display_name,
+		icon_url=u.avatar_url,
+		url=__main__.infourl('userid={}&messageid={}'.format(u.id, r.message.id))
+	)
+	mdetails = u.mention
+	embed.add_field(
+		name='Member of Reaction',
+		value=mdetails,
+	)
+	embed.add_field(
+		name='Reaction',
+		value=(
+			(emotename)
+			if
+			(not iscustomemote)
+			else
+			(
+				'{name} ({id})'.format(
+					name=str(r.emoji),
+					id=r.emoji.id,
+				)
+			)
+		),
+	)
+	await __main__.client.send_message(specialchannel, embed=embed)
