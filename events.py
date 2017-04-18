@@ -1323,3 +1323,234 @@ async def on_channel_delete(c):
 		),
 	)
 	await __main__.client.send_message(schan, embed=embed)
+
+async def on_socket_raw_receive(payload):
+	try:
+		event = json.loads(payload)
+	except UnicodeDecodeError:
+		return
+
+	# Events to check
+	ckevnts = [
+		'MESSAGE_DELETE',
+		'MESSAGE_UPDATE',
+		'MESSAGE_REACTION_ADD',
+		'MESSAGE_REACTION_REMOVE',
+		'MESSAGE_REACTION_REMOVE_ALL',
+	]
+	if event['t'] not in ckevnts:
+		return
+
+	# We must first know what server it is
+	mchan = __main__.client.get_channel(event['d']['channel_id'])
+	if mchan.type == discord.ChannelType.private:
+		return
+
+	if event['t'] == 'MESSAGE_DELETE':
+		if __main__.logdisabled('message_deleteuncached', mchan.server):
+			return
+		# Check if on_message_delete() was already called by this message
+		# If it was, then return
+		if discord.utils.find(lambda m: m.id == event['d']['id'], __main__.client.messages) != None:
+			# If the message lingers in deleted_messages, it doesn't really matter for now
+			return
+		if event['d']['id'] in __main__.owncache:
+			# Already removed from the cache, but we still haven't run on_message_delete
+			# This happens all the time.
+			__main__.owncache.remove(event['d']['id'])
+			return
+		for m in __main__.deleted_messages:
+			if m.id == event['d']['id']:
+				# on_message_delete was faster
+				__main__.deleted_messages.remove(m)
+				return
+
+		schan = __main__.getspecialchannel(
+			mchan.server
+		)
+		e = discord.Embed(
+			title='UNCACHED MESSAGE DELETED IN {0.mention}'.format(mchan),
+			url=__main__.infourl('messageid=' + event['d']['id']),
+			description=(
+				'Since this message is uncached, I can’t give you'
+				' any more information than its ID and its channel.'
+			),
+			colour=mchan.server.me.colour,
+		)
+		await __main__.client.send_message(schan, embed=e)
+	elif event['t'] == 'MESSAGE_UPDATE':
+		if __main__.logdisabled('message_updateuncached', mchan.server):
+			return
+		# Check if the message is in the cache and return if it is
+		if discord.utils.find(lambda m: m.id == event['d']['id'], __main__.client.messages) != None:
+			return
+
+		schan = __main__.getspecialchannel(mchan.server)
+		athr = mchan.server.get_member(event['d']['author']['id'])
+		e = discord.Embed(
+			title=(
+				'UNCACHED MESSAGE UPDATED (SENT {rltm}'
+				' IN {0.mention}).'
+				' NEWER CONTENT AND PROPERTIES:'
+			).format(
+				mchan,
+				rltm=__main__.reltime(
+					time.mktime(
+						discord.utils.parse_time(
+							event['d']['timestamp']
+						).timetuple()
+					)
+				),
+			),
+			description=event['d']['content'],
+			colour=athr.colour,
+		)
+		e.set_author(
+			name=athr.display_name,
+			icon_url=athr.avatar_url,
+			url=__main__.infourl(
+				(
+					'userid={uid}&messageid={mid}'
+				).format(
+					uid=athr.id,
+					mid=event['d']['id'],
+				),
+			)
+		)
+		e.add_field(
+			name='Pinned',
+			value='Yes' if event['d']['pinned'] else 'No',
+		)
+		e.add_field(
+			name='TTS',
+			value='Yes' if event['d']['tts'] else 'No',
+		)
+		e.add_field(
+			name='Rich Embed',
+			value=(
+				'``{}``'.format(__main__.wrapbackticks(str(event['d']['embeds']['rich'])))
+				if 'rich' in event['d']['embeds']
+				else '(none)'
+			),
+		)
+		e.set_footer(
+			text=(
+				'Since this message is uncached,'
+				' I can’t give you its older properties.'
+			)
+		)
+		await __main__.client.send_message(schan, embed=e)
+	elif event['t'] == 'MESSAGE_REACTION_ADD':
+		if __main__.logdisabled('reaction_adduncached', mchan.server):
+			return
+		# Check if the message is in the cache and return if it is
+		if discord.utils.find(lambda m: m.id == event['d']['message_id'], __main__.client.messages) \
+		!= None:
+			return
+
+		schan = __main__.getspecialchannel(mchan.server)
+		athr = mchan.server.get_member(event['d']['user_id'])
+		mdetails = athr.mention
+		if athr.status == discord.Status.offline:
+			mdetails += ' (Invisible)'
+		e = discord.Embed(
+			title='REACTION ADDED TO UNCACHED MESSAGE IN {0.mention}'.format(mchan),
+			description=(
+				'Since this message is uncached, I can’t give you'
+				' any more information than its ID, author, and channel.'
+			),
+			colour=mchan.server.me.colour,
+		)
+		e.set_author(
+			name=athr.display_name,
+			icon_url=athr.avatar_url,
+			url=__main__.infourl(
+				(
+					'userid={uid}&messageid={mid}'
+				).format(
+					uid=athr.id,
+					mid=event['d']['message_id'],
+				),
+			)
+		)
+		e.add_field(
+			name='Member of Reaction',
+			value=mdetails,
+		)
+		e.add_field(
+			name='Reaction',
+			value=(
+				'<:{name}:{id}>'
+			).format(
+				name=event['d']['emoji']['name'],
+				id=event['d']['emoji']['id'],
+			) if event['d']['emoji']['id'] != None else event['d']['emoji']['name'],
+		)
+		await __main__.client.send_message(schan, embed=e)
+	elif event['t'] == 'MESSAGE_REACTION_REMOVE':
+		if __main__.logdisabled('reaction_removeuncached', mchan.server):
+			return
+		# Check if the message is in the cache and return if it is
+		if discord.utils.find(lambda m: m.id == event['d']['message_id'], __main__.client.messages) \
+		!= None:
+			return
+
+		schan = __main__.getspecialchannel(mchan.server)
+		athr = mchan.server.get_member(event['d']['user_id'])
+		mdetails = athr.mention
+		e = discord.Embed(
+			title='REACTION REMOVED FROM UNCACHED MESSAGE IN {0.mention}'.format(mchan),
+			description=(
+				'Since this message is uncached, I can’t give you'
+				' any more information than its ID, author, and channel.'
+			),
+			colour=mchan.server.me.colour,
+		)
+		e.set_author(
+			name=athr.display_name,
+			icon_url=athr.avatar_url,
+			url=__main__.infourl(
+				(
+					'userid={uid}&messageid={mid}'
+				).format(
+					uid=athr.id,
+					mid=event['d']['message_id'],
+				),
+			)
+		)
+		e.add_field(
+			name='Member of Reaction',
+			value=mdetails,
+		)
+		e.add_field(
+			name='Reaction',
+			value=(
+				'<:{name}:{id}>'
+			).format(
+				name=event['d']['emoji']['name'],
+				id=event['d']['emoji']['id'],
+			) if event['d']['emoji']['id'] != None else event['d']['emoji']['name'],
+		)
+		await __main__.client.send_message(schan, embed=e)
+	elif event['t'] == 'MESSAGE_REACTION_REMOVE_ALL':
+		if __main__.logdisabled('reaction_clearuncached', mchan.server):
+			return
+		# Check if the message is in the cache and return if it is
+		if discord.utils.find(lambda m: m.id == event['d']['message_id'], __main__.client.messages) \
+		!= None:
+			return
+
+		schan = __main__.getspecialchannel(mchan.server)
+		e = discord.Embed(
+			title=(
+				'REACTIONS CLEARED FROM UNCACHED MESSAGE'
+				' IN {0.mention}'
+			).format(mchan),
+			url=__main__.infourl('messageid=' + event['d']['message_id']),
+			description=(
+				'Since this message is uncached, I can’t give you'
+				' any more information than its ID and its channel.'
+			),
+			colour=mchan.server.me.colour,
+		)
+		await __main__.client.send_message(schan, embed=e)
