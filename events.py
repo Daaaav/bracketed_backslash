@@ -941,3 +941,15 @@ async def on_server_role_create(r):
 		colour=r.colour,
 	)
 	await __main__.client.send_message(schan, embed=embed)
+
+async def on_server_role_delete(r):
+	if __main__.logdisabled('role_delete', r.server):
+		return
+	schan = __main__.getspecialchannel(r.server)
+	embed = discord.Embed(
+		title='ROLE REMOVE',
+		description=utils.mdspecialchars(r.name),
+		colour=r.colour,
+	)
+	embed.add_field(name='Original Creation Time', value=str(r.created_at))
+	await __main__.client.send_message(schan, embed=embed)

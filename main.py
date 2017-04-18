@@ -146,19 +146,6 @@ def shadow(auth=None, aliases=None, servonly=False):
 	return living_shadow
 
 @client.event
-async def on_server_role_delete(r):
-	if logdisabled('role_delete', r.server):
-		return
-	schan = getspecialchannel(r.server)
-	embed = discord.Embed(
-		title='ROLE REMOVE',
-		description=utils.mdspecialchars(r.name),
-		colour=r.colour,
-	)
-	embed.add_field(name='Original Creation Time', value=str(r.created_at))
-	await client.send_message(schan, embed=embed)
-
-@client.event
 async def on_server_role_update(before, after):
 	specialchannel = getspecialchannel(before.server)
 	# If the name changed
