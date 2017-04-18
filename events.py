@@ -1134,3 +1134,35 @@ async def on_reaction_remove(r, u):
 		),
 	)
 	await __main__.client.send_message(specialchannel, embed=embed)
+
+async def on_reaction_clear(m, rs):
+	if __main__.isprivatemessage(m.server) or __main__.logdisabled('reaction_clear', m.server):
+		return
+	schan = __main__.getspecialchannel(m.server)
+	rlist = ''
+	for r in rs:
+		try:
+			name = r.emoji.name
+			cemt = True
+		except AttributeError:
+			name = r.emoji
+			cemt = False
+		rlist += str(r.count) + ' '
+		if cemt:
+			rlist += '{name} ({id})\n'.format(
+					name=str(r.emoji),
+					id=r.emoji.id,
+				)
+		else:
+			rlist += name + '\n'
+	embed = discord.Embed(
+		title='REACTIONS CLEARED FROM MESSAGE (SENT {rtime} IN {c.mention})'.format(
+			rtime=__main__.reltime(time.mktime(m.timestamp.timetuple())),
+			c=m.channel,
+		),
+		description=m.content,
+		colour=m.author.colour,
+	)
+	embed.add_field(name='Message ID (temp)', value=m.id)
+	embed.add_field(name='Reactions', value=rlist)
+	await __main__.client.send_message(schan, embed=embed)
