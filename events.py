@@ -875,3 +875,16 @@ async def on_member_update(before, after):
 		embed.add_field(name='Older Avatar URL: None' if before.avatar_url == '' else 'Older Avatar URL (Thumbnail)', value='No Older Avatar URL' if before.avatar_url == '' else before.avatar_url)
 		embed.add_field(name='Newer Avatar URL: None' if after.avatar_url == '' else 'Newer Avatar URL (Inset Image)', value='No Newer Avatar URL' if after.avatar_url == '' else after.avatar_url, inline=False)
 		await __main__.client.send_message(specialchannel, embed=embed)
+
+async def on_member_join(member):
+	if not __main__.logdisabled('member_join', member.server):
+		specialchannel = __main__.getspecialchannel(member.server)
+		embed = discord.Embed(description='➡<@!{id}> ({id}) joined server'.format(id=member.id), colour=member.server.me.colour, timestamp=datetime.datetime.now())
+		embed.add_field(
+			name='This server now has',
+			value=str(member.server.member_count) + ' members',
+		)
+		embed.set_author(name=member.display_name)
+		embed.set_thumbnail(url=member.avatar_url)
+		await __main__.client.send_message(specialchannel, embed=embed)
+	await __main__.newmemberroles(member, specialchannel, False)

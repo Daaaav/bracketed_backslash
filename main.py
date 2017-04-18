@@ -147,20 +147,6 @@ def shadow(auth=None, aliases=None, servonly=False):
 	return living_shadow
 
 @client.event
-async def on_member_join(member):
-	if not logdisabled('member_join', member.server):
-		specialchannel = getspecialchannel(member.server)
-		embed = discord.Embed(description='➡<@!{id}> ({id}) joined server'.format(id=member.id), colour=member.server.me.colour, timestamp=datetime.datetime.now())
-		embed.add_field(
-			name='This server now has',
-			value=str(member.server.member_count) + ' members',
-		)
-		embed.set_author(name=member.display_name)
-		embed.set_thumbnail(url=member.avatar_url)
-		await client.send_message(specialchannel, embed=embed)
-	await newmemberroles(member, specialchannel, False)
-
-@client.event
 async def on_member_remove(member):
 	if not logdisabled('member_remove', member.server):
 		specialchannel = getspecialchannel(member.server)
