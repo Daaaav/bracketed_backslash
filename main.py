@@ -146,19 +146,6 @@ def shadow(auth=None, aliases=None, servonly=False):
 	return living_shadow
 
 @client.event
-async def on_channel_create(c):
-	if c.type == discord.ChannelType.private or logdisabled('channel_add', c.server):
-		return
-	schan = getspecialchannel(c.server)
-	embed = discord.Embed(
-		description='{type} CHANNEL ADD\n{0.name} ({0.id})'.format(
-			c,
-			type=str(c.type).upper(),
-		),
-	)
-	await client.send_message(schan, embed=embed)
-
-@client.event
 async def on_channel_delete(c):
 	if c.type == discord.ChannelType.private or logdisabled('channel_remove', c.server):
 		return

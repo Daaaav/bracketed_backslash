@@ -1299,3 +1299,15 @@ async def on_voice_state_update(old, new):
 			# Left the voice channel
 			await __main__.client.delete_channel_permissions(vtc, new)
 			break
+
+async def on_channel_create(c):
+	if c.type == discord.ChannelType.private or __main__.logdisabled('channel_add', c.server):
+		return
+	schan = __main__.getspecialchannel(c.server)
+	embed = discord.Embed(
+		description='{type} CHANNEL ADD\n{0.name} ({0.id})'.format(
+			c,
+			type=str(c.type).upper(),
+		),
+	)
+	await __main__.client.send_message(schan, embed=embed)
