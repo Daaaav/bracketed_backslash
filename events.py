@@ -1585,3 +1585,15 @@ async def on_server_join(serv):
 	)
 	em.set_image(url=serv.icon_url)
 	await __main__.client.send_message(opserver_botservers, embed=em)
+
+async def on_server_remove(serv):
+	em = discord.Embed(
+		title='BOT REMOVED FROM SERVER',
+		description='**{name}** ({id})'.format(
+			name=utils.mdspecialchars(serv.name),
+			id=serv.id,
+		),
+		colour=opserver.me.colour,
+	)
+	em.set_image(url=serv.icon_url)
+	await __main__.client.send_message(opserver_botservers, embed=em)

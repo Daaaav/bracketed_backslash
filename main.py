@@ -145,19 +145,6 @@ def shadow(auth=None, aliases=None, servonly=False):
 		commands[name] = [func, auth, aliases, servonly]
 	return living_shadow
 
-@client.event
-async def on_server_remove(serv):
-	em = discord.Embed(
-		title='BOT REMOVED FROM SERVER',
-		description='**{name}** ({id})'.format(
-			name=utils.mdspecialchars(serv.name),
-			id=serv.id,
-		),
-		colour=events.opserver.me.colour,
-	)
-	em.set_image(url=serv.icon_url)
-	await client.send_message(events.opserver_botservers, embed=em)
-
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.
