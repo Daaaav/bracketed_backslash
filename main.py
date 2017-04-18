@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
 from aiohttp import ClientSession
-import datetime
 import inspect
 import importlib
 import json
@@ -145,20 +144,6 @@ def shadow(auth=None, aliases=None, servonly=False):
 			name = name[1:]
 		commands[name] = [func, auth, aliases, servonly]
 	return living_shadow
-
-@client.event
-async def on_member_remove(member):
-	if not logdisabled('member_remove', member.server):
-		specialchannel = getspecialchannel(member.server)
-		embed = discord.Embed(description='🚪<@!{id}> ({id}) removed from server'.format(id=member.id), colour=member.colour, timestamp=datetime.datetime.now())
-		embed.add_field(name='Originally joined server', value=reltime(time.mktime(member.joined_at.timetuple())))
-		embed.add_field(
-			name='This server now has',
-			value=str(member.server.member_count) + ' members',
-		)
-		embed.set_author(name=member.display_name, icon_url=member.avatar_url)
-		embed.set_thumbnail(url=member.avatar_url)
-		await client.send_message(specialchannel, embed=embed)
 
 @client.event
 async def on_member_ban(member):

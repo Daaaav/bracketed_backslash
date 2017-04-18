@@ -888,3 +888,16 @@ async def on_member_join(member):
 		embed.set_thumbnail(url=member.avatar_url)
 		await __main__.client.send_message(specialchannel, embed=embed)
 	await __main__.newmemberroles(member, specialchannel, False)
+
+async def on_member_remove(member):
+	if not __main__.logdisabled('member_remove', member.server):
+		specialchannel = __main__.getspecialchannel(member.server)
+		embed = discord.Embed(description='🚪<@!{id}> ({id}) removed from server'.format(id=member.id), colour=member.colour, timestamp=datetime.datetime.now())
+		embed.add_field(name='Originally joined server', value=__main__.reltime(time.mktime(member.joined_at.timetuple())))
+		embed.add_field(
+			name='This server now has',
+			value=str(member.server.member_count) + ' members',
+		)
+		embed.set_author(name=member.display_name, icon_url=member.avatar_url)
+		embed.set_thumbnail(url=member.avatar_url)
+		await __main__.client.send_message(specialchannel, embed=embed)
