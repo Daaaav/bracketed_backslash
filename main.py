@@ -23,6 +23,7 @@ import asyncio
 from aiohttp import ClientSession
 import datetime
 import inspect
+import importlib
 import json
 import logging
 import math
@@ -60,6 +61,8 @@ logging.basicConfig(level=logging.INFO)
 client = discord.Client(max_messages=999999999) # defines all client.* commands
 
 def load_events():
+	global events
+	events = importlib.reload(events)
 	for i in inspect.getmembers(events, inspect.isfunction):
 		client.event(i[1])
 
