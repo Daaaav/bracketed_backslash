@@ -146,14 +146,6 @@ def shadow(auth=None, aliases=None, servonly=False):
 	return living_shadow
 
 @client.event
-async def on_member_unban(server, user):
-	if logdisabled('member_unban', server):
-		return
-	specialchannel = getspecialchannel(server)
-	msg = '**`>`**<:doormat:239361673532669953>`user` **``{}``**`#{}` `({}) unbanned from server {} ({})`'.format(wrapbackticks(user.name), user.discriminator, user.id, server.name, server.id)
-	await client.send_message(specialchannel, msg)
-
-@client.event
 async def on_typing(channel, user, when):
 	try:
 		specialchannel = getspecialchannel(channel.server)

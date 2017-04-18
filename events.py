@@ -909,3 +909,10 @@ async def on_member_ban(member):
 
 	msg = '**`>`**👞🚪⛔`user` **``{}``**`#{}` `({}) banned from server {} ({})`'.format(__main__.wrapbackticks(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	await __main__.client.send_message(specialchannel, msg)
+
+async def on_member_unban(server, user):
+	if __main__.logdisabled('member_unban', server):
+		return
+	specialchannel = __main__.getspecialchannel(server)
+	msg = '**`>`**<:doormat:239361673532669953>`user` **``{}``**`#{}` `({}) unbanned from server {} ({})`'.format(__main__.wrapbackticks(user.name), user.discriminator, user.id, server.name, server.id)
+	await __main__.client.send_message(specialchannel, msg)
