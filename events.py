@@ -1272,3 +1272,30 @@ async def on_server_emojis_update(b, a):
 	embed = discord.Embed(description=desc)
 	embed.add_field(name='Emotes', value=elist)
 	await __main__.client.send_message(schan, embed=embed)
+
+async def on_voice_state_update(old, new):
+	if old.voice.voice_channel == new.voice.voice_channel:
+		return
+
+	vtcs = [
+		new.server.get_channel(i) for i in config.get_s(
+			'voicechat_channel_text', new.server.id,
+		)
+	]
+	vvcs = [
+		new.server.get_channel(i) for i in config.get_s(
+			'voicechat_channel_voice', new.server.id,
+		)
+	]
+
+	for vtc, vvc in zip(vtcs, vvcs):
+		if new.voice.voice_channel and new.voice.voice_channel == vvc:
+			# Joined the voice channel
+			ow = discord.PermissionOverwrite(read_messages=True)
+			await __main__.client.edit_channel_permissions(vtc, new, ow)
+			break
+
+		if old.voice.voice_channel and old.voice.voice_channel == vvc:
+			# Left the voice channel
+			await __main__.client.delete_channel_permissions(vtc, new)
+			break
