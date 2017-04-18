@@ -1311,3 +1311,15 @@ async def on_channel_create(c):
 		),
 	)
 	await __main__.client.send_message(schan, embed=embed)
+
+async def on_channel_delete(c):
+	if c.type == discord.ChannelType.private or __main__.logdisabled('channel_remove', c.server):
+		return
+	schan = __main__.getspecialchannel(c.server)
+	embed = discord.Embed(
+		description='{type} CHANNEL REMOVE\n{0.name} ({0.id})'.format(
+			c,
+			type=str(c.type).upper(),
+		),
+	)
+	await __main__.client.send_message(schan, embed=embed)
