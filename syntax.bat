@@ -13,7 +13,7 @@ REM  Unfortunately Pyflakes doesn't understand exec(compile(open().read()))
 ) >concatenatedmain.py
 
 REM  Nor import. But hey, this works.
-C:\Users\U\AppData\Local\Programs\Python\Python35\Scripts\pyflakes concatenatedmain.py col.py config.py emb.py images.py utils.py events.py op_ids.py
+forfiles /m *.py /c "cmd /c if not @file==\"main.py\" if not @file==\"functions.py\" if not @file==\"commands.py\" (C:\Users\U\AppData\Local\Programs\Python\Python35\Scripts\pyflakes @file)"
 
 echo ----
 pause
