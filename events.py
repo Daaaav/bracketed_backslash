@@ -534,6 +534,7 @@ async def on_message(m):
 	command != 'selfban':
 		return
 	if not priv and \
+	not __main__.is_mod(m.author) and \
 	not config.get_s('alloweverywhere', m.server.id) and \
 	not m.channel.id in config.get_s('allowedchannels', m.server.id):
 		return
