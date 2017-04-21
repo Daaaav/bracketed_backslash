@@ -318,7 +318,7 @@
 				{
 					"name": "getrawmessagecontent",
 					"short": "Gets the raw content of a message and its embeds.",
-					"extra": "**Syntax**: `\\getrawmessagecontent <CHANNEL> <MESSAGE ID>`\n\n\t`<CHANNEL>`: A channel mention.\n\t`<MESSAGE ID>`: The ID of the message."
+					"extra": "**Syntax**: `\\getrawmessagecontent [CHANNEL] <MESSAGE ID>`\n\n\t`[CHANNEL]`: A channel mention.\n\t`<MESSAGE ID>`: The ID of the message."
 				},
 				{
 					"name": "blacklist",

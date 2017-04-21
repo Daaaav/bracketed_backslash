@@ -1320,11 +1320,25 @@ async def version(client, message, **kwargs):
 async def getrawmessagecontent(client, message, **kwargs):
 	try:
 		argsplit = kwargs['arguments'].split(' ', 1)
-		arg0 = argsplit[0]
-		arg1 = argsplit[1]
-		channelid = arg0[2:-1]
-		getchannel = client.get_channel(channelid)
-		getmessage = await client.get_message(getchannel, arg1)
+		if len(argsplit) == 1:
+			# Just the message ID, try finding it in all the channels
+			getmessage = None
+			for channel in message.server.channels:
+				try:
+					getmessage = await client.get_message(channel, argsplit[0])
+					break
+				except discord.errors.HTTPException:
+					# If I can/may not view this message, or it's
+					# not in this channel, then forget about it
+					pass
+			if getmessage == None:
+				raise KeyError("Not found")
+		else:
+			arg0 = argsplit[0]
+			arg1 = argsplit[1]
+			channelid = arg0[2:-1]
+			getchannel = client.get_channel(channelid)
+			getmessage = await client.get_message(getchannel, arg1)
 		content = '``{}``'.format(wrapbackticks(getmessage.content[:1900]))
 		await reply(message, content)
 		if getmessage.embeds != []:
@@ -1335,7 +1349,7 @@ async def getrawmessagecontent(client, message, **kwargs):
 		embed = emb.error('Invalid arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=kwargs['command']))
 	except IndexError:
 		embed = emb.error('Invalid amount of arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=kwargs['command']))
-	except discord.errors.HTTPException:
+	except (discord.errors.HTTPException, KeyError):
 		embed = emb.error('Invalid channel or message ID given. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=kwargs['command']))
 	await reply(message, emb=embed)
 
