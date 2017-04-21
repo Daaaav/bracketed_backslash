@@ -566,9 +566,7 @@ async def softban(client, message, **kwargs):
 		)
 		await client.remove_roles(targetmember,
 			discord.utils.get(message.server.roles, id='173240966575161344'), # nonsense-only
-			discord.utils.get(message.server.roles, id='216647716531339264'), # no general mentions
 			discord.utils.get(message.server.roles, id='222046096216686592'), # no cedule
-			discord.utils.get(message.server.roles, id='215954720555139073'), # no tts
 			discord.utils.get(message.server.roles, id='241183168269516800'), # no reactions
 		)
 		await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='220643748508467220')) # The banned role
@@ -582,7 +580,7 @@ async def softban(client, message, **kwargs):
 	embed = emb.success(':no_entry: <@{}> has been softbanned.'.format(targetmember.id))
 	await reply(message, content, emb=embed)
 
-@shadow(auth=is_mod, aliases=['nogenmen', 'nocedule', 'notts', 'noreact'])
+@shadow(auth=is_mod, aliases=['nocedule', 'noreact'])
 async def nononly(client, message, **kwargs):
 	if message.server.id != events.productionserver:
 		embed = emb.error(t['production_only'])
@@ -590,16 +588,12 @@ async def nononly(client, message, **kwargs):
 		return
 	roletoadd = {
 		'nononly': '173240966575161344',
-		'nogenmen': '216647716531339264',
 		'nocedule': '222046096216686592',
-		'notts': '215954720555139073',
 		'noreact': '241183168269516800',
 	}
 	rolelabel = {
 		'nononly': 'Nonsense-Only',
-		'nogenmen': 'No General Mentions',
 		'nocedule': 'No Custom Emotes/Direct Uploads/Link Embeds',
-		'notts': 'No TTS',
 		'noreact': 'No Reactions',
 	}
 	try:

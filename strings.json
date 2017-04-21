@@ -221,18 +221,8 @@
 					"extra": ""
 				},
 				{
-					"name": "nogenmen",
-					"short": "Adds to a member the `No General Mentions` Role.",
-					"extra": ""
-				},
-				{
 					"name": "nocedule",
 					"short": "Adds to a member the `No CE/DU/LE` role.",
-					"extra": ""
-				},
-				{
-					"name": "notts",
-					"short": "Adds to a member the `No TTS` role.",
 					"extra": ""
 				},
 				{
