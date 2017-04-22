@@ -2258,13 +2258,20 @@ async def testroleconditional(client, message, **kwargs):
 		splitargs = kwargs['arguments'].split(' ')
 
 		tgtmem = utils.match_input('member', splitargs[0], server=message.server)
+		if tgtmem == None:
+			tgtmem = message.author
 		embed = emb.success('Result: {}'.format(
-				utils.parseroleconditional(splitargs[1], message.author, tgtmem)
+				customcommands.parseroleconditional(
+					splitargs[1], message.author, tgtmem
+				)
 			)
 		)
 	except (AttributeError, IndexError):
 		embed = emb.error('Not enough arguments. See the `\help`')
-	except ValueError as e:
-		embed = emb.error('Error:\n{}'.format(str(e)))
+	except customcommands.InvalidExpression as e:
+		embed = emb.error('Invalid expression:\n{}'.format(str(e)))
+	except customcommands.UnexpectedExprParserState as e:
+		embed = emb.error('Unexpected parser state!\n{}'.format(str(e)))
+		raise
 		
 	await reply(message, emb=embed)

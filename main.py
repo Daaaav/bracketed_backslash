@@ -45,6 +45,7 @@ import events
 import images
 import op_ids
 import utils
+import customcommands
 
 op_ids.load()
 config.load()
