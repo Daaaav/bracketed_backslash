@@ -2254,15 +2254,15 @@ async def joinchannel(client, message, **kwargs):
 
 @shadow(servonly=True)
 async def testroleconditional(client, message, **kwargs):
-	splitargs = kwargs['arguments'].split(' ')
-
 	try:
+		splitargs = kwargs['arguments'].split(' ')
+
 		tgtmem = utils.match_input('member', splitargs[0], server=message.server)
 		embed = emb.success('Result: {}'.format(
 				utils.parseroleconditional(splitargs[1], message.author, tgtmem)
 			)
 		)
-	except IndexError:
+	except (AttributeError, IndexError):
 		embed = emb.error('Not enough arguments. See the `\help`')
 	except ValueError as e:
 		embed = emb.error('Error:\n{}'.format(str(e)))
