@@ -321,7 +321,7 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 						)
 
 	# Now just look at the terms we can solve without any brackets or fancy operators at all!
-	if condstring in ['any', 'true']:
+	if condstring in ('any', 'true'):
 		return True
 	if condstring == 'false':
 		return False
@@ -332,9 +332,9 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 	# .mod / .admin / .bot
 	m = re.match('^(?P<a>c(aller)?|t(arget)?)\.(?P<b>mod|admin|bot)$', condstring)
 	if m != None:
-		if m.group('a') in ['c', 'caller']:
+		if m.group('a') in ('c', 'caller'):
 			checkmember = caller
-		elif m.group('a') in ['t', 'target']:
+		elif m.group('a') in ('t', 'target'):
 			checkmember = target
 		else:
 			raise ValueError((
@@ -529,4 +529,3 @@ def bracketlevels(condstring):
 		raise ValueError('Invalid conditional string; mismatched brackets')
 
 	return output, bracketshighscore
-
