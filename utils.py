@@ -446,7 +446,7 @@ def solveroleconditionalarrays(terms, operators, caller, target):
 	# [ ~ ]
 	i = 0
 	while True:
-		if i >= (len(operators)-1):
+		if i > (len(operators)-1):
 			break
 
 		if operators[i] == '~':
@@ -460,7 +460,7 @@ def solveroleconditionalarrays(terms, operators, caller, target):
 	# [ & ]
 	i = 0
 	while True:
-		if i >= (len(operators)-1):
+		if i > (len(operators)-1):
 			break
 
 		if operators[i] == '&':
@@ -474,7 +474,7 @@ def solveroleconditionalarrays(terms, operators, caller, target):
 	# [ | ]
 	i = 0
 	while True:
-		if i >= (len(operators)-1):
+		if i > (len(operators)-1):
 			break
 
 		if operators[i] == '|':
