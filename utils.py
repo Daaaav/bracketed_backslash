@@ -400,6 +400,10 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 					'at start of expression'
 				).format(m.group(1))
 			)
+		# ARE there any operators?
+		m = re.match('(.*?)([\~\|\&])', condstring)
+		if m == None:
+			raise ValueError('Unknown term `{}`'.format(condstring))
 
 		# Okay, time to handle this expression!
 		return solveroleconditionalarrays(
