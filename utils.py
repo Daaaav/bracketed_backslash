@@ -490,7 +490,7 @@ def solveroleconditionalarrays(terms, operators, caller, target):
 		raise ValueError((
 				'Unexpected final term/operator array dimensions: {} {} '
 				'(should be 1 0).'
-				' op.[0]={}'.format(operators[0]) if len(operators) > 0 else ''
+				' op.(0)={}'.format(operators[0]) if len(operators) > 0 else ''
 			).format(len(terms_evaluated), len(operators))
 		)
 
