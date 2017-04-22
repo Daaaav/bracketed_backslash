@@ -3,6 +3,7 @@
 
 import datetime
 import time
+import re # TODO: Can be removed when parseroleconditional() is moved out
 
 import discord
 
@@ -237,3 +238,105 @@ def match_input(objtype, request, *, server=None, client=None):
 			tgt = namematched if namematched else namefound
 
 	return tgt
+
+def parseroleconditional(condstring, caller, target, recursivecall=False):
+	if not recursivecall:
+		# First make the brackets more manageable.
+		condstring, bracketshighscore = bracketlevels(condstring)
+
+		if bracketshighscore > -1:
+			for level in range(bracketshighscore, -1, -1):
+				levelexists = True
+				while levelexists:
+					m = re.search('\(\<{i}\>(.*?)\)\<{i}\>'.format(i=level),
+						condstring
+					)
+
+					if m == None:
+						levelexists = False
+
+					# No side effects, so if we say the same thing multiple
+					# times, we can replace them all at once!
+					condstring = condstring.replace(
+						m.group(0), parseroleconditional(
+							m.group(1),
+							caller,
+							target,
+							True
+						)
+					)
+	
+	# Now just look at the terms we can have without any brackets at all!
+	if condstring in ['any', 'true']:
+		return True
+	if condstring == 'false':
+		return False
+	if condstring in ['c.mod', 'caller.mod']:
+		return __main__.is_mod(caller)
+	if condstring in ['c.admin', 'caller.admin']:
+		return __main__.is_admin(caller)
+	if condstring in ['t.mod', 'target.mod']:
+		return __main__.is_mod(target)
+	if condstring in ['t.admin', 'target.admin']:
+		return __main__.is_admin(target)
+
+	m = re.match('^c(aller)?\.([0-9]+)$', condstring)
+	if m != None:
+		for role in caller.roles:
+			if role.id == m.group(2):
+				return True
+		return False
+
+	m = re.match('^t(arget)?\.([0-9]+)$', condstring)
+	if m != None:
+		for role in target.roles:
+			if role.id == m.group(2):
+				return True
+		return False
+
+	# At this point, we probably have something more exciting - like ~, & or |
+	while '~~' in condstring:
+		condstring = condstring.replace('~~', '')
+	condstring = condstring.replace('~', 'null~')
+
+	# That means we need to check whether this has the correct syntax.
+	# No two operators in a row?
+	m = re.match('(.*?)([\~\|\&]{2})', condstring)
+	if m != None:
+		raise ValueError('Syntax error at {}'.format(m.group(2)))
+	# No operator at the end of the line?
+	m = re.match('(.*?)[\~\|\&]$', condstring)
+	if m != None:
+		raise ValueError('Syntax error, unexpected end of expression')
+	# Nor at the beginning?
+	m = re.match('([\~\|\&])', condstring)
+	if m != None:
+		raise ValueError('Syntax error, unexpected {} at start of expression'.format(
+				m.group(1)
+			)
+		)
+	
+	# Okay, time to handle this expression!
+	raise ValueError('NYI - Expression too exciting!')
+
+def bracketlevels(condstring):
+	bracketslevel = 0
+	bracketshighscore = -1
+	output = ''
+
+	for c in condstring:
+		if c == '(':
+			output += '(<{}>'.format(bracketslevel)
+			if bracketslevel > bracketshighscore:
+				bracketshighscore = bracketslevel
+			bracketslevel += 1
+		elif c == ')':
+			bracketslevel -= 1
+			output += ')<{}>'.format(bracketslevel)
+		else:
+			output += c
+	
+	if bracketslevel != 0:
+		raise ValueError('Invalid conditional string; mismatched brackets')
+	
+	return output, bracketshighscore

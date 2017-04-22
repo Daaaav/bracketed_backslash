@@ -113,6 +113,11 @@
 					"name": "math",
 					"short": "Does real math with no arbitrary precision.",
 					"extra": "**Syntax**: `\\math <number> <operand> <number>`"
+				},
+				{
+					"name": "testroleconditional",
+					"short": "Gives the result of a given expression.",
+					"extra": "**Syntax**: `\\testroleconditional <targetmember> <expression>`\nFor more information about the expression system, please ask Dav or read the code, a documentation will come in the future. The system is also unfinished."
 				}
 			]
 		},
