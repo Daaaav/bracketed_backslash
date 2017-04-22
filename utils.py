@@ -254,17 +254,17 @@ def parseroleconditional(condstring, caller, target, recursivecall=False):
 
 					if m == None:
 						levelexists = False
-
-					# No side effects, so if we say the same thing multiple
-					# times, we can replace them all at once!
-					condstring = condstring.replace(
-						m.group(0), str(parseroleconditional(
-							m.group(1),
-							caller,
-							target,
-							True
-						)).lower()
-					)
+					else:
+						# No side effects, so if we say the same thing multiple
+						# times, we can replace them all at once!
+						condstring = condstring.replace(
+							m.group(0), str(parseroleconditional(
+								m.group(1),
+								caller,
+								target,
+								True
+							)).lower()
+						)
 
 	# Now just look at the terms we can have without any brackets at all!
 	if condstring in ['any', 'true']:
