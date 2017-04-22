@@ -264,7 +264,7 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 		~TERM           inverts TERM: true if TERM evaluates to false
 		.               example: ~c.mod returns true if the caller is not a moderator
 		TERMA&TERMB     true if both TERMA and TERMB evaluate to true
-		TERMA|TERMB     true if either TERMA or TERMB evaluates to false (or both ofc)
+		TERMA|TERMB     true if either TERMA or TERMB evaluates to true (or both ofc)
 		(TERM)          evaluate what is within brackets first
 		.               for example, ~(c.mod|t.mod) first checks whether either the caller
 		.               or target is a moderator, and then inverts the result of that.
