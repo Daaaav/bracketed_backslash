@@ -10,7 +10,7 @@ are doing! Use the `untested` branch instead. Or you can create your own
 branch.
 ## Things everyone should follow
 ### Documentation Style
-Make sure each line doesn’t exceed eighty characters, for maintainability.
+Make sure each line doesn’t exceed 100 characters, for maintainability.
 Markdown will concatenate each “block” of text not separated by a blank line
 into one big line, anyways.
 ### Code Style
