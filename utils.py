@@ -487,10 +487,14 @@ def solveroleconditionalarrays(terms, operators, caller, target):
 
 	# If everything went well, we now have an empty operators list, and a terms list with 1 bool
 	if len(terms_evaluated) != 1 or len(operators) != 0:
+		if len(operators) > 0:
+			extratext = ' first el of op is {}'.format(operators[0])
+		else:
+			extratext = ''
 		raise ValueError((
 				'Unexpected final term/operator array dimensions: {} {} '
 				'(should be 1 0).'
-				' op.(0)={}'.format(operators[0]) if len(operators) > 0 else ''
+				extratext
 			).format(len(terms_evaluated), len(operators))
 		)
 
