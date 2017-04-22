@@ -404,14 +404,19 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 		# Okay, time to handle this expression!
 		return solveroleconditionalarrays(
 			re.split('[\~\|\&]', condstring), # Split by operators: get list of terms
-			re.split('[^\~\|\&]+', condstring), # Split by terms: get list of operators
-			caller,
+			re.split('[^\~\|\&]+', stripterms(condstring)), # Split by terms: get list
+			caller,                                         #             of operators
 			target
 		)
 
 	# If we're here, it's not that the input consists of multiple terms with operators.
 	# I have to conclude that I have no idea what the it's supposed to mean.
 	raise ValueError('Unknown term `{}`'.format(condstring))
+
+def stripterms(condstring):
+	"""Strips the terms at the beginning and end of a conditional expression.
+	"""
+	return re.sub('^([^\~\|\&]+)|([^\~\|\&]+)$', '', condstring)
 
 def solveroleconditionalarrays(terms, operators, caller, target):
 	"""This function handles role conditional expressions which have operators in them.
