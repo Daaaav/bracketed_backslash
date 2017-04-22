@@ -2264,6 +2264,7 @@ async def testroleconditional(client, message, **kwargs):
 		)
 	except (AttributeError, IndexError):
 		embed = emb.error('Not enough arguments. See the `\help`')
+		raise
 	except ValueError as e:
 		embed = emb.error('Error:\n{}'.format(str(e)))
 		
