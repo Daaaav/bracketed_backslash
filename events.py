@@ -552,6 +552,7 @@ async def on_message(m):
 	if priv and command in config.get_s('disabledcommands'):
 		e = emb.error('This command is currently disabled.')
 		await __main__.reply(m, emb=e)
+		return
 
 	if command in __main__.commands:
 		func = __main__.commands[command]
