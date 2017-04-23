@@ -76,7 +76,7 @@ async def run(server, command, message, arguments, clean_arguments, invokesymbol
 		if com['target'] == 'self':
 			targetmember = message.author
 		elif com['target'] == 'input':
-			if arguments == None:
+			if arguments is None:
 				embed = emb.error(main.t['specify_user'])
 				await main.reply(message, emb=embed)
 				return
@@ -91,7 +91,9 @@ async def run(server, command, message, arguments, clean_arguments, invokesymbol
 		if not parseroleconditional(com['precondition'], message.author, targetmember):
 			embed = emb.error((
 					'You cannot do that. Maybe you are not allowed to use '
-					'this command, or you cannot use it on this member.'
+					'this command, or you cannot use it on {}.'
+				).format(
+					targetmember.mention
 				)
 			)
 			await main.reply(message, emb=embed)
