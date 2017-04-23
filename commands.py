@@ -2274,7 +2274,7 @@ async def testroleconditional(client, message, **kwargs):
 		embed = emb.error('Unexpected parser state!\n{}'.format(str(e)))
 		await reply(message, emb=embed)
 		raise
-		
+
 	await reply(message, emb=embed)
 
 @shadow(auth=is_admin, servonly=True)
@@ -2287,7 +2287,7 @@ async def addcustomrolecommand(client, message, **kwargs):
 		embed = emb.error('Invalid amount of arguments specified, please see the `\help`')
 		await reply(message, emb=embed)
 		return
-	
+
 	if splitargs[1] not in ('self', 'input'):
 		embed = emb.error('`{}` is invalid, please see the `\help`'.format(
 				utils.mdspecialchars(splitargs[1])
@@ -2314,7 +2314,7 @@ async def addcustomrolecommand(client, message, **kwargs):
 		takeroles = []
 	else:
 		takeroles = splitargs[4][1:-1].split(',')
-	
+
 	customcommands.add_custom_command(message.server, splitargs[0],
 		{
 			'type': 'role',
@@ -2325,7 +2325,7 @@ async def addcustomrolecommand(client, message, **kwargs):
 		}
 	)
 	customcommands.save()
-	
+
 	embed = emb.success('Successfully added command `\{}`'.format(
 			utils.mdspecialchars(splitargs[0])
 		)

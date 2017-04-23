@@ -118,6 +118,11 @@
 					"name": "testroleconditional",
 					"short": "Gives the result of a given expression.",
 					"extra": "**Syntax**: `\\testroleconditional <targetmember> <expression>`\nFor more information about the expression system, please ask Dav or read the code, a documentation will come in the future. The system is also unfinished."
+				},
+				{
+					"name": "addcustomrolecommand",
+					"short": "Add a custom command that can give or take roles in given conditions.",
+					"extra": "**Syntax**: `\\addcustomrolecommand <name> <target> <condition> <giveroles> <takeroles>`\nThis will add a command named <name> that gives roles <giveroles> and removes roles <takeroles> to/from <target> if <condition>.\n<target> can be either `self` or `input`. If `self`, then the command caller will have their roles changed, if `input`, then the caller can input a member representation.\n<giveroles> and <takeroles> are lists, surrounded with square brackets, and entries must be separated with commas.\n<condition>: (Insert link to wiki on gitgud?)\nExample: `\\addcustomrolecommand roleban input c.mod&~t.mod [98765] []`"
 				}
 			]
 		},
