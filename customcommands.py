@@ -146,7 +146,7 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 	"""Parses a role conditional expression and returns its result
 
 	condstring: An expression. Expressions work like this:
-	TERM = any | true | false | M.mod | M.admin | M.bot | M.<roleid> | ~TERM | TERM&TERM
+	TERM = any | true | false | self | M.mod | M.admin | M.bot | M.<roleid> | ~TERM | TERM&TERM
 	.       | TERM|TERM | (TERM)
 	M = c | caller | t | target
 
@@ -154,6 +154,7 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 		any             true
 		true            true
 		false           false
+		self            true if the caller is the same person as the target (else false)
 		caller.mod      true if caller is moderator (else false)
 		c.mod           identical
 		target.mod      true if target is moderator
@@ -188,7 +189,8 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 
 	caller: Member object which calls the command
 
-	target: Member object to which the command is applied. May be the same as caller
+	target: Member object to which the command is applied. May be the same as caller, may also
+	be None
 
 	(recursivecall: Skip certain steps because of recursive calls - do not use)
 
@@ -233,6 +235,8 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 		return True
 	if condstring == 'false':
 		return False
+	if condstring == 'self':
+		return caller == target
 	if recursivecall == 2 and condstring == 'null':
 		# This is used for ~, which takes 1 argument, not 2
 		return None
@@ -243,6 +247,12 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 		if m.group('a') in ('c', 'caller'):
 			checkmember = caller
 		elif m.group('a') in ('t', 'target'):
+			if target is None:
+				raise InvalidExpression((
+						'There is no target member, '
+						'but {} references one.'
+					).format(condstring)
+				)
 			checkmember = target
 		else:
 			raise UnexpectedExprParserState((
@@ -273,6 +283,12 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 		return False
 	m = re.match('^t(arget)?\.([0-9]+)$', condstring)
 	if m != None:
+		if target is None:
+			raise InvalidExpression((
+					'There is no target member, '
+					'but {} references one.'
+				).format(condstring)
+			)
 		for role in target.roles:
 			if role.id == m.group(2):
 				return True
