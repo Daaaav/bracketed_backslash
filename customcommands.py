@@ -6,12 +6,8 @@ import json
 import logging
 import re
 
-import __main__
-#from __main__ import reply, t
+import __main__ as main
 import utils
-
-reply = __main__.reply
-t = __main__.t
 
 class InvalidExpression(Exception):
 	"""Exception that's thrown when an expression is invalid.
@@ -76,8 +72,8 @@ async def run(server, command, message, arguments, clean_arguments, invokesymbol
 
 	if com['type'] == 'role':
 		if arguments == None:
-			embed = emb.error(t['specify_user'])
-			await reply(message, emb=embed)
+			embed = emb.error(main.t['specify_user'])
+			await main.reply(message, emb=embed)
 			return
 
 		# Who gets the role change?
@@ -87,8 +83,8 @@ async def run(server, command, message, arguments, clean_arguments, invokesymbol
 			try:
 				targetmember = utils.match_input('member', arguments, server=server)
 			except (AttributeError, TypeError):
-				embed = emb.error(t['specify_user'])
-				await reply(message, emb=embed)
+				embed = emb.error(main.t['specify_user'])
+				await main.reply(message, emb=embed)
 				return
 
 		# And are we allowed to do this?
@@ -98,11 +94,11 @@ async def run(server, command, message, arguments, clean_arguments, invokesymbol
 					'this command, or you cannot use it on this member.'
 				)
 			)
-			await reply(message, emb=embed)
+			await main.reply(message, emb=embed)
 			return
 
 		# Now let's apply the change.
-		await __main__.givetakeroles(
+		await main.givetakeroles(
 			targetmember, message.server, com['giverole'], com['takerole']
 		)
 
@@ -113,9 +109,9 @@ async def run(server, command, message, arguments, clean_arguments, invokesymbol
 				).format(
 					targetmember.mention,
 					's' if len(com['giverole']) > 0 else '',
-					__main__.listroles_id(com['giverole']),
+					main.listroles_id(com['giverole']),
 					's' if len(com['takerole']) > 0 else '',
-					__main__.listroles_id(com['takerole'])
+					main.listroles_id(com['takerole'])
 				)
 			)
 		elif len(com['giverole']) > 0:
@@ -124,7 +120,7 @@ async def run(server, command, message, arguments, clean_arguments, invokesymbol
 				).format(
 					targetmember.mention,
 					's' if len(com['giverole']) > 0 else '',
-					__main__.listroles_id(com['giverole'])
+					main.listroles_id(com['giverole'])
 				)
 			)
 		elif len(com['takerole']) > 0:
@@ -132,18 +128,18 @@ async def run(server, command, message, arguments, clean_arguments, invokesymbol
 					'Successfully taken the role{} {} from {}.'
 				).format(
 					's' if len(com['takerole']) > 0 else '',
-					__main__.listroles_id(com['takerole']),
+					main.listroles_id(com['takerole']),
 					targetmember.mention
 				)
 			)
 		else:
 			embed = emb.success('Successfully done nothing to {}’s roles.')
 
-		await reply(message, emb=embed)
+		await main.reply(message, emb=embed)
 
 	else:
 		embed = emb.error('Custom command type `{}` not supported!'.format(com['type']))
-		await reply(message, emb=embed)
+		await main.reply(message, emb=embed)
 
 def parseroleconditional(condstring, caller, target, recursivecall=0):
 	"""Parses a role conditional expression and returns its result
@@ -265,11 +261,11 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 			)
 
 		if m.group('b') == 'mod':
-			return __main__.is_mod(checkmember)
+			return main.is_mod(checkmember)
 		if m.group('b') == 'admin':
-			return __main__.is_admin(checkmember)
+			return main.is_admin(checkmember)
 		if m.group('b') == 'bot':
-			return __main__.is_bot(checkmember)
+			return main.is_bot(checkmember)
 
 		raise UnexpectedExprParserState((
 				'Internal error, property `{}` '
