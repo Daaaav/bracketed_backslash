@@ -31,9 +31,10 @@ def save():
 		json.dump(commands, outfile)
 
 def load():
+	global commands
 	try:
 		with open('customcommands.json', 'r') as infile:
-			commands[:] = json.load(infile)
+			commands = json.load(infile)
 	except FileNotFoundError:
 		logging.info('Did not find customcommands file so making a new one')
 		save()
