@@ -2295,8 +2295,8 @@ async def addcustomrolecommand(client, message, **kwargs):
 		)
 		await reply(message, emb=embed)
 		return
-	ma = re.match('^\[([0-9]+(\,[0-9]+)?)?\]$', splitargs[3])
-	mb = re.match('^\[([0-9]+(\,[0-9]+)?)?\]$', splitargs[4])
+	ma = re.match('^\[([0-9]+(\,[0-9]+)*)?\]$', splitargs[3])
+	mb = re.match('^\[([0-9]+(\,[0-9]+)*)?\]$', splitargs[4])
 	if ma is None or mb is None:
 		embed = emb.error((
 				'The lists of roles must be surrounded with square '
