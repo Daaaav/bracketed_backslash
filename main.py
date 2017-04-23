@@ -49,6 +49,7 @@ import utils
 
 op_ids.load()
 config.load()
+customcommands.load()
 
 # set bot version
 botversion = '1.0'
