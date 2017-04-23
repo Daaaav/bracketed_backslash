@@ -3,6 +3,7 @@
 
 import emb
 import json
+import logging
 import re
 
 import __main__
