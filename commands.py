@@ -2272,6 +2272,62 @@ async def testroleconditional(client, message, **kwargs):
 		embed = emb.error('Invalid expression:\n{}'.format(str(e)))
 	except customcommands.UnexpectedExprParserState as e:
 		embed = emb.error('Unexpected parser state!\n{}'.format(str(e)))
+		await reply(message, emb=embed)
 		raise
 		
+	await reply(message, emb=embed)
+
+@shadow(auth=is_admin, servonly=True)
+async def addcustomrolecommand(client, message, **kwargs):
+	try:
+		splitargs = kwargs['arguments'].split(' ')
+
+		splitargs[4]
+	except (AttributeError, IndexError):
+		embed = emb.error('Invalid amount of arguments specified, please see the `\help`')
+		await reply(message, emb=embed)
+		return
+	
+	if splitargs[1] not in ('self', 'input'):
+		embed = emb.error('`{}` is invalid, please see the `\help`'.format(
+				utils.mdspecialchars(splitargs[1])
+			)
+		)
+		await reply(message, emb=embed)
+		return
+	ma = re.match('^\[([0-9]+(\,[0-9]+))?\]$', splitargs[3])
+	mb = re.match('^\[([0-9]+(\,[0-9]+))?\]$', splitargs[4])
+	if ma is None or mb is None:
+		embed = emb.error((
+				'The lists of roles must be surrounded with square '
+				'brackets, and entries must be separated with commas.'
+			)
+		)
+		await reply(message, emb=embed)
+		return
+	if splitargs[3] == '[]':
+		giveroles = []
+	else:
+		giveroles = splitargs[3][1:-1].split(',')
+
+	if splitargs[4] == '[]':
+		takeroles = []
+	else:
+		takeroles = splitargs[4][1:-1].split(',')
+	
+	customcommands.add_custom_command(message.server, splitargs[0],
+		{
+			'type': 'role',
+			'precondition': splitargs[2],
+			'target': splitargs[1],
+			'giverole': giveroles,
+			'takerole': takeroles
+		}
+	)
+	customcommands.save()
+	
+	embed = emb.success('Successfully added command `\{}`'.format(
+			utils.mdspecialchars(splitargs[0])
+		)
+	)
 	await reply(message, emb=embed)

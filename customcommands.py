@@ -2,7 +2,7 @@
 # encoding=utf-8
 
 import emb
-#import json
+import json
 import re
 
 import __main__
@@ -25,6 +25,33 @@ class UnexpectedExprParserState(Exception):
 
 commands = {}
 
+
+def save():
+	with open('customcommands.json', 'w') as outfile:
+		json.dump(commands, outfile)
+
+def load():
+	try:
+		with open('customcommands.json', 'r') as infile:
+			commands = json.load(infile)
+	except FileNotFoundError:
+		logging.info('Did not find customcommands file so making a new one')
+		save()
+
+def add_custom_command(server, command, dictionary):
+	"""Add a custom command. Assumes non-DM, assumes the command doesn't already exist
+	(otherwise it'll just be overwritten).
+	"""
+	if server.id not in commands:
+		commands[server.id] = {}
+	commands[server.id][command] = dictionary
+
+def remove_custom_command(server, command):
+	"""Remove a custom command. Assumes non-DM, assumes the command exists.
+	"""
+	if server.id not in commands:
+		return
+	del commands[server.id][command]
 
 def exists(server, command):
 	"""Returns True if the given custom command exists on the given server, False if not.
@@ -52,7 +79,7 @@ async def run(server, command, message, arguments, clean_arguments, invokesymbol
 		# Who gets the role change?
 		if com['target'] == 'self':
 			targetmember = message.author
-		elif com['target'] == 'given':
+		elif com['target'] == 'input':
 			try:
 				targetmember = utils.match_input('member', arguments, server=server)
 			except (AttributeError, TypeError):
