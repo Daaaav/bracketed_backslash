@@ -72,15 +72,14 @@ async def run(server, command, message, arguments, clean_arguments, invokesymbol
 	com = commands[server.id][command]
 
 	if com['type'] == 'role':
-		if arguments == None:
-			embed = emb.error(main.t['specify_user'])
-			await main.reply(message, emb=embed)
-			return
-
 		# Who gets the role change?
 		if com['target'] == 'self':
 			targetmember = message.author
 		elif com['target'] == 'input':
+			if arguments == None:
+				embed = emb.error(main.t['specify_user'])
+				await main.reply(message, emb=embed)
+				return
 			try:
 				targetmember = utils.match_input('member', arguments, server=server)
 			except (AttributeError, TypeError):
