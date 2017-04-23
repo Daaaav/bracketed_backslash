@@ -122,7 +122,7 @@
 				{
 					"name": "addcustomrolecommand",
 					"short": "Add a custom command that can give or take roles in given conditions.",
-					"extra": "**Syntax**: `\\addcustomrolecommand <name> <target> <condition> <giveroles> <takeroles>`\nThis will add a command named <name> that gives roles <giveroles> and removes roles <takeroles> to/from <target> if <condition>.\n<target> can be either `self` or `input`. If `self`, then the command caller will have their roles changed, if `input`, then the caller can input a member representation.\n<giveroles> and <takeroles> are lists, surrounded with square brackets, and entries must be separated with commas.\n<condition>: (Insert link to wiki on gitgud?)\nExample: `\\addcustomrolecommand roleban input c.mod&~t.mod [98765] []`"
+					"extra": "**Syntax**: `\\addcustomrolecommand <name> <target> <condition> <giveroles> <takeroles>`\nThis will add a command named <name> that gives roles <giveroles> and removes roles <takeroles> to/from <target> if <condition>.\n<target> can be either `self` or `input`. If `self`, then the command caller will have their roles changed, if `input`, then the caller can input a member representation.\n<giveroles> and <takeroles> are lists, surrounded with square brackets, and entries must be separated with commas.\n<condition>: See https://gitgud.io/infoteddy/bracketed_backslash/wikis/custom-commands\nExample: `\\addcustomrolecommand roleban input c.mod&~t.mod [98765] []`"
 				}
 			]
 		},
