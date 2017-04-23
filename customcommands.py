@@ -110,9 +110,9 @@ async def run(server, command, message, arguments, clean_arguments, invokesymbol
 					'and took the role{} {}.'
 				).format(
 					targetmember.mention,
-					's' if len(com['giverole']) > 0 else '',
+					's' if len(com['giverole']) > 1 else '',
 					main.listroles_id(com['giverole']),
-					's' if len(com['takerole']) > 0 else '',
+					's' if len(com['takerole']) > 1 else '',
 					main.listroles_id(com['takerole'])
 				)
 			)
@@ -121,7 +121,7 @@ async def run(server, command, message, arguments, clean_arguments, invokesymbol
 					'Successfully given {} the role{} {}.'
 				).format(
 					targetmember.mention,
-					's' if len(com['giverole']) > 0 else '',
+					's' if len(com['giverole']) > 1 else '',
 					main.listroles_id(com['giverole'])
 				)
 			)
@@ -129,13 +129,16 @@ async def run(server, command, message, arguments, clean_arguments, invokesymbol
 			embed = emb.success((
 					'Successfully taken the role{} {} from {}.'
 				).format(
-					's' if len(com['takerole']) > 0 else '',
+					's' if len(com['takerole']) > 1 else '',
 					main.listroles_id(com['takerole']),
 					targetmember.mention
 				)
 			)
 		else:
-			embed = emb.success('Successfully done nothing to {}’s roles.')
+			embed = emb.success('Successfully done nothing to {}’s roles.'.format(
+					targetmember.mention
+				)
+			)
 
 		await main.reply(message, emb=embed)
 
@@ -251,7 +254,7 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 			if target is None:
 				raise InvalidExpression((
 						'There is no target member, '
-						'but {} references one.'
+						'but `{}` references one.'
 					).format(condstring)
 				)
 			checkmember = target
@@ -287,7 +290,7 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 		if target is None:
 			raise InvalidExpression((
 					'There is no target member, '
-					'but {} references one.'
+					'but `{}` references one.'
 				).format(condstring)
 			)
 		for role in target.roles:
@@ -329,7 +332,10 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 		# ARE there any operators? We're expecting at least something right now...
 		m = re.match('(.*?)([\~\|\&])', condstring)
 		if m == None:
-			raise InvalidExpression('Unknown term `{}`'.format(condstring))
+			raise InvalidExpression('Unknown term `{}`'.format(
+					utils.mdspecialchars(condstring)
+				)
+			)
 
 		# Okay, time to handle this expression!
 		return solveroleconditionalarrays(

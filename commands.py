@@ -2315,6 +2315,22 @@ async def addcustomrolecommand(client, message, **kwargs):
 	else:
 		takeroles = splitargs[4][1:-1].split(',')
 
+	if customcommands.exists(message.server, splitargs[0]):
+		embed = emb.error('The custom command `{}` already exists!'.format(
+				utils.mdspecialchars(splitargs[0])
+			)
+		)
+		await reply(message, emb=embed)
+		return
+
+	if splitargs[0] in commands:
+		embed = emb.error('`{}` is already a built-in [\\] command!'.format(
+				utils.mdspecialchars(splitargs[0])
+			)
+		)
+		await reply(message, emb=embed)
+		return
+
 	customcommands.add_custom_command(message.server, splitargs[0],
 		{
 			'type': 'role',
