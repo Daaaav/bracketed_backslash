@@ -2323,9 +2323,17 @@ async def addcustomrolecommand(client, message, **kwargs):
 		await reply(message, emb=embed)
 		return
 
-	if splitargs[0] in commands:
-		embed = emb.error('`{}` is already a built-in [\\] command!'.format(
-				utils.mdspecialchars(splitargs[0])
+	builtin_alias_exists = False
+
+	for c, p in commands.items():
+		if p[2] is not None and splitargs[0] in p[2]:
+			builtin_alias_exists = True
+			break
+
+	if builtin_alias_exists or splitargs[0] in commands:
+		embed = emb.error('`{}` is already a built-in {} command!'.format(
+				utils.mdspecialchars(splitargs[0]),
+				utils.mdspecialchars('[\]')
 			)
 		)
 		await reply(message, emb=embed)
@@ -2344,6 +2352,27 @@ async def addcustomrolecommand(client, message, **kwargs):
 
 	embed = emb.success('Successfully added command `\{}`'.format(
 			utils.mdspecialchars(splitargs[0])
+		)
+	)
+	await reply(message, emb=embed)
+
+@shadow(auth=is_admin, servonly=True)
+async def removecustomcommand(client, message, **kwargs):
+	if kwargs['arguments'] is None:
+		embed = emb.error('Please supply the name of the command to remove.')
+		await reply(message, emb=embed)
+		return
+
+	if not customcommands.exists(message.server, kwargs['arguments']):
+		embed = emb.error('The custom command to remove doesn’t exist.')
+		await reply(message, emb=embed)
+		return
+
+	customcommands.remove_custom_command(message.server, kwargs['arguments'])
+	customcommands.save()
+
+	embed = emb.success('Command `\{}` has been removed.'.format(
+			utils.mdspecialchars(kwargs['arguments'])
 		)
 	)
 	await reply(message, emb=embed)
