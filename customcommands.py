@@ -7,8 +7,11 @@ import logging
 import re
 
 import __main__
-from __main__ import reply, t
+#from __main__ import reply, t
 import utils
+
+reply = __main__.reply
+t = __main__.t
 
 class InvalidExpression(Exception):
 	"""Exception that's thrown when an expression is invalid.
