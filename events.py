@@ -11,6 +11,7 @@ import discord
 
 import __main__
 import config
+import customcommands
 import emb
 import op_ids
 import utils
@@ -556,6 +557,16 @@ async def on_message(m):
 
 	if command in __main__.commands:
 		func = __main__.commands[command]
+	elif customcommands.exists(m.server, command):
+		try:
+			await customcommands.run(
+				m.server, command, m, arguments, clean_arguments, invokesymbol
+			)
+		except Exception:
+			e = emb.error(__main__.t['generic_error'])
+			await __main__.reply(m, emb=e)
+			raise
+		return
 	else:
 		# Check if it's an alias
 		for c, p in __main__.commands.items():

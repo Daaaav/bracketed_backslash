@@ -1,9 +1,12 @@
 #!/usr/bin/python3.5
 # encoding=utf-8
 
+import emb
+#import json
 import re
 
 import __main__
+from __main__ import reply, t
 import utils
 
 class InvalidExpression(Exception):
@@ -19,6 +22,97 @@ class UnexpectedExprParserState(Exception):
 	"""
 	pass
 
+
+commands = {}
+
+
+def exists(server, command):
+	"""Returns True if the given custom command exists on the given server, False if not.
+	"""
+	if server == None:
+		return False
+	if server.id not in commands:
+		return False
+	if command not in commands[server.id]:
+		return False
+	return True
+
+async def run(server, command, message, arguments, clean_arguments, invokesymbol):
+	"""Run the given custom command. Assumes that you checked if the command exists, and that
+	this isn't in a direct message conversation.
+	"""
+	com = commands[server.id][command]
+
+	if com['type'] == 'role':
+		if arguments == None:
+			embed = emb.error(t['specify_user'])
+			await reply(message, emb=embed)
+			return
+
+		# Who gets the role change?
+		if com['target'] == 'self':
+			targetmember = message.author
+		elif com['target'] == 'given':
+			try:
+				targetmember = utils.match_input('member', arguments, server=server)
+			except (AttributeError, TypeError):
+				embed = emb.error(t['specify_user'])
+				await reply(message, emb=embed)
+				return
+
+		# And are we allowed to do this?
+		if not parseroleconditional(com['precondition'], message.author, targetmember):
+			embed = emb.error((
+					'You cannot do that. Maybe you are not allowed to use '
+					'this command, or you cannot use it on this member.'
+				)
+			)
+			await reply(message, emb=embed)
+			return
+
+		# Now let's apply the change.
+		await __main__.givetakeroles(
+			targetmember, message.server, com['giverole'], com['takerole']
+		)
+
+		if len(com['giverole']) > 0 and len(com['takerole']) > 0:
+			embed = emb.success((
+					'Successfully given {} the role{} {} '
+					'and took the role{} {}.'
+				).format(
+					targetmember.mention,
+					's' if len(com['giverole']) > 0 else '',
+					__main__.listroles_id(com['giverole']),
+					's' if len(com['takerole']) > 0 else '',
+					__main__.listroles_id(com['takerole'])
+				)
+			)
+		elif len(com['giverole']) > 0:
+			embed = emb.success((
+					'Successfully given {} the role{} {}.'
+				).format(
+					targetmember.mention,
+					's' if len(com['giverole']) > 0 else '',
+					__main__.listroles_id(com['giverole'])
+				)
+			)
+		elif len(com['takerole']) > 0:
+			embed = emb.success((
+					'Successfully taken the role{} {} from {}.'
+				).format(
+					's' if len(com['takerole']) > 0 else '',
+					__main__.listroles_id(com['takerole']),
+					targetmember.mention
+				)
+			)
+		else:
+			embed = emb.success('Successfully done nothing to {}’s roles.')
+
+		await reply(message, emb=embed)
+
+	else:
+		embed = emb.error('Custom command type `{}` not supported!'.format(com['type']))
+		await reply(message, emb=embed)
 
 def parseroleconditional(condstring, caller, target, recursivecall=0):
 	"""Parses a role conditional expression and returns its result
@@ -60,6 +154,8 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 		c.mod&false                Never - always false
 		any                        Always true
 		c.admin&target.bot         Calle is admin and target is bot
+
+	The order of operations is standard boolean logic: (brackets first), then ~, then &, then |.
 
 
 	caller: Member object which calls the command
