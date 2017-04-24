@@ -131,22 +131,6 @@ maineventloop = asyncio.get_event_loop()
 
 commands = {}
 
-def shadow(auth=None, aliases=None, servonly=False):
-	def living_shadow(func):
-		name = func.__name__
-		matchargs = [r'__[0-9a-f]{4}', name, re.IGNORECASE]
-		if re.match(*matchargs):
-			encodings = re.findall(*matchargs)
-			symbols = list(encodings)
-			for count, i in enumerate(symbols):
-				symbols[count] = chr(int(i[2:], 16))
-			for count, i in enumerate(encodings):
-				name = name.replace(encodings[count], symbols[count])
-		if name.startswith('_'):
-			name = name[1:]
-		commands[name] = [func, auth, aliases, servonly]
-	return living_shadow
-
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.
