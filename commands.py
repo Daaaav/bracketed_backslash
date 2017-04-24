@@ -583,36 +583,6 @@ async def findc(client, message, **kwargs):
 	)
 	await reply(message, emb=em)
 
-@shadow(auth=is_mod, aliases=['nocedule', 'noreact'])
-async def nononly(client, message, **kwargs):
-	if message.server.id != events.productionserver:
-		embed = emb.error(t['production_only'])
-		await reply(message, emb=embed)
-		return
-	roletoadd = {
-		'nononly': '173240966575161344',
-		'nocedule': '222046096216686592',
-		'noreact': '241183168269516800',
-	}
-	rolelabel = {
-		'nononly': 'Nonsense-Only',
-		'nocedule': 'No Custom Emotes/Direct Uploads/Link Embeds',
-		'noreact': 'No Reactions',
-	}
-	try:
-		targetmember = utils.match_input(
-			'member', kwargs['arguments'], server=message.server,
-		)
-		await client.add_roles(targetmember, discord.utils.get(message.server.roles, id=roletoadd[kwargs['command']]))
-		events.latestroled = targetmember.id
-	except(AttributeError,TypeError):
-		embed = emb.error(t['specify_user'])
-		await reply(message, emb=embed)
-		return
-	content = targetmember.mention
-	embed = emb.success('Gave <@{}> the {} role.'.format(targetmember.id, rolelabel[kwargs['command']]))
-	await reply(message, content, emb=embed)
-
 @shadow(auth=is_mod)
 async def nonick(client, message, **kwargs):
 	if message.server.id != events.productionserver:

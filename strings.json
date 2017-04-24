@@ -226,21 +226,6 @@
 					"extra": ""
 				},
 				{
-					"name": "nononly",
-					"short": "Adds to a member the `Nonsense-Only` Role.",
-					"extra": ""
-				},
-				{
-					"name": "nocedule",
-					"short": "Adds to a member the `No CE/DU/LE` role.",
-					"extra": ""
-				},
-				{
-					"name": "noreact",
-					"short": "Adds to a member the `No Reactions` role.",
-					"extra": ""
-				},
-				{
 					"name": "nonick",
 					"short": "Removes from a member the `tOLPer` role, and adds to the member the `tOLPer who can\u2019t change nickname` role.",
 					"extra": ""
