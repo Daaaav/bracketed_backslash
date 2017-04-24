@@ -226,11 +226,6 @@
 					"extra": ""
 				},
 				{
-					"name": "softban",
-					"short": "Adds to a member the `Banned` role.",
-					"extra": ""
-				},
-				{
 					"name": "nononly",
 					"short": "Adds to a member the `Nonsense-Only` Role.",
 					"extra": ""

@@ -583,33 +583,6 @@ async def findc(client, message, **kwargs):
 	)
 	await reply(message, emb=em)
 
-@shadow(auth=is_mod)
-async def softban(client, message, **kwargs):
-	if message.server.id != events.productionserver:
-		embed = emb.error(t['production_only'])
-		await reply(message, emb=embed)
-		return
-
-	try:
-		targetmember = utils.match_input(
-			'member', kwargs['arguments'], server=message.server,
-		)
-		await client.remove_roles(targetmember,
-			discord.utils.get(message.server.roles, id='173240966575161344'), # nonsense-only
-			discord.utils.get(message.server.roles, id='222046096216686592'), # no cedule
-			discord.utils.get(message.server.roles, id='241183168269516800'), # no reactions
-		)
-		await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='220643748508467220')) # The banned role
-		events.latestroled = targetmember.id
-	except(AttributeError, TypeError):
-		embed = emb.error(t['specify_user'])
-		await reply(message, emb=embed)
-		return
-
-	content = targetmember.mention
-	embed = emb.success(':no_entry: <@{}> has been softbanned.'.format(targetmember.id))
-	await reply(message, content, emb=embed)
-
 @shadow(auth=is_mod, aliases=['nocedule', 'noreact'])
 async def nononly(client, message, **kwargs):
 	if message.server.id != events.productionserver:
