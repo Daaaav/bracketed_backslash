@@ -182,7 +182,7 @@ def helplist(cats, server, onlycat=None):
 
 			first = True
 			if cat['cat_slug'] == 'server':
-				helpcommands = customcommands.list_commands(server)
+				helpcommands = customcommands.list_commands_help(server)
 			else:
 				helpcommands = cat['commands']
 			for cmd in helpcommands:

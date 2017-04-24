@@ -72,6 +72,21 @@ def list_commands(server):
 		return []
 	return commands[server.id]
 
+def list_commands_help(server):
+	"""Returns a list of all commands on the server as help entries.
+	"""
+	cmdlist = list_commands(server)
+	cmdlist_help = []
+	for cmd in cmdlist:
+		cmdlist_help.append(
+			{
+				'name': cmd,
+				'short': 'Custom {} command'.format(cmdlist[cmd]['type']),
+				'extra': ''
+			}
+		)
+	return cmdlist_help
+
 def exists(server, command):
 	"""Returns True if the given custom command exists on the given server, False if not.
 	"""
