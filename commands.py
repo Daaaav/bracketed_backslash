@@ -1312,41 +1312,6 @@ async def getrawmessagecontent(client, message, **kwargs):
 		embed = emb.error('Invalid channel or message ID given. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=kwargs['command']))
 	await reply(message, emb=embed)
 
-@shadow(aliases=['removecontrib'], servonly=True)
-async def addcontrib(client, message, **kwargs):
-	if message.server.id != events.productionserver:
-		embed = emb.error(t['production_only'])
-		await reply(message, emb=embed)
-		return
-	contribmodrole = discord.utils.get(message.server.roles, id='249695436812713984')
-	contribrole = discord.utils.get(message.server.roles, id='241728185937559552')
-	targetmember = utils.match_input('member', kwargs['arguments'], server=message.server)
-	if not contribmodrole in message.author.roles:
-		embed = emb.error('Permission denied. This command can only be used by a tOLP Contributor Moderator.')
-		await reply(message, emb=embed)
-		return
-	try:
-		if kwargs['command'] == 'addcontrib':
-			if contribrole in targetmember.roles:
-				embed = emb.warning('The user is already a tOLP Contributor.')
-				await reply(message, emb=embed)
-				return
-			await client.add_roles(targetmember, contribrole)
-			content = targetmember.mention
-			embed = emb.success('Made <@{}> a tOLP Contributor.'.format(targetmember.id))
-		if kwargs['command'] == 'removecontrib':
-			if contribrole not in targetmember.roles:
-				embed = emb.warning('The user is already not a tOLP Contributor.')
-				await reply(message, emb=embed)
-				return
-			await client.remove_roles(targetmember, contribrole)
-			content = targetmember.mention
-			embed = emb.success('Made <@{}> not a tOLP Contributor.'.format(targetmember.id))
-	except AttributeError:
-		content = None
-		embed = emb.error(t['specify_user'])
-	await reply(message, content, emb=embed)
-
 @shadow()
 async def countpins(client, message, **kwargs):
 	if kwargs['arguments'] == None:

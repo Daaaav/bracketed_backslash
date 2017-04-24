@@ -326,24 +326,6 @@
 			]
 		},
 		{
-			"cat_name": "Contributor Moderator Commands",
-			"cat_slug": "contribmod",
-			"cat_desc": "",
-			"cat_shown": true,
-			"commands": [
-				{
-					"name": "addcontrib",
-					"short": "Makes a member a tOLP Contributor.",
-					"extra": ""
-				},
-				{
-					"name": "removecontrib",
-					"short": "Makes a member not a tOLP Contributor.",
-					"extra": ""
-				}
-			]
-		},
-		{
 			"cat_name": "Rules Commands",
 			"cat_slug": "rulesystem",
 			"cat_desc": "",
