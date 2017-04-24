@@ -167,27 +167,35 @@ def isprivatemessage(server): # this is a function because so in the future more
 	else:
 		return False
 
-def helplist(cats, onlycat=None):
+def helplist(cats, server, onlycat=None):
 	returnage = ''
 	for cat in cats:
-		if (onlycat == None and cat['cat_shown']) or onlycat == cat['cat_slug']:
-			if onlycat == None:
-				returnage += '\n\n__`{}:`__ — For command descriptions: **`\help {}`**'.format(cat['cat_name'], cat['cat_slug'])
+		if (onlycat is None and cat['cat_shown']) or onlycat == cat['cat_slug']:
+			if onlycat is None:
+				returnage += (
+					'\n\n__`{}:`__ — For command descriptions: **`\help {}`**'
+				).format(cat['cat_name'], cat['cat_slug'])
 			else:
 				if cat['cat_desc'] != '':
 					returnage += cat['cat_desc']
 				returnage += '\n__`{}:`__'.format(cat['cat_name'])
 
 			first = True
-			for cmd in cat['commands']:
-				if onlycat == None:
+			if cat['slug'] == 'server':
+				helpcommands = customcommands.list_commands(server)
+			else:
+				helpcommands = cat['commands']
+			for cmd in helpcommands:
+				if onlycat is None:
 					if first:
 						returnage += '\n`\{}`'.format(cmd['name'])
 						first = False
 					else:
 						returnage += '   `\{}`'.format(cmd['name'])
 				else:
-					returnage += '\n`\{}` – {}'.format(cmd['name'], cmd['short'])
+					returnage += '\n`\{}` – {}'.format(
+						cmd['name'], cmd['short']
+					)
 	return returnage
 
 def is_valid_command(com):

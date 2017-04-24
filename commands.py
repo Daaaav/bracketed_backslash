@@ -23,32 +23,46 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 @shadow()
 async def _help(client, message, **kwargs):
-	content = (help_info_string + helplist(cmds))
+	content = (help_info_string + helplist(cmds, message.server))
 
 	# General
-	if kwargs['arguments'] == None:
+	if kwargs['arguments'] is None:
 		pass
 	else:
 		matched = False
 		for cat in (cmds):
 			if kwargs['arguments'] == cat['cat_slug']:
-				content = helplist(cmds, kwargs['arguments'])
+				content = helplist(cmds, message.server, kwargs['arguments'])
 				matched = True
 				break
 
-			for cmd in cat['commands']: # Maybe have a nested try-except KeyError instead of looping through every command
+			# Maybe have a nested try-except KeyError
+			# instead of looping through every command
+			for cmd in cat['commands']:
 				if kwargs['arguments'] == cmd['name']:
 					try:
-						content = '`\{}` – {}'.format(cmd['name'], cmd['extrafull'])
+						content = '`\{}` – {}'.format(
+							cmd['name'], cmd['extrafull']
+						)
 					except KeyError:
-						content = '`\{}` – {}\n{}'.format(cmd['name'], cmd['short'], cmd['extra'])
+						content = '`\{}` – {}\n{}'.format(
+							cmd['name'], cmd['short'], cmd['extra']
+						)
+					matched = True
+					break
+			for cmd in customcommands.list_commands(message.server):
+				if kwargs['arguments'] == cmd:
+					content = '[Custom command, more info NYI]'
 					matched = True
 					break
 			if matched:
 				break
 
 		if not matched:
-			content = 'Invalid arguments passed, or the command is not in the help list. Input `\help` for a list of valid commands to pass as arguments.'
+			content = (
+				'Invalid arguments passed, or the command is not in the help list. '
+				'Input `\help` for a list of valid commands to pass as arguments.'
+			)
 	embed = discord.Embed(description=content, colour=col.r_success)
 	await reply(message, emb=embed)
 

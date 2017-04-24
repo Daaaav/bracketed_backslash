@@ -450,6 +450,13 @@
 			]
 		},
 		{
+			"cat_name": "Server commands",
+			"cat_slug": "server",
+			"cat_desc": "Custom commands that are specific to this server",
+			"cat_shown": true,
+			"commands": []
+		},
+		{
 			"cat_name": "Meme Commands",
 			"cat_slug": "\u200b5tr4 will never guess this one",
 			"cat_desc": "You found a secret, congratulations. The command to get this help message will change sometimes.",

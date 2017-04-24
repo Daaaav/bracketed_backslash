@@ -54,12 +54,28 @@ def remove_custom_command(server, command):
 		return
 	del commands[server.id][command]
 
+def any_commands(server):
+	"""Returns True if the server has at least one custom command
+	"""
+	if server is None:
+		return False
+	if server.id not in commands:
+		return False
+	if len(commands[server.id]) == 0:
+		return False
+	return True
+
+def list_commands(server):
+	"""Returns a list of all commands on the server.
+	"""
+	if not any_commands(server):
+		return []
+	return commands[server.id]
+
 def exists(server, command):
 	"""Returns True if the given custom command exists on the given server, False if not.
 	"""
-	if server == None:
-		return False
-	if server.id not in commands:
+	if not any_commands(server):
 		return False
 	if command not in commands[server.id]:
 		return False
