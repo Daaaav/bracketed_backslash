@@ -583,28 +583,6 @@ async def findc(client, message, **kwargs):
 	)
 	await reply(message, emb=em)
 
-@shadow(auth=is_mod)
-async def nonick(client, message, **kwargs):
-	if message.server.id != events.productionserver:
-		embed = emb.error(t['production_only'])
-		await reply(message, emb=embed)
-		return
-	try:
-		targetmember = utils.match_input(
-			'member', kwargs['arguments'], server=message.server,
-		)
-		await client.add_roles(targetmember, discord.utils.get(message.server.roles, id='236925451216355338'))
-		await client.remove_roles(targetmember, discord.utils.get(message.server.roles, id='231644869351833600'))
-		events.latestroled = targetmember.id
-	except(AttributeError, TypeError):
-		embed = emb.error(t['specify_user'])
-		await reply(message, emb=embed)
-		return
-	content = targetmember.mention
-	embed = emb.success('Gave <@{}> the tOLPer who can’t change nickname role, and removed the tOLPer role from them.'.format(targetmember.id))
-	await reply(message, content, emb=embed)
-	return
-
 @shadow(auth=is_mod, aliases=['voiceunmute'])
 async def voicemute(client, message, **kwargs):
 	targetmember = utils.match_input('member', kwargs['arguments'], server=message.server)

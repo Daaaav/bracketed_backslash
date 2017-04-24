@@ -226,11 +226,6 @@
 					"extra": ""
 				},
 				{
-					"name": "nonick",
-					"short": "Removes from a member the `tOLPer` role, and adds to the member the `tOLPer who can\u2019t change nickname` role.",
-					"extra": ""
-				},
-				{
 					"name": "voicemute",
 					"short": "Mutes a member in a voice channel.",
 					"extra": ""
