@@ -72,16 +72,68 @@ async def run(server, command, message, arguments, clean_arguments, invokesymbol
 	com = commands[server.id][command]
 
 	if com['type'] == 'role':
+		requiredargs = 0
+		if com['expiry'] == 'input':
+			requiredargs += 1
+		elif com['expiry'] != 'no':
+			expiryarg = com['expiry']
+
 		# Who gets the role change?
 		if com['target'] == 'self':
 			targetmember = message.author
 		elif com['target'] == 'input':
+			requiredargs += 1
+
+		if requiredargs > 0:
 			if arguments is None:
-				embed = emb.error(main.t['specify_user'])
+				if requiredargs == 2:
+					expected = (
+						'a relative expiry time and a member '
+						'representation as arguments'
+					)
+				elif com['expiry'] == 'input':
+					expected = 'a relative expiry time as an argument'
+				else:
+					expected = 'a member representation as an argument'
+				embed = emb.error((
+						'No arguments specified. This command'
+						'expects {}.'
+					).format(expected)
+				)
 				await main.reply(message, emb=embed)
 				return
+			if requiredargs == 2:
+				splitargs = arguments.split(' ', 1)
+				expiryarg = splitargs[0]
+				memberarg = splitargs[1]
+			elif com['expiry'] == 'input':
+				expiryarg = arguments
+			else:
+				memberarg = arguments
+
+		# Before we change any roles, prepare expiry, just in case it's invalid.
+		setexpirytimer = False
+		if com['expiry'] != 'no' and expiryarg not in (
+			'forever','infinity','inf','none','x','∞','no'
+		):
+			setexpirytimer = True
+			expirytime = main.parsereltime(expiryarg)
+			if expirytime is None:
+				embed = emb.error((
+						'Invalid expiry time. Please input a relative time '
+						'in the format `[#d][#h][#m][#s]`, for example: '
+						'`7d12h`, `1h`, `1d`, `1d2h3m4s`, `1d20s` or '
+						'whatever combination you can think of. The units '
+						'have to be in the correct order, though.\n'
+						'Roles have not been changed.'
+					)
+				)
+				await main.reply(message, emb=embed)
+				return
+
+		if com['target'] == 'input':
 			try:
-				targetmember = utils.match_input('member', arguments, server=server)
+				targetmember = utils.match_input('member', memberarg, server=server)
 			except (AttributeError, TypeError):
 				embed = emb.error(main.t['specify_user'])
 				await main.reply(message, emb=embed)
@@ -141,6 +193,13 @@ async def run(server, command, message, arguments, clean_arguments, invokesymbol
 			)
 
 		await main.reply(message, emb=embed)
+
+		# Does it expire?
+		if setexpirytimer:
+			# It does!
+			main.addexpiryentry(server.id, targetmember.id, expirytime)
+			main.rolexpiresave()
+			await main.handleExpiryTimer()
 
 	else:
 		embed = emb.error('Custom command type `{}` not supported!'.format(com['type']))

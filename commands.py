@@ -797,7 +797,7 @@ async def rolerst(client, message, **kwargs):
 
 @shadow(auth=is_mod)
 async def expires(client, message, **kwargs):
-	if kwargs['arguments'] == None:
+	if kwargs['arguments'] is None:
 		embed = emb.error('Please input at least a relative time.')
 		await reply(message, emb=embed)
 		return
@@ -805,14 +805,25 @@ async def expires(client, message, **kwargs):
 	splitargs = kwargs['arguments'].split(' ', 1)
 
 	expirytime = parsereltime(splitargs[0])
-	if expirytime == None:
-		embed = emb.error('Invalid expiry time. Please input a relative time in the format `[#d][#h][#m][#s]`, for example: `7d12h`, `1h`, `1d`, `1d2h3m4s`, `1d20s` or whatever combination you can think of. The units have to be in the correct order, though.')
+	if expirytime is None:
+		embed = emb.error((
+				'Invalid expiry time. Please input a relative time '
+				'in the format `[#d][#h][#m][#s]`, for example: '
+				'`7d12h`, `1h`, `1d`, `1d2h3m4s`, `1d20s` or '
+				'whatever combination you can think of. The units '
+				'have to be in the correct order, though.'
+			)
+		)
 		await reply(message, emb=embed)
 		return
 
 	if len(splitargs) < 2:
-		if events.latestroled == None:
-			embed = emb.error('Nobody has gotten a restrictive role this session. Please provide any member identification instead.')
+		if events.latestroled is None:
+			embed = emb.error((
+					'Nobody has gotten a restrictive role this session. '
+					'Please provide any member identification instead.'
+				)
+			)
 			await reply(message, emb=embed)
 			return
 		targetmemberid = events.latestroled
@@ -832,12 +843,15 @@ async def expires(client, message, **kwargs):
 	rolexpiresave()
 	await handleExpiryTimer()
 
-	embed = emb.success('Roles for <@{}> will be reset {}'.format(targetmemberid, reltime(expirytime)))
+	embed = emb.success('Roles for <@{}> will be reset {}'.format(
+			targetmemberid, reltime(expirytime)
+		)
+	)
 	await reply(message, emb=embed)
 
 @shadow(auth=is_mod)
 async def expiryremove(client, message, **kwargs):
-	if kwargs['arguments'] == None:
+	if kwargs['arguments'] is None:
 		embed = emb.error('Please enter something.')
 		await reply(message, emb=embed)
 		return
@@ -2282,21 +2296,28 @@ async def addcustomrolecommand(client, message, **kwargs):
 	try:
 		splitargs = kwargs['arguments'].split(' ')
 
-		splitargs[4]
+		splitargs[5]
 	except (AttributeError, IndexError):
 		embed = emb.error('Invalid amount of arguments specified, please see the `\help`')
 		await reply(message, emb=embed)
 		return
 
 	if splitargs[1] not in ('self', 'input'):
-		embed = emb.error('`{}` is invalid, please see the `\help`'.format(
+		embed = emb.error('`{}` is an invalid target, please see the `\help`'.format(
 				utils.mdspecialchars(splitargs[1])
 			)
 		)
 		await reply(message, emb=embed)
 		return
-	ma = re.match('^\[([0-9]+(\,[0-9]+)*)?\]$', splitargs[3])
-	mb = re.match('^\[([0-9]+(\,[0-9]+)*)?\]$', splitargs[4])
+	if splitargs[2] not in ('no', 'input') and parsereltime(splitargs[2]) is None:
+		embed = emb.error('The expiry `{}` is invalid, please see the `\help`'.format(
+				utils.mdspecialchars(splitargs[2])
+			)
+		)
+		await reply(message, emb=embed)
+		return
+	ma = re.match('^\[([0-9]+(\,[0-9]+)*)?\]$', splitargs[4])
+	mb = re.match('^\[([0-9]+(\,[0-9]+)*)?\]$', splitargs[5])
 	if ma is None or mb is None:
 		embed = emb.error((
 				'The lists of roles must be surrounded with square '
@@ -2305,15 +2326,15 @@ async def addcustomrolecommand(client, message, **kwargs):
 		)
 		await reply(message, emb=embed)
 		return
-	if splitargs[3] == '[]':
+	if splitargs[4] == '[]':
 		giveroles = []
 	else:
-		giveroles = splitargs[3][1:-1].split(',')
+		giveroles = splitargs[4][1:-1].split(',')
 
-	if splitargs[4] == '[]':
+	if splitargs[5] == '[]':
 		takeroles = []
 	else:
-		takeroles = splitargs[4][1:-1].split(',')
+		takeroles = splitargs[5][1:-1].split(',')
 
 	if customcommands.exists(message.server, splitargs[0]):
 		embed = emb.error('The custom command `{}` already exists!'.format(
@@ -2342,8 +2363,9 @@ async def addcustomrolecommand(client, message, **kwargs):
 	customcommands.add_custom_command(message.server, splitargs[0],
 		{
 			'type': 'role',
-			'precondition': splitargs[2],
+			'precondition': splitargs[3],
 			'target': splitargs[1],
+			'expiry': splitargs[2],
 			'giverole': giveroles,
 			'takerole': takeroles
 		}
