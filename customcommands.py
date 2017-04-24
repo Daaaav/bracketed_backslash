@@ -96,7 +96,7 @@ async def run(server, command, message, arguments, clean_arguments, invokesymbol
 				else:
 					expected = 'a member representation as an argument'
 				embed = emb.error((
-						'No arguments specified. This command'
+						'No arguments specified. This command '
 						'expects {}.'
 					).format(expected)
 				)
