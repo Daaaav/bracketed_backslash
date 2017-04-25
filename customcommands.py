@@ -147,6 +147,8 @@ async def run(server, command, message, arguments, clean_arguments, invokesymbol
 							'as arguments.'
 						)
 					)
+					await main.reply(message, emb=embed)
+					return
 			elif com['expiry'] == 'input':
 				expiryarg = arguments
 			else:
