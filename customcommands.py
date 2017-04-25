@@ -136,8 +136,17 @@ async def run(server, command, message, arguments, clean_arguments, invokesymbol
 				return
 			if requiredargs == 2:
 				splitargs = arguments.split(' ', 1)
-				expiryarg = splitargs[0]
-				memberarg = splitargs[1]
+				try:
+					expiryarg = splitargs[0]
+					memberarg = splitargs[1]
+				except IndexError:
+					embed = emb.error((
+							'Not enough arguments specified. '
+							'This command expects both a relative '
+							'expiry time and a member representation '
+							'as arguments.'
+						)
+					)
 			elif com['expiry'] == 'input':
 				expiryarg = arguments
 			else:
