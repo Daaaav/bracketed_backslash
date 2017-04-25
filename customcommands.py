@@ -6,6 +6,7 @@ import json
 import logging
 import re
 
+import events
 import __main__ as main
 import utils
 
@@ -231,6 +232,10 @@ async def run(server, command, message, arguments, clean_arguments, invokesymbol
 			main.addexpiryentry(server.id, targetmember.id, expirytime)
 			main.rolexpiresave()
 			await main.handleExpiryTimer()
+
+		# Do we want to remember the member for an `\expires`?
+		if com['setlatestroled']:
+			events.latestroled = targetmember.id
 
 	else:
 		embed = emb.error('Custom command type `{}` not supported!'.format(com['type']))

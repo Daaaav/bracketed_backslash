@@ -2225,13 +2225,20 @@ async def addcustomrolecommand(client, message, **kwargs):
 		)
 		await reply(message, emb=embed)
 		return
-	if splitargs[2] not in ('no', 'input') and parsereltime(splitargs[2]) is None:
+	if splitargs[2] not in ('no', 'input', 'command') and parsereltime(splitargs[2]) is None:
 		embed = emb.error('The expiry `{}` is invalid, please see the `\help`'.format(
 				utils.mdspecialchars(splitargs[2])
 			)
 		)
 		await reply(message, emb=embed)
 		return
+
+	setlatestroled = True
+	if splitargs[2] == 'no':
+		setlatestroled = False
+	elif splitargs[2] == 'command':
+		splitargs[2] = 'no'
+
 	ma = re.match('^\[([0-9]+(\,[0-9]+)*)?\]$', splitargs[4])
 	mb = re.match('^\[([0-9]+(\,[0-9]+)*)?\]$', splitargs[5])
 	if ma is None or mb is None:
@@ -2282,6 +2289,7 @@ async def addcustomrolecommand(client, message, **kwargs):
 			'precondition': splitargs[3],
 			'target': splitargs[1],
 			'expiry': splitargs[2],
+			'setlatestroled': setlatestroled,
 			'giverole': giveroles,
 			'takerole': takeroles
 		}
