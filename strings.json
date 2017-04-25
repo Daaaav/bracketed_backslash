@@ -122,7 +122,7 @@
 				{
 					"name": "addcustomrolecommand",
 					"short": "Add a custom command that can give or take roles in given conditions.",
-					"extra": "**Syntax**: `\\addcustomrolecommand <name> <target> <expiry> <condition> <giveroles> <takeroles>`\nThis will add a command named <name> that gives roles <giveroles> and removes roles <takeroles> to/from <target> if <condition>.\n<target> can be either `self` or `input`. If `self`, then the command caller will have their roles changed, if `input`, then the caller can input a member representation.\n<expiry> handles whether an expiry timer will be set and for how long. It can either be `no`, `input`, or a relative time (see help for `\\expires`). If set to `no`, then no expiry timer will be set. If set to `input`, then the first argument of the custom command will be a relative time in the aforementioned format.\n<giveroles> and <takeroles> are lists, surrounded with square brackets, and entries must be separated with commas.\n<condition>: See the [wiki page](https://gitgud.io/infoteddy/bracketed_backslash/wikis/custom-commands).\nExample: `\\addcustomrolecommand roleban input input c.mod&~t.mod [98765] []`"
+					"extra": "**Syntax**: `\\addcustomrolecommand <name> <self|input> <no|command|input|RELATIVETIME> <condition> <giveroles> <takeroles>`\n\nFor a detailed explanation, see the [wiki page](https://gitgud.io/infoteddy/bracketed_backslash/wikis/custom-commands).\n\nExample: `\\addcustomrolecommand roleban input input c.mod&~t.mod [98765] []`"
 				},
 				{
 					"name": "removecustomcommand",
