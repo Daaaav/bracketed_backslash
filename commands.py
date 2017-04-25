@@ -742,9 +742,8 @@ async def rolerst(client, message, **kwargs):
 		embed = emb.error(t['specify_user'])
 		await reply(message, emb=embed)
 		return
-	content = targetmember.mention
 	embed = emb.success('Reset roles for <@{}> back to normal.'.format(targetmember.id))
-	await reply(message, content, emb=embed)
+	await reply(message, emb=embed)
 
 @shadow(auth=is_mod)
 async def expires(client, message, **kwargs):
