@@ -258,7 +258,7 @@ async def run(server, command, message, arguments, clean_arguments, invokesymbol
 			await main.reply(message, emb=embed)
 			return
 
-		if exists(com['to']):
+		if exists(server, com['to']):
 			await run(
 				server,
 				com['to'],
