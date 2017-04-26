@@ -125,6 +125,11 @@
 					"extra": "**Syntax**: `\\addcustomrolecommand <name> <self|input> <no|command|input|RELATIVETIME> <condition> <giveroles> <takeroles>`\n\nFor a detailed explanation, see the [wiki page](https://gitgud.io/infoteddy/bracketed_backslash/wikis/custom-commands).\n\nExample: `\\addcustomrolecommand roleban input input c.mod&~t.mod [98765] []`"
 				},
 				{
+					"name": "addcustomaliascommand",
+					"short": "Add a custom command that is an alias for another custom command.",
+					"extra": "**Syntax**: `\\addcustomaliascommand <name> <aliasof>`\n\n`name`: The name of the command you are making now\n`aliasof`: The name of the command you want to run"
+				},
+				{
 					"name": "removecustomcommand",
 					"short": "Remove a custom command",
 					"extra": "**Syntax**: `\\removecustomcommand <name>`"

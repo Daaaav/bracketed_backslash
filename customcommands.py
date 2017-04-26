@@ -97,7 +97,7 @@ def exists(server, command):
 		return False
 	return True
 
-async def run(server, command, message, arguments, clean_arguments, invokesymbol):
+async def run(server, command, message, arguments, clean_arguments, invokesymbol, referrers=[]):
 	"""Run the given custom command. Assumes that you checked if the command exists, and that
 	this isn't in a direct message conversation.
 	"""
@@ -248,6 +248,33 @@ async def run(server, command, message, arguments, clean_arguments, invokesymbol
 		if com['setlatestroled']:
 			events.latestroled = targetmember.id
 
+	elif com['type'] == 'alias':
+		if command in referrers:
+			embed = emb.error((
+					'An admin is looking for some amusement... '
+					'Maybe it will work with a longer chain?'
+				)
+			)
+			await main.reply(message, emb=embed)
+			return
+
+		if exists(com['to']):
+			await run(
+				server,
+				com['to'],
+				message,
+				arguments,
+				clean_arguments,
+				invokesymbol,
+				referrers.append(command)
+			)
+		else:
+			embed = emb.error(
+				'This command is an alias of `{}`, which does not exist!'.format(
+					com['to']
+				)
+			)
+			await main.reply(message, emb=embed)
 	else:
 		embed = emb.error('Custom command type `{}` not supported!'.format(com['type']))
 		await main.reply(message, emb=embed)

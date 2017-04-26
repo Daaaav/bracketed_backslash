@@ -2302,6 +2302,89 @@ async def addcustomrolecommand(client, message, **kwargs):
 	await reply(message, emb=embed)
 
 @shadow(auth=is_admin, servonly=True)
+async def addcustomaliascommand(client, message, **kwargs):
+	try:
+		splitargs = kwargs['arguments'].split(' ')
+
+		splitargs[1]
+	except (AttributeError, IndexError):
+		embed = emb.error('Invalid amount of arguments specified, please see the `\help`')
+		await reply(message, emb=embed)
+		return
+
+	if customcommands.exists(message.server, splitargs[0]):
+		embed = emb.error('The custom command `{}` already exists!'.format(
+				utils.mdspecialchars(splitargs[0])
+			)
+		)
+		await reply(message, emb=embed)
+		return
+
+	builtin_alias_exists = 0  # 0 for false, 1 for command exists, 2 for aliased exists
+
+	for c, p in commands.items():
+		if p[2] is not None:
+			if splitargs[0] in p[2]:
+				builtin_alias_exists = 1
+				break
+			if splitargs[1] in p[2]:
+				builtin_alias_exists = 2
+				break
+
+	if builtin_alias_exists == 1 or splitargs[0] in commands:
+		embed = emb.error('`{}` is already a built-in {} command!'.format(
+				utils.mdspecialchars(splitargs[0]),
+				utils.mdspecialchars('[\]')
+			)
+		)
+		await reply(message, emb=embed)
+		return
+	if builtin_alias_exists == 2 or splitargs[1] in commands:
+		embed = emb.error((
+				'Sorry, you can only make aliases for custom '
+				'commands, `{}` is a built-in {} command.'
+			).format(
+				utils.mdspecialchars(splitargs[1]),
+				utils.mdspecialchars('[\]')
+			)
+		)
+		await reply(message, emb=embed)
+		return
+
+	if splitargs[0] == splitargs[1]:
+		embed = emb.error((
+				'Aliases do recursively call the run function... '
+				'Maybe you can come up with something more creative?'
+			)
+		)
+		await reply(message, emb=embed)
+		return
+
+	customcommands.add_custom_command(message.server, splitargs[0],
+		{
+			'type': 'alias',
+			'to': splitargs[1]
+		}
+	)
+	customcommands.save()
+
+	if customcommands.exists(message.server, splitargs[1]):
+		embed = emb.success('Successfully added command `\{}`'.format(
+				utils.mdspecialchars(splitargs[0])
+			)
+		)
+	else:
+		embed = emb.warning((
+				'Successfully added command `\{}`, but note that '
+				'`\{}` does not exist!'
+			).format(
+				utils.mdspecialchars(splitargs[0]),
+				utils.mdspecialchars(splitargs[1])
+			)
+		)
+	await reply(message, emb=embed)
+
+@shadow(auth=is_admin, servonly=True)
 async def removecustomcommand(client, message, **kwargs):
 	if kwargs['arguments'] is None:
 		embed = emb.error('Please supply the name of the command to remove.')
