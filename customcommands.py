@@ -97,10 +97,16 @@ def exists(server, command):
 		return False
 	return True
 
-async def run(server, command, message, arguments, clean_arguments, invokesymbol, referrers=[]):
+async def run(
+	server, command, message, arguments, clean_arguments, invokesymbol,
+	recursivecall=False, referrers=None
+):
 	"""Run the given custom command. Assumes that you checked if the command exists, and that
 	this isn't in a direct message conversation.
 	"""
+	if not recursivecall:
+		referrers = []
+
 	com = commands[server.id][command]
 
 	if com['type'] == 'role':
@@ -266,6 +272,7 @@ async def run(server, command, message, arguments, clean_arguments, invokesymbol
 				arguments,
 				clean_arguments,
 				invokesymbol,
+				True,
 				referrers.append(command)
 			)
 		else:
