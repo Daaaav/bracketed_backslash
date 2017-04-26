@@ -263,6 +263,7 @@ async def run(
 			)
 			await main.reply(message, emb=embed)
 			return
+		referrers.append(command)
 
 		if exists(server, com['to']):
 			await run(
@@ -273,7 +274,7 @@ async def run(
 				clean_arguments,
 				invokesymbol,
 				True,
-				referrers.append(command)
+				referrers
 			)
 		else:
 			embed = emb.error(
