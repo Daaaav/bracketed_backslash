@@ -21,6 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # This file contains all the bot commands as functions.
 
+commands = {}
+
 def shadow(auth=None, aliases=None, servonly=False):
 	def living_shadow(func):
 		name = func.__name__
