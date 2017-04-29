@@ -838,33 +838,51 @@ async def on_member_update(before, after):
 			embed.add_field(name='Newer Nickname', value=utils.mdspecialchars(after.nick))
 		await __main__.client.send_message(specialchannel, embed=embed)
 	if before.roles != after.roles:
-		# TODO: Make these better
-		if len(before.roles) == len(after.roles) and not (
-			__main__.logdisabled('member_roleadd', after.server) and \
-			__main__.logdisabled('member_roleremove', after.server)
-		):
-			embed = discord.Embed(title='ROLES CHANGED FOR USER')
+		if __main__.logdisabled('member_roleadd', after.server):
+			addedroles = []
+		else:
+			addedroles   = list(set(after.roles) - set(before.roles))
+
+		if __main__.logdisabled('member_roleremove', after.server):
+			removedroles = []
+		else:
+			removedroles = list(set(before.roles) - set(after.roles))
+
+		if len(addedroles) > 0 or len(removedroles) > 0:
+			if len(addedroles) > 0 and len(removedroles) > 0:
+				embed = discord.Embed(title='ROLES CHANGED FOR USER')
+			elif len(addedroles) > 1:
+				embed = discord.Embed(title='ROLES ADDED TO USER')
+			elif len(addedroles) == 1:
+				embed = discord.Embed(title='ROLE ADDED TO USER')
+			elif len(removedroles) > 1:
+				embed = discord.Embed(title='ROLES REMOVED FROM USER')
+			elif len(removedroles) == 1:
+				embed = discord.Embed(title='ROLE REMOVED FROM USER')
+
 			embed.set_author(
 				name=after.display_name,
 				icon_url=after.avatar_url,
 				url=__main__.infourl('userid={}'.format(after.id))
 			)
+			for role in addedroles:
+				embed.add_field(
+					name='Added role',
+					value=utils.mdspecialchars('{} ({})'.format(
+							role.name, role.id
+						)
+					)
+				)
+			for role in removedroles:
+				embed.add_field(
+					name='Removed role',
+					value=utils.mdspecialchars('{} ({})'.format(
+							role.name, role.id
+						)
+					)
+				)
 			await __main__.client.send_message(specialchannel, embed=embed)
-		if len(before.roles) > len(after.roles) and not __main__.logdisabled('member_roleremove', after.server): # if a role has been removed
-			rolesremoved = list(set(before.roles).symmetric_difference(set(after.roles)))
-			embed = discord.Embed(title='ROLE REMOVED FROM USER'.format(id=after.id), colour=rolesremoved[0].colour)
-			embed.set_author(name=after.display_name, icon_url=after.avatar_url, url=__main__.infourl('userid={}'.format(after.id)))
-			for roleremoved in rolesremoved:
-				embed.add_field(name='Removed Role', value=utils.mdspecialchars('{} ({})'.format(roleremoved.name, roleremoved.id)))
-			await __main__.client.send_message(specialchannel, embed=embed)
-		if len(before.roles) < len(after.roles) and not __main__.logdisabled('member_roleadd', after.server): # if a role has been added
-			rolesadded = list(set(after.roles).symmetric_difference(set(before.roles)))
-			embed = discord.Embed(title='ROLE ADDED TO USER'.format(id=after.id), colour=rolesadded[0].colour)
-			# i am fucking TRIGGERED that i have to set these values twice
-			embed.set_author(name=after.display_name, icon_url=after.avatar_url, url=__main__.infourl('userid={}'.format(after.id)))
-			for roleadded in rolesadded:
-				embed.add_field(name='Added Role', value=utils.mdspecialchars('{} ({})'.format(roleadded.name, roleadded.id)))
-			await __main__.client.send_message(specialchannel, embed=embed)
+
 		if config.get_s('rolecachemode', after.server.id) != 0:
 			__main__.updaterolecache(after)
 			__main__.rolecachesave()
