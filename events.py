@@ -562,6 +562,10 @@ async def on_message(m):
 			await customcommands.run(
 				m.server, command, m, arguments, clean_arguments, invokesymbol
 			)
+		except discord.errors.Forbidden:
+			e = emb.error(__main__.t['no_permission'])
+			await __main__.reply(m, emb=e)
+			raise
 		except Exception:
 			e = emb.error(__main__.t['generic_error'])
 			await __main__.reply(m, emb=e)
@@ -603,6 +607,10 @@ async def on_message(m):
 	}
 	try:
 		await func[0](__main__.client, m, **kwargs)
+	except discord.errors.Forbidden:
+		e = emb.error(__main__.t['no_permission'])
+		await __main__.reply(m, emb=e)
+		raise
 	except Exception:
 		e = emb.error(__main__.t['generic_error'])
 		await __main__.reply(m, emb=e)
