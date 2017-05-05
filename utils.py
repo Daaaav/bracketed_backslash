@@ -265,3 +265,15 @@ def bracketlevels(condstring):
 		raise ValueError('Invalid conditional string; mismatched brackets')
 
 	return output, bracketshighscore
+
+def wrapbackticks(string, character=u'​'):
+	"""escapes backticks for use in message output to discord
+	its a fucking glorified string.replace() command with some error handling
+	any string this is used on should be placed in either one of the following:
+	double backticks (like ``this``)
+	or code blocks (like ```this```)
+	"""
+	try:
+		return string.replace('`', u'{character}`{character}'.format(character=character))
+	except AttributeError:
+		return string
