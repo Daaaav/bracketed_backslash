@@ -946,7 +946,7 @@ async def on_member_ban(member):
 		return
 	specialchannel = __main__.getspecialchannel(member.server)
 
-	msg = '**`>`**👞🚪⛔`user` **``{}``**`#{}` `({}) banned from server {} ({})`'.format(__main__.wrapbackticks(member.name), member.discriminator, member.id, member.server.name, member.server.id)
+	msg = '**`>`**👞🚪⛔`user` **``{}``**`#{}` `({}) banned from server {} ({})`'.format(utils.wrapbackticks(member.name), member.discriminator, member.id, member.server.name, member.server.id)
 	await __main__.client.send_message(specialchannel, msg)
 
 async def on_member_unban(server, user):
