@@ -205,10 +205,10 @@ async def on_message(m):
 		(
 			'``{}``**`…`**'
 		).format(
-			__main__.wrapbackticks(m.content[:100]).replace('discord.gg', 'discord\u200b.gg')
+			utils.wrapbackticks(m.content[:100]).replace('discord.gg', 'discord\u200b.gg')
 		)
 	) if len(m.content) > 100 else (
-		'``{}``'.format(__main__.wrapbackticks(m.content))
+		'``{}``'.format(utils.wrapbackticks(m.content))
 		.replace('\n', '``**`\\n`**``​')
 		.replace('discord.gg', 'discord\u200b.gg')
 	)
@@ -329,14 +329,14 @@ async def on_message(m):
 			msg_start = (
 				'**`>`**``{name}``**`#`**{indisp}\n'
 			).format(
-				name=__main__.wrapbackticks(m.author.name),
+				name=utils.wrapbackticks(m.author.name),
 				indisp=indisp,
 			)
 		else:
 			msg_start = (
 				'**`>`**``{name}``**`$`**{indisp}\n'
 			).format(
-				name=__main__.wrapbackticks(m.author.name),
+				name=utils.wrapbackticks(m.author.name),
 				indisp=indisp,
 			)
 		if priv:
@@ -351,7 +351,7 @@ async def on_message(m):
 			if __main__.alphabet.find(hangmanguessed.upper()) == -1:
 				e = emb.error(
 					'The character ``{}`` is invalid.'
-					.format(__main__.wrapbackticks(hangmanguessed.upper()))
+					.format(utils.wrapbackticks(hangmanguessed.upper()))
 				)
 				await __main__.client.send_message(m.channel, msg_start, embed=e)
 				return
@@ -445,7 +445,7 @@ async def on_message(m):
 						'**``{guess}``** isn’t even the same length'
 						' as the correct word. Please try again.'
 					).format(
-						guess=__main__.wrapbackticks(hangmanguessed)
+						guess=utils.wrapbackticks(hangmanguessed)
 					)
 				)
 				await __main__.client.send_message(m.channel, msg_start, embed=e)
@@ -489,7 +489,7 @@ async def on_message(m):
 	msg_start = (
 		'**`>`**``{name}``**`{invsym}`**{indisp}\n'
 	).format(
-		name=__main__.wrapbackticks(m.author.name),
+		name=utils.wrapbackticks(m.author.name),
 		invsym=invokesymbol,
 		indisp=indisp,
 	)
