@@ -179,7 +179,7 @@ async def _config(client, message, **kwargs):
 		config.saveconfig()
 		logcommand(kwargs['command'], kwargs['arguments'], message)
 		embed = emb.success('Set `{}` to `{}`{}'.format(
-				splitargs[1], wrapbackticks(
+				splitargs[1], utils.wrapbackticks(
 					config.input_to_type_key(splitargs[2], splitargs[1])
 				),
 				t['editingmasterval'] if editingmaster else ''
@@ -232,7 +232,7 @@ async def _config(client, message, **kwargs):
 			except AttributeError:
 				config.insert_s(splitargs[1], splitargs[2])
 			embed = emb.success('Inserted `{}` into array `{}`'.format(
-					wrapbackticks(
+					utils.wrapbackticks(
 						config.input_to_type_key(splitargs[2], splitargs[1])
 					), splitargs[1],
 					t['editingmasterval'] if editingmaster else ''
@@ -245,7 +245,7 @@ async def _config(client, message, **kwargs):
 			except AttributeError:
 				config.remove_s(splitargs[1], splitargs[2])
 			embed = emb.success('Removed `{}` from array `{}`'.format(
-					wrapbackticks(
+					utils.wrapbackticks(
 						config.input_to_type_key(splitargs[2], splitargs[1])
 					), splitargs[1],
 					t['editingmasterval'] if editingmaster else ''
@@ -289,7 +289,7 @@ async def _config(client, message, **kwargs):
 			config.restore_default(splitargs[1])
 		config.saveconfig()
 		logcommand(kwargs['command'], kwargs['arguments'], message)
-		embed = emb.success('Set `{}` back to default value of `{}`'.format(splitargs[1], wrapbackticks(config.get_default(splitargs[1]))))
+		embed = emb.success('Set `{}` back to default value of `{}`'.format(splitargs[1], utils.wrapbackticks(config.get_default(splitargs[1]))))
 		await reply(message, emb=embed)
 	else:
 		embed = emb.error('`{}` was not recognized'.format(splitargs[0]))
