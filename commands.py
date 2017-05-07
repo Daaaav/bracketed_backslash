@@ -969,7 +969,7 @@ async def rules(client, message, **kwargs):
 			events.rules[message.server.id][int(kwargs['arguments'])-1]
 
 			# Oh, we survived this? That means the given specific rule exists!
-			content = 'Rule **{}** for server `{}`:\n{}'.format(int(kwargs['arguments']), wrapbackticks(message.server.name), events.rules[message.server.id][int(kwargs['arguments'])-1])
+			content = 'Rule **{}** for server `{}`:\n{}'.format(int(kwargs['arguments']), utils.wrapbackticks(message.server.name), events.rules[message.server.id][int(kwargs['arguments'])-1])
 			await reply(message, content)
 			return
 		except IndexError:
@@ -980,7 +980,7 @@ async def rules(client, message, **kwargs):
 				return
 			pass
 	n = 1
-	content = 'Rules for server `{}`:{}'.format(wrapbackticks(message.server.name), ' (Disabled)' if message.server.id in events.disabledrules else '')
+	content = 'Rules for server `{}`:{}'.format(utils.wrapbackticks(message.server.name), ' (Disabled)' if message.server.id in events.disabledrules else '')
 	for rule in events.rules[message.server.id]:
 		content += '\n**{}.** {}'.format(n, rule)
 		n += 1
