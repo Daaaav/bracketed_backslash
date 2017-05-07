@@ -1397,7 +1397,7 @@ async def _math(client, message, **kwargs):
 @shadow(auth=is_operator)
 async def gamestatus(client, message, **kwargs):
 	await client.change_presence(game=discord.Game(name=kwargs['arguments']))
-	embed = emb.success('Set game status to: ``{}``'.format(wrapbackticks(kwargs['arguments'])))
+	embed = emb.success('Set game status to: ``{}``'.format(utils.wrapbackticks(kwargs['arguments'])))
 	await reply(message, emb=embed)
 
 @shadow(auth=is_host, aliases=['evalfile', 'setvar'])
