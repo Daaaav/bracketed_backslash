@@ -1299,10 +1299,10 @@ async def getrawmessagecontent(client, message, **kwargs):
 			channelid = arg0[2:-1]
 			getchannel = client.get_channel(channelid)
 			getmessage = await client.get_message(getchannel, arg1)
-		content = '``{}``'.format(wrapbackticks(getmessage.content[:1900]))
+		content = '``{}``'.format(utils.wrapbackticks(getmessage.content[:1900]))
 		await reply(message, content)
 		if getmessage.embeds != []:
-			content = '``{}``'.format(wrapbackticks(getmessage.embeds[:1900]))
+			content = '``{}``'.format(utils.wrapbackticks(getmessage.embeds[:1900]))
 			await reply(message, content)
 		return
 	except AttributeError:
