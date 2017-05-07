@@ -346,7 +346,7 @@ async def hangman(client, message, **kwargs):
 	events.hangmanactive = True
 	events.hangmanstarter = message.author
 	events.guessedletters = [False]*26
-	msg_start = '**`>`**``{}``**`{}`**``\{} {}``\n'.format(wrapbackticks(message.author.name), kwargs['invokesymbol'], wrapbackticks(kwargs['command'].split(' ')[0]), '*'*len(events.hangmanchosenword)) # you will never have mod/admin perms in private messages (probably), where the hangman will be started from, so for now theres no mod/admin check to make the input display different
+	msg_start = '**`>`**``{}``**`{}`**``\{} {}``\n'.format(utils.wrapbackticks(message.author.name), kwargs['invokesymbol'], utils.wrapbackticks(kwargs['command'].split(' ')[0]), '*'*len(events.hangmanchosenword)) # you will never have mod/admin perms in private messages (probably), where the hangman will be started from, so for now theres no mod/admin check to make the input display different
 	content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "{}" followed by the letter (for example {}a) or the word. {} attempts left.\n{}'.format(events.hangmanstarter.id, hangmaninvoker, hangmaninvoker, events.hangmanattempts, hangmanworddisp(events.hangmanchosenword))
 	msg = msg_start + content
 	await client.send_message(events.botschannel, msg)
