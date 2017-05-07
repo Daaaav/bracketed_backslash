@@ -1002,14 +1002,14 @@ async def rulefind(client, message, **kwargs):
 		return
 	matched = False
 	n = 1
-	content = 'Rules for server **``{}``** matching **``{}``**:'.format(wrapbackticks(message.server.name), wrapbackticks(kwargs['arguments']))
+	content = 'Rules for server **``{}``** matching **``{}``**:'.format(utils.wrapbackticks(message.server.name), utils.wrapbackticks(kwargs['arguments']))
 	for rule in events.rules[message.server.id]:
 		if rule.lower().find(kwargs['arguments'].lower()) != -1:
 			content += '\n**{}.** {}'.format(n, rule)
 			matched = True
 		n += 1
 	if not matched:
-		embed = emb.warning('No rules on server `{}` matching `{}`.'.format(wrapbackticks(message.server.name), wrapbackticks(kwargs['arguments'])))
+		embed = emb.warning('No rules on server `{}` matching `{}`.'.format(utils.wrapbackticks(message.server.name), utils.wrapbackticks(kwargs['arguments'])))
 		await reply(message, emb=embed)
 		return
 	await reply(message, content)
