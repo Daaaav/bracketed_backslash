@@ -148,18 +148,6 @@ async def replyattach(messageobject, filetoattach, fname, message=''):
 	# Don't bother with handling >2000 character messages just yet
 	await client.send_file(destination=messageobject.channel, content = events.msg_start + message, fp=filetoattach, filename=fname)
 
-def wrapbackticks(string, character=u'​'):
-	"""escapes backticks for use in message output to discord
-	its a fucking glorified string.replace() command with some error handling
-	any string this is used on should be placed in either one of the following:
-	double backticks (like ``this``)
-	or code blocks (like ```this```)
-	"""
-	try:
-		return string.replace('`', u'{character}`{character}'.format(character=character))
-	except AttributeError:
-		return string
-
 def isprivatemessage(server): # this is a function because so in the future more checks for if its a private message can ezily be added
 	if server == None:
 		return True
