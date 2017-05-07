@@ -1467,7 +1467,7 @@ async def on_socket_raw_receive(payload):
 		e.add_field(
 			name='Rich Embed',
 			value=(
-				'``{}``'.format(__main__.wrapbackticks(str(event['d']['embeds']['rich'])))
+				'``{}``'.format(utils.wrapbackticks(str(event['d']['embeds']['rich'])))
 				if 'rich' in event['d']['embeds']
 				else '(none)'
 			),
