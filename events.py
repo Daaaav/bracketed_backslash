@@ -1035,23 +1035,23 @@ async def on_server_role_update(before, after):
 		if before.mentionable == 0 and after.mentionable == 1 and not __main__.logdisabled(
 			'role_mentionable', before.server
 		):
-			msg = '**`>`**`role` **``{}``** `({}) is now mentionable`'.format(__main__.wrapbackticks(after.name), after.id)
+			msg = '**`>`**`role` **``{}``** `({}) is now mentionable`'.format(utils.wrapbackticks(after.name), after.id)
 			await __main__.client.send_message(specialchannel, msg)
 		# If the role is no longer mentionable
 		if before.mentionable == 1 and after.mentionable == 0 and not __main__.logdisabled(
 			'role_unmentionable', before.server
 		):
-			msg = '**`>`**`role` **``{}``** `({}) is no longer mentionable`'.format(__main__.wrapbackticks(after.name), after.id)
+			msg = '**`>`**`role` **``{}``** `({}) is no longer mentionable`'.format(utils.wrapbackticks(after.name), after.id)
 			await __main__.client.send_message(specialchannel, msg)
 	# If the role has been moved up or down in the hierarchy
 	if before.position != after.position and not __main__.logdisabled('role_hierarchy', before.server):
 		# The role has been moved down
 		if before.position > after.position:
-			msg = '**`>`**`role` **``{}``** `({}) has been moved down by {} roles ({} to {})`'.format(__main__.wrapbackticks(after.name), after.id, before.position - after.position, before.position, after.position)
+			msg = '**`>`**`role` **``{}``** `({}) has been moved down by {} roles ({} to {})`'.format(utils.wrapbackticks(after.name), after.id, before.position - after.position, before.position, after.position)
 			await __main__.client.send_message(specialchannel, msg)
 		# The role has been moved up
 		if before.position < after.position:
-			msg = '**`>`**`role` **``{}``** `({}) has been moved up by {} roles ({} to {})`'.format(__main__.wrapbackticks(after.name), after.id, after.position - before.position, before.position, after.position)
+			msg = '**`>`**`role` **``{}``** `({}) has been moved up by {} roles ({} to {})`'.format(utils.wrapbackticks(after.name), after.id, after.position - before.position, before.position, after.position)
 			await __main__.client.send_message(specialchannel, msg)
 	# If the role color has changed
 	if before.colour != after.colour and not __main__.logdisabled('role_color', before.server):
