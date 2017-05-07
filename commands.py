@@ -1418,9 +1418,9 @@ async def _eval(client, message, **kwargs):
 			if inspect.isawaitable(evaluate):
 				evaluate = await evaluate
 			evaluate = setglobal(splitargs[0], evaluate)
-		content = '```py\n{}```'.format(wrapbackticks(str(evaluate)))
+		content = '```py\n{}```'.format(utils.wrapbackticks(str(evaluate)))
 	except Exception:
-		content = '```py\n{}```'.format(wrapbackticks(traceback.format_exc()))
+		content = '```py\n{}```'.format(utils.wrapbackticks(traceback.format_exc()))
 	if len(content) > 2000:
 		print((
 			'The result of your latest evaluation command is:\n'
