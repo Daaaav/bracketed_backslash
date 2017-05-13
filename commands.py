@@ -231,7 +231,7 @@ async def _config(client, message, **kwargs):
 				editingmaster = not config.is_detached(splitargs[1], message.server.id)
 			except AttributeError:
 				config.insert_s(splitargs[1], splitargs[2])
-			embed = emb.success('Inserted `{}` into array `{}`'.format(
+			embed = emb.success('Inserted `{}` into array `{}`{}'.format(
 					utils.wrapbackticks(
 						config.input_to_type_key(splitargs[2], splitargs[1])
 					), splitargs[1],
@@ -244,7 +244,7 @@ async def _config(client, message, **kwargs):
 				editingmaster = not config.is_detached(splitargs[1], message.server.id)
 			except AttributeError:
 				config.remove_s(splitargs[1], splitargs[2])
-			embed = emb.success('Removed `{}` from array `{}`'.format(
+			embed = emb.success('Removed `{}` from array `{}`{}'.format(
 					utils.wrapbackticks(
 						config.input_to_type_key(splitargs[2], splitargs[1])
 					), splitargs[1],
