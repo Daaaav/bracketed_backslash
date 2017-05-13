@@ -2485,7 +2485,7 @@ async def archive(client, message, **kwargs):
 				filename='{}.{}.{}.log'.format(
 					utils.safefilename(message.server.name),
 					utils.safefilename(tgt.name), # Better be futureproof
-					time.time()
+					int(time.time())
 				)
 			)
 		except discord.HTTPException:
