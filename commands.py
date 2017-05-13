@@ -2472,7 +2472,7 @@ async def archive(client, message, **kwargs):
 		await reply(message, emb=em)
 		return
 
-	with tempfile.TemporaryFile() as temp:
+	with tempfile.NamedTemporaryFile() as temp:
 		temp.write(log.encode())
 		temp.flush()
 		try:
@@ -2481,7 +2481,7 @@ async def archive(client, message, **kwargs):
 				content='{} latest messages from {}'.format(
 					lim, tgt.mention
 				),
-				fp=temp.read(),
+				fp=temp.name,
 				filename='{}.{}.{}.log'.format(
 					utils.safefilename(message.server.name),
 					utils.safefilename(tgt.name), # Better be futureproof
