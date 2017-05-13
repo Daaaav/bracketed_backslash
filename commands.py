@@ -2473,7 +2473,8 @@ async def archive(client, message, **kwargs):
 		await reply(message, emb=em)
 		return
 
-	textlog = '\n'.join(log.reverse())
+	log.reverse()
+	textlog = '\n'.join(log)
 
 	with tempfile.NamedTemporaryFile() as temp:
 		temp.write(textlog.encode())
