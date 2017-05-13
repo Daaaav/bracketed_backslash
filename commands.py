@@ -2481,7 +2481,7 @@ async def archive(client, message, **kwargs):
 				content='{} latest messages from {}'.format(
 					lim, tgt.mention
 				),
-				fp=temp,
+				fp=temp.read(),
 				filename='{}.{}.{}.log'.format(
 					utils.safefilename(message.server.name),
 					utils.safefilename(tgt.name), # Better be futureproof
