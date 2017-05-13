@@ -2450,16 +2450,22 @@ async def archive(client, message, **kwargs):
 
 	log = ''
 
-	for m in client.logs_from(tgt, limit=lim):
-		log += '[{}] {}#{}: {}\n'.format(
-			time.strftime(
-				config.get_s('timeformat', message.server.id),
-				m.timestamp.timetuple()
-			),
-			m.author.name,
-			m.author.discriminator,
-			m.content
-		)
+	msgs = client.logs_from(tgt, limit=lim)
+	try:
+		async for m in msgs:
+			log += '[{}] {}#{}: {}\n'.format(
+				time.strftime(
+					config.get_s('timeformat', message.server.id),
+					m.timestamp.timetuple()
+				),
+				m.author.name,
+				m.author.discriminator,
+				m.content
+			)
+	except discord.errors.Forbidden:
+		em = emb.error('Unable to get messages from that channel.')
+		await reply(message, emb=em)
+		return
 
 	with tempfile.TemporaryFile() as temp:
 		temp.write(log)
