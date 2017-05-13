@@ -2428,7 +2428,7 @@ async def archive(client, message, **kwargs):
 		return
 
 	lim = 100
-	if len(splitargs[1]) >= 2:
+	if len(splitargs) >= 2:
 		try:
 			lim = int(splitargs[1])
 
@@ -2473,7 +2473,7 @@ async def archive(client, message, **kwargs):
 				fp=temp,
 				filename='{}.{}.{}.log'.format(
 					utils.safefilename(message.server.name),
-					utils.safefilename(tgt.name), # Better be safe
+					utils.safefilename(tgt.name), # Better be futureproof
 					time.time()
 				)
 			)
