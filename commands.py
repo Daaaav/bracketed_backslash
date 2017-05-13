@@ -2427,7 +2427,7 @@ async def archive(client, message, **kwargs):
 		await reply(message, emb=em)
 		return
 
-	if chan.type != discord.ChannelType.text:
+	if tgt.type != discord.ChannelType.text:
 		em = emb.error('Matched a voice channel - text-to-speech is not implemented.')
 		await reply(message, emb=em)
 		return
