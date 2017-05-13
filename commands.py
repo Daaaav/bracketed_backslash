@@ -2458,7 +2458,7 @@ async def archive(client, message, **kwargs):
 	msgs = client.logs_from(tgt, limit=lim)
 	try:
 		async for m in msgs:
-			log += '[{}] {}#{}: {}\n'.format(
+			log = '[{}] {}#{}: {}\n'.format(
 				time.strftime(
 					config.get_s('timeformat', message.server.id),
 					m.timestamp.timetuple()
@@ -2466,7 +2466,7 @@ async def archive(client, message, **kwargs):
 				m.author.name,
 				m.author.discriminator,
 				m.content
-			)
+			) + log
 	except discord.errors.Forbidden:
 		em = emb.error('Unable to get messages from that channel.')
 		await reply(message, emb=em)
