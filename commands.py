@@ -2473,7 +2473,7 @@ async def archive(client, message, **kwargs):
 		return
 
 	with tempfile.TemporaryFile() as temp:
-		temp.write(log)
+		temp.write(log.encode())
 		temp.flush()
 		try:
 			await client.send_file(
