@@ -2406,3 +2406,78 @@ async def removecustomcommand(client, message, **kwargs):
 		)
 	)
 	await reply(message, emb=embed)
+
+@shadow(auth=is_admin, servonly=True)
+async def archive(client, message, **kwargs):
+	# Note that this command currently only allows admins to run it, particularly so that we can
+	# think about read and history permissions later. If opening it up to everyone, there should
+	# be a detachable config option for the maximum limit for non-staff.
+
+	if kwargs['arguments'] is None:
+		embed = emb.error('Please supply at least a channel mention.')
+		await reply(message, emb=embed)
+		return
+
+	splitargs = kwargs['arguments'].split(' ')
+
+	chaninput = splitargs[0]
+	tgt = utils.match_input('channel', chaninput, server=message.server)
+	if not tgt:
+		em = emb.error('Unable to find that channel. ' + t['specify_channel'])
+		await reply(message, emb=em)
+		return
+
+	lim = 100
+	if len(splitargs[1]) >= 2:
+		try:
+			lim = int(splitargs[1])
+
+			if lim < 1:
+				lim = 1
+		except ValueError:
+			em = emb.error('Invalid limit specified.')
+			await reply(message, emb=em)
+			return
+
+	if lim > config.get_s('maxarchive'):
+		# If we open this up to anyone, might also want to hide the limit.
+		em = emb.error('The limit may not be higher than {}.'.format(
+				config.get_s('maxarchive')
+			)
+		)
+		await reply(message, emb=em)
+		return
+
+	log = ''
+
+	for m in client.logs_from(tgt, limit=lim):
+		log += '[{}] {}#{}: {}\n'.format(
+			time.strftime(
+				config.get_s('timeformat', message.server.id),
+				m.timestamp.timetuple()
+			),
+			m.author.name,
+			m.author.discriminator,
+			m.content
+		)
+
+	with tempfile.TemporaryFile() as temp:
+		temp.write(log)
+		temp.flush()
+		try:
+			await client.send_file(
+				destination=message.channel,
+				content='{} latest messages from {}'.format(
+					lim, tgt.mention
+				),
+				fp=temp,
+				filename='{}.{}.{}.log'.format(
+					utils.safefilename(message.server.name),
+					utils.safefilename(tgt.name), # Better be safe
+					time.time()
+				)
+			)
+		except discord.HTTPException:
+			em = emb.error('An error occurred while uploading the file.')
+			await reply(message, emb=em)
+			return

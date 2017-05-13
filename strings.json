@@ -132,6 +132,11 @@
 					"name": "removecustomcommand",
 					"short": "Remove a custom command",
 					"extra": "**Syntax**: `\\removecustomcommand <name>`"
+				},
+				{
+					"name": "archive",
+					"short": "Create a chat log of the latest messages in a given channel. Not available for non-admins (yet).",
+					"extra": "**Syntax**: `\\archive <channel> [limit=100]`\n\nThe maximum limit is determined by the `maxarchive` config setting, which is global for the bot."
 				}
 			]
 		},

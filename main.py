@@ -32,6 +32,7 @@ import random
 import re
 import subprocess
 import sys
+import tempfile
 import time
 from threading import Timer
 import traceback

@@ -193,6 +193,14 @@ configs = {
 		'detachable': True,
 		'shown': True,
 	},
+	'maxarchive': {
+		'default': 5000,
+		'type': 'int',
+		'is_array': False,
+		'expl': 'The maximum amount of messages that may be requested via `\\archive` in any server.',
+		'detachable': False,
+		'shown': True,
+	},
 }
 
 s = {}

@@ -277,3 +277,16 @@ def wrapbackticks(string, character=u'​'):
 		return string.replace('`', u'{character}`{character}'.format(character=character))
 	except AttributeError:
 		return string
+
+def safefilename(string):
+	"""Makes a string safe and convenient for use in filenames.
+
+	This converts the input string to alphanumeric with hyphens and underscores.
+	"""
+	def safechar(c):
+		if c.isalnum() or c == '-':
+			return c
+		else:
+			return '_'
+
+	return ''.join(safechar(c) for c in string).strip('_')
