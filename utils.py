@@ -228,6 +228,8 @@ def match_input(objtype, request, *, server=None, client=None):
 			server.roles if objtype == 'role' else \
 			server.emojis if objtype == 'emoji' else None
 			for i in searchthru:
+				if i.name is None:
+					continue
 				if i.name.lower() == request.lower():
 					namematched = i
 					break
