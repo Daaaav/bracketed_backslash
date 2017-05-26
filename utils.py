@@ -7,6 +7,7 @@ import time
 import discord
 
 import __main__
+import op_ids
 
 def mdspecialchars(string, character='\\'):
 	"""Return a Markdown-escaped version of a given string, for use in message output."""
@@ -292,3 +293,50 @@ def safefilename(string):
 			return '_'
 
 	return ''.join(safechar(c) for c in string).strip('_')
+
+async def id_lookup(uid):
+	"""Return a discord.Member/discord.User object with a given ID. If the ID is not a user ID
+	and doesn't exist on Discord, return None.
+
+	Note that it is inconsistent whether or not the object returned is a discord.Member or a
+	discord.User.
+
+	Note that if a discord.Member object is returned server-specific attributes will be
+	inconsistent. The only attributes that should be used are:
+	- name
+	- id
+	- discriminator
+	- avatar/avatar_url
+	- bot
+	- default_avatar/default_avatar_url
+	- mention
+	- created_at
+	"""
+	member = None
+
+	for x in __main__.client.get_all_members():
+		# Look through all members the bot can see for any matching the ID
+		if x.id == uid:
+			member = x
+			break
+
+	if member is None:
+		# Look up the ID by banning it
+		opserver = __main__.client.get_server(op_ids.ids['opserver'])
+		try:
+			await __main__.client.http.ban(uid, opserver.id, 0)
+		except discord.errors.HTTPException:
+			pass
+		else:
+			bans = await __main__.client.get_bans(opserver)
+			for x in bans:
+				if x.id == uid:
+					member = x
+					break
+			if member is not None:
+				try:
+					await __main__.client.unban(opserver, member)
+				except discord.errors.HTTPException:
+					pass
+
+	return member
