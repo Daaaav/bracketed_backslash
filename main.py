@@ -155,6 +155,12 @@ def is_channel_manager(member):
 	except AttributeError:
 		return False
 
+def is_role_manager(member):
+	try:
+		return member.server_permissions.manage_roles
+	except AttributeError:
+		return False
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.
