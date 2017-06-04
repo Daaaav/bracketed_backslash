@@ -681,6 +681,11 @@ def logdisabled(key, server):
 		return False
 	return True
 
+def respondtorule(rule):
+	if int(rule) == 37:
+		return 'Funny and original, nothing to see here.'
+	return 'Wow, you’re the FIRST one to come up with that. I wish I could be as funny as you, I dunno how I’m ever gonna top "rule {}", though. That shit is genius.'.format(rule)
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.

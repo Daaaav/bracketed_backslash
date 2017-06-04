@@ -21,11 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def respondtorule(rule):
-	if int(rule) == 37:
-		return 'Funny and original, nothing to see here.'
-	return 'Wow, you’re the FIRST one to come up with that. I wish I could be as funny as you, I dunno how I’m ever gonna top "rule {}", though. That shit is genius.'.format(rule)
-
 async def newmemberroles(member, specialchannel, bypassjoinchannel):
 	if config.get_s('rolecachemode', member.server.id) == 1 and is_bot(member):
 		# Give them the bot roles!
