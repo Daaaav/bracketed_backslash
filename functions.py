@@ -21,13 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def rolelist(roles):
-	rlist = []
-	for role in roles:
-		rlist.append(role.id)
-
-	return rlist
-
 def updaterolecache(member, serverid=None):
 	if serverid == None:
 		serverid = member.server.id

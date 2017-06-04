@@ -330,6 +330,13 @@ def hangmanworddisp(theword):
 
 	return theoutput
 
+def rolelist(roles):
+	rlist = []
+	for role in roles:
+		rlist.append(role.id)
+
+	return rlist
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.
