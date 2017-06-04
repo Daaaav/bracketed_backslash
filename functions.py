@@ -21,12 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def isprivatemessage(server): # this is a function because so in the future more checks for if its a private message can ezily be added
-	if server == None:
-		return True
-	else:
-		return False
-
 def helplist(cats, server, onlycat=None):
 	returnage = ''
 	for cat in cats:

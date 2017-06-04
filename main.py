@@ -257,6 +257,12 @@ async def replyattach(messageobject, filetoattach, fname, message=''):
 	# Don't bother with handling >2000 character messages just yet
 	await client.send_file(destination=messageobject.channel, content = events.msg_start + message, fp=filetoattach, filename=fname)
 
+def isprivatemessage(server): # this is a function because so in the future more checks for if its a private message can ezily be added
+	if server == None:
+		return True
+	else:
+		return False
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.
