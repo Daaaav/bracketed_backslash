@@ -37,3 +37,9 @@ def is_mod(member):
 	if perms.manage_messages:
 		return True
 	return is_admin(member) # Admins have moderator powers, too
+
+def is_channel_manager(member):
+	try:
+		return member.server_permissions.manage_channels
+	except AttributeError:
+		return False

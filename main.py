@@ -130,12 +130,6 @@ modificationtimecache = time.strftime(config.get_s('timeformat'), time.gmtime(ma
 
 maineventloop = asyncio.get_event_loop()
 
-def is_channel_manager(member):
-	try:
-		return member.server_permissions.manage_channels
-	except AttributeError:
-		return False
-
 def is_role_manager(member):
 	try:
 		return member.server_permissions.manage_roles
