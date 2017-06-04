@@ -654,6 +654,11 @@ def getearliestexpiry(serverid):  # Returns: [userid, entry]
 
 	return [earliestuserid, earliestexpiry]
 
+async def fetch(url):
+	async with ClientSession() as session:
+		async with session.get(url) as response:
+			return await response.read()
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.

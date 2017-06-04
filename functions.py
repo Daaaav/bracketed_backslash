@@ -21,11 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-async def fetch(url):
-	async with ClientSession() as session:
-		async with session.get(url) as response:
-			return await response.read()
-
 def logfailedcommand(command, arguments, message):
 	if arguments == None:
 		arguments = ''
