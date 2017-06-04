@@ -130,15 +130,6 @@ modificationtimecache = time.strftime(config.get_s('timeformat'), time.gmtime(ma
 
 maineventloop = asyncio.get_event_loop()
 
-def is_admin(member):
-	try:
-		perms = member.server_permissions
-	except AttributeError:
-		return False
-	if perms.administrator:
-		return True
-	return False
-
 def is_mod(member):
 	# Same here. No need to use is_admin and is_mod in the same conditional.
 	try:

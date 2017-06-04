@@ -18,3 +18,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
+def is_admin(member):
+	try:
+		perms = member.server_permissions
+	except AttributeError:
+		return False
+	if perms.administrator:
+		return True
+	return False
+
