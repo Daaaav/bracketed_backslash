@@ -253,6 +253,10 @@ async def reply(messageobject, message=None, emb=None):
 		)
 		raise
 
+async def replyattach(messageobject, filetoattach, fname, message=''):
+	# Don't bother with handling >2000 character messages just yet
+	await client.send_file(destination=messageobject.channel, content = events.msg_start + message, fp=filetoattach, filename=fname)
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.

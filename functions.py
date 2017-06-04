@@ -21,10 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-async def replyattach(messageobject, filetoattach, fname, message=''):
-	# Don't bother with handling >2000 character messages just yet
-	await client.send_file(destination=messageobject.channel, content = events.msg_start + message, fp=filetoattach, filename=fname)
-
 def isprivatemessage(server): # this is a function because so in the future more checks for if its a private message can ezily be added
 	if server == None:
 		return True
