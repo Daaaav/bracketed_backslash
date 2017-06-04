@@ -183,6 +183,12 @@ def is_tntgb_mod(member):
 			return True
 	return False
 
+def is_tntgb_banned(member):
+	for role in member.roles:
+		if role.id == '243076976565288960': # TNTGB banned role
+			return True
+	return False
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.
