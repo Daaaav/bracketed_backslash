@@ -192,6 +192,67 @@ def is_tntgb_banned(member):
 def is_host(member):
 	return member.id == op_ids.ids['host']
 
+async def reply(messageobject, message=None, emb=None):
+	# Removes the need for adding msg_start manually every time
+	if message == None:
+		message = ''
+	if len(events.msg_start + message) >= 2000:
+		# We can at least try in a totally not failsafe and kinda ugly way
+		content = events.msg_start + message
+		contentlines = content.split('\n')
+		cut = math.floor(len(contentlines)/2)
+		await client.send_message(messageobject.channel, '\n'.join(contentlines[:cut]))
+		if emb != None:
+			await client.send_message(messageobject.channel, '\n'.join(contentlines[cut:]), embed=emb)
+		else:
+			await client.send_message(messageobject.channel, '\n'.join(contentlines[cut:]))
+		return
+	try:
+		if emb != None:
+			await client.send_message(
+				messageobject.channel,
+				events.msg_start + message,
+				embed=emb,
+			)
+		else:
+			await client.send_message(messageobject.channel, events.msg_start + message)
+	except(discord.errors.HTTPException, discord.errors.Forbidden) as e:
+		if messageobject.channel.type == discord.ChannelType.private:
+			servinfo = '\t(direct message)\n'
+		else:
+			servinfo = (
+				'\tName: {0.name}\n'
+				'\tID: {0.id}\n'
+			).format(messageobject.server)
+		if emb == None:
+			dispemb = '\t(none)\n'
+		else:
+			dispemb = str(emb.to_dict())
+		logging.info(
+			(
+				'A message reply() was rejected, with exception {excpt}\n'
+				'The server it was attemped to be sent to is:\n'
+				'{servinfo}\n'
+				'The channel it was attempted to be sent to is:\n'
+				'\tType: {chantype}\n'
+				'\tName: {chan.name}\n'
+				'\tID: {chan.id}\n'
+				'\n'
+				'The content of the rejected message is:\n'
+				'\t{con}\n'
+				'The rich embed of the rejected message is:\n'
+				'\t{emb}\n'
+			).format(
+				excpt=type(e).__name__,
+				servinfo=servinfo,
+				chantype=str(messageobject.channel.type).title(),
+				chan=messageobject.channel,
+				con=events.msg_start + message,
+				emb=dispemb,
+			)
+		)
+		raise
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.
