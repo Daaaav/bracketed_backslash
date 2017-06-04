@@ -21,10 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def rolexpiresave():
-	with open('rolexpires.json', 'w') as outfile:
-		json.dump(events.rolexpires, outfile)
-
 def listroles(lijst):
 	returnage = ''
 	for role in lijst:

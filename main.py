@@ -358,6 +358,10 @@ def rulesave():
 	with open('rules.json', 'w') as outfile:
 		json.dump(events.rules, outfile)
 
+def rolexpiresave():
+	with open('rolexpires.json', 'w') as outfile:
+		json.dump(events.rolexpires, outfile)
+
 	return True
 
 # Read as: dump code from file ... here
