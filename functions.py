@@ -21,13 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def updaterolecache(member, serverid=None):
-	if serverid == None:
-		serverid = member.server.id
-	if not serverid in events.memberroles:
-		events.memberroles[serverid] = {}
-	events.memberroles[serverid][str(member.id)] = list(rolelist(member.roles))
-
 def removerolecache(memberid, serverid):
 	try:
 		del events.memberroles[serverid][memberid]

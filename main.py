@@ -337,6 +337,13 @@ def rolelist(roles):
 
 	return rlist
 
+def updaterolecache(member, serverid=None):
+	if serverid == None:
+		serverid = member.server.id
+	if not serverid in events.memberroles:
+		events.memberroles[serverid] = {}
+	events.memberroles[serverid][str(member.id)] = list(rolelist(member.roles))
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.
