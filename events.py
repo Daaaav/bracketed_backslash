@@ -10,6 +10,7 @@ import time
 import discord
 
 import __main__
+import checks
 import config
 import customcommands
 import emb
@@ -318,14 +319,14 @@ async def on_message(m):
 
 	if priv:
 		invokesymbol = '@'
-	elif __main__.is_mod(m.author):
+	elif checks.is_mod(m.author):
 		invokesymbol = '#'
 	else:
 		invokesymbol = '$'
 	if hangmaninvokeractive:
 		if not hangmanactive:
 			return
-		if __main__.is_mod(m.author):
+		if checks.is_mod(m.author):
 			msg_start = (
 				'**`>`**``{name}``**`#`**{indisp}\n'
 			).format(
@@ -513,10 +514,10 @@ async def on_message(m):
 		return
 	# But react to the message as a hint to the message sender
 	if not priv and \
-	not __main__.is_mod(m.author) and \
+	not checks.is_mod(m.author) and \
 	m.channel.id != '201130047736643584' and \
 	m.server.id == productionserver and \
-	not (__main__.is_dev(m.author) and m.channel.id == '238423391571279872') and \
+	not (checks.is_dev(m.author) and m.channel.id == '238423391571279872') and \
 	not command in ('rule', 'rules', 'rulefind', 'rulesfind') and \
 	not (m.channel.id == '256924583737819146' and command in ('votevoicemute', 'vy', 'vn')):
 		if __main__.is_valid_command(command) and command != '':
@@ -531,11 +532,11 @@ async def on_message(m):
 	if not priv and \
 	m.server.id == tntgbserver and \
 	m.channel != botschannel_tntgb and \
-	not __main__.is_tntgb_mod(m.author) and \
+	not checks.is_tntgb_mod(m.author) and \
 	command != 'selfban':
 		return
 	if not priv and \
-	not __main__.is_mod(m.author) and \
+	not checks.is_mod(m.author) and \
 	not config.get_s('alloweverywhere', m.server.id) and \
 	not m.channel.id in config.get_s('allowedchannels', m.server.id):
 		return
@@ -906,7 +907,7 @@ async def on_member_update(before, after):
 			embed.add_field(name='Older Discriminator', value=before.discriminator, inline=False)
 			embed.add_field(name='Newer Discriminator', value=after.discriminator)
 		await __main__.client.send_message(specialchannel, embed=embed)
-	if before.avatar_url != after.avatar_url and ((not __main__.logdisabled('member_botavatar', after.server)) if __main__.is_bot(after) else (not __main__.logdisabled('member_avatar', after.server))):
+	if before.avatar_url != after.avatar_url and ((not __main__.logdisabled('member_botavatar', after.server)) if checks.is_bot(after) else (not __main__.logdisabled('member_avatar', after.server))):
 		embed = discord.Embed(description='👥<@!{id}> ({id}) changed avatar'.format(id=after.id), colour=after.colour, timestamp=datetime.datetime.now())
 		embed.set_author(name=after.display_name, icon_url=after.avatar_url)
 		embed.set_thumbnail(url=before.avatar_url)
