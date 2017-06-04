@@ -130,12 +130,6 @@ modificationtimecache = time.strftime(config.get_s('timeformat'), time.gmtime(ma
 
 maineventloop = asyncio.get_event_loop()
 
-def is_tntgb_banned(member):
-	for role in member.roles:
-		if role.id == '243076976565288960': # TNTGB banned role
-			return True
-	return False
-
 def is_host(member):
 	return member.id == op_ids.ids['host']
 

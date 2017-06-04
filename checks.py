@@ -71,3 +71,9 @@ def is_tntgb_mod(member):
 		if role.id == '266590337269497856': # TNTGB moderator role
 			return True
 	return False
+
+def is_tntgb_banned(member):
+	for role in member.roles:
+		if role.id == '243076976565288960': # TNTGB banned role
+			return True
+	return False
