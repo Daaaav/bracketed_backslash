@@ -12,6 +12,7 @@ import discord
 import __main__
 import checks
 import config
+import commands
 import customcommands
 import emb
 import op_ids
@@ -556,8 +557,8 @@ async def on_message(m):
 		await __main__.reply(m, emb=e)
 		return
 
-	if command in __main__.commands:
-		func = __main__.commands[command]
+	if command in commands.commands:
+		func = commands.commands[command]
 	elif customcommands.exists(m.server, command):
 		try:
 			await customcommands.run(
@@ -574,9 +575,9 @@ async def on_message(m):
 		return
 	else:
 		# Check if it's an alias
-		for c, p in __main__.commands.items():
+		for c, p in commands.commands.items():
 			if p[2] != None and command in p[2]:
-				func = __main__.commands[c]
+				func = commands.commands[c]
 				break
 		else:
 			if (not priv and config.get_s('notify_invalidcmd', m.server.id)) or \

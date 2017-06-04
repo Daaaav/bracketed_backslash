@@ -26,6 +26,7 @@ import importlib
 import json
 import logging
 import math
+import re
 import os
 import os.path
 import random
@@ -35,19 +36,16 @@ import sys
 import tempfile
 import time
 from threading import Timer
-import traceback
+import time
 
 import discord
 
 import checks
 import config
-import col
 import customcommands
-import emb
+import commands
 import events
-import images
 import op_ids
-import utils
 
 op_ids.load()
 config.load()
@@ -664,10 +662,5 @@ async def newmemberroles(member, specialchannel, bypassjoinchannel):
 
 def setglobal(s, x):
 	globals()[s] = x
-
-# Read as: dump code from file ... here
-# So that we can have our existing functions without going across separate modules, and without
-# making main.py far too long.
-exec(compile(open("commands.py", "rb").read(), "commands.py", 'exec'))
 
 client.run(token)

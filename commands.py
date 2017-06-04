@@ -19,6 +19,29 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import inspect
+import json
+import os
+import random
+import re
+import subprocess
+import sys
+import time
+import traceback
+
+import discord
+
+import __main__
+import checks
+import col
+import config
+import customcommands
+import emb
+import events
+import images
+import op_ids
+import utils
+
 # This file contains all the bot commands as functions.
 
 commands = {}
@@ -41,16 +64,16 @@ def shadow(auth=None, aliases=None, servonly=False):
 
 @shadow()
 async def _help(client, message, **kwargs):
-	content = (help_info_string + helplist(cmds, message.server))
+	content = (__main__.help_info_string + __main__.helplist(__main__.cmds, message.server))
 
 	# General
 	if kwargs['arguments'] is None:
 		pass
 	else:
 		matched = False
-		for cat in (cmds):
+		for cat in (__main__.cmds):
 			if kwargs['arguments'] == cat['cat_slug']:
-				content = helplist(cmds, message.server, kwargs['arguments'])
+				content = __main__.helplist(__main__.cmds, message.server, kwargs['arguments'])
 				matched = True
 				break
 
@@ -82,23 +105,23 @@ async def _help(client, message, **kwargs):
 				'Input `\help` for a list of valid commands to pass as arguments.'
 			)
 	embed = discord.Embed(description=content, colour=col.r_success)
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow(auth=checks.is_host)
 async def restart(client, message, **kwargs):
 	embed = emb.success('Restarting.', True)
-	embed.add_field(name='Uptime', value=reltime(boottimeunix, True))
+	embed.add_field(name='Uptime', value=__main__.reltime(__main__.boottimeunix, True))
 	embed.add_field(name='Messages in Cache', value=str(len(client.messages)))
-	logcommand(kwargs['command'], kwargs['arguments'], message)
-	await reply(message, emb=embed)
+	__main__.logcommand(kwargs['command'], kwargs['arguments'], message)
+	await __main__.reply(message, emb=embed)
 	os.execv(sys.executable, ['python'] + sys.argv)
 
 @shadow(auth=checks.is_host)
 async def kill(client, message, **kwargs):
 	embed = emb.success('Killing.', True)
-	embed.add_field(name='Uptime', value=reltime(boottimeunix, True))
-	logcommand(kwargs['command'], kwargs['arguments'], message)
-	await reply(message, emb=embed)
+	embed.add_field(name='Uptime', value=__main__.reltime(__main__.boottimeunix, True))
+	__main__.logcommand(kwargs['command'], kwargs['arguments'], message)
+	await __main__.reply(message, emb=embed)
 	await client.logout()
 	sys.exit(42)
 
@@ -106,10 +129,10 @@ async def kill(client, message, **kwargs):
 async def _config(client, message, **kwargs):
 	if message.server and \
 	message.server.id == op_ids.ids['opserver'] and \
-	not is_host(message.author):
-		embed = emb.error(t['no_permission'])
-		logfailedcommand(kwargs['command'], kwargs['arguments'], message)
-		await reply(message, emb=embed)
+	not __main__.is_host(message.author):
+		embed = emb.error(__main__.t['no_permission'])
+		__main__.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
+		await __main__.reply(message, emb=embed)
 		return
 	if kwargs['arguments'] == None:
 		content = (
@@ -125,13 +148,13 @@ async def _config(client, message, **kwargs):
 			'`\config reattach <key>`\n'
 			'`\config default <key>`\n'
 		)
-		await reply(message, content)
+		await __main__.reply(message, content)
 		return
 	elif kwargs['arguments'] == 'reload':
 		config.load()
-		logcommand(kwargs['command'], kwargs['arguments'], message)
+		__main__.logcommand(kwargs['command'], kwargs['arguments'], message)
 		embed = emb.success('Reloaded config.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 	elif kwargs['arguments'] == 'list' or kwargs['arguments'] == 'listhidden':
 		content = '```css'
@@ -146,7 +169,7 @@ async def _config(client, message, **kwargs):
 			except AttributeError:
 				content += '\n{} [{}] = {}'.format(c, config.get_type(c) + ('*' if config.is_array(c) else ''), config.get_s(c) if not config.is_array(c) else '[{}]'.format(len(config.get_s(c))))
 		content += '\n```'
-		await reply(message, content)
+		await __main__.reply(message, content)
 		return
 
 	splitargs = kwargs['arguments'].split(' ', 2)
@@ -155,21 +178,21 @@ async def _config(client, message, **kwargs):
 
 	if len(splitargs) == 1:
 		embed = emb.error('Too few arguments.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	if splitargs[0] == 'set':
 		if not config.exists(splitargs[1]):
 			embed = emb.error('That setting does not exist')
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 			return
 		if config.is_array(splitargs[1]):
 			embed = emb.error('That doesn’t work for an array')
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 			return
 		if config.get_type(splitargs[1]) == 'int' and not splitargs[2].isdigit():
 			embed = emb.error('Integer expected')
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 			return
 		try:
 			config.set_s(splitargs[1], splitargs[2], message.server.id)
@@ -177,19 +200,19 @@ async def _config(client, message, **kwargs):
 		except AttributeError:
 			config.set_s(splitargs[1], splitargs[2])
 		config.saveconfig()
-		logcommand(kwargs['command'], kwargs['arguments'], message)
+		__main__.logcommand(kwargs['command'], kwargs['arguments'], message)
 		embed = emb.success('Set `{}` to `{}`{}'.format(
 				splitargs[1], utils.wrapbackticks(
 					config.input_to_type_key(splitargs[2], splitargs[1])
 				),
-				t['editingmasterval'] if editingmaster else ''
+				__main__.t['editingmasterval'] if editingmaster else ''
 			)
 		)
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 	elif splitargs[0] == 'get':
 		if not config.exists(splitargs[1]):
 			embed = emb.error('That setting does not exist')
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 			return
 		try:
 			content = 'Key: `{}`   Type: `{}`   Array: `{}`   Detachable: `{}`   Using: `{}`\n'.format(splitargs[1], config.get_type(splitargs[1]), config.is_array(splitargs[1]), config.is_detachable(splitargs[1]), ('Local value' if config.is_detached(splitargs[1], message.server.id) else 'Master value'))
@@ -211,19 +234,19 @@ async def _config(client, message, **kwargs):
 				content += ' `{}`\nDefault: `{}`'.format(config.get_s(splitargs[1], message.server.id), config.get_default(splitargs[1]))
 			except AttributeError:
 				content += ' `{}`\nDefault: `{}`'.format(config.get_s(splitargs[1]), config.get_default(splitargs[1]))
-		await reply(message, content)
+		await __main__.reply(message, content)
 	elif splitargs[0] == 'insert' or splitargs[0] == 'remove':
 		if not config.exists(splitargs[1]):
 			embed = emb.error('That setting does not exist')
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 			return
 		if not config.is_array(splitargs[1]):
 			embed = emb.error('That doesn’t work for something that is not an array')
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 			return
 		if config.get_type(splitargs[1]) == 'int' and not splitargs[2].isdigit():
 			embed = emb.error('Integer expected')
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 			return
 		if splitargs[0] == 'insert':
 			try:
@@ -235,7 +258,7 @@ async def _config(client, message, **kwargs):
 					utils.wrapbackticks(
 						config.input_to_type_key(splitargs[2], splitargs[1])
 					), splitargs[1],
-					t['editingmasterval'] if editingmaster else ''
+					__main__.t['editingmasterval'] if editingmaster else ''
 				)
 			)
 		else:
@@ -248,20 +271,20 @@ async def _config(client, message, **kwargs):
 					utils.wrapbackticks(
 						config.input_to_type_key(splitargs[2], splitargs[1])
 					), splitargs[1],
-					t['editingmasterval'] if editingmaster else ''
+					__main__.t['editingmasterval'] if editingmaster else ''
 				)
 			)
 		config.saveconfig()
-		logcommand(kwargs['command'], kwargs['arguments'], message)
-		await reply(message, emb=embed)
+		__main__.logcommand(kwargs['command'], kwargs['arguments'], message)
+		await __main__.reply(message, emb=embed)
 	elif splitargs[0] == 'detach' or splitargs[0] == 'reattach':
 		if not config.exists(splitargs[1]):
 			embed = emb.error('That setting does not exist')
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 			return
 		if not config.is_detachable(splitargs[1]):
 			embed = emb.error('That setting cannot have an independent local value.')
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 			return
 		if splitargs[0] == 'detach':
 			try:
@@ -276,12 +299,12 @@ async def _config(client, message, **kwargs):
 			except AttributeError:
 				embed = emb.error('Can’t reattach values for non-servers.')
 		config.saveconfig()
-		logcommand(kwargs['command'], kwargs['arguments'], message)
-		await reply(message, emb=embed)
+		__main__.logcommand(kwargs['command'], kwargs['arguments'], message)
+		await __main__.reply(message, emb=embed)
 	elif splitargs[0] == 'default':
 		if not config.exists(splitargs[1]):
 			embed = emb.error('That setting does not exist')
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 			return
 		try:
 			config.restore_default(splitargs[1], message.server.id)
@@ -293,7 +316,7 @@ async def _config(client, message, **kwargs):
 		await reply(message, emb=embed)
 	else:
 		embed = emb.error('`{}` was not recognized'.format(splitargs[0]))
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 
 @shadow()
 async def echo(client, message, **kwargs):
@@ -314,30 +337,30 @@ async def echo(client, message, **kwargs):
 	else:
 		displayarguments = arguments[:2000-len(events.msg_start)]
 		replyargs = {'message': displayarguments}
-	await reply(message, **replyargs)
+	await __main__.reply(message, **replyargs)
 
 @shadow()
 async def hangman(client, message, **kwargs):
 	global guessedletters
 	if events.hangmanactive:
 		embed = emb.error('Hangman is already running. It can be aborted by the starter or by a mod with `\stophangman`.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
-	if not isprivatemessage(message.server):
+	if not __main__.isprivatemessage(message.server):
 		embed = emb.error('For now, this can only be run via DM.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 	if kwargs['arguments'] == None:
 		embed = emb.error('Please specify a word.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 	if not kwargs['arguments'].isalpha():
 		embed = emb.error('Words can only consist of letters A-Z')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 	if len(kwargs['arguments']) > 50:
 		embed = emb.error('Sorry, but your word is too long. It can be 50 characters max.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	events.hangmanchosenword = kwargs['arguments']
@@ -352,17 +375,17 @@ async def hangman(client, message, **kwargs):
 	await client.send_message(events.botschannel, msg)
 
 	content = 'https://discord.gg/gj6YmtV'
-	await reply(message, content)
+	await __main__.reply(message, content)
 
 @shadow()
 async def stophangman(client, message, **kwargs):
 	if not events.hangmanactive:
 		embed = emb.error('Can’t abort hangman because it’s not running.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
-	elif not is_mod(message.author) and message.author.id != events.hangmanstarter.id:
+	elif not __main__.is_mod(message.author) and message.author.id != events.hangmanstarter.id:
 		embed = emb.error('Can’t abort hangman because you haven’t started this game.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	events.hangmanactive = False
@@ -372,7 +395,7 @@ async def stophangman(client, message, **kwargs):
 @shadow()
 async def source(client, message, **kwargs):
 	content = 'Source code to the bot: https://gitgud.io/infoteddy/bracketed_backslash'
-	await reply(message, content)
+	await __main__.reply(message, content)
 
 @shadow(aliases=['findup'])
 async def findu(client, message, **kwargs):
@@ -383,8 +406,8 @@ async def findu(client, message, **kwargs):
 			'member', kwargs['arguments'], server=message.server
 		)
 	if targetmember == None:
-		embed = emb.error('Unable to find that member. ' + t['specify_user'])
-		await reply(message, emb=embed)
+		embed = emb.error('Unable to find that member. ' + __main__.t['specify_user'])
+		await __main__.reply(message, emb=embed)
 		return
 	displaymatch = '<@{}>'.format(targetmember.id)
 	if targetmember.game == None:
@@ -415,7 +438,7 @@ async def findu(client, message, **kwargs):
 	embed.add_field(name='Username', value=utils.mdspecialchars(targetmember.name))
 	embed.add_field(name='Discriminator', value='#{}'.format(targetmember.discriminator))
 	embed.add_field(name='User ID', value=targetmember.id)
-	embed.add_field(name='Bot', value='Yes' if is_bot(targetmember) else 'No')
+	embed.add_field(name='Bot', value='Yes' if __main__.is_bot(targetmember) else 'No')
 	embed.add_field(name=displaygamestatus, value=displaygamename)
 	embed.add_field(name=displaygameurlstatus, value=displaygameurl)
 	embed.add_field(name='Status', value='Do Not Disturb' if str(targetmember.status) == 'dnd' else str(targetmember.status).title())
@@ -426,7 +449,7 @@ async def findu(client, message, **kwargs):
 	# IMPORTANT: in `embed.add_field()`, `name` or `value` cannot be an empty string or you will get a 400 bad request when sending it
 	# (i learned that the hard way)
 	# (that was about twenty restarts smh)
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow(servonly=True)
 async def findc(client, message, **kwargs):
@@ -521,13 +544,13 @@ async def findc(client, message, **kwargs):
 				value=vchans,
 				inline=False,
 			)
-		await reply(message, emb=em)
+		await __main__.reply(message, emb=em)
 		return
 
 	tgt = utils.match_input('channel', kwargs['arguments'], server=message.server)
 	if not tgt:
-		em = emb.error('Unable to find that channel. ' + t['specify_channel'])
-		await reply(message, emb=em)
+		em = emb.error('Unable to find that channel. ' + __main__.t['specify_channel'])
+		await __main__.reply(message, emb=em)
 		return
 
 	readbleby = 0
@@ -583,7 +606,7 @@ async def findc(client, message, **kwargs):
 			str(readbleby) + ' members'
 		),
 	)
-	await reply(message, emb=em)
+	await __main__.reply(message, emb=em)
 
 @shadow(auth=checks.is_mod, aliases=['voiceunmute'])
 async def voicemute(client, message, **kwargs):
@@ -601,17 +624,17 @@ async def voicemute(client, message, **kwargs):
 			content = targetmember.mention
 			embed = emb.success('Voice unmuted <@{}>.'.format(targetmember.id))
 	except AttributeError:
-		embed = emb.error(t['specify_user'])
+		embed = emb.error(__main__.t['specify_user'])
 	except discord.errors.Forbidden:
-		embed = emb.error(t['no_permission'])
-	await reply(message, content, emb=embed)
+		embed = emb.error(__main__.t['no_permission'])
+	await __main__.reply(message, content, emb=embed)
 
 @shadow()
 async def votevoicemute(client, message, **kwargs):
 	# TODO start supporting this. When voting, require (part of) name (or id/mention/disc/you know the drill) if more than one vote is running
-	if len(votemutes) >= 1:
+	if len(__main__.votemutes) >= 1:
 		embed = emb.error('Multiple votes running at the same time is not yet supported.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	targetmember = utils.match_input('member', kwargs['arguments'], server=message.server)
@@ -620,7 +643,7 @@ async def votevoicemute(client, message, **kwargs):
 			embed = emb.error('You have to be in a voice channel to be able to start a vote.')
 		elif targetmember.voice.voice_channel == None:
 			embed = emb.error('User is not in a voice channel.')
-		elif targetmember.id in votemutes:
+		elif targetmember.id in __main__.votemutes:
 			embed = emb.warning('There is already a vote running for this user. Type **`\\vy`** to vote yes.')
 		else:
 			# Count the amount of people in all the voice channels
@@ -631,36 +654,36 @@ async def votevoicemute(client, message, **kwargs):
 
 			if voicechatters < config.get_s('votevmute_minmembers', message.server.id):
 				embed = emb.warning('There are not enough members in voice channels to start a vote.')
-				await reply(message, emb=embed)
+				await __main__.reply(message, emb=embed)
 				return
 
-			votemutes[targetmember.id] = {
+			__main__.votemutes[targetmember.id] = {
 				'starttime': int(time.time()),
 				'proponents': [message.author.id],
 				'opponents': []
 			}
 			content = 'A vote has been started to voice mute <@{}>.\nTo vote in favor of muting, type **`\\vy`**.\nTo vote against muting, type **`\\vn`**.\nModerators can cancel the vote by typing **`\\vc`**.'.format(targetmember.id)
-			await replyattach(message, images.votebar(1/voicechatters*100, 0, config.get_s('votevmute_threshold', message.server.id)), 'temp.png', content)
+			await __main__.replyattach(message, images.votebar(1/voicechatters*100, 0, config.get_s('votevmute_threshold', message.server.id)), 'temp.png', content)
 			return
 	except AttributeError:
-		embed = emb.error(t['specify_user'])
-	await reply(message, emb=embed)
+		embed = emb.error(__main__.t['specify_user'])
+	await __main__.reply(message, emb=embed)
 
 @shadow(aliases=['vn'])
 async def vy(client, message, **kwargs):
-	if len(votemutes) == 0:
+	if len(__main__.votemutes) == 0:
 		embed = emb.error('There are currently no votes running.')
-	elif len(votemutes) > 1:
+	elif len(__main__.votemutes) > 1:
 		embed = emb.error('Multiple votes running at the same time is not yet supported.')
 	else:
 		# First, who are we going to mute, again?
-		for m in votemutes:
+		for m in __main__.votemutes:
 			mutee = m
 			break
 
 		if message.author.voice.voice_channel == None:
 			embed = emb.error('You’re not in any voice channel.')
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 			return
 
 		content = 'Voted {}.'
@@ -675,17 +698,17 @@ async def vy(client, message, **kwargs):
 
 		content = content.format(resulttext)
 
-		if message.author.id in votemutes[mutee][side]:
+		if message.author.id in __main__.votemutes[mutee][side]:
 			embed = emb.warning('You have already voted that.')
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 			return
 
-		votemutes[mutee][side].append(message.author.id)
+		__main__.votemutes[mutee][side].append(message.author.id)
 
-		if message.author.id in votemutes[mutee][oppositeside]:
+		if message.author.id in __main__.votemutes[mutee][oppositeside]:
 			# Changing your mind, huh?
 			content = 'Changed vote to be {}.'.format(resulttext)
-			votemutes[mutee][oppositeside].remove(message.author.id)
+			__main__.votemutes[mutee][oppositeside].remove(message.author.id)
 
 		# For the amount of people who voted, only count those who are still inside the channel!
 		voicechatters = 0
@@ -696,9 +719,9 @@ async def vy(client, message, **kwargs):
 				voicechatters += len(chan.voice_members)
 
 				for voicemember in chan.voice_members:
-					if voicemember.id in votemutes[mutee]['proponents']:
+					if voicemember.id in __main__.votemutes[mutee]['proponents']:
 						numproponents += 1
-					if voicemember.id in votemutes[mutee]['opponents']:
+					if voicemember.id in __main__.votemutes[mutee]['opponents']:
 						numopponents  += 1
 
 		percpro = numproponents/voicechatters*100
@@ -708,30 +731,30 @@ async def vy(client, message, **kwargs):
 			targetmember = utils.match_input('member', mutee, server=message.server)
 			await client.server_voice_state(targetmember, mute=1)
 			content += '\n{}% of the members have now voted in favor of muting, so <@{}> is now voice muted.'.format(round(percpro,1), mutee)
-			del votemutes[mutee]
+			del __main__.votemutes[mutee]
 		elif percopp > 100-config.get_s('votevmute_threshold', message.server.id):
 			content += '\n{}% of the members have now voted against muting, so <@{}> is not getting voice muted.'.format(round(percopp,1), mutee)
-			del votemutes[mutee]
+			del __main__.votemutes[mutee]
 
-		await replyattach(message, images.votebar(percpro, percopp, config.get_s('votevmute_threshold', message.server.id)), 'temp.png', content)
+		await __main__.replyattach(message, images.votebar(percpro, percopp, config.get_s('votevmute_threshold', message.server.id)), 'temp.png', content)
 		return
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow(auth=checks.is_mod)
 async def vc(client, message, **kwargs):
-	if len(votemutes) == 0:
+	if len(__main__.votemutes) == 0:
 		embed = emb.error('There are currently no votes running.')
-	elif len(votemutes) > 1:
+	elif len(__main__.votemutes) > 1:
 		embed = emb.error('Multiple votes running at the same time is not yet supported.')
 	else:
 		# We're going to cancel the vote on whom?
-		for m in votemutes:
+		for m in __main__.votemutes:
 			mutee = m
 			break
 
-		del votemutes[mutee]
+		del __main__.votemutes[mutee]
 		embed = emb.success('The vote on <@{}> has been vetoed.'.format(mutee))
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow(auth=checks.is_mod)
 async def rolerst(client, message, **kwargs):
@@ -739,24 +762,24 @@ async def rolerst(client, message, **kwargs):
 		targetmember = utils.match_input(
 			'member', kwargs['arguments'], server=message.server,
 		)
-		await removeRestrictiveRoles(targetmember, message.server)
+		await __main__.removeRestrictiveRoles(targetmember, message.server)
 	except(AttributeError, TypeError):
-		embed = emb.error(t['specify_user'])
-		await reply(message, emb=embed)
+		embed = emb.error(__main__.t['specify_user'])
+		await __main__.reply(message, emb=embed)
 		return
 	embed = emb.success('Reset roles for <@{}> back to normal.'.format(targetmember.id))
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow(auth=checks.is_mod)
 async def expires(client, message, **kwargs):
 	if kwargs['arguments'] is None:
 		embed = emb.error('Please input at least a relative time.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	splitargs = kwargs['arguments'].split(' ', 1)
 
-	expirytime = parsereltime(splitargs[0])
+	expirytime = __main__.parsereltime(splitargs[0])
 	if expirytime is None:
 		embed = emb.error((
 				'Invalid expiry time. Please input a relative time '
@@ -766,7 +789,7 @@ async def expires(client, message, **kwargs):
 				'have to be in the correct order, though.'
 			)
 		)
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	if len(splitargs) < 2:
@@ -776,7 +799,7 @@ async def expires(client, message, **kwargs):
 					'Please provide any member identification instead.'
 				)
 			)
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 			return
 		targetmemberid = events.latestroled
 	else:
@@ -786,49 +809,49 @@ async def expires(client, message, **kwargs):
 			)
 			targetmemberid = targetmember.id
 		except AttributeError:
-			embed = emb.error(t['specify_user'])
-			await reply(message, emb=embed)
+			embed = emb.error(__main__.t['specify_user'])
+			await __main__.reply(message, emb=embed)
 			return
 
-	addexpiryentry(message.server.id, targetmemberid, expirytime)
+	__main__.addexpiryentry(message.server.id, targetmemberid, expirytime)
 
-	rolexpiresave()
-	await handleExpiryTimer()
+	__main__.rolexpiresave()
+	await __main__.handleExpiryTimer()
 
 	embed = emb.success('Roles for <@{}> will be reset {}'.format(
-			targetmemberid, reltime(expirytime)
+			targetmemberid, __main__.reltime(expirytime)
 		)
 	)
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow(auth=checks.is_mod)
 async def expiryremove(client, message, **kwargs):
 	if kwargs['arguments'] is None:
 		embed = emb.error('Please enter something.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	try:
 		targetmember = utils.match_input(
 			'member', kwargs['arguments'], server=message.server,
 		)
-		if removeexpiryentry(message.server.id, targetmember.id):
+		if __main__.removeexpiryentry(message.server.id, targetmember.id):
 			embed = emb.success(
 				'Roles for <@{}> will no longer automatically expire.'.format(
 					targetmember.id
 				)
 			)
-			rolexpiresave()
+			__main__.rolexpiresave()
 		else:
 			embed = emb.error(
 				'Could not find <@!{}> in the expiry list.'.format(
 					targetmember.id
 				)
 			)
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 	except AttributeError:
-		embed = emb.error(t['specify_user'])
-		await reply(message, emb=embed)
+		embed = emb.error(__main__.t['specify_user'])
+		await __main__.reply(message, emb=embed)
 		return
 
 @shadow()
@@ -836,7 +859,7 @@ async def expirylist(client, message, **kwargs):
 	if message.channel.is_private:
 		if not kwargs['arguments']:
 			embed = emb.error('You should probably specify a server.')
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 			return
 		server = utils.match_input('server', kwargs['arguments'], client=client)
 		if not server or (message.author not in server.members and not kwargs['sudo']):
@@ -847,7 +870,7 @@ async def expirylist(client, message, **kwargs):
 					' or that server doesn’t exist.'
 				),
 			)
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 			return
 		content = 'Expiry list for server **{0.name}** ({0.id}):\n'.format(server)
 	else:
@@ -856,113 +879,113 @@ async def expirylist(client, message, **kwargs):
 
 	if server.id in events.rolexpires:
 		for k, v in sorted(events.rolexpires[server.id].items(), key=lambda i: i[1]['time']):
-			content += '<@{}>: {}\n'.format(k, reltime(v['time']))
+			content += '<@{}>: {}\n'.format(k, __main__.reltime(v['time']))
 
 	if content == '':
 		content = 'No expiry timers are currently running.'
 
 	embed = emb.info(content)
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow(auth=checks.is_mod)
 async def rolecacherst(client, message, **kwargs):
 	if config.get_s('rolecachemode', message.server.id) == 0:
-		embed = emb.error(t['rolecachedisabled'])
-		await reply(message, emb=embed)
+		embed = emb.error(__main__.t['rolecachedisabled'])
+		await __main__.reply(message, emb=embed)
 		return
 	elif kwargs['arguments'] == None:
 		embed = emb.error('Please give an ID.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 	elif utils.match_input('member', kwargs['arguments'], server=message.server) != None:
 		embed = emb.error('That member is apparently still on this server! Not removing from the cache.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
-	if removerolecache(kwargs['arguments'], message.server.id):
+	if __main__.removerolecache(kwargs['arguments'], message.server.id):
 		embed = emb.success('Member {} successfully removed from role cache.'.format(kwargs['arguments']))
-		await reply(message, emb=embed)
-		rolecachesave()
+		await __main__.reply(message, emb=embed)
+		__main__.rolecachesave()
 	else:
 		embed = emb.error('Member {} cannot be found in the role cache. Please note you have to enter an ID, not any form of name!'.format(kwargs['arguments']))
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 
 @shadow(auth=checks.is_mod)
 async def rolecacheadd(client, message, **kwargs):
 	if config.get_s('rolecachemode', message.server.id) == 0:
-		embed = emb.error(t['rolecachedisabled'])
-		await reply(message, emb=embed)
+		embed = emb.error(__main__.t['rolecachedisabled'])
+		await __main__.reply(message, emb=embed)
 		return
 	elif kwargs['arguments'] == None:
 		embed = emb.error('Please give two IDs.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	splitargs = kwargs['arguments'].split()
 	if utils.match_input('member', splitargs[0], server=message.server) != None:
 		embed = emb.error('That member is apparently still on this server! Not doing anything.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	if splitargs[1] == None:
 		embed = emb.error('Please give two IDs.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	if splitargs[0] not in events.memberroles[message.server.id]:
 		events.memberroles[message.server.id][splitargs[0]] = []
 
 	events.memberroles[message.server.id][splitargs[0]].append(splitargs[1])
-	rolecachesave()
+	__main__.rolecachesave()
 
 	embed = emb.success('Successfully added role {} to member {} in the role cache.'.format(splitargs[1], splitargs[0]))
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow()
 async def rolesync(client, message, **kwargs):
 	perms = discord.Channel.permissions_for(message.channel, message.author)
 	if not perms.manage_roles:
-		embed = emb.error(t['you_no_permission'])
-		logfailedcommand(kwargs['command'], kwargs['arguments'], message)
-		await reply(message, emb=embed)
+		embed = emb.error(__main__.t['you_no_permission'])
+		__main__.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
+		await __main__.reply(message, emb=embed)
 		return
 	elif config.get_s('rolecachemode', message.server.id) == 0:
-		embed = emb.error(t['rolecachedisabled'])
-		await reply(message, emb=embed)
+		embed = emb.error(__main__.t['rolecachedisabled'])
+		await __main__.reply(message, emb=embed)
 		return
 
 	for mem in message.server.members:
-		updaterolecache(mem, message.server.id)
+		__main__.updaterolecache(mem, message.server.id)
 
-	rolecachesave()
+	__main__.rolecachesave()
 
 	embed = emb.success('Synced roles.')
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow(auth=checks.is_mod)
 async def rolecacheinfo(client, message, **kwargs):
 	if config.get_s('rolecachemode', message.server.id) == 0:
-		embed = emb.error(t['rolecachedisabled'])
-		await reply(message, emb=embed)
+		embed = emb.error(__main__.t['rolecachedisabled'])
+		await __main__.reply(message, emb=embed)
 		return
 	if not kwargs['arguments'] in events.memberroles[message.server.id]:
 		embed = emb.error('That member is not in the role cache.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
-	content = 'According to the role cache, this member has the following roles: ' + listroles_id(events.memberroles[message.server.id][kwargs['arguments']])
+	content = 'According to the role cache, this member has the following roles: ' + __main__.listroles_id(events.memberroles[message.server.id][kwargs['arguments']])
 
-	await reply(message, content)
+	await __main__.reply(message, content)
 
 @shadow(aliases=['rule'], servonly=True)
 async def rules(client, message, **kwargs):
-	if message.server.id in events.disabledrules and not is_mod(message.author):
+	if message.server.id in events.disabledrules and not __main__.is_mod(message.author):
 		embed = emb.error('The rules system is currently disabled for this server.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 	if not message.server.id in events.rules:
 		embed = emb.warning('Rules are not (yet) set for this server.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 	if kwargs['arguments'] != None and kwargs['arguments'].isdigit():
 		try:
@@ -974,9 +997,9 @@ async def rules(client, message, **kwargs):
 			return
 		except IndexError:
 			# But only if the rules actually don't exist
-			if int(kwargs['arguments']) in funnynumbers:
-				content = respondtorule(kwargs['arguments'])
-				await reply(message, content)
+			if int(kwargs['arguments']) in __main__.funnynumbers:
+				content = __main__.respondtorule(kwargs['arguments'])
+				await __main__.reply(message, content)
 				return
 			pass
 	n = 1
@@ -984,21 +1007,21 @@ async def rules(client, message, **kwargs):
 	for rule in events.rules[message.server.id]:
 		content += '\n**{}.** {}'.format(n, rule)
 		n += 1
-	await reply(message, content)
+	await __main__.reply(message, content)
 
 @shadow(servonly=True)
 async def rulefind(client, message, **kwargs):
-	if message.server.id in events.disabledrules and not is_mod(message.author):
+	if message.server.id in events.disabledrules and not __main__.is_mod(message.author):
 		embed = emb.error('The rules system is currently disabled for this server.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 	if not message.server.id in events.rules:
 		embed = emb.warning('Rules are not (yet) set for this server.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 	if kwargs['arguments'] == None:
 		embed = emb.error('Please enter a search term.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 	matched = False
 	n = 1
@@ -1012,31 +1035,31 @@ async def rulefind(client, message, **kwargs):
 		embed = emb.warning('No rules on server `{}` matching `{}`.'.format(utils.wrapbackticks(message.server.name), utils.wrapbackticks(kwargs['arguments'])))
 		await reply(message, emb=embed)
 		return
-	await reply(message, content)
+	await __main__.reply(message, content)
 
 @shadow(aliases=['addrule'])
 async def ruleadd(client, message, **kwargs):
-	if not is_mod(message.author):
+	if not __main__.is_mod(message.author):
 		# Okay, so they're not allowed to mess with the rules - but we want to respond to some particular things as well.
 		splitargs = kwargs['arguments'].split(' ', 1)
-		if splitargs[0].isdigit() and int(splitargs[0]) in funnynumbers:
-			content = respondtorule(splitargs[0])
-			await reply(message, content)
+		if splitargs[0].isdigit() and int(splitargs[0]) in __main__.funnynumbers:
+			content = __main__.respondtorule(splitargs[0])
+			await __main__.reply(message, content)
 			return
 		elif splitargs[0].isdigit() and int(splitargs[0]) > len(events.rules[message.server.id]):
 			embed = emb.warning('Why are you mentioning the number if you want to add this as the last rule?')
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 			return
 
 		# Ok good, they're not doing something weird or trying to be funny.
-		embed = emb.error(t['mod_only'])
-		logfailedcommand(kwargs['command'], kwargs['arguments'], message)
+		embed = emb.error(__main__.t['mod_only'])
+		__main__.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 	if kwargs['arguments'] == None:
 		embed = emb.error('I’m not going to think up any rules by myself.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 	if not message.server.id in events.rules:
 		events.rules[message.server.id] = []
@@ -1053,18 +1076,18 @@ async def ruleadd(client, message, **kwargs):
 		events.rules[message.server.id].append(kwargs['arguments'])
 		content = 'New rule {} added:\n{}'.format(len(events.rules[message.server.id]), kwargs['arguments']) # ...and this one is "added". That is on purpose, not an inconsistency.
 	embed = emb.success(content)
-	rulesave()
-	await reply(message, emb=embed)
+	__main__.rulesave()
+	await __main__.reply(message, emb=embed)
 
 @shadow(auth=checks.is_mod, aliases=['editrule'])
 async def ruleedit(client, message, **kwargs):
 	if kwargs['arguments'] == None:
 		embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 	if not message.server.id in events.rules:
 		embed = emb.error('No rules to edit.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	splitargs = kwargs['arguments'].split(' ', 1)
@@ -1073,26 +1096,26 @@ async def ruleedit(client, message, **kwargs):
 			events.rules[message.server.id][int(splitargs[0])-1]
 		except IndexError:
 			embed = emb.error('Rule {} does not appear to exist.'.format(int(splitargs[0])))
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 			return
 
 		embed = emb.success('Rule {} successfully edited from:\n{}\nTo:\n{}'.format(int(splitargs[0]), events.rules[message.server.id][int(splitargs[0])-1], splitargs[1]))
 
 		events.rules[message.server.id][int(splitargs[0])-1] = splitargs[1]
-		rulesave()
+		__main__.rulesave()
 	else:
 		embed = emb.error('Invalid rule number given, just check the help entry.')
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow(auth=checks.is_mod, aliases=['moverule'])
 async def rulemove(client, message, **kwargs):
 	if kwargs['arguments'] == None:
 		embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 	if not message.server.id in events.rules:
 		embed = emb.error('No rules to move.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	splitargs = kwargs['arguments'].split(' ', 1)
@@ -1102,28 +1125,28 @@ async def rulemove(client, message, **kwargs):
 			events.rules[message.server.id][int(splitargs[1])-1]
 		except IndexError:
 			embed = emb.error('Either rule {} does not exist or {} is not a slot it can be moved to.'.format(int(splitargs[0]), int(splitargs[1])))
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 			return
 
 		rulecontent = events.rules[message.server.id][int(splitargs[0])-1]
 		events.rules[message.server.id].remove(events.rules[message.server.id][int(splitargs[0])-1])
 		events.rules[message.server.id].insert(int(splitargs[1])-1, rulecontent)
-		rulesave()
+		__main__.rulesave()
 
 		embed = emb.success('Rule {} successfully moved to number {}.'.format(int(splitargs[0]), int(splitargs[1])))
 	else:
 		embed = emb.error('Invalid rule number(s) given, just check the help entry.')
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow(auth=checks.is_mod, aliases=['removerule'])
 async def ruleremove(client, message, **kwargs):
 	if kwargs['arguments'] == None:
 		embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 	if not message.server.id in events.rules:
 		embed = emb.error('No rules to delete.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	if kwargs['arguments'].isdigit():
@@ -1131,16 +1154,16 @@ async def ruleremove(client, message, **kwargs):
 			events.rules[message.server.id][int(kwargs['arguments'])-1]
 		except IndexError:
 			embed = emb.error('Rule {} does not appear to exist.'.format(int(kwargs['arguments'])))
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 			return
 
 		embed = emb.success('Rule {} successfully removed:\n{}'.format(int(kwargs['arguments']), events.rules[message.server.id][int(kwargs['arguments'])-1]))
 
 		events.rules[message.server.id].remove(events.rules[message.server.id][int(kwargs['arguments'])-1])
-		rulesave()
+		__main__.rulesave()
 	else:
 		embed = emb.error('Invalid rule number given, just check the help entry.')
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow(auth=checks.is_mod)
 async def rulemaint(client, message, **kwargs):
@@ -1152,7 +1175,7 @@ async def rulemaint(client, message, **kwargs):
 		embed = emb.success('Rules system disabled for this server.')
 	with open('disabledrules.json', 'w') as outfile:
 		json.dump(events.disabledrules, outfile)
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow()
 async def info(client, message, **kwargs):
@@ -1162,8 +1185,8 @@ async def info(client, message, **kwargs):
 	try:
 		perms = discord.Channel.permissions_for(message.channel, persontocheck)
 	except AttributeError:
-		embed = emb.error(t['specify_user'])
-		await reply(message, emb=embed)
+		embed = emb.error(__main__.t['specify_user'])
+		await __main__.reply(message, emb=embed)
 		return
 
 	leftover = []
@@ -1172,41 +1195,41 @@ async def info(client, message, **kwargs):
 
 	content = 'Permissions for **``{}``**`#{}` in <#{}>:\n**`Server Owner:`** {}'.format(persontocheck.name, persontocheck.discriminator, message.channel.id, yesperm if persontocheck == persontocheck.server.owner else noperm)
 
-	for stored_p in permissionlabels:
+	for stored_p in __main__.permissionlabels:
 		if not stored_p[0] in leftover:
 			content += '\n**`{}:`** NOT USED'.format(stored_p[1])
 		else:
 			content += '\n**`{}:`** {}'.format(stored_p[1], yesperm if getattr(perms, stored_p[0]) else noperm)
 			leftover.remove(stored_p[0])
 		if perms.administrator:
-			await reply(message, content)
+			await __main__.reply(message, content)
 			return
 
 	for left_p in leftover:
 		# Apparently these permissions are new
 		content += '\n`{}:` {}'.format(left_p, yesperm if getattr(perms, left_p) else noperm)
 
-	await reply(message, content)
+	await __main__.reply(message, content)
 
 @shadow()
 async def teddy(client, message, **kwargs):
 	content = 'xd'
-	await reply(message, content)
+	await __main__.reply(message, content)
 
 @shadow()
 async def samar(client, message, **kwargs):
 	content = 'Why does he like Undertale?'
-	await reply(message, content)
+	await __main__.reply(message, content)
 
 @shadow()
 async def lui(client, message, **kwargs):
 	content = 'i think /r/undertale is a pretty cool guy, eh deletes messages and doesnt afraid of lying'
-	await reply(message, content)
+	await __main__.reply(message, content)
 
 @shadow()
 async def shiny(client, message, **kwargs):
 	content = 'moar liek shittykitty amirite'
-	await reply(message, content)
+	await __main__.reply(message, content)
 
 @shadow()
 async def tainy(client, message, **kwargs):
@@ -1214,7 +1237,7 @@ async def tainy(client, message, **kwargs):
 		'moar liek stainy amirite',
 		'moar like painy amirite',
 	])
-	await reply(message, content)
+	await __main__.reply(message, content)
 
 @shadow()
 async def fuckingdense(client, message, **kwargs):
@@ -1226,17 +1249,17 @@ async def fuckingdense(client, message, **kwargs):
 		'Well. Well well well. Welly well well well. Well well well welly well well welly. You never accepted the fact it took me a bunch of days to deal with this. I had to copy the ROOMS, not remove the SCRIPTS. ... And now Im done with your hatred for what I do and how I do it. Im telling FIQ about what you said about Back to VVVVVV II... Through PM.',
 		'THATS IT. I KNOW WHAT I MUST DO.',
 	])
-	await reply(message, content)
+	await __main__.reply(message, content)
 
 @shadow()
 async def kys(client, message, **kwargs):
 	content = 'nah'
-	await reply(message, content)
+	await __main__.reply(message, content)
 
 @shadow()
 async def botok(client, message, **kwargs):
 	embed = emb.success('Bot is okay.')
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow()
 async def uptime(client, message, **kwargs):
@@ -1245,15 +1268,15 @@ async def uptime(client, message, **kwargs):
 	embed.set_author(name='Uptime Statistics', icon_url=client.user.avatar_url)
 	embed.set_thumbnail(url=client.user.avatar_url)
 	embed.set_footer(text='Uptime Statistics', icon_url=client.user.avatar_url)
-	embed.add_field(name='Boot Time', value=boottime)
+	embed.add_field(name='Boot Time', value=__main__.boottime)
 	try:
 		now = config.get_s('timeformat', message.server.id)
 	except AttributeError:
 		now = config.get_s('timeformat')
 	embed.add_field(name='Current Time', value=time.strftime(now))
-	embed.add_field(name='Bot Uptime', value=reltime(boottimeunix, True))
+	embed.add_field(name='Bot Uptime', value=__main__.reltime(__main__.boottimeunix, True))
 	embed.add_field(name='Host Uptime', value=hostuptime.decode('utf-8'))
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow()
 async def invite(client, message, **kwargs):
@@ -1261,7 +1284,7 @@ async def invite(client, message, **kwargs):
 		'**`tOLP Discord`** – the server it’s built for. Join at __https://discord.gg/0r76El7PzkPMhSBF__.\n'
 		'**`Aperture Science`** – the bot’s testing server. Join at __https://discord.gg/0skUn2HYSEHxw9Dg__.'
 	)
-	await reply(message, content)
+	await __main__.reply(message, content)
 
 @shadow()
 async def version(client, message, **kwargs):
@@ -1270,11 +1293,11 @@ async def version(client, message, **kwargs):
 	embed.set_thumbnail(url=client.user.avatar_url)
 	embed.set_footer(text='Version Information', icon_url=client.user.avatar_url)
 	embed.set_thumbnail(url=client.user.avatar_url)
-	embed.add_field(name='\\[\\\\\\]', value='{}, last updated {}'.format(botversion, modificationtimecache))
+	embed.add_field(name='\\[\\\\\\]', value='{}, last updated {}'.format(__main__.botversion, __main__.modificationtimecache))
 	embed.add_field(name='discord.py', value='{} {}'.format(discord.version_info.releaselevel, discord.__version__))
 	embed.add_field(name='Python', value=sys.version)
 	embed.add_field(name='PIL', value=__import__("PIL").VERSION)
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow(auth=checks.is_mod)
 async def getrawmessagecontent(client, message, **kwargs):
@@ -1306,12 +1329,12 @@ async def getrawmessagecontent(client, message, **kwargs):
 			await reply(message, content)
 		return
 	except AttributeError:
-		embed = emb.error('Invalid arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=kwargs['command']))
+		embed = emb.error('Invalid arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=__main__.invoker, command=kwargs['command']))
 	except IndexError:
-		embed = emb.error('Invalid amount of arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=kwargs['command']))
+		embed = emb.error('Invalid amount of arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=__main__.invoker, command=kwargs['command']))
 	except (discord.errors.HTTPException, KeyError):
-		embed = emb.error('Invalid channel or message ID given. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=kwargs['command']))
-	await reply(message, emb=embed)
+		embed = emb.error('Invalid channel or message ID given. Input `{invoker}help {command}` for more information.'.format(invoker=__main__.invoker, command=kwargs['command']))
+	await __main__.reply(message, emb=embed)
 
 @shadow()
 async def countpins(client, message, **kwargs):
@@ -1323,10 +1346,10 @@ async def countpins(client, message, **kwargs):
 	try:
 		pins = await client.pins_from(getchannel)
 		content = '{} currently has {} pins, {} remaining.'.format(getchannel.mention, len(pins), 50-len(pins))
-		await replyattach(message, images.progressbar(len(pins)*2), 'temp.png', content)
+		await __main__.replyattach(message, images.progressbar(len(pins)*2), 'temp.png', content)
 	except AttributeError:
-		embed = emb.error('The channel doesn’t exist, has been deleted, or it’s not a channel at all. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=kwargs['command']))
-		await reply(message, emb=embed)
+		embed = emb.error('The channel doesn’t exist, has been deleted, or it’s not a channel at all. Input `{invoker}help {command}` for more information.'.format(invoker=__main__.invoker, command=kwargs['command']))
+		await __main__.reply(message, emb=embed)
 
 @shadow(servonly=True)
 async def countallpins(client, message, **kwargs):
@@ -1339,7 +1362,7 @@ async def countallpins(client, message, **kwargs):
 				content += '{} – {} pins, {} remaining\n'.format(chan.mention, len(pins), 50-len(pins))
 			except discord.errors.Forbidden:
 				content += '{} - Unable to get data\n'.format(chan.mention)
-	await reply(message, content)
+	await __main__.reply(message, content)
 
 @shadow()
 async def _math(client, message, **kwargs):
@@ -1347,13 +1370,13 @@ async def _math(client, message, **kwargs):
 	try:
 		cmdbits = kwargs['arguments'].split() # should split it so [0] is number, [1] is operand, [2] is second number
 	except AttributeError:
-		embed = emb.error('Invalid arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=kwargs['command']))
-		await reply(message, emb=embed)
+		embed = emb.error('Invalid arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=__main__.invoker, command=kwargs['command']))
+		await __main__.reply(message, emb=embed)
 		return
 	try:
 		if len(cmdbits) != 3: # the arguments should be [number], [operand], [number]
-			embed = emb.error('Invalid amount of arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=kwargs['command']))
-			await reply(message, emb=embed)
+			embed = emb.error('Invalid amount of arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=__main__.invoker, command=kwargs['command']))
+			await __main__.reply(message, emb=embed)
 			return
 		numbers = ['', '']
 		numbers[0] = float(cmdbits[0]) # number 1
@@ -1378,21 +1401,21 @@ async def _math(client, message, **kwargs):
 			for i in range(int(numbers[1])): # decimal range isn't
 				out = out ** oper # iterate until tetration is finished
 		else: #invalid operand, we don't care what the inputs are
-			embed = emb.error('Invalid operands passed. Input `{invoker}help {command}` for more information.'.format(invoker=invoker, command=kwargs['command']))
-			await reply(message, emb=embed)
+			embed = emb.error('Invalid operands passed. Input `{invoker}help {command}` for more information.'.format(invoker=__main__.invoker, command=kwargs['command']))
+			await __main__.reply(message, emb=embed)
 			return
 	except OverflowError:
 		embed = emb.error('Overflow error.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 	except ValueError:
 		embed = emb.error('You should probably enter in numbers.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 	# end
 	content = '{number1} {operand} {number2} = {out}'.format(number1=cmdbits[0], operand=cmdbits[1], number2=cmdbits[2], out=out)
 	embed = discord.Embed(title='Math Output', description=content, colour=col.r_success)
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow(auth=checks.is_operator)
 async def gamestatus(client, message, **kwargs):
@@ -1428,9 +1451,9 @@ async def _eval(client, message, **kwargs):
 			'End of results.'
 		).format(content))
 		embed = emb.warning('Content too large to print. Printing to terminal instead.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
-	await reply(message, content)
+	await __main__.reply(message, content)
 
 @shadow(aliases=['serverban', 'unserverban'])
 async def kick(client, message, **kwargs):
@@ -1439,42 +1462,42 @@ async def kick(client, message, **kwargs):
 		if kwargs['command'] == 'kick':
 			if not message.author.server_permissions.kick_members and \
 			not kwargs['sudo']:
-				logfailedcommand(kwargs['command'], kwargs['arguments'], message)
-				embed = emb.error(t['you_no_permission'])
-				await reply(message, emb=embed)
+				__main__.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
+				embed = emb.error(__main__.t['you_no_permission'])
+				await __main__.reply(message, emb=embed)
 				return
 			await client.kick(targetmember)
 		elif kwargs['command'] == 'serverban':
 			if not message.author.server_permissions.ban_members and not kwargs['sudo']:
-				logfailedcommand(kwargs['command'], kwargs['arguments'], message)
-				embed = emb.error(t['you_no_permission'])
-				await reply(message, emb=embed)
+				__main__.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
+				embed = emb.error(__main__.t['you_no_permission'])
+				await __main__.reply(message, emb=embed)
 				return
 			await client.ban(targetmember, 0)
 		elif kwargs['command'] == 'serverunban':
 			if not message.author.server_permissions.ban_members and not kwargs['sudo']:
-				logfailedcommand(kwargs['command'], kwargs['arguments'], message)
-				embed = emb.error(t['you_no_permission'])
-				await reply(message, emb=embed)
+				__main__.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
+				embed = emb.error(__main__.t['you_no_permission'])
+				await __main__.reply(message, emb=embed)
 				return
 			await client.unban(message.server, targetmember)
 		content = targetmember.mention
 		embed = emb.success('{}ed <@{}>.'.format(kwargs['command'].title() if kwargs['command'] == 'kick' else kwargs['command'].title() + 'n', targetmember.id))
 	except AttributeError:
 		content = ''
-		embed = emb.error(t['specify_user'])
+		embed = emb.error(__main__.t['specify_user'])
 	except discord.errors.Forbidden:
 		content = ''
-		embed = emb.error(t['no_permission'])
-	await reply(message, content, emb=embed)
+		embed = emb.error(__main__.t['no_permission'])
+	await __main__.reply(message, content, emb=embed)
 
 @shadow()
 async def bans(client, message, **kwargs):
 	try:
 		bans = await client.get_bans(message.server)
 	except discord.errors.Forbidden:
-		embed = emb.error(t['no_permission'])
-		await reply(message, emb=embed)
+		embed = emb.error(__main__.t['no_permission'])
+		await __main__.reply(message, emb=embed)
 		return
 	ulist = ''
 	for u in bans:
@@ -1491,24 +1514,24 @@ async def bans(client, message, **kwargs):
 		colour=col.r_success,
 	)
 	embed.set_thumbnail(url=message.server.icon_url)
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow(auth=checks.is_operator)
 async def reloadstrings(client, message, **kwargs):
-	loadstrings()
+	__main__.loadstrings()
 	embed = emb.success('Reloaded strings.')
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow()
 async def join(client, message, **kwargs):
 	embed = emb.error('What an odd place to be using this command!')
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow(auth=checks.is_tntgb_mod, aliases=['b_mod'])
 async def b(client, message, **kwargs):
 	if message.server.id != events.tntgbserver:
-		embed = emb.error(t['tntgb_only'])
-		await reply(message, emb=embed)
+		embed = emb.error(__main__.t['tntgb_only'])
+		await __main__.reply(message, emb=embed)
 		return
 	# Who are we banning, and for what reason?
 	if kwargs['arguments'].find('\n') != -1:
@@ -1520,14 +1543,14 @@ async def b(client, message, **kwargs):
 
 	banningnonmod = True
 	announcemsg = ''
-	specialchannel = getspecialchannel(message.channel.server)
+	specialchannel = __main__.getspecialchannel(message.channel.server)
 	try:
 		targetmember = utils.match_input('member', splitargs[0], server=message.server)
-		if targetmember != None and is_tntgb_banned(targetmember):
+		if targetmember != None and __main__.is_tntgb_banned(targetmember):
 			embed = emb.warning('{} is already banned!'.format(targetmember.mention))
 			await client.send_message(specialchannel, embed=embed)
 			banningnonmod = False  # See this as "don't set expiry timer"
-		elif targetmember != None and is_tntgb_mod(targetmember):
+		elif targetmember != None and __main__.is_tntgb_mod(targetmember):
 			if kwargs['command'] != 'b_mod':
 				embed = emb.warning(
 					(
@@ -1539,7 +1562,7 @@ async def b(client, message, **kwargs):
 
 				# We're doing this in a public channel
 				await client.delete_message(message)
-				messages_deleted_by_bot.append(message)
+				__main__.messages_deleted_by_bot.append(message)
 
 				return
 
@@ -1550,13 +1573,13 @@ async def b(client, message, **kwargs):
 			content = 'Lifted bans:'
 
 			for i in range(0,2):
-				currentexpiry = getearliestexpiry(message.server.id)
+				currentexpiry = __main__.getearliestexpiry(message.server.id)
 
 				if currentexpiry == None:
 					continue
 
 				try:
-					await removeRestrictiveRoles(
+					await __main__.removeRestrictiveRoles(
 						message.server.get_member(currentexpiry[0]),
 						message.server
 					)
@@ -1565,8 +1588,8 @@ async def b(client, message, **kwargs):
 					)
 				except (AttributeError, TypeError):
 					# Look in the role cache
-					if removerolecache(currentexpiry[0], message.server.id):
-						rolecachesave()
+					if __main__.removerolecache(currentexpiry[0], message.server.id):
+						__main__.rolecachesave()
 						content += '\n<@!{}> lifted via role cache'.format(
 							currentexpiry[0]
 						)
@@ -1578,8 +1601,8 @@ async def b(client, message, **kwargs):
 				# Shorten this again
 				thisexpiry = currentexpiry[1]
 				if thisexpiry['msgedit_message'] != '0':
-					await editexpirymessage(message.server, thisexpiry)
-				if not removeexpiryentry(message.server.id, currentexpiry[0]):
+					await __main__.editexpirymessage(message.server, thisexpiry)
+				if not __main__.removeexpiryentry(message.server.id, currentexpiry[0]):
 					try:
 						em = emb.warning((
 							'Could not remove expiry entry for '
@@ -1606,7 +1629,7 @@ async def b(client, message, **kwargs):
 						await client.send_message(specialchannel, embed=em)
 				expiredmentions.append('<@!{}>'.format(currentexpiry[0]))
 
-			rolexpiresave()
+			__main__.rolexpiresave()
 
 			# Send administration info
 			embed = emb.info(content)
@@ -1654,47 +1677,47 @@ async def b(client, message, **kwargs):
 			content = '⛔ ' + announcemsg
 			sentmessage = await client.send_message(events.banlogchannel_tntgb, content)
 	except (AttributeError,TypeError):
-		embed = emb.error(t['specify_user'])
+		embed = emb.error(__main__.t['specify_user'])
 		await client.send_message(specialchannel, embed=embed)
 		banningnonmod = False
 
 	# Now delete the calling message
 	await client.delete_message(message)
-	messages_deleted_by_bot.append(message)
+	__main__.messages_deleted_by_bot.append(message)
 
 	if banningnonmod:
 		# Also set an expiry timer
-		expirytime = parsereltime('5d')
+		expirytime = __main__.parsereltime('5d')
 
-		addexpiryentry(message.server.id, targetmember.id, expirytime,
+		__main__.addexpiryentry(message.server.id, targetmember.id, expirytime,
 			e_channel=sentmessage.channel.id, e_message=sentmessage.id,
 			e_newcontent='[LIFTED] ' + announcemsg,
 			p_channel=events.banlogchannel_tntgb.id,
 			p_content='The ban on {} has expired.'.format(targetmember.mention)
 		)
 
-		rolexpiresave()
-		await handleExpiryTimer()
+		__main__.rolexpiresave()
+		await __main__.handleExpiryTimer()
 
 @shadow()
 async def selfban(client, message, **kwargs):
 	if message.server.id != events.tntgbserver:
-		embed = emb.error(t['tntgb_only'])
-		await reply(message, emb=embed)
+		embed = emb.error(__main__.t['tntgb_only'])
+		await __main__.reply(message, emb=embed)
 		return
-	if is_tntgb_banned(message.author):
+	if __main__.is_tntgb_banned(message.author):
 		# Wait, what?
 		embed = emb.warning('How, then? You are already banned!')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
-	if is_tntgb_mod(message.author):
-		specialchannel = getspecialchannel(message.channel.server)
+	if __main__.is_tntgb_mod(message.author):
+		specialchannel = __main__.getspecialchannel(message.channel.server)
 		embed = emb.warning('Sorry, moderators cannot use `\selfban`!')
 		await client.send_message(specialchannel, embed=embed)
 
 		# We're doing this in a public channel
 		await client.delete_message(message)
-		messages_deleted_by_bot.append(message)
+		__main__.messages_deleted_by_bot.append(message)
 
 		return
 
@@ -1716,26 +1739,26 @@ async def selfban(client, message, **kwargs):
 
 	# Now delete the calling message
 	await client.delete_message(message)
-	messages_deleted_by_bot.append(message)
+	__main__.messages_deleted_by_bot.append(message)
 
 	# Also set an expiry timer
-	expirytime = parsereltime('5d')
+	expirytime = __main__.parsereltime('5d')
 
-	addexpiryentry(message.server.id, message.author.id, expirytime,
+	__main__.addexpiryentry(message.server.id, message.author.id, expirytime,
 		e_channel=sentmessage.channel.id, e_message=sentmessage.id,
 		e_newcontent='[LIFTED] ' + announcemsg,
 		p_channel=events.banlogchannel_tntgb.id,
 		p_content='The ban on {} has expired.'.format(message.author.mention)
 	)
 
-	rolexpiresave()
-	await handleExpiryTimer()
+	__main__.rolexpiresave()
+	await __main__.handleExpiryTimer()
 
 @shadow(auth=checks.is_tntgb_mod, aliases=['b_left', 'b_offserver'])
 async def b_id(client, message, **kwargs):
 	if message.server.id != events.tntgbserver:
-		embed = emb.error(t['tntgb_only'])
-		await reply(message, emb=embed)
+		embed = emb.error(__main__.t['tntgb_only'])
+		await __main__.reply(message, emb=embed)
 		return
 	# Who are we banning, and for what reason?
 	if kwargs['arguments'].find('\n') != -1:
@@ -1756,12 +1779,12 @@ async def b_id(client, message, **kwargs):
 
 	if targetmember == None:
 		# Just as I thought, they left
-		if not removerolecache(input, message.server.id):
+		if not __main__.removerolecache(input, message.server.id):
 			embed = emb.error((
 				'Member {} cannot be found in the role cache. '
 				'Please note you have to enter an ID, not any form of name!'
 			).format(input))
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 			return
 
 		# Okay, removing their entry altogether was a bit drastic
@@ -1782,20 +1805,20 @@ async def b_id(client, message, **kwargs):
 
 		# Now delete the calling message
 		await client.delete_message(message)
-		messages_deleted_by_bot.append(message)
+		__main__.messages_deleted_by_bot.append(message)
 
 		# Also set an expiry timer
-		expirytime = parsereltime('5d')
+		expirytime = __main__.parsereltime('5d')
 
-		addexpiryentry(message.server.id, input, expirytime,
+		__main__.addexpiryentry(message.server.id, input, expirytime,
 			e_channel=sentmessage.channel.id, e_message=sentmessage.id,
 			e_newcontent='[LIFTED] ' + announcemsg,
 			p_channel=events.banlogchannel_tntgb.id,
 			p_content='The ban on <@!{}> has expired.'.format(input)
 		)
 
-		rolexpiresave()
-		await handleExpiryTimer()
+		__main__.rolexpiresave()
+		await __main__.handleExpiryTimer()
 	else:
 		# Okay, they are on the server, so why not use \b?
 		await b(client, message, **kwargs)
@@ -1803,17 +1826,17 @@ async def b_id(client, message, **kwargs):
 @shadow(auth=checks.is_tntgb_mod, aliases=['banrevert'])
 async def revertban(client, message, **kwargs):
 	if message.server.id != events.tntgbserver:
-		embed = emb.error(t['tntgb_only'])
-		await reply(message, emb=embed)
+		embed = emb.error(__main__.t['tntgb_only'])
+		await __main__.reply(message, emb=embed)
 		return
 
-	specialchannel = getspecialchannel(message.channel.server)
+	specialchannel = __main__.getspecialchannel(message.channel.server)
 	try:
 		targetmember = utils.match_input(
 			'member', kwargs['arguments'], server=message.server,
 		)
 
-		await removeRestrictiveRoles(targetmember, message.server)
+		await __main__.removeRestrictiveRoles(targetmember, message.server)
 
 		embed = emb.info('Ban on {} was reverted by {}.'.format(
 				targetmember.mention, message.author.mention
@@ -1835,25 +1858,25 @@ async def revertban(client, message, **kwargs):
 		thisexpiry = events.rolexpires[message.server.id][targetmember.id]
 		if thisexpiry['msgedit_message'] != '0':
 			thisexpiry['msgedit_newcontent'] = ''
-			await editexpirymessage(message.server, thisexpiry)
+			await __main__.editexpirymessage(message.server, thisexpiry)
 
-		removeexpiryentry(message.server.id, targetmember.id)
-		rolexpiresave()
+		__main__.removeexpiryentry(message.server.id, targetmember.id)
+		__main__.rolexpiresave()
 	except (AttributeError,TypeError):
-		embed = emb.error(t['specify_user'])
+		embed = emb.error(__main__.t['specify_user'])
 		await client.send_message(specialchannel, embed=embed)
 
 @shadow(auth=checks.is_admin, aliases=['tntgb_maint_p'])
 async def tntgb_maint(client, message, **kwargs):
 	if message.server.id != events.tntgbserver:
-		embed = emb.error(t['tntgb_only'])
-		await reply(message, emb=embed)
+		embed = emb.error(__main__.t['tntgb_only'])
+		await __main__.reply(message, emb=embed)
 		return
 	splitargs = kwargs['arguments'].split(' ')
 
 	if kwargs['command'] == 'tntgb_maint_p':
 		embed = emb.info('Opening prompt for `{}`'.format(splitargs[0]))
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 
 	try:
 		while True:
@@ -1865,11 +1888,11 @@ async def tntgb_maint(client, message, **kwargs):
 				)
 				if message2 == None:
 					embed = emb.info('Timed out, closing prompt')
-					await reply(message, emb=embed)
+					await __main__.reply(message, emb=embed)
 					break
 				if message2.content == 'exit':
 					embed = emb.info('Ok, closing prompt')
-					await reply(message, emb=embed)
+					await __main__.reply(message, emb=embed)
 					break
 				splitargs[1] = message2.content
 			output = ''
@@ -1878,7 +1901,7 @@ async def tntgb_maint(client, message, **kwargs):
 				content = getmessage.content
 				if content.find('⛔') == -1:
 					embed = emb.error('Cannot find the ⛔!')
-					await reply(message, emb=embed)
+					await __main__.reply(message, emb=embed)
 					return
 				content = content.replace('⛔', '[LIFTED]', 1)
 				await client.edit_message(getmessage, new_content=content)
@@ -1889,10 +1912,10 @@ async def tntgb_maint(client, message, **kwargs):
 				m = re.search('<@!?([0-9]+)>', content)
 				if m == None:
 					embed = emb.error('m is None! Maybe I couldn’t find the mention.')
-					await reply(message, emb=embed)
+					await __main__.reply(message, emb=embed)
 					return
 				userid = m.group(1)
-				newexpires = parsereltime('5d',
+				newexpires = __main__.parsereltime('5d',
 					now=time.mktime(getmessage.timestamp.timetuple())
 				)
 
@@ -1902,18 +1925,18 @@ async def tntgb_maint(client, message, **kwargs):
 
 					if content.find('⛔') == -1:
 						embed = emb.error('Cannot find the ⛔!')
-						await reply(message, emb=embed)
+						await __main__.reply(message, emb=embed)
 						return
 					content = content.replace('⛔', '[LIFTED]', 1)
 
-					addexpiryentry(message.server.id, userid, newexpires,
+					__main__.addexpiryentry(message.server.id, userid, newexpires,
 						e_channel=getmessage.channel.id, e_message=getmessage.id,
 						e_newcontent=content,
 						p_channel=events.banlogchannel_tntgb.id,
 						p_content='The ban on <@!{}> has expired.'.format(userid)
 					)
 				else:
-					addexpiryentry(message.server.id, userid, newexpires,
+					__main__.addexpiryentry(message.server.id, userid, newexpires,
 						e_channel='0', e_message='0',
 						e_newcontent='',
 						p_channel=events.banlogchannel_tntgb.id,
@@ -1921,15 +1944,15 @@ async def tntgb_maint(client, message, **kwargs):
 					)
 
 				output = 'I found the member <@!{}>, and it expires {}. Also, the message was {} sent by me. Did I do it right?'.format(
-					userid, reltime(newexpires),
+					userid, __main__.reltime(newexpires),
 					"" if sentbybot else "not"
 				)
 
-				rolexpiresave()
-				await handleExpiryTimer()
+				__main__.rolexpiresave()
+				await __main__.handleExpiryTimer()
 
 			embed = emb.success('Nothing appears to have gone wrong. Output:\n'+output)
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 
 			if kwargs['command'] != 'tntgb_maint_p':
 				break
@@ -1937,7 +1960,7 @@ async def tntgb_maint(client, message, **kwargs):
 		embed = emb.error('You don’t know what you’re doing, do you.\n`{}`'.format(
 			traceback.format_exc())
 		)
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 
 @shadow(auth=checks.is_operator)
 async def uploadfile(client, message, **kwargs):
@@ -1945,14 +1968,14 @@ async def uploadfile(client, message, **kwargs):
 	try:
 		if not os.path.abspath(kwargs['arguments']).startswith(os.getcwd()):
 			e = emb.error('Cannot access paths above working directory.')
-			await reply(message, emb=e)
+			await __main__.reply(message, emb=e)
 			return
 		elif kwargs['arguments'] in disalwfiles:
 			e = emb.error('Cannot upload ``{file}``.'.format(
 				file=kwargs['arguments'],
 				)
 			)
-			await reply(message, emb=e)
+			await __main__.reply(message, emb=e)
 			return
 		await client.send_file(
 			message.channel,
@@ -1969,36 +1992,36 @@ async def uploadfile(client, message, **kwargs):
 	except:
 		e = emb.error('`Something happened : Something happened :(`')
 		raise
-	await reply(message, emb=e)
+	await __main__.reply(message, emb=e)
 
 @shadow(auth=checks.is_mod, aliases=['blackunlist'], servonly=True)
 async def blacklist(client, message, **kwargs):
 	tgtmem = utils.match_input('member', kwargs['arguments'], server=message.server)
 	if tgtmem == None:
-		embed = emb.error('Unable to find that member. ' + t['specify_user'])
-		await reply(message, emb=embed)
+		embed = emb.error('Unable to find that member. ' + __main__.t['specify_user'])
+		await __main__.reply(message, emb=embed)
 		return
 	if not config.is_detached('blacklist', message.server.id):
 		config.detach('blacklist', message.server.id)
 	if kwargs['command'] == 'blacklist':
 		if tgtmem.id in config.get_s('blacklist', message.server.id):
 			embed = emb.error('{0.mention} is already blacklisted.'.format(tgtmem))
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 			return
 		config.insert_s('blacklist', tgtmem.id, message.server.id)
 		config.saveconfig()
 		embed = emb.success('Blacklisted {0.mention} from this server.'.format(tgtmem))
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 	elif kwargs['command'] == 'blackunlist':
 		if tgtmem.id not in config.get_s('blacklist', message.server.id):
 			embed = emb.error('{0.mention} is not blacklisted.'.format(tgtmem))
-			await reply(message, emb=embed)
+			await __main__.reply(message, emb=embed)
 			return
 		config.remove_s('blacklist', tgtmem.id, message.server.id)
 		config.saveconfig()
 		embed = emb.success('Blackunlisted {0.mention} from this server.'.format(tgtmem))
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 @shadow()
@@ -2036,12 +2059,12 @@ async def _(client, message, **kwargs):
 		'ShinyWolf07: sigh\n'
 		'Luigi: 10/10 would watch again```'
 	)
-	await reply(message, con)
+	await __main__.reply(message, con)
 
 @shadow()
 async def __002Aformatting__002A(client, message, **kwargs):
 	con = 'That’s italicized formatting.'
-	await reply(message, con)
+	await __main__.reply(message, con)
 
 @shadow()
 async def __002Fr__002Fundertale(client, message, **kwargs):
@@ -2049,7 +2072,7 @@ async def __002Fr__002Fundertale(client, message, **kwargs):
 		'They banned someone for posting an honest review of Undertale.'
 		' Seriously, don’t go there if you don’t want to be censored.'
 	)
-	await reply(message, con)
+	await __main__.reply(message, con)
 
 @shadow(auth=checks.is_operator)
 async def sudo(client, message, **kwargs):
@@ -2057,14 +2080,14 @@ async def sudo(client, message, **kwargs):
 		command = kwargs['arguments'].split(' ', 1)[0]
 	except AttributeError:
 		e = emb.error('You should probably put something in.')
-		await reply(message, emb=e)
+		await __main__.reply(message, emb=e)
 		return
 
 	# TODO: This is the command-parsing code copied from main.py, but with some changes.
 	# Put the command-parsing code in a function instead.
-	if message.content.startswith(invoker):
+	if message.content.startswith(__main__.invoker):
 		altinvokeractive = False
-	elif message.content.startswith(altinvoker):
+	elif message.content.startswith(__main__.altinvoker):
 		altinvokeractive = True
 	if command in commands:
 		func = commands[command]
@@ -2081,19 +2104,19 @@ async def sudo(client, message, **kwargs):
 					' a list of valid commands.'
 				)
 			)
-			await reply(message, emb=e)
+			await __main__.reply(message, emb=e)
 			return
-	if func[1] == is_host and not func[1](message.author):
-		e = emb.error(t['you_no_permission'])
-		logfailedcommand(kwargs['command'], kwargs['arguments'], message)
-		await reply(message, emb=e)
+	if func[1] == __main__.is_host and not func[1](message.author):
+		e = emb.error(__main__.t['you_no_permission'])
+		__main__.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
+		await __main__.reply(message, emb=e)
 		return
-	logcommand(kwargs['command'], kwargs['arguments'], message)
+	__main__.logcommand(kwargs['command'], kwargs['arguments'], message)
 	kwargs['command'] = command
 	if altinvokeractive:
-		clean_command = message.clean_content.split(altinvoker, 1)[1]
+		clean_command = message.clean_content.split(__main__.altinvoker, 1)[1]
 	else:
-		clean_command = message.clean_content.split(invoker, 1)[1]
+		clean_command = message.clean_content.split(__main__.invoker, 1)[1]
 	try:
 		kwargs['arguments'] = kwargs['arguments'].split(' ', 1)[1]
 		kwargs['clean_arguments'] = clean_command.split(' ', 2)[2]
@@ -2112,7 +2135,7 @@ async def joinchannel(client, message, **kwargs):
 				'Invalid amount of arguments passed.'
 				' Input `{invoker}help {command}` for more information.'
 			).format(
-				invoker=invoker,
+				invoker=__main__.invoker,
 				command=kwargs['command'],
 			),
 		)
@@ -2121,7 +2144,7 @@ async def joinchannel(client, message, **kwargs):
 			chan = client.get_channel(splitargs[1][2:-1])
 		except IndexError:
 			em = emb.error('You should probably enter in a channel.')
-			await reply(message, emb=em)
+			await __main__.reply(message, emb=em)
 			return
 		if not chan:
 			em = emb.error(
@@ -2130,7 +2153,7 @@ async def joinchannel(client, message, **kwargs):
 					' channel mention, i.e. in `<#ID>` form.'
 				)
 			)
-			await reply(message, emb=em)
+			await __main__.reply(message, emb=em)
 			return
 		if not config.is_detached('joinchannel', message.server.id):
 			config.detach('joinchannel', message.server.id)
@@ -2139,7 +2162,7 @@ async def joinchannel(client, message, **kwargs):
 		em = emb.success(
 			'Set {0.mention} to be the join channel for this server.'.format(chan)
 		)
-		await reply(message, emb=em)
+		await __main__.reply(message, emb=em)
 		return
 	elif splitargs[0] == 'unset':
 		if not config.is_detached('joinchannel', message.server.id):
@@ -2147,7 +2170,7 @@ async def joinchannel(client, message, **kwargs):
 		config.restore_default('joinchannel', message.server.id)
 		config.saveconfig()
 		em = emb.success('Unset the join channel for this server.')
-		await reply(message, emb=em)
+		await __main__.reply(message, emb=em)
 		return
 	elif splitargs[0] == 'get':
 		chanid = config.get_s('joinchannel', message.server.id)
@@ -2169,18 +2192,18 @@ async def joinchannel(client, message, **kwargs):
 						' of **{0}**.'
 					).format(chanid)
 				)
-		await reply(message, emb=em)
+		await __main__.reply(message, emb=em)
 	else:
 		em = emb.error(
 			(
 				'Invalid arguments.'
 				' Input `{invoker}help {command}` for more information.'
 			).format(
-				invoker=invoker,
+				invoker=__main__.invoker,
 				command=kwargs['command'],
 			)
 		)
-		await reply(message, emb=em)
+		await __main__.reply(message, emb=em)
 		return
 
 @shadow(servonly=True)
@@ -2203,10 +2226,10 @@ async def testroleconditional(client, message, **kwargs):
 		embed = emb.error('Invalid expression:\n{}'.format(str(e)))
 	except customcommands.UnexpectedExprParserState as e:
 		embed = emb.error('Unexpected parser state!\n{}'.format(str(e)))
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		raise
 
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow(auth=checks.is_admin, servonly=True)
 async def addcustomrolecommand(client, message, **kwargs):
@@ -2216,7 +2239,7 @@ async def addcustomrolecommand(client, message, **kwargs):
 		splitargs[5]
 	except (AttributeError, IndexError):
 		embed = emb.error('Invalid amount of arguments specified, please see the `\help`')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	if splitargs[1] not in ('self', 'input'):
@@ -2224,14 +2247,14 @@ async def addcustomrolecommand(client, message, **kwargs):
 				utils.mdspecialchars(splitargs[1])
 			)
 		)
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
-	if splitargs[2] not in ('no', 'input', 'command') and parsereltime(splitargs[2]) is None:
+	if splitargs[2] not in ('no', 'input', 'command') and __main__.parsereltime(splitargs[2]) is None:
 		embed = emb.error('The expiry `{}` is invalid, please see the `\help`'.format(
 				utils.mdspecialchars(splitargs[2])
 			)
 		)
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	setlatestroled = True
@@ -2248,7 +2271,7 @@ async def addcustomrolecommand(client, message, **kwargs):
 				'brackets, and entries must be separated with commas.'
 			)
 		)
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 	if splitargs[4] == '[]':
 		giveroles = []
@@ -2265,7 +2288,7 @@ async def addcustomrolecommand(client, message, **kwargs):
 				utils.mdspecialchars(splitargs[0])
 			)
 		)
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	builtin_alias_exists = False
@@ -2281,7 +2304,7 @@ async def addcustomrolecommand(client, message, **kwargs):
 				utils.mdspecialchars('[\]')
 			)
 		)
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	customcommands.add_custom_command(message.server, splitargs[0],
@@ -2301,7 +2324,7 @@ async def addcustomrolecommand(client, message, **kwargs):
 			utils.mdspecialchars(splitargs[0])
 		)
 	)
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow(auth=checks.is_admin, servonly=True)
 async def addcustomaliascommand(client, message, **kwargs):
@@ -2311,7 +2334,7 @@ async def addcustomaliascommand(client, message, **kwargs):
 		splitargs[1]
 	except (AttributeError, IndexError):
 		embed = emb.error('Invalid amount of arguments specified, please see the `\help`')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	if customcommands.exists(message.server, splitargs[0]):
@@ -2319,7 +2342,7 @@ async def addcustomaliascommand(client, message, **kwargs):
 				utils.mdspecialchars(splitargs[0])
 			)
 		)
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	builtin_alias_exists = 0  # 0 for false, 1 for command exists, 2 for aliased exists
@@ -2339,7 +2362,7 @@ async def addcustomaliascommand(client, message, **kwargs):
 				utils.mdspecialchars('[\]')
 			)
 		)
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 	if builtin_alias_exists == 2 or splitargs[1] in commands:
 		embed = emb.error((
@@ -2350,7 +2373,7 @@ async def addcustomaliascommand(client, message, **kwargs):
 				utils.mdspecialchars('[\]')
 			)
 		)
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	if splitargs[0] == splitargs[1]:
@@ -2359,7 +2382,7 @@ async def addcustomaliascommand(client, message, **kwargs):
 				'Maybe you can come up with something more creative?'
 			)
 		)
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	customcommands.add_custom_command(message.server, splitargs[0],
@@ -2384,18 +2407,18 @@ async def addcustomaliascommand(client, message, **kwargs):
 				utils.mdspecialchars(splitargs[1])
 			)
 		)
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow(auth=checks.is_admin, servonly=True)
 async def removecustomcommand(client, message, **kwargs):
 	if kwargs['arguments'] is None:
 		embed = emb.error('Please supply the name of the command to remove.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	if not customcommands.exists(message.server, kwargs['arguments']):
 		embed = emb.error('The custom command to remove doesn’t exist.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	customcommands.remove_custom_command(message.server, kwargs['arguments'])
