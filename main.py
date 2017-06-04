@@ -302,6 +302,34 @@ def is_valid_command(com):
 				return True
 	return False
 
+def hangmanworddisp(theword):
+	theoutput = ''
+	events.algeraden = True
+
+	for i in range(0, len(theword)):
+		if events.guessedletters[alphabet.find(theword[i].upper())]:
+			theoutput += '__**`{}`**__ '.format(theword[i])
+		else:
+			theoutput += '`_` '
+			events.algeraden = False
+
+	# Now display already guessed letters.
+	theoutput += '    (used: '
+
+	notnone = False
+
+	for i in range(0, 26):
+		if events.guessedletters[i]:
+			notnone = True
+			theoutput += alphabet[i]
+
+	if not notnone:
+		theoutput += 'none'
+
+	theoutput += ')'
+
+	return theoutput
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.

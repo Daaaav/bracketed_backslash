@@ -21,34 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def hangmanworddisp(theword):
-	theoutput = ''
-	events.algeraden = True
-
-	for i in range(0, len(theword)):
-		if events.guessedletters[alphabet.find(theword[i].upper())]:
-			theoutput += '__**`{}`**__ '.format(theword[i])
-		else:
-			theoutput += '`_` '
-			events.algeraden = False
-
-	# Now display already guessed letters.
-	theoutput += '    (used: '
-
-	notnone = False
-
-	for i in range(0, 26):
-		if events.guessedletters[i]:
-			notnone = True
-			theoutput += alphabet[i]
-
-	if not notnone:
-		theoutput += 'none'
-
-	theoutput += ')'
-
-	return theoutput
-
 def rolelist(roles):
 	rlist = []
 	for role in roles:
