@@ -84,7 +84,7 @@ async def _help(client, message, **kwargs):
 	embed = discord.Embed(description=content, colour=col.r_success)
 	await reply(message, emb=embed)
 
-@shadow(auth=is_host)
+@shadow(auth=checks.is_host)
 async def restart(client, message, **kwargs):
 	embed = emb.success('Restarting.', True)
 	embed.add_field(name='Uptime', value=reltime(boottimeunix, True))
@@ -93,7 +93,7 @@ async def restart(client, message, **kwargs):
 	await reply(message, emb=embed)
 	os.execv(sys.executable, ['python'] + sys.argv)
 
-@shadow(auth=is_host)
+@shadow(auth=checks.is_host)
 async def kill(client, message, **kwargs):
 	embed = emb.success('Killing.', True)
 	embed.add_field(name='Uptime', value=reltime(boottimeunix, True))
@@ -102,7 +102,7 @@ async def kill(client, message, **kwargs):
 	await client.logout()
 	sys.exit(42)
 
-@shadow(auth=is_operator)
+@shadow(auth=checks.is_operator)
 async def _config(client, message, **kwargs):
 	if message.server and \
 	message.server.id == op_ids.ids['opserver'] and \
@@ -585,7 +585,7 @@ async def findc(client, message, **kwargs):
 	)
 	await reply(message, emb=em)
 
-@shadow(auth=is_mod, aliases=['voiceunmute'])
+@shadow(auth=checks.is_mod, aliases=['voiceunmute'])
 async def voicemute(client, message, **kwargs):
 	targetmember = utils.match_input('member', kwargs['arguments'], server=message.server)
 	content = None
@@ -717,7 +717,7 @@ async def vy(client, message, **kwargs):
 		return
 	await reply(message, emb=embed)
 
-@shadow(auth=is_mod)
+@shadow(auth=checks.is_mod)
 async def vc(client, message, **kwargs):
 	if len(votemutes) == 0:
 		embed = emb.error('There are currently no votes running.')
@@ -733,7 +733,7 @@ async def vc(client, message, **kwargs):
 		embed = emb.success('The vote on <@{}> has been vetoed.'.format(mutee))
 	await reply(message, emb=embed)
 
-@shadow(auth=is_mod)
+@shadow(auth=checks.is_mod)
 async def rolerst(client, message, **kwargs):
 	try:
 		targetmember = utils.match_input(
@@ -747,7 +747,7 @@ async def rolerst(client, message, **kwargs):
 	embed = emb.success('Reset roles for <@{}> back to normal.'.format(targetmember.id))
 	await reply(message, emb=embed)
 
-@shadow(auth=is_mod)
+@shadow(auth=checks.is_mod)
 async def expires(client, message, **kwargs):
 	if kwargs['arguments'] is None:
 		embed = emb.error('Please input at least a relative time.')
@@ -801,7 +801,7 @@ async def expires(client, message, **kwargs):
 	)
 	await reply(message, emb=embed)
 
-@shadow(auth=is_mod)
+@shadow(auth=checks.is_mod)
 async def expiryremove(client, message, **kwargs):
 	if kwargs['arguments'] is None:
 		embed = emb.error('Please enter something.')
@@ -864,7 +864,7 @@ async def expirylist(client, message, **kwargs):
 	embed = emb.info(content)
 	await reply(message, emb=embed)
 
-@shadow(auth=is_mod)
+@shadow(auth=checks.is_mod)
 async def rolecacherst(client, message, **kwargs):
 	if config.get_s('rolecachemode', message.server.id) == 0:
 		embed = emb.error(t['rolecachedisabled'])
@@ -887,7 +887,7 @@ async def rolecacherst(client, message, **kwargs):
 		embed = emb.error('Member {} cannot be found in the role cache. Please note you have to enter an ID, not any form of name!'.format(kwargs['arguments']))
 		await reply(message, emb=embed)
 
-@shadow(auth=is_mod)
+@shadow(auth=checks.is_mod)
 async def rolecacheadd(client, message, **kwargs):
 	if config.get_s('rolecachemode', message.server.id) == 0:
 		embed = emb.error(t['rolecachedisabled'])
@@ -939,7 +939,7 @@ async def rolesync(client, message, **kwargs):
 	embed = emb.success('Synced roles.')
 	await reply(message, emb=embed)
 
-@shadow(auth=is_mod)
+@shadow(auth=checks.is_mod)
 async def rolecacheinfo(client, message, **kwargs):
 	if config.get_s('rolecachemode', message.server.id) == 0:
 		embed = emb.error(t['rolecachedisabled'])
@@ -1056,7 +1056,7 @@ async def ruleadd(client, message, **kwargs):
 	rulesave()
 	await reply(message, emb=embed)
 
-@shadow(auth=is_mod, aliases=['editrule'])
+@shadow(auth=checks.is_mod, aliases=['editrule'])
 async def ruleedit(client, message, **kwargs):
 	if kwargs['arguments'] == None:
 		embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
@@ -1084,7 +1084,7 @@ async def ruleedit(client, message, **kwargs):
 		embed = emb.error('Invalid rule number given, just check the help entry.')
 	await reply(message, emb=embed)
 
-@shadow(auth=is_mod, aliases=['moverule'])
+@shadow(auth=checks.is_mod, aliases=['moverule'])
 async def rulemove(client, message, **kwargs):
 	if kwargs['arguments'] == None:
 		embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
@@ -1115,7 +1115,7 @@ async def rulemove(client, message, **kwargs):
 		embed = emb.error('Invalid rule number(s) given, just check the help entry.')
 	await reply(message, emb=embed)
 
-@shadow(auth=is_mod, aliases=['removerule'])
+@shadow(auth=checks.is_mod, aliases=['removerule'])
 async def ruleremove(client, message, **kwargs):
 	if kwargs['arguments'] == None:
 		embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
@@ -1142,7 +1142,7 @@ async def ruleremove(client, message, **kwargs):
 		embed = emb.error('Invalid rule number given, just check the help entry.')
 	await reply(message, emb=embed)
 
-@shadow(auth=is_mod)
+@shadow(auth=checks.is_mod)
 async def rulemaint(client, message, **kwargs):
 	if message.server.id in events.disabledrules:
 		events.disabledrules.remove(message.server.id)
@@ -1276,7 +1276,7 @@ async def version(client, message, **kwargs):
 	embed.add_field(name='PIL', value=__import__("PIL").VERSION)
 	await reply(message, emb=embed)
 
-@shadow(auth=is_mod)
+@shadow(auth=checks.is_mod)
 async def getrawmessagecontent(client, message, **kwargs):
 	try:
 		argsplit = kwargs['arguments'].split(' ', 1)
@@ -1394,13 +1394,13 @@ async def _math(client, message, **kwargs):
 	embed = discord.Embed(title='Math Output', description=content, colour=col.r_success)
 	await reply(message, emb=embed)
 
-@shadow(auth=is_operator)
+@shadow(auth=checks.is_operator)
 async def gamestatus(client, message, **kwargs):
 	await client.change_presence(game=discord.Game(name=kwargs['arguments']))
 	embed = emb.success('Set game status to: ``{}``'.format(utils.wrapbackticks(kwargs['arguments'])))
 	await reply(message, emb=embed)
 
-@shadow(auth=is_host, aliases=['evalfile', 'setvar'])
+@shadow(auth=checks.is_host, aliases=['evalfile', 'setvar'])
 async def _eval(client, message, **kwargs):
 	try:
 		if kwargs['command'] == 'eval':
@@ -1493,7 +1493,7 @@ async def bans(client, message, **kwargs):
 	embed.set_thumbnail(url=message.server.icon_url)
 	await reply(message, emb=embed)
 
-@shadow(auth=is_operator)
+@shadow(auth=checks.is_operator)
 async def reloadstrings(client, message, **kwargs):
 	loadstrings()
 	embed = emb.success('Reloaded strings.')
@@ -1504,7 +1504,7 @@ async def join(client, message, **kwargs):
 	embed = emb.error('What an odd place to be using this command!')
 	await reply(message, emb=embed)
 
-@shadow(auth=is_tntgb_mod, aliases=['b_mod'])
+@shadow(auth=checks.is_tntgb_mod, aliases=['b_mod'])
 async def b(client, message, **kwargs):
 	if message.server.id != events.tntgbserver:
 		embed = emb.error(t['tntgb_only'])
@@ -1731,7 +1731,7 @@ async def selfban(client, message, **kwargs):
 	rolexpiresave()
 	await handleExpiryTimer()
 
-@shadow(auth=is_tntgb_mod, aliases=['b_left', 'b_offserver'])
+@shadow(auth=checks.is_tntgb_mod, aliases=['b_left', 'b_offserver'])
 async def b_id(client, message, **kwargs):
 	if message.server.id != events.tntgbserver:
 		embed = emb.error(t['tntgb_only'])
@@ -1800,7 +1800,7 @@ async def b_id(client, message, **kwargs):
 		# Okay, they are on the server, so why not use \b?
 		await b(client, message, **kwargs)
 
-@shadow(auth=is_tntgb_mod, aliases=['banrevert'])
+@shadow(auth=checks.is_tntgb_mod, aliases=['banrevert'])
 async def revertban(client, message, **kwargs):
 	if message.server.id != events.tntgbserver:
 		embed = emb.error(t['tntgb_only'])
@@ -1843,7 +1843,7 @@ async def revertban(client, message, **kwargs):
 		embed = emb.error(t['specify_user'])
 		await client.send_message(specialchannel, embed=embed)
 
-@shadow(auth=is_admin, aliases=['tntgb_maint_p'])
+@shadow(auth=checks.is_admin, aliases=['tntgb_maint_p'])
 async def tntgb_maint(client, message, **kwargs):
 	if message.server.id != events.tntgbserver:
 		embed = emb.error(t['tntgb_only'])
@@ -1939,7 +1939,7 @@ async def tntgb_maint(client, message, **kwargs):
 		)
 		await reply(message, emb=embed)
 
-@shadow(auth=is_operator)
+@shadow(auth=checks.is_operator)
 async def uploadfile(client, message, **kwargs):
 	disalwfiles = ['bot_token.conf']
 	try:
@@ -1971,7 +1971,7 @@ async def uploadfile(client, message, **kwargs):
 		raise
 	await reply(message, emb=e)
 
-@shadow(auth=is_mod, aliases=['blackunlist'], servonly=True)
+@shadow(auth=checks.is_mod, aliases=['blackunlist'], servonly=True)
 async def blacklist(client, message, **kwargs):
 	tgtmem = utils.match_input('member', kwargs['arguments'], server=message.server)
 	if tgtmem == None:
@@ -2051,7 +2051,7 @@ async def __002Fr__002Fundertale(client, message, **kwargs):
 	)
 	await reply(message, con)
 
-@shadow(auth=is_operator)
+@shadow(auth=checks.is_operator)
 async def sudo(client, message, **kwargs):
 	try:
 		command = kwargs['arguments'].split(' ', 1)[0]
@@ -2103,7 +2103,7 @@ async def sudo(client, message, **kwargs):
 	kwargs['sudo'] = True
 	await func[0](client, message, **kwargs)
 
-@shadow(auth=is_channel_manager, servonly=True)
+@shadow(auth=checks.is_channel_manager, servonly=True)
 async def joinchannel(client, message, **kwargs):
 	splitargs = kwargs['arguments'].split(' ')
 	if len(splitargs) != 2:
@@ -2208,7 +2208,7 @@ async def testroleconditional(client, message, **kwargs):
 
 	await reply(message, emb=embed)
 
-@shadow(auth=is_admin, servonly=True)
+@shadow(auth=checks.is_admin, servonly=True)
 async def addcustomrolecommand(client, message, **kwargs):
 	try:
 		splitargs = kwargs['arguments'].split(' ')
@@ -2303,7 +2303,7 @@ async def addcustomrolecommand(client, message, **kwargs):
 	)
 	await reply(message, emb=embed)
 
-@shadow(auth=is_admin, servonly=True)
+@shadow(auth=checks.is_admin, servonly=True)
 async def addcustomaliascommand(client, message, **kwargs):
 	try:
 		splitargs = kwargs['arguments'].split(' ')
@@ -2386,7 +2386,7 @@ async def addcustomaliascommand(client, message, **kwargs):
 		)
 	await reply(message, emb=embed)
 
-@shadow(auth=is_admin, servonly=True)
+@shadow(auth=checks.is_admin, servonly=True)
 async def removecustomcommand(client, message, **kwargs):
 	if kwargs['arguments'] is None:
 		embed = emb.error('Please supply the name of the command to remove.')
@@ -2407,7 +2407,7 @@ async def removecustomcommand(client, message, **kwargs):
 	)
 	await reply(message, emb=embed)
 
-@shadow(auth=is_admin, servonly=True)
+@shadow(auth=checks.is_admin, servonly=True)
 async def archive(client, message, **kwargs):
 	# Note that this command currently only allows admins to run it, particularly so that we can
 	# think about read and history permissions later. If opening it up to everyone, there should
