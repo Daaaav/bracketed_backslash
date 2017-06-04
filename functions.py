@@ -21,13 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def getspecialchannel(server):
-	theconfig = config.get_s('specialchannel', server.id)
-	if theconfig != '0':
-		return client.get_channel(id=theconfig)
-	else:
-		return server.default_channel
-
 def getspecialchannel_reply(message):
 	if message.server == None:
 		return message.channel

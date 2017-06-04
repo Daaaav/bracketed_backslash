@@ -378,6 +378,13 @@ def listroles_id(lijst):
 		returnage += '<@&{}>'.format(role)
 	return returnage
 
+def getspecialchannel(server):
+	theconfig = config.get_s('specialchannel', server.id)
+	if theconfig != '0':
+		return client.get_channel(id=theconfig)
+	else:
+		return server.default_channel
+
 	return True
 
 # Read as: dump code from file ... here
