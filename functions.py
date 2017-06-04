@@ -20,6 +20,3 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 # every function below here is custom-defined and not a part of discord.py
-
-def setglobal(s, x):
-	globals()[s] = x
