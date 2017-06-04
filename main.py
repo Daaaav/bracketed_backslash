@@ -350,6 +350,10 @@ def removerolecache(memberid, serverid):
 	except KeyError:
 		return False
 
+def rolecachesave():
+	with open('memberroles.json', 'w') as outfile:
+		json.dump(events.memberroles, outfile)
+
 	return True
 
 # Read as: dump code from file ... here
