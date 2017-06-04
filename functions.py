@@ -21,45 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-async def givetakeroles(member, server, giveids, takeids):
-	badroles = [] # All the roles that are potentially deleted
-	removingtheseroles = [] # Roles that the user has which will be deleted
-	addingtheseroles = [] # Roles that the user doesn't have which will be added
-	otherroles = [] # Other roles the user has
-
-	for rid in takeids:
-		badroles.append(
-			discord.utils.get(server.roles, id=rid)
-		)
-	for rid in giveids:
-		addingtheseroles.append(
-			discord.utils.get(server.roles, id=rid)
-		)
-	for role in member.roles:
-		if role in badroles:
-			# This member has that bad role, we need to get rid of it!
-			removingtheseroles.append(role)
-			continue
-		if role in addingtheseroles:
-			# Oh, we already have that one
-			addingtheseroles.remove(role)
-		if not role.is_everyone:
-			# If we're going to need to replace roles, keep these the same!
-			otherroles.append(role)
-	if len(addingtheseroles) == 0 and len(removingtheseroles) == 0:
-		# Well what are we doing here?
-		return
-	if len(addingtheseroles) > 0 and len(removingtheseroles) > 0:
-		# Replace - luckily the union of these is this simple!
-		await client.replace_roles(member, *addingtheseroles, *otherroles)
-	elif len(addingtheseroles) > 0:
-		# Only adding
-		await client.add_roles(member, *addingtheseroles)
-	else:
-		# Only removing
-		await client.remove_roles(member, *removingtheseroles)
-
-
 async def editexpirymessage(cserver, thisexpiry):
 	# We want to edit a message to reflect the ban!
 	getmessage = await client.get_message(
