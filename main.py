@@ -497,6 +497,71 @@ async def handleExpiryTimer():
 def callAutoExpiry():
 	asyncio.run_coroutine_threadsafe(autoExpiry(), client.loop)
 
+async def autoExpiry():
+	"""Called by timers
+	Actually resets roles
+	Calls back handleTimer to set the next timer
+	"""
+	now = int(time.time())
+
+	# So apparently someone needs to be unbanned?
+	for serverid in events.rolexpires:
+		content = ''
+		successfulresets = []
+
+		cserver = discord.utils.get(client.servers, id=serverid)
+		for userid in events.rolexpires[serverid]:
+			if events.rolexpires[serverid][userid]['time'] <= now:
+				try:
+					await removeRestrictiveRoles(cserver.get_member(userid), cserver)
+					content += '\nRoles for <@!{}> reset.'.format(userid)
+				except (AttributeError, TypeError):
+					# Look if they are in the role cache, and reset it there instead.
+					if removerolecache(userid, serverid):
+						content += '\n<@!{}> was supposed to have their roles reset now, they aren’t on the server, but they’ve successfully been removed from the role cache.'.format(userid)
+						rolecachesave()
+					else:
+						content += '\n<@!{}> was supposed to have their roles reset now, but they can be found neither on the server nor in the role cache!'.format(userid)
+
+				# Shorten the following thing so we don't have to keep typing it.
+				thisexpiry = events.rolexpires[serverid][userid]
+				if thisexpiry['msgedit_message'] != '0':
+					await editexpirymessage(cserver, thisexpiry)
+				if thisexpiry['msgpost_channel'] != '0':
+					# We want to announce it with a new message!
+					await client.send_message(
+						discord.utils.get(cserver.channels,
+							id=thisexpiry['msgpost_channel']
+						),
+						thisexpiry['msgpost_content']
+					)
+
+				successfulresets.append(userid)
+		for userid in successfulresets:
+			removeexpiryentry(serverid, userid)
+
+		if len(successfulresets) > 0:
+			if content == '':
+				content = '\n(never mind, nobody has been found!)'
+
+			content = '**Auto expiry:**' + content
+
+			await client.send_message(getspecialchannel(cserver), content)
+
+	rolexpiresave()
+
+	await handleExpiryTimer()
+
+async def removeRestrictiveRoles(member, server):
+	try:
+		await givetakeroles(
+			member, server,
+			config.get_s('defaultbotroles' if member.bot else 'defaultroles',server.id),
+			config.get_s('restrictiveroles', server.id)
+		)
+	except (AttributeError,TypeError) as e:
+		raise e
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.
