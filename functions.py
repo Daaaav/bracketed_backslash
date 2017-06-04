@@ -21,16 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def removeexpiryentry(serverid, memberid):
-	if not serverid in events.rolexpires:
-		return False
-
-	if not memberid in events.rolexpires[serverid]:
-		return False
-
-	del events.rolexpires[serverid][memberid]
-	return True
-
 def getearliestexpiry(serverid):  # Returns: [userid, entry]
 	if not serverid in events.rolexpires or len(events.rolexpires[serverid]) == 0:
 		return None

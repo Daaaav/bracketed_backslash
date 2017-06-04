@@ -628,6 +628,16 @@ def addexpiryentry(serverid, memberid, expirytime,
 		'msgpost_content': p_content,
 	}
 
+def removeexpiryentry(serverid, memberid):
+	if not serverid in events.rolexpires:
+		return False
+
+	if not memberid in events.rolexpires[serverid]:
+		return False
+
+	del events.rolexpires[serverid][memberid]
+	return True
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.
