@@ -21,14 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def removerolecache(memberid, serverid):
-	try:
-		del events.memberroles[serverid][memberid]
-	except KeyError:
-		return False
-
-	return True
-
 def rolecachesave():
 	with open('memberroles.json', 'w') as outfile:
 		json.dump(events.memberroles, outfile)

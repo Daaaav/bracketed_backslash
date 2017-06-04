@@ -344,6 +344,14 @@ def updaterolecache(member, serverid=None):
 		events.memberroles[serverid] = {}
 	events.memberroles[serverid][str(member.id)] = list(rolelist(member.roles))
 
+def removerolecache(memberid, serverid):
+	try:
+		del events.memberroles[serverid][memberid]
+	except KeyError:
+		return False
+
+	return True
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.
