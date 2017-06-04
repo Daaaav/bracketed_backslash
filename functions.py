@@ -21,9 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def is_host(member):
-	return member.id == op_ids.ids['host']
-
 async def reply(messageobject, message=None, emb=None):
 	# Removes the need for adding msg_start manually every time
 	if message == None:

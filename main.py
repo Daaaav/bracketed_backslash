@@ -189,6 +189,9 @@ def is_tntgb_banned(member):
 			return True
 	return False
 
+def is_host(member):
+	return member.id == op_ids.ids['host']
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.
