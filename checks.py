@@ -43,3 +43,9 @@ def is_channel_manager(member):
 		return member.server_permissions.manage_channels
 	except AttributeError:
 		return False
+
+def is_role_manager(member):
+	try:
+		return member.server_permissions.manage_roles
+	except AttributeError:
+		return False
