@@ -21,19 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-async def editexpirymessage(cserver, thisexpiry):
-	# We want to edit a message to reflect the ban!
-	getmessage = await client.get_message(
-		discord.utils.get(cserver.channels,
-			id=thisexpiry['msgedit_channel']
-		),
-		thisexpiry['msgedit_message']
-	)
-	if thisexpiry['msgedit_newcontent'] == '':
-		await client.delete_message(getmessage)
-	else:
-		await client.edit_message(getmessage, new_content=thisexpiry['msgedit_newcontent'])
-
 def addexpiryentry(serverid, memberid, expirytime,
                    e_channel='0', e_message='0', e_newcontent='',
                    p_channel='0', p_content=''):

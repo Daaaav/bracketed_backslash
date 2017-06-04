@@ -600,6 +600,18 @@ async def givetakeroles(member, server, giveids, takeids):
 		# Only removing
 		await client.remove_roles(member, *removingtheseroles)
 
+async def editexpirymessage(cserver, thisexpiry):
+	# We want to edit a message to reflect the ban!
+	getmessage = await client.get_message(
+		discord.utils.get(cserver.channels,
+			id=thisexpiry['msgedit_channel']
+		),
+		thisexpiry['msgedit_message']
+	)
+	if thisexpiry['msgedit_newcontent'] == '':
+		await client.delete_message(getmessage)
+	else:
+		await client.edit_message(getmessage, new_content=thisexpiry['msgedit_newcontent'])
 
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
