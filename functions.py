@@ -21,37 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def helplist(cats, server, onlycat=None):
-	returnage = ''
-	for cat in cats:
-		if (onlycat is None and cat['cat_shown']) or onlycat == cat['cat_slug']:
-			if onlycat is None:
-				returnage += (
-					'\n\n__`{}:`__ — For command descriptions: **`\help {}`**'
-				).format(cat['cat_name'], cat['cat_slug'])
-			else:
-				if cat['cat_desc'] != '':
-					returnage += cat['cat_desc']
-				returnage += '\n__`{}:`__'.format(cat['cat_name'])
-
-			first = True
-			if cat['cat_slug'] == 'server':
-				helpcommands = customcommands.list_commands_help(server)
-			else:
-				helpcommands = cat['commands']
-			for cmd in helpcommands:
-				if onlycat is None:
-					if first:
-						returnage += '\n`\{}`'.format(cmd['name'])
-						first = False
-					else:
-						returnage += '   `\{}`'.format(cmd['name'])
-				else:
-					returnage += '\n`\{}` – {}'.format(
-						cmd['name'], cmd['short']
-					)
-	return returnage
-
 def is_valid_command(com):
 	global cmds
 	for cat in cmds:
