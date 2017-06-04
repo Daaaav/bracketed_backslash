@@ -65,3 +65,9 @@ def is_dev(member):
 
 def is_operator(member):
 	return member.id in op_ids.ids['operators'] or member.id == op_ids.ids['host']
+
+def is_tntgb_mod(member):
+	for role in member.roles:
+		if role.id == '266590337269497856': # TNTGB moderator role
+			return True
+	return False
