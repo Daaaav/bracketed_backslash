@@ -130,16 +130,6 @@ modificationtimecache = time.strftime(config.get_s('timeformat'), time.gmtime(ma
 
 maineventloop = asyncio.get_event_loop()
 
-def is_mod(member):
-	# Same here. No need to use is_admin and is_mod in the same conditional.
-	try:
-		perms = member.server_permissions
-	except AttributeError:
-		return False
-	if perms.manage_messages:
-		return True
-	return is_admin(member) # Admins have moderator powers, too
-
 def is_channel_manager(member):
 	try:
 		return member.server_permissions.manage_channels
