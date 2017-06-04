@@ -393,6 +393,36 @@ def getspecialchannel_reply(message):
 		return message.channel
 	return specialchannel
 
+def reltime(timestamp, noago=False):
+	timestamp = int(timestamp)
+	now = int(time.time())
+	sdt = now - timestamp
+	dt = math.fabs(sdt)
+
+	if dt == 0:
+		return 'now'
+	elif dt < 60:
+		solong = '{}s'.format(int(dt))
+	elif dt < 60*60:
+		dm = math.floor(dt/60)
+		ds = dt-dm*60
+		solong = '{}m{}s'.format(dm, int(ds))
+	elif dt < 24*60*60:
+		dh = math.floor(dt/3600)
+		dm = math.floor((dt-dh*3600)/60)
+		#ds = dt-dh*3600-dm*60
+		solong = '{}h{}m'.format(dh, dm)
+	else:
+		dd = math.floor(dt/86400)
+		dh = math.floor((dt-dd*86400)/3600)
+		solong = '{}d{}h'.format(dd, dh)
+
+	if sdt >= 0:
+		if noago:
+			return solong
+		return '{} ago'.format(solong)
+	return '{} in the future'.format(solong)
+
 	return True
 
 # Read as: dump code from file ... here

@@ -21,36 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def reltime(timestamp, noago=False):
-	timestamp = int(timestamp)
-	now = int(time.time())
-	sdt = now - timestamp
-	dt = math.fabs(sdt)
-
-	if dt == 0:
-		return 'now'
-	elif dt < 60:
-		solong = '{}s'.format(int(dt))
-	elif dt < 60*60:
-		dm = math.floor(dt/60)
-		ds = dt-dm*60
-		solong = '{}m{}s'.format(dm, int(ds))
-	elif dt < 24*60*60:
-		dh = math.floor(dt/3600)
-		dm = math.floor((dt-dh*3600)/60)
-		#ds = dt-dh*3600-dm*60
-		solong = '{}h{}m'.format(dh, dm)
-	else:
-		dd = math.floor(dt/86400)
-		dh = math.floor((dt-dd*86400)/3600)
-		solong = '{}d{}h'.format(dd, dh)
-
-	if sdt >= 0:
-		if noago:
-			return solong
-		return '{} ago'.format(solong)
-	return '{} in the future'.format(solong)
-
 def parsereltime(inputstr, relative=False, now=None):
 	# if relative is true then we only get the amount of seconds from now, if false we get a unix timestamp.
 	if now == None:
