@@ -21,9 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def callAutoExpiry():
-	asyncio.run_coroutine_threadsafe(autoExpiry(), client.loop)
-
 async def autoExpiry():
 	"""Called by timers
 	Actually resets roles

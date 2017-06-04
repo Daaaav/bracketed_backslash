@@ -494,6 +494,9 @@ async def handleExpiryTimer():
 		exptimer.start()
 		logging.info('Set expiry timer for {} seconds'.format(timertime))
 
+def callAutoExpiry():
+	asyncio.run_coroutine_threadsafe(autoExpiry(), client.loop)
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.
