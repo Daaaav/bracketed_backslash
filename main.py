@@ -669,6 +669,9 @@ def logcommand(command, arguments, message):
 		arguments = ''
 	logging.info('{} {} called by {}#{} (uuid {}) at {} utc'.format(command, arguments, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 
+def infourl(query):
+	return 'https://tolp2.nl/showdiscordinfo.php?' + query
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.

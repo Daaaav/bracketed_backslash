@@ -21,9 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def infourl(query):
-	return 'https://tolp2.nl/showdiscordinfo.php?' + query
-
 def logdisabled(key, server):
 	checks = [key, key.split('_')[0] + '_*', '*']
 
