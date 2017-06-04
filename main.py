@@ -370,6 +370,14 @@ def listroles(lijst):
 		returnage += '<@&{}>'.format(role.id)
 	return returnage
 
+def listroles_id(lijst):
+	returnage = ''
+	for role in lijst:
+		if returnage != '':
+			returnage += ', '
+		returnage += '<@&{}>'.format(role)
+	return returnage
+
 	return True
 
 # Read as: dump code from file ... here
