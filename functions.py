@@ -21,15 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def is_admin(member):
-	try:
-		perms = member.server_permissions
-	except AttributeError:
-		return False
-	if perms.administrator:
-		return True
-	return False
-
 def is_mod(member):
 	# Same here. No need to use is_admin and is_mod in the same conditional.
 	try:
