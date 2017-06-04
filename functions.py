@@ -21,14 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def getspecialchannel_reply(message):
-	if message.server == None:
-		return message.channel
-	specialchannel = getspecialchannel(message.server)
-	if specialchannel == message.server.default_channel:
-		return message.channel
-	return specialchannel
-
 def reltime(timestamp, noago=False):
 	timestamp = int(timestamp)
 	now = int(time.time())
