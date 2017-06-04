@@ -454,6 +454,46 @@ def parsereltime(inputstr, relative=False, now=None):
 	else:
 		return now+total
 
+async def handleExpiryTimer():
+	"""Sets the timer correctly to the first event
+	If time is in the past, call autoExpiry immediately
+	Can be called on startup, when changing something, or at the end of autoExpiry
+	"""
+	global exptimer
+
+	# Cancel the existing timer, if it's running
+	if exptimer != None:
+		exptimer.cancel()
+		exptimer = None  # Because there's no Timer.isCanceled()
+
+	entriesleft = False
+
+	for serverid in events.rolexpires:  # Merge with next for maybe
+		if len(events.rolexpires[serverid]) > 0:
+			entriesleft = True
+			break
+
+	if not entriesleft:
+		# We're finished
+		logging.info('Did not set expiry timer because there\'s no expiry entry left')
+		return
+
+	timelowscore = 9999999999
+
+	for serverid in events.rolexpires:
+		for userid in events.rolexpires[serverid]:
+			if events.rolexpires[serverid][userid]['time'] < timelowscore:
+				timelowscore = events.rolexpires[serverid][userid]['time']
+
+	if timelowscore <= int(time.time()):
+		logging.info('Immediately calling autoExpiry() because we’re overdue in resetting someone’s roles')
+		await autoExpiry()
+	else:
+		timertime = (timelowscore - time.time()) + 2  # 2 seconds extra, just to make sure we're not getting problems due to being one second off
+		exptimer = Timer(timertime, callAutoExpiry)
+		exptimer.start()
+		logging.info('Set expiry timer for {} seconds'.format(timertime))
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.
