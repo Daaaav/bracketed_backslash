@@ -672,6 +672,15 @@ def logcommand(command, arguments, message):
 def infourl(query):
 	return 'https://tolp2.nl/showdiscordinfo.php?' + query
 
+def logdisabled(key, server):
+	checks = [key, key.split('_')[0] + '_*', '*']
+
+	if any(x in config.get_s('disabledlogs', server.id) for x in checks):
+		return True
+	if any(x in config.get_s('enabledlogs', server.id) for x in checks):
+		return False
+	return True
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.

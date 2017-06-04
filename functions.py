@@ -21,15 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def logdisabled(key, server):
-	checks = [key, key.split('_')[0] + '_*', '*']
-
-	if any(x in config.get_s('disabledlogs', server.id) for x in checks):
-		return True
-	if any(x in config.get_s('enabledlogs', server.id) for x in checks):
-		return False
-	return True
-
 def respondtorule(rule):
 	if int(rule) == 37:
 		return 'Funny and original, nothing to see here.'
