@@ -139,6 +139,16 @@ def is_admin(member):
 		return True
 	return False
 
+def is_mod(member):
+	# Same here. No need to use is_admin and is_mod in the same conditional.
+	try:
+		perms = member.server_permissions
+	except AttributeError:
+		return False
+	if perms.manage_messages:
+		return True
+	return is_admin(member) # Admins have moderator powers, too
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.
