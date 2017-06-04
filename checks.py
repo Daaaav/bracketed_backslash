@@ -77,3 +77,6 @@ def is_tntgb_banned(member):
 		if role.id == '243076976565288960': # TNTGB banned role
 			return True
 	return False
+
+def is_host(member):
+	return member.id == op_ids.ids['host']
