@@ -21,35 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def parsereltime(inputstr, relative=False, now=None):
-	# if relative is true then we only get the amount of seconds from now, if false we get a unix timestamp.
-	if now == None:
-		now = int(time.time())
-	total = 0
-
-	m = re.search("^((?P<d>[0-9]+)d)?((?P<h>[0-9]+)h)?((?P<m>[0-9]+)m)?((?P<s>[0-9]+)s)?$", inputstr)
-
-	if m == None:
-		return None
-
-	ds = m.group('d')
-	if ds != None:
-		total += int(ds)*86400
-	hs = m.group('h')
-	if hs != None:
-		total += int(hs)*3600
-	ms = m.group('m')
-	if ms != None:
-		total += int(ms)*60
-	ss = m.group('s')
-	if ss != None:
-		total += int(ss)
-
-	if relative:
-		return total
-	else:
-		return now+total
-
 async def handleExpiryTimer():
 	"""Sets the timer correctly to the first event
 	If time is in the past, call autoExpiry immediately
