@@ -21,9 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def is_operator(member):
-	return member.id in op_ids.ids['operators'] or member.id == op_ids.ids['host']
-
 def is_tntgb_mod(member):
 	for role in member.roles:
 		if role.id == '266590337269497856': # TNTGB moderator role

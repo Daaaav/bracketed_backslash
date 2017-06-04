@@ -167,6 +167,16 @@ def is_bot(member):
 		return True
 	return False
 
+def is_dev(member):
+	# Alright then. [2]
+	for role in member.roles:
+		if role.id == '238424544379928576': # [\] dev role
+			return True
+	return False
+
+def is_operator(member):
+	return member.id in op_ids.ids['operators'] or member.id == op_ids.ids['host']
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.
