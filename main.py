@@ -638,6 +638,22 @@ def removeexpiryentry(serverid, memberid):
 	del events.rolexpires[serverid][memberid]
 	return True
 
+def getearliestexpiry(serverid):  # Returns: [userid, entry]
+	if not serverid in events.rolexpires or len(events.rolexpires[serverid]) == 0:
+		return None
+
+	timelowscore = 9999999999
+	earliestuserid = '0'
+	earliestexpiry = None  # Entry
+
+	for userid in events.rolexpires[serverid]:
+		if events.rolexpires[serverid][userid]['time'] < timelowscore:
+			timelowscore = events.rolexpires[serverid][userid]['time']
+			earliestuserid = userid
+			earliestexpiry = events.rolexpires[serverid][userid]
+
+	return [earliestuserid, earliestexpiry]
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.

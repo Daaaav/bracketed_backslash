@@ -21,22 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def getearliestexpiry(serverid):  # Returns: [userid, entry]
-	if not serverid in events.rolexpires or len(events.rolexpires[serverid]) == 0:
-		return None
-
-	timelowscore = 9999999999
-	earliestuserid = '0'
-	earliestexpiry = None  # Entry
-
-	for userid in events.rolexpires[serverid]:
-		if events.rolexpires[serverid][userid]['time'] < timelowscore:
-			timelowscore = events.rolexpires[serverid][userid]['time']
-			earliestuserid = userid
-			earliestexpiry = events.rolexpires[serverid][userid]
-
-	return [earliestuserid, earliestexpiry]
-
 async def fetch(url):
 	async with ClientSession() as session:
 		async with session.get(url) as response:
