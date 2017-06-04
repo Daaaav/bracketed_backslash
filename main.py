@@ -354,6 +354,10 @@ def rolecachesave():
 	with open('memberroles.json', 'w') as outfile:
 		json.dump(events.memberroles, outfile)
 
+def rulesave():
+	with open('rules.json', 'w') as outfile:
+		json.dump(events.rules, outfile)
+
 	return True
 
 # Read as: dump code from file ... here
