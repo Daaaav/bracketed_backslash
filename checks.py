@@ -49,3 +49,9 @@ def is_role_manager(member):
 		return member.server_permissions.manage_roles
 	except AttributeError:
 		return False
+
+def is_bot(member):
+	# Alright then.
+	if member.bot:
+		return True
+	return False

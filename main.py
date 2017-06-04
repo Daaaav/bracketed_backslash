@@ -130,12 +130,6 @@ modificationtimecache = time.strftime(config.get_s('timeformat'), time.gmtime(ma
 
 maineventloop = asyncio.get_event_loop()
 
-def is_bot(member):
-	# Alright then.
-	if member.bot:
-		return True
-	return False
-
 def is_dev(member):
 	# Alright then. [2]
 	for role in member.roles:
