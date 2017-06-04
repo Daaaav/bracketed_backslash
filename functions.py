@@ -21,11 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def logcommand(command, arguments, message):
-	if arguments == None:
-		arguments = ''
-	logging.info('{} {} called by {}#{} (uuid {}) at {} utc'.format(command, arguments, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-
 def infourl(query):
 	return 'https://tolp2.nl/showdiscordinfo.php?' + query
 
