@@ -362,6 +362,14 @@ def rolexpiresave():
 	with open('rolexpires.json', 'w') as outfile:
 		json.dump(events.rolexpires, outfile)
 
+def listroles(lijst):
+	returnage = ''
+	for role in lijst:
+		if returnage != '':
+			returnage += ', '
+		returnage += '<@&{}>'.format(role.id)
+	return returnage
+
 	return True
 
 # Read as: dump code from file ... here
