@@ -294,6 +294,14 @@ def helplist(cats, server, onlycat=None):
 					)
 	return returnage
 
+def is_valid_command(com):
+	global cmds
+	for cat in cmds:
+		for cmd in cat['commands']:
+			if cmd['name'] == com:
+				return True
+	return False
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.

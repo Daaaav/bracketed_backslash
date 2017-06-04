@@ -21,14 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def is_valid_command(com):
-	global cmds
-	for cat in cmds:
-		for cmd in cat['commands']:
-			if cmd['name'] == com:
-				return True
-	return False
-
 def hangmanworddisp(theword):
 	theoutput = ''
 	events.algeraden = True
