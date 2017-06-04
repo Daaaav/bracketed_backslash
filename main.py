@@ -729,7 +729,6 @@ def setglobal(s, x):
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.
-exec(compile(open("functions.py", "rb").read(), "functions.py", 'exec'))
 exec(compile(open("commands.py", "rb").read(), "commands.py", 'exec'))
 
 client.run(token)
