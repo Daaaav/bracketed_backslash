@@ -659,6 +659,11 @@ async def fetch(url):
 		async with session.get(url) as response:
 			return await response.read()
 
+def logfailedcommand(command, arguments, message):
+	if arguments == None:
+		arguments = ''
+	logging.info('{} {} attempted by {}#{} (uuid {}) at {} utc but failed'.format(command, arguments, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.

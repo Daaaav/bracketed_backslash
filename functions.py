@@ -21,11 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def logfailedcommand(command, arguments, message):
-	if arguments == None:
-		arguments = ''
-	logging.info('{} {} attempted by {}#{} (uuid {}) at {} utc but failed'.format(command, arguments, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
-
 def logcommand(command, arguments, message):
 	if arguments == None:
 		arguments = ''
