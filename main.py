@@ -39,6 +39,7 @@ import traceback
 
 import discord
 
+import checks
 import config
 import col
 import customcommands
@@ -625,7 +626,7 @@ def respondtorule(rule):
 	return 'Wow, you’re the FIRST one to come up with that. I wish I could be as funny as you, I dunno how I’m ever gonna top "rule {}", though. That shit is genius.'.format(rule)
 
 async def newmemberroles(member, specialchannel, bypassjoinchannel):
-	if config.get_s('rolecachemode', member.server.id) == 1 and is_bot(member):
+	if config.get_s('rolecachemode', member.server.id) == 1 and checks.is_bot(member):
 		# Give them the bot roles!
 		addingtheseroles = []
 		for rid in config.get_s('defaultbotroles', member.server.id):
