@@ -149,6 +149,12 @@ def is_mod(member):
 		return True
 	return is_admin(member) # Admins have moderator powers, too
 
+def is_channel_manager(member):
+	try:
+		return member.server_permissions.manage_channels
+	except AttributeError:
+		return False
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.
