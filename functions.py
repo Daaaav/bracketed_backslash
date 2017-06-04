@@ -21,21 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # every function below here is custom-defined and not a part of discord.py
 
-def addexpiryentry(serverid, memberid, expirytime,
-                   e_channel='0', e_message='0', e_newcontent='',
-                   p_channel='0', p_content=''):
-	if not serverid in events.rolexpires:
-		events.rolexpires[serverid] = {}
-
-	events.rolexpires[serverid][memberid] = {
-		'time': expirytime,
-		'msgedit_channel': e_channel,
-		'msgedit_message': e_message,
-		'msgedit_newcontent': e_newcontent,
-		'msgpost_channel': p_channel,
-		'msgpost_content': p_content,
-	}
-
 def removeexpiryentry(serverid, memberid):
 	if not serverid in events.rolexpires:
 		return False

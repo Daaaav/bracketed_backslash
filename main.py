@@ -613,6 +613,21 @@ async def editexpirymessage(cserver, thisexpiry):
 	else:
 		await client.edit_message(getmessage, new_content=thisexpiry['msgedit_newcontent'])
 
+def addexpiryentry(serverid, memberid, expirytime,
+                   e_channel='0', e_message='0', e_newcontent='',
+                   p_channel='0', p_content=''):
+	if not serverid in events.rolexpires:
+		events.rolexpires[serverid] = {}
+
+	events.rolexpires[serverid][memberid] = {
+		'time': expirytime,
+		'msgedit_channel': e_channel,
+		'msgedit_message': e_message,
+		'msgedit_newcontent': e_newcontent,
+		'msgpost_channel': p_channel,
+		'msgpost_content': p_content,
+	}
+
 # Read as: dump code from file ... here
 # So that we can have our existing functions without going across separate modules, and without
 # making main.py far too long.
