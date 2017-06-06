@@ -29,7 +29,6 @@ import math
 import re
 import os
 import os.path
-import tempfile
 from threading import Timer
 import time
 
