@@ -30,7 +30,6 @@ import re
 import os
 import os.path
 import random
-import re
 import subprocess
 import sys
 import tempfile
