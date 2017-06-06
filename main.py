@@ -125,7 +125,7 @@ maineventloop = asyncio.get_event_loop()
 
 async def reply(messageobject, message=None, emb=None):
 	# Removes the need for adding msg_start manually every time
-	if message == None:
+	if message is None:
 		message = ''
 	if len(events.msg_start + message) >= 2000:
 		# We can at least try in a totally not failsafe and kinda ugly way
@@ -155,7 +155,7 @@ async def reply(messageobject, message=None, emb=None):
 				'\tName: {0.name}\n'
 				'\tID: {0.id}\n'
 			).format(messageobject.server)
-		if emb == None:
+		if emb is None:
 			dispemb = '\t(none)\n'
 		else:
 			dispemb = str(emb.to_dict())
