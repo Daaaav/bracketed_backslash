@@ -191,10 +191,7 @@ async def replyattach(messageobject, filetoattach, fname, message=''):
 	await client.send_file(destination=messageobject.channel, content = events.msg_start + message, fp=filetoattach, filename=fname)
 
 def isprivatemessage(server): # this is a function because so in the future more checks for if its a private message can ezily be added
-	if server == None:
-		return True
-	else:
-		return False
+	return bool(server)
 
 def helplist(cats, server, onlycat=None):
 	returnage = ''
