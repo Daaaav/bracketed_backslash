@@ -33,7 +33,6 @@ import random
 import subprocess
 import sys
 import tempfile
-import time
 from threading import Timer
 import time
 
