@@ -6,6 +6,7 @@ import json
 import logging
 import re
 
+import checks
 import events
 import __main__ as main
 import utils
@@ -407,11 +408,11 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 			)
 
 		if m.group('b') == 'mod':
-			return main.is_mod(checkmember)
+			return checks.is_mod(checkmember)
 		if m.group('b') == 'admin':
-			return main.is_admin(checkmember)
+			return checks.is_admin(checkmember)
 		if m.group('b') == 'bot':
-			return main.is_bot(checkmember)
+			return checks.is_bot(checkmember)
 
 		raise UnexpectedExprParserState((
 				'Internal error, property `{}` '
