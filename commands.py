@@ -26,6 +26,7 @@ import random
 import re
 import subprocess
 import sys
+import tempfile
 import time
 import traceback
 
@@ -311,9 +312,9 @@ async def _config(client, message, **kwargs):
 		except AttributeError:
 			config.restore_default(splitargs[1])
 		config.saveconfig()
-		logcommand(kwargs['command'], kwargs['arguments'], message)
+		__main__.logcommand(kwargs['command'], kwargs['arguments'], message)
 		embed = emb.success('Set `{}` back to default value of `{}`'.format(splitargs[1], utils.wrapbackticks(config.get_default(splitargs[1]))))
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 	else:
 		embed = emb.error('`{}` was not recognized'.format(splitargs[0]))
 		await __main__.reply(message, emb=embed)
@@ -370,7 +371,7 @@ async def hangman(client, message, **kwargs):
 	events.hangmanstarter = message.author
 	events.guessedletters = [False]*26
 	msg_start = '**`>`**``{}``**`{}`**``\{} {}``\n'.format(utils.wrapbackticks(message.author.name), kwargs['invokesymbol'], utils.wrapbackticks(kwargs['command'].split(' ')[0]), '*'*len(events.hangmanchosenword)) # you will never have mod/admin perms in private messages (probably), where the hangman will be started from, so for now theres no mod/admin check to make the input display different
-	content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "{}" followed by the letter (for example {}a) or the word. {} attempts left.\n{}'.format(events.hangmanstarter.id, hangmaninvoker, hangmaninvoker, events.hangmanattempts, hangmanworddisp(events.hangmanchosenword))
+	content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "{}" followed by the letter (for example {}a) or the word. {} attempts left.\n{}'.format(events.hangmanstarter.id, __main__.hangmaninvoker, __main__.hangmaninvoker, events.hangmanattempts, __main__.hangmanworddisp(events.hangmanchosenword))
 	msg = msg_start + content
 	await client.send_message(events.botschannel, msg)
 
@@ -993,7 +994,7 @@ async def rules(client, message, **kwargs):
 
 			# Oh, we survived this? That means the given specific rule exists!
 			content = 'Rule **{}** for server `{}`:\n{}'.format(int(kwargs['arguments']), utils.wrapbackticks(message.server.name), events.rules[message.server.id][int(kwargs['arguments'])-1])
-			await reply(message, content)
+			await __main__.reply(message, content)
 			return
 		except IndexError:
 			# But only if the rules actually don't exist
@@ -1033,7 +1034,7 @@ async def rulefind(client, message, **kwargs):
 		n += 1
 	if not matched:
 		embed = emb.warning('No rules on server `{}` matching `{}`.'.format(utils.wrapbackticks(message.server.name), utils.wrapbackticks(kwargs['arguments'])))
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 	await __main__.reply(message, content)
 
@@ -1323,10 +1324,10 @@ async def getrawmessagecontent(client, message, **kwargs):
 			getchannel = client.get_channel(channelid)
 			getmessage = await client.get_message(getchannel, arg1)
 		content = '``{}``'.format(utils.wrapbackticks(getmessage.content[:1900]))
-		await reply(message, content)
+		await __main__.reply(message, content)
 		if getmessage.embeds != []:
 			content = '``{}``'.format(utils.wrapbackticks(getmessage.embeds[:1900]))
-			await reply(message, content)
+			await __main__.reply(message, content)
 		return
 	except AttributeError:
 		embed = emb.error('Invalid arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=__main__.invoker, command=kwargs['command']))
@@ -1421,7 +1422,7 @@ async def _math(client, message, **kwargs):
 async def gamestatus(client, message, **kwargs):
 	await client.change_presence(game=discord.Game(name=kwargs['arguments']))
 	embed = emb.success('Set game status to: ``{}``'.format(utils.wrapbackticks(kwargs['arguments'])))
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow(auth=checks.is_host, aliases=['evalfile', 'setvar'])
 async def _eval(client, message, **kwargs):
@@ -1440,7 +1441,7 @@ async def _eval(client, message, **kwargs):
 			evaluate = eval(splitargs[1])
 			if inspect.isawaitable(evaluate):
 				evaluate = await evaluate
-			evaluate = setglobal(splitargs[0], evaluate)
+			evaluate = __main__.setglobal(splitargs[0], evaluate)
 		content = '```py\n{}```'.format(utils.wrapbackticks(str(evaluate)))
 	except Exception:
 		content = '```py\n{}```'.format(utils.wrapbackticks(traceback.format_exc()))
@@ -2428,7 +2429,7 @@ async def removecustomcommand(client, message, **kwargs):
 			utils.mdspecialchars(kwargs['arguments'])
 		)
 	)
-	await reply(message, emb=embed)
+	await __main__.reply(message, emb=embed)
 
 @shadow(auth=checks.is_admin, servonly=True)
 async def archive(client, message, **kwargs):
@@ -2438,7 +2439,7 @@ async def archive(client, message, **kwargs):
 
 	if kwargs['arguments'] is None:
 		embed = emb.error('Please supply at least a channel mention.')
-		await reply(message, emb=embed)
+		await __main__.reply(message, emb=embed)
 		return
 
 	splitargs = kwargs['arguments'].split(' ')
@@ -2446,13 +2447,13 @@ async def archive(client, message, **kwargs):
 	chaninput = splitargs[0]
 	tgt = utils.match_input('channel', chaninput, server=message.server)
 	if not tgt:
-		em = emb.error('Unable to find that channel. ' + t['specify_channel'])
-		await reply(message, emb=em)
+		em = emb.error('Unable to find that channel. ' + __main__.t['specify_channel'])
+		await __main__.reply(message, emb=em)
 		return
 
 	if tgt.type != discord.ChannelType.text:
 		em = emb.error('Matched a voice channel - text-to-speech is not implemented.')
-		await reply(message, emb=em)
+		await __main__.reply(message, emb=em)
 		return
 
 	lim = 100
@@ -2464,7 +2465,7 @@ async def archive(client, message, **kwargs):
 				lim = 1
 		except ValueError:
 			em = emb.error('Invalid limit specified.')
-			await reply(message, emb=em)
+			await __main__.reply(message, emb=em)
 			return
 
 	if lim > config.get_s('maxarchive'):
@@ -2473,7 +2474,7 @@ async def archive(client, message, **kwargs):
 				config.get_s('maxarchive')
 			)
 		)
-		await reply(message, emb=em)
+		await __main__.reply(message, emb=em)
 		return
 
 	log = []
@@ -2493,7 +2494,7 @@ async def archive(client, message, **kwargs):
 			)
 	except discord.errors.Forbidden:
 		em = emb.error('Unable to get messages from that channel.')
-		await reply(message, emb=em)
+		await __main__.reply(message, emb=em)
 		return
 
 	log.reverse()
@@ -2517,5 +2518,5 @@ async def archive(client, message, **kwargs):
 			)
 		except discord.HTTPException:
 			em = emb.error('An error occurred while uploading the file.')
-			await reply(message, emb=em)
+			await __main__.reply(message, emb=em)
 			return

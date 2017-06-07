@@ -37,7 +37,6 @@ import discord
 import checks
 import config
 import customcommands
-import commands
 import events
 import op_ids
 
