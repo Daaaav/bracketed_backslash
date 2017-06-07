@@ -130,7 +130,7 @@ async def kill(client, message, **kwargs):
 async def _config(client, message, **kwargs):
 	if message.server and \
 	message.server.id == op_ids.ids['opserver'] and \
-	not __main__.is_host(message.author):
+	not checks.is_host(message.author):
 		embed = emb.error(__main__.t['no_permission'])
 		__main__.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 		await __main__.reply(message, emb=embed)
@@ -384,7 +384,7 @@ async def stophangman(client, message, **kwargs):
 		embed = emb.error('Can’t abort hangman because it’s not running.')
 		await __main__.reply(message, emb=embed)
 		return
-	elif not __main__.is_mod(message.author) and message.author.id != events.hangmanstarter.id:
+	elif not checks.is_mod(message.author) and message.author.id != events.hangmanstarter.id:
 		embed = emb.error('Can’t abort hangman because you haven’t started this game.')
 		await __main__.reply(message, emb=embed)
 		return
@@ -439,7 +439,7 @@ async def findu(client, message, **kwargs):
 	embed.add_field(name='Username', value=utils.mdspecialchars(targetmember.name))
 	embed.add_field(name='Discriminator', value='#{}'.format(targetmember.discriminator))
 	embed.add_field(name='User ID', value=targetmember.id)
-	embed.add_field(name='Bot', value='Yes' if __main__.is_bot(targetmember) else 'No')
+	embed.add_field(name='Bot', value='Yes' if checks.is_bot(targetmember) else 'No')
 	embed.add_field(name=displaygamestatus, value=displaygamename)
 	embed.add_field(name=displaygameurlstatus, value=displaygameurl)
 	embed.add_field(name='Status', value='Do Not Disturb' if str(targetmember.status) == 'dnd' else str(targetmember.status).title())
@@ -980,7 +980,7 @@ async def rolecacheinfo(client, message, **kwargs):
 
 @shadow(aliases=['rule'], servonly=True)
 async def rules(client, message, **kwargs):
-	if message.server.id in events.disabledrules and not __main__.is_mod(message.author):
+	if message.server.id in events.disabledrules and not checks.is_mod(message.author):
 		embed = emb.error('The rules system is currently disabled for this server.')
 		await __main__.reply(message, emb=embed)
 		return
@@ -1012,7 +1012,7 @@ async def rules(client, message, **kwargs):
 
 @shadow(servonly=True)
 async def rulefind(client, message, **kwargs):
-	if message.server.id in events.disabledrules and not __main__.is_mod(message.author):
+	if message.server.id in events.disabledrules and not checks.is_mod(message.author):
 		embed = emb.error('The rules system is currently disabled for this server.')
 		await __main__.reply(message, emb=embed)
 		return
@@ -1040,7 +1040,7 @@ async def rulefind(client, message, **kwargs):
 
 @shadow(aliases=['addrule'])
 async def ruleadd(client, message, **kwargs):
-	if not __main__.is_mod(message.author):
+	if not checks.is_mod(message.author):
 		# Okay, so they're not allowed to mess with the rules - but we want to respond to some particular things as well.
 		splitargs = kwargs['arguments'].split(' ', 1)
 		if splitargs[0].isdigit() and int(splitargs[0]) in __main__.funnynumbers:
@@ -1706,12 +1706,12 @@ async def selfban(client, message, **kwargs):
 		embed = emb.error(__main__.t['tntgb_only'])
 		await __main__.reply(message, emb=embed)
 		return
-	if __main__.is_tntgb_banned(message.author):
+	if checks.is_tntgb_banned(message.author):
 		# Wait, what?
 		embed = emb.warning('How, then? You are already banned!')
 		await __main__.reply(message, emb=embed)
 		return
-	if __main__.is_tntgb_mod(message.author):
+	if checks.is_tntgb_mod(message.author):
 		specialchannel = __main__.getspecialchannel(message.channel.server)
 		embed = emb.warning('Sorry, moderators cannot use `\selfban`!')
 		await client.send_message(specialchannel, embed=embed)
@@ -2107,7 +2107,7 @@ async def sudo(client, message, **kwargs):
 			)
 			await __main__.reply(message, emb=e)
 			return
-	if func[1] == __main__.is_host and not func[1](message.author):
+	if func[1] == checks.is_host and not func[1](message.author):
 		e = emb.error(__main__.t['you_no_permission'])
 		__main__.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 		await __main__.reply(message, emb=e)
