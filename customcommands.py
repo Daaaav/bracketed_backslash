@@ -6,6 +6,7 @@ import json
 import logging
 import re
 
+import checks
 import events
 import __main__ as main
 import utils
