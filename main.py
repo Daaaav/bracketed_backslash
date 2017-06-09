@@ -110,11 +110,7 @@ def loadstrings():
 	stringsfr = stringsf.read()
 	strings = json.loads(stringsfr)
 	# TODO: noone better not put this on a cs grad thread
-	global t
-	global cmds
-	global permissionlabels
-	global funnynumbers
-	global help_info_string
+	global t, cmds, permissionlabels, funnynumbers, help_info_string
 	t = strings['t']
 	cmds = strings['cmds']
 	permissionlabels = strings['permissionlabels']
