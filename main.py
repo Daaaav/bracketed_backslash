@@ -99,6 +99,12 @@ votemutes = {} # userid -> dict with `starttime`, `proponents`*, `opponents`*
 
 exptimer = None  # threading.Timer object
 
+t = {}
+cmds = []
+permissionlabels = []
+funnynumbers = []
+help_info_string = ''
+
 def loadstrings():
 	stringsf = open('strings.json', 'r')
 	stringsfr = stringsf.read()
