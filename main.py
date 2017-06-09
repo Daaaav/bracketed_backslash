@@ -267,11 +267,11 @@ def rolelist(roles):
 	return rlist
 
 def updaterolecache(member, serverid=None):
-	if serverid == None:
+	if serverid is None:
 		serverid = member.server.id
-	if not serverid in events.memberroles:
+	if serverid not in events.memberroles:
 		events.memberroles[serverid] = {}
-	events.memberroles[serverid][str(member.id)] = list(rolelist(member.roles))
+	events.memberroles[serverid][member.id] = rolelist(member.roles)
 
 def removerolecache(memberid, serverid):
 	try:
