@@ -1551,11 +1551,11 @@ async def b(client, message, **kwargs):
 		await client.send_message(specialchannel, embed=embed)
 		banningnonmod = False
 		return
-	if __main__.is_tntgb_banned(targetmember):
+	if checks.is_tntgb_banned(targetmember):
 		embed = emb.warning('{} is already banned!'.format(targetmember.mention))
 		await client.send_message(specialchannel, embed=embed)
 		banningnonmod = False  # See this as "don't set expiry timer"
-	elif __main__.is_tntgb_mod(targetmember):
+	elif checks.is_tntgb_mod(targetmember):
 		if kwargs['command'] != 'b_mod':
 			embed = emb.warning(
 				(
