@@ -275,7 +275,7 @@ def get_type(skey):
 	return configs[skey]['type']
 
 def get_expl(skey):
-	if configs[skey]['expl'] == None or configs[skey]['expl'] == '':
+	if configs[skey]['expl'] is None or configs[skey]['expl'] == '':
 		return None
 	return configs[skey]['expl']
 

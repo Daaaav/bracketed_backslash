@@ -837,12 +837,12 @@ async def on_member_update(before, after):
 	if before.nick != after.nick and not __main__.logdisabled('member_nickname', after.server):
 		embed = discord.Embed(title='🇳📟CHANGED NICKNAME'.format(id=after.id), colour=after.colour)
 		embed.set_author(name=after.display_name, icon_url=after.avatar_url, url=__main__.infourl('userid={}'.format(after.id)))
-		if before.nick == None:
+		if before.nick is None:
 			embed.add_field(name='No Older Nickname', value='_No Older Nickname_')
 		else:
 			embed.add_field(name='Older Nickname', value=utils.mdspecialchars(before.nick))
 		embed.add_field(name='\u200b', value='\u200b')
-		if after.nick == None:
+		if after.nick is None:
 			embed.add_field(name='No Newer Nickname', value='_No Newer Nickname_')
 		else:
 			embed.add_field(name='Newer Nickname', value=utils.mdspecialchars(after.nick))
@@ -1249,12 +1249,12 @@ async def on_server_update(before, after):
 		embed = discord.Embed(description='AFK CHANNEL CHANGE')
 		embed.set_thumbnail(url=after.icon_url)
 		embed.add_field(
-			name='Older Channel: None' if before.afk_channel == None else 'Older Channel',
-			value='No Older Channel' if before.afk_channel == None else '{name} ({0.id})'.format(before.afk_channel, name=utils.mdspecialchars(before.afk_channel.name)),
+			name='Older Channel: None' if before.afk_channel is None else 'Older Channel',
+			value='No Older Channel' if before.afk_channel is None else '{name} ({0.id})'.format(before.afk_channel, name=utils.mdspecialchars(before.afk_channel.name)),
 		)
 		embed.add_field(
-			name='Newer Channel: None' if after.afk_channel == None else 'Newer Channel',
-			value='No Newer Channel' if after.afk_channel == None else '{name} ({0.id})'.format(after.afk_channel, name=utils.mdspecialchars(after.afk_channel.name)),
+			name='Newer Channel: None' if after.afk_channel is None else 'Newer Channel',
+			value='No Newer Channel' if after.afk_channel is None else '{name} ({0.id})'.format(after.afk_channel, name=utils.mdspecialchars(after.afk_channel.name)),
 		)
 		await __main__.client.send_message(specialchannel, embed=embed)
 	if before.verification_level != after.verification_level and not __main__.logdisabled(

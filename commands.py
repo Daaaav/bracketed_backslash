@@ -135,7 +135,7 @@ async def _config(client, message, **kwargs):
 		__main__.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 		await __main__.reply(message, emb=embed)
 		return
-	if kwargs['arguments'] == None:
+	if kwargs['arguments'] is None:
 		content = (
 			'You can use the following options:\n'
 			'`\config list`\n'
@@ -321,7 +321,7 @@ async def _config(client, message, **kwargs):
 
 @shadow()
 async def echo(client, message, **kwargs):
-	if kwargs['arguments'] == None:
+	if kwargs['arguments'] is None:
 		arguments = ''
 	else:
 		arguments = kwargs['clean_arguments']
@@ -351,7 +351,7 @@ async def hangman(client, message, **kwargs):
 		embed = emb.error('For now, this can only be run via DM.')
 		await __main__.reply(message, emb=embed)
 		return
-	if kwargs['arguments'] == None:
+	if kwargs['arguments'] is None:
 		embed = emb.error('Please specify a word.')
 		await __main__.reply(message, emb=embed)
 		return
@@ -400,18 +400,18 @@ async def source(client, message, **kwargs):
 
 @shadow(aliases=['findup'])
 async def findu(client, message, **kwargs):
-	if kwargs['arguments'] == None:
+	if kwargs['arguments'] is None:
 		targetmember = message.author
 	else:
 		targetmember = utils.match_input(
 			'member', kwargs['arguments'], server=message.server
 		)
-	if targetmember == None:
+	if targetmember is None:
 		embed = emb.error('Unable to find that member. ' + __main__.t['specify_user'])
 		await __main__.reply(message, emb=embed)
 		return
 	displaymatch = '<@{}>'.format(targetmember.id)
-	if targetmember.game == None:
+	if targetmember.game is None:
 		memberhasgame = False
 		displaygamestatus = 'Not Playing'
 		displaygamename = 'Not Playing'
@@ -421,13 +421,13 @@ async def findu(client, message, **kwargs):
 	else:
 		memberhasgame = True
 	if memberhasgame:
-		if targetmember.game.type == 0 or targetmember.game.type == None:
+		if targetmember.game.type == 0 or targetmember.game.type is None:
 			displaygamestatus = 'Playing'
 			displaygamename = utils.mdspecialchars(targetmember.game.name)
 		if targetmember.game.type == 1:
 			displaygamestatus = 'Streaming'
 			displaygamename = utils.mdspecialchars(targetmember.game.name)
-		if targetmember.game.url == None:
+		if targetmember.game.url is None:
 			displaygameurlstatus = 'No Stream Link'
 			displaygameurl = 'No Stream Link'
 		else:
@@ -614,7 +614,7 @@ async def voicemute(client, message, **kwargs):
 	targetmember = utils.match_input('member', kwargs['arguments'], server=message.server)
 	content = None
 	try:
-		if targetmember.voice.voice_channel == None:
+		if targetmember.voice.voice_channel is None:
 			embed = emb.error('User is not in a voice channel.')
 		elif kwargs['command'] == 'voicemute':
 			await client.server_voice_state(targetmember, mute=1)
@@ -640,9 +640,9 @@ async def votevoicemute(client, message, **kwargs):
 
 	targetmember = utils.match_input('member', kwargs['arguments'], server=message.server)
 	try:
-		if message.author.voice.voice_channel == None:
+		if message.author.voice.voice_channel is None:
 			embed = emb.error('You have to be in a voice channel to be able to start a vote.')
-		elif targetmember.voice.voice_channel == None:
+		elif targetmember.voice.voice_channel is None:
 			embed = emb.error('User is not in a voice channel.')
 		elif targetmember.id in __main__.votemutes:
 			embed = emb.warning('There is already a vote running for this user. Type **`\\vy`** to vote yes.')
@@ -682,7 +682,7 @@ async def vy(client, message, **kwargs):
 			mutee = m
 			break
 
-		if message.author.voice.voice_channel == None:
+		if message.author.voice.voice_channel is None:
 			embed = emb.error('You’re not in any voice channel.')
 			await __main__.reply(message, emb=embed)
 			return
@@ -894,7 +894,7 @@ async def rolecacherst(client, message, **kwargs):
 		embed = emb.error(__main__.t['rolecachedisabled'])
 		await __main__.reply(message, emb=embed)
 		return
-	elif kwargs['arguments'] == None:
+	elif kwargs['arguments'] is None:
 		embed = emb.error('Please give an ID.')
 		await __main__.reply(message, emb=embed)
 		return
@@ -917,7 +917,7 @@ async def rolecacheadd(client, message, **kwargs):
 		embed = emb.error(__main__.t['rolecachedisabled'])
 		await __main__.reply(message, emb=embed)
 		return
-	elif kwargs['arguments'] == None:
+	elif kwargs['arguments'] is None:
 		embed = emb.error('Please give two IDs.')
 		await __main__.reply(message, emb=embed)
 		return
@@ -928,7 +928,7 @@ async def rolecacheadd(client, message, **kwargs):
 		await __main__.reply(message, emb=embed)
 		return
 
-	if splitargs[1] == None:
+	if splitargs[1] is None:
 		embed = emb.error('Please give two IDs.')
 		await __main__.reply(message, emb=embed)
 		return
@@ -1020,7 +1020,7 @@ async def rulefind(client, message, **kwargs):
 		embed = emb.warning('Rules are not (yet) set for this server.')
 		await __main__.reply(message, emb=embed)
 		return
-	if kwargs['arguments'] == None:
+	if kwargs['arguments'] is None:
 		embed = emb.error('Please enter a search term.')
 		await __main__.reply(message, emb=embed)
 		return
@@ -1058,7 +1058,7 @@ async def ruleadd(client, message, **kwargs):
 
 		await __main__.reply(message, emb=embed)
 		return
-	if kwargs['arguments'] == None:
+	if kwargs['arguments'] is None:
 		embed = emb.error('I’m not going to think up any rules by myself.')
 		await __main__.reply(message, emb=embed)
 		return
@@ -1082,7 +1082,7 @@ async def ruleadd(client, message, **kwargs):
 
 @shadow(auth=checks.is_mod, aliases=['editrule'])
 async def ruleedit(client, message, **kwargs):
-	if kwargs['arguments'] == None:
+	if kwargs['arguments'] is None:
 		embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
 		await __main__.reply(message, emb=embed)
 		return
@@ -1110,7 +1110,7 @@ async def ruleedit(client, message, **kwargs):
 
 @shadow(auth=checks.is_mod, aliases=['moverule'])
 async def rulemove(client, message, **kwargs):
-	if kwargs['arguments'] == None:
+	if kwargs['arguments'] is None:
 		embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
 		await __main__.reply(message, emb=embed)
 		return
@@ -1141,7 +1141,7 @@ async def rulemove(client, message, **kwargs):
 
 @shadow(auth=checks.is_mod, aliases=['removerule'])
 async def ruleremove(client, message, **kwargs):
-	if kwargs['arguments'] == None:
+	if kwargs['arguments'] is None:
 		embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
 		await __main__.reply(message, emb=embed)
 		return
@@ -1315,7 +1315,7 @@ async def getrawmessagecontent(client, message, **kwargs):
 					# If I can/may not view this message, or it's
 					# not in this channel, then forget about it
 					pass
-			if getmessage == None:
+			if getmessage is None:
 				raise KeyError("Not found")
 		else:
 			arg0 = argsplit[0]
@@ -1339,7 +1339,7 @@ async def getrawmessagecontent(client, message, **kwargs):
 
 @shadow()
 async def countpins(client, message, **kwargs):
-	if kwargs['arguments'] == None:
+	if kwargs['arguments'] is None:
 		getchannel = message.channel
 	else:
 		channelid = kwargs['arguments'][2:-1]
@@ -1576,7 +1576,7 @@ async def b(client, message, **kwargs):
 			for i in range(0,2):
 				currentexpiry = __main__.getearliestexpiry(message.server.id)
 
-				if currentexpiry == None:
+				if currentexpiry is None:
 					continue
 
 				try:
@@ -1722,7 +1722,7 @@ async def selfban(client, message, **kwargs):
 
 		return
 
-	if kwargs['arguments'] == None or kwargs['arguments'] == '':
+	if kwargs['arguments'] is None or kwargs['arguments'] == '':
 		kwargs['arguments'] = '(no given reason)'
 
 	await client.replace_roles(message.author,
@@ -1778,7 +1778,7 @@ async def b_id(client, message, **kwargs):
 
 	targetmember = message.server.get_member(input)
 
-	if targetmember == None:
+	if targetmember is None:
 		# Just as I thought, they left
 		if not __main__.removerolecache(input, message.server.id):
 			embed = emb.error((
@@ -1887,7 +1887,7 @@ async def tntgb_maint(client, message, **kwargs):
 					author=message.author,
 					channel=message.channel
 				)
-				if message2 == None:
+				if message2 is None:
 					embed = emb.info('Timed out, closing prompt')
 					await __main__.reply(message, emb=embed)
 					break
@@ -1911,7 +1911,7 @@ async def tntgb_maint(client, message, **kwargs):
 				getmessage = await client.get_message(events.banlogchannel_tntgb, splitargs[1])
 				content = getmessage.content
 				m = re.search('<@!?([0-9]+)>', content)
-				if m == None:
+				if m is None:
 					embed = emb.error('m is None! Maybe I couldn’t find the mention.')
 					await __main__.reply(message, emb=embed)
 					return
@@ -1998,7 +1998,7 @@ async def uploadfile(client, message, **kwargs):
 @shadow(auth=checks.is_mod, aliases=['blackunlist'], servonly=True)
 async def blacklist(client, message, **kwargs):
 	tgtmem = utils.match_input('member', kwargs['arguments'], server=message.server)
-	if tgtmem == None:
+	if tgtmem is None:
 		embed = emb.error('Unable to find that member. ' + __main__.t['specify_user'])
 		await __main__.reply(message, emb=embed)
 		return
@@ -2213,7 +2213,7 @@ async def testroleconditional(client, message, **kwargs):
 		splitargs = kwargs['arguments'].split(' ')
 
 		tgtmem = utils.match_input('member', splitargs[0], server=message.server)
-		if tgtmem == None:
+		if tgtmem is None:
 			tgtmem = message.author
 		embed = emb.success('Result: {}'.format(
 				customcommands.parseroleconditional(

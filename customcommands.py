@@ -361,7 +361,7 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 						condstring
 					)
 
-					if m == None:
+					if m is None:
 						levelexists = False
 					else:
 						# No side effects, so if we say the same thing
@@ -473,7 +473,7 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 			)
 		# ARE there any operators? We're expecting at least something right now...
 		m = re.match('(.*?)([\~\|\&])', condstring)
-		if m == None:
+		if m is None:
 			raise InvalidExpression('Unknown term `{}`'.format(
 					utils.mdspecialchars(condstring)
 				)

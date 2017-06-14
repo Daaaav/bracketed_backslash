@@ -190,7 +190,7 @@ async def replyattach(messageobject, filetoattach, fname, message=''):
 	await client.send_file(destination=messageobject.channel, content = events.msg_start + message, fp=filetoattach, filename=fname)
 
 def isprivatemessage(server): # this is a function because so in the future more checks for if its a private message can ezily be added
-	if server == None:
+	if server is None:
 		return True
 	else:
 		return False
@@ -270,7 +270,7 @@ def rolelist(roles):
 	return rlist
 
 def updaterolecache(member, serverid=None):
-	if serverid == None:
+	if serverid is None:
 		serverid = member.server.id
 	if not serverid in events.memberroles:
 		events.memberroles[serverid] = {}
@@ -318,7 +318,7 @@ def getspecialchannel(server):
 		return server.default_channel
 
 def getspecialchannel_reply(message):
-	if message.server == None:
+	if message.server is None:
 		return message.channel
 	specialchannel = getspecialchannel(message.server)
 	if specialchannel == message.server.default_channel:
@@ -359,13 +359,13 @@ def reltime(timestamp, noago=False):
 
 def parsereltime(inputstr, relative=False, now=None):
 	# if relative is true then we only get the amount of seconds from now, if false we get a unix timestamp.
-	if now == None:
+	if now is None:
 		now = int(time.time())
 	total = 0
 
 	m = re.search("^((?P<d>[0-9]+)d)?((?P<h>[0-9]+)h)?((?P<m>[0-9]+)m)?((?P<s>[0-9]+)s)?$", inputstr)
 
-	if m == None:
+	if m is None:
 		return None
 
 	ds = m.group('d')
@@ -592,12 +592,12 @@ async def fetch(url):
 			return await response.read()
 
 def logfailedcommand(command, arguments, message):
-	if arguments == None:
+	if arguments is None:
 		arguments = ''
 	logging.info('{} {} attempted by {}#{} (uuid {}) at {} utc but failed'.format(command, arguments, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 
 def logcommand(command, arguments, message):
-	if arguments == None:
+	if arguments is None:
 		arguments = ''
 	logging.info('{} {} called by {}#{} (uuid {}) at {} utc'.format(command, arguments, message.author.name, message.author.discriminator, message.author.id, message.timestamp))
 
