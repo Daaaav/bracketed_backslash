@@ -1545,142 +1545,142 @@ async def b(client, message, **kwargs):
 	banningnonmod = True
 	announcemsg = ''
 	specialchannel = __main__.getspecialchannel(message.channel.server)
-	try:
-		targetmember = utils.match_input('member', splitargs[0], server=message.server)
-		if targetmember != None and __main__.is_tntgb_banned(targetmember):
-			embed = emb.warning('{} is already banned!'.format(targetmember.mention))
-			await client.send_message(specialchannel, embed=embed)
-			banningnonmod = False  # See this as "don't set expiry timer"
-		elif targetmember != None and __main__.is_tntgb_mod(targetmember):
-			if kwargs['command'] != 'b_mod':
-				embed = emb.warning(
-					(
-						'{} is a mod, please use `\\b_mod` instead '
-						'to cause the oldest two bans to be lifted!'
-					).format(targetmember.mention)
-				)
-				await client.send_message(specialchannel, embed=embed)
-
-				# We're doing this in a public channel
-				await client.delete_message(message)
-				__main__.messages_deleted_by_bot.append(message)
-
-				return
-
-			# Get oldest two bans here and expire them
-			expiredmentions = []
-
-			# Technical messages:
-			content = 'Lifted bans:'
-
-			for i in range(0,2):
-				currentexpiry = __main__.getearliestexpiry(message.server.id)
-
-				if currentexpiry is None:
-					continue
-
-				try:
-					await __main__.removeRestrictiveRoles(
-						message.server.get_member(currentexpiry[0]),
-						message.server
-					)
-					content +='\n<@!{}> lifted normally'.format(
-						currentexpiry[0]
-					)
-				except (AttributeError, TypeError):
-					# Look in the role cache
-					if __main__.removerolecache(currentexpiry[0], message.server.id):
-						__main__.rolecachesave()
-						content += '\n<@!{}> lifted via role cache'.format(
-							currentexpiry[0]
-						)
-					else:
-						content += (
-							'\n<@!{}> cannot be found '
-							'in the role cache!'
-						).format(currentexpiry[0])
-				# Shorten this again
-				thisexpiry = currentexpiry[1]
-				if thisexpiry['msgedit_message'] != '0':
-					await __main__.editexpirymessage(message.server, thisexpiry)
-				if not __main__.removeexpiryentry(message.server.id, currentexpiry[0]):
-					try:
-						em = emb.warning((
-							'Could not remove expiry entry for '
-							'<@!{}>! Debug: S:{} M:{} SI:{} MI:{}'
-						).format(
-							currentexpiry[0],
-							message.server.id,
-							currentexpiry[0],
-							message.server.id in events.rolexpires,
-							currentexpiry[0] in events.rolexpires
-						))
-						await client.send_message(specialchannel, embed=em)
-					except:
-						em = emb.error((
-							'Something happened : Something happened :('
-							'\n\nIn fact, you are seeing this because '
-							'Dav didn\'t know whether he should make '
-							'`rolexpires` global or not, and he made '
-							'precisely the wrong choice, or he made '
-							'some other kind of lame mistake. You '
-							'want to know which one, huh? Here it is:'
-							'\n{}'
-						).format(traceback.format_exc()))
-						await client.send_message(specialchannel, embed=em)
-				expiredmentions.append('<@!{}>'.format(currentexpiry[0]))
-
-			__main__.rolexpiresave()
-
-			# Send administration info
-			embed = emb.info(content)
-			await client.send_message(specialchannel, embed=embed)
-
-			# Now annouce it to the world
-			if len(expiredmentions) == 2:
-				whose = 'The bans on {} and {} have'.format(
-					expiredmentions[0], expiredmentions[1]
-				)
-			elif len(expiredmentions) == 1:
-				whose = 'The ban on {} has'.format(
-					expiredmentions[0]
-				)
-			elif len(expiredmentions) == 0:
-				whose = 'All remaining bans (0) have'
-			else:
-				whose = 'An inexplicable number of bans ({}) has'.format(
-					len(expiredmentions)
-				)
-			announcemsg = (
-				'{} been lifted by {}, '
-				'after {} has been {} in {}.'
-			).format(
-				whose,
-				message.author.display_name,
-				targetmember.mention,
-				splitargs[1],
-				message.channel.mention
-			)
-			await client.send_message(events.banlogchannel_tntgb, announcemsg)
-			banningnonmod = False
-		else:
-			await client.replace_roles(targetmember,
-				discord.utils.get(message.server.roles,
-					id='243076976565288960'
-				)
-			)
-			announcemsg = '{} has been banned for 5 days by {} in {} for {}.'.format(
-				targetmember.mention,
-				message.author.display_name,
-				message.channel.mention,
-				splitargs[1]
-			)
-			content = '⛔ ' + announcemsg
-			sentmessage = await client.send_message(events.banlogchannel_tntgb, content)
-	except (AttributeError,TypeError):
+	targetmember = utils.match_input('member', splitargs[0], server=message.server)
+	if targetmember is None:
 		embed = emb.error(__main__.t['specify_user'])
 		await client.send_message(specialchannel, embed=embed)
 		banningnonmod = False
+		return
+	if checks.is_tntgb_banned(targetmember):
+		embed = emb.warning('{} is already banned!'.format(targetmember.mention))
+		await client.send_message(specialchannel, embed=embed)
+		banningnonmod = False  # See this as "don't set expiry timer"
+	elif checks.is_tntgb_mod(targetmember):
+		if kwargs['command'] != 'b_mod':
+			embed = emb.warning(
+				(
+					'{} is a mod, please use `\\b_mod` instead '
+					'to cause the oldest two bans to be lifted!'
+				).format(targetmember.mention)
+			)
+			await client.send_message(specialchannel, embed=embed)
+
+			# We're doing this in a public channel
+			await client.delete_message(message)
+			__main__.messages_deleted_by_bot.append(message)
+
+			return
+
+		# Get oldest two bans here and expire them
+		expiredmentions = []
+
+		# Technical messages:
+		content = 'Lifted bans:'
+
+		for i in range(0,2):
+			currentexpiry = __main__.getearliestexpiry(message.server.id)
+
+			if currentexpiry is None:
+				continue
+
+			try:
+				await __main__.removeRestrictiveRoles(
+					message.server.get_member(currentexpiry[0]),
+					message.server
+				)
+				content +='\n<@!{}> lifted normally'.format(
+					currentexpiry[0]
+				)
+			except (AttributeError, TypeError):
+				# Look in the role cache
+				if __main__.removerolecache(currentexpiry[0], message.server.id):
+					__main__.rolecachesave()
+					content += '\n<@!{}> lifted via role cache'.format(
+						currentexpiry[0]
+					)
+				else:
+					content += (
+						'\n<@!{}> cannot be found '
+						'in the role cache!'
+					).format(currentexpiry[0])
+			# Shorten this again
+			thisexpiry = currentexpiry[1]
+			if thisexpiry['msgedit_message'] != '0':
+				await __main__.editexpirymessage(message.server, thisexpiry)
+			if not __main__.removeexpiryentry(message.server.id, currentexpiry[0]):
+				try:
+					em = emb.warning((
+						'Could not remove expiry entry for '
+						'<@!{}>! Debug: S:{} M:{} SI:{} MI:{}'
+					).format(
+						currentexpiry[0],
+						message.server.id,
+						currentexpiry[0],
+						message.server.id in events.rolexpires,
+						currentexpiry[0] in events.rolexpires
+					))
+					await client.send_message(specialchannel, embed=em)
+				except:
+					em = emb.error((
+						'Something happened : Something happened :('
+						'\n\nIn fact, you are seeing this because '
+						'Dav didn\'t know whether he should make '
+						'`rolexpires` global or not, and he made '
+						'precisely the wrong choice, or he made '
+						'some other kind of lame mistake. You '
+						'want to know which one, huh? Here it is:'
+						'\n{}'
+					).format(traceback.format_exc()))
+					await client.send_message(specialchannel, embed=em)
+			expiredmentions.append('<@!{}>'.format(currentexpiry[0]))
+
+		__main__.rolexpiresave()
+
+		# Send administration info
+		embed = emb.info(content)
+		await client.send_message(specialchannel, embed=embed)
+
+		# Now annouce it to the world
+		if len(expiredmentions) == 2:
+			whose = 'The bans on {} and {} have'.format(
+				expiredmentions[0], expiredmentions[1]
+			)
+		elif len(expiredmentions) == 1:
+			whose = 'The ban on {} has'.format(
+				expiredmentions[0]
+			)
+		elif len(expiredmentions) == 0:
+			whose = 'All remaining bans (0) have'
+		else:
+			whose = 'An inexplicable number of bans ({}) has'.format(
+				len(expiredmentions)
+			)
+		announcemsg = (
+			'{} been lifted by {}, '
+			'after {} has been {} in {}.'
+		).format(
+			whose,
+			message.author.display_name,
+			targetmember.mention,
+			splitargs[1],
+			message.channel.mention
+		)
+		await client.send_message(events.banlogchannel_tntgb, announcemsg)
+		banningnonmod = False
+	else:
+		await client.replace_roles(targetmember,
+			discord.utils.get(message.server.roles,
+				id='243076976565288960'
+			)
+		)
+		announcemsg = '{} has been banned for 5 days by {} in {} for {}.'.format(
+			targetmember.mention,
+			message.author.display_name,
+			message.channel.mention,
+			splitargs[1]
+		)
+		content = '⛔ ' + announcemsg
+		sentmessage = await client.send_message(events.banlogchannel_tntgb, content)
 
 	# Now delete the calling message
 	await client.delete_message(message)

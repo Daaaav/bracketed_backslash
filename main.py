@@ -99,16 +99,18 @@ votemutes = {} # userid -> dict with `starttime`, `proponents`*, `opponents`*
 
 exptimer = None  # threading.Timer object
 
+t = {}
+cmds = []
+permissionlabels = []
+funnynumbers = []
+help_info_string = ''
+
 def loadstrings():
 	stringsf = open('strings.json', 'r')
 	stringsfr = stringsf.read()
 	strings = json.loads(stringsfr)
 	# TODO: noone better not put this on a cs grad thread
-	global t
-	global cmds
-	global permissionlabels
-	global funnynumbers
-	global help_info_string
+	global t, cmds, permissionlabels, funnynumbers, help_info_string
 	t = strings['t']
 	cmds = strings['cmds']
 	permissionlabels = strings['permissionlabels']
@@ -190,10 +192,7 @@ async def replyattach(messageobject, filetoattach, fname, message=''):
 	await client.send_file(destination=messageobject.channel, content = events.msg_start + message, fp=filetoattach, filename=fname)
 
 def isprivatemessage(server): # this is a function because so in the future more checks for if its a private message can ezily be added
-	if server is None:
-		return True
-	else:
-		return False
+	return not bool(server)
 
 def helplist(cats, server, onlycat=None):
 	returnage = ''
@@ -272,9 +271,9 @@ def rolelist(roles):
 def updaterolecache(member, serverid=None):
 	if serverid is None:
 		serverid = member.server.id
-	if not serverid in events.memberroles:
+	if serverid not in events.memberroles:
 		events.memberroles[serverid] = {}
-	events.memberroles[serverid][str(member.id)] = list(rolelist(member.roles))
+	events.memberroles[serverid][member.id] = rolelist(member.roles)
 
 def removerolecache(memberid, serverid):
 	try:
