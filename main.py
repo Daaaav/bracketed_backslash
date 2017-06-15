@@ -134,13 +134,13 @@ async def reply(messageobject, message=None, emb=None):
 		contentlines = content.split('\n')
 		cut = math.floor(len(contentlines)/2)
 		await client.send_message(messageobject.channel, '\n'.join(contentlines[:cut]))
-		if emb != None:
+		if emb is not None:
 			await client.send_message(messageobject.channel, '\n'.join(contentlines[cut:]), embed=emb)
 		else:
 			await client.send_message(messageobject.channel, '\n'.join(contentlines[cut:]))
 		return
 	try:
-		if emb != None:
+		if emb is not None:
 			await client.send_message(
 				messageobject.channel,
 				events.msg_start + message,
@@ -368,16 +368,16 @@ def parsereltime(inputstr, relative=False, now=None):
 		return None
 
 	ds = m.group('d')
-	if ds != None:
+	if ds is not None:
 		total += int(ds)*86400
 	hs = m.group('h')
-	if hs != None:
+	if hs is not None:
 		total += int(hs)*3600
 	ms = m.group('m')
-	if ms != None:
+	if ms is not None:
 		total += int(ms)*60
 	ss = m.group('s')
-	if ss != None:
+	if ss is not None:
 		total += int(ss)
 
 	if relative:
@@ -393,7 +393,7 @@ async def handleExpiryTimer():
 	global exptimer
 
 	# Cancel the existing timer, if it's running
-	if exptimer != None:
+	if exptimer is not None:
 		exptimer.cancel()
 		exptimer = None  # Because there's no Timer.isCanceled()
 

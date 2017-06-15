@@ -219,7 +219,7 @@ async def _config(client, message, **kwargs):
 			content = 'Key: `{}`   Type: `{}`   Array: `{}`   Detachable: `{}`   Using: `{}`\n'.format(splitargs[1], config.get_type(splitargs[1]), config.is_array(splitargs[1]), config.is_detachable(splitargs[1]), ('Local value' if config.is_detached(splitargs[1], message.server.id) else 'Master value'))
 		except AttributeError:
 			content = 'Key: `{}`   Type: `{}`   Array: `{}`   Detachable: `{}`   Using: `{}`\n'.format(splitargs[1], config.get_type(splitargs[1]), config.is_array(splitargs[1]), config.is_detachable(splitargs[1]), 'Master value')
-		if config.get_expl(splitargs[1]) != None:
+		if config.get_expl(splitargs[1]) is not None:
 			content += 'Explanation: {}\n'.format(config.get_expl(splitargs[1]))
 		content += 'Value:'
 
@@ -435,7 +435,7 @@ async def findu(client, message, **kwargs):
 			displaygameurl = utils.mdspecialchars(targetmember.game.url)
 	embed = discord.Embed(description='Matched ' + displaymatch, colour=targetmember.colour)
 	embed.set_image(url=targetmember.avatar_url)
-	embed.add_field(name='Nickname' if targetmember.nick != None else 'No Nickname', value=utils.mdspecialchars(targetmember.nick) if targetmember.nick != None else 'No Nickname')
+	embed.add_field(name='Nickname' if targetmember.nick is not None else 'No Nickname', value=utils.mdspecialchars(targetmember.nick) if targetmember.nick is not None else 'No Nickname')
 	embed.add_field(name='Username', value=utils.mdspecialchars(targetmember.name))
 	embed.add_field(name='Discriminator', value='#{}'.format(targetmember.discriminator))
 	embed.add_field(name='User ID', value=targetmember.id)
@@ -898,7 +898,7 @@ async def rolecacherst(client, message, **kwargs):
 		embed = emb.error('Please give an ID.')
 		await __main__.reply(message, emb=embed)
 		return
-	elif utils.match_input('member', kwargs['arguments'], server=message.server) != None:
+	elif utils.match_input('member', kwargs['arguments'], server=message.server) is not None:
 		embed = emb.error('That member is apparently still on this server! Not removing from the cache.')
 		await __main__.reply(message, emb=embed)
 		return
@@ -923,7 +923,7 @@ async def rolecacheadd(client, message, **kwargs):
 		return
 
 	splitargs = kwargs['arguments'].split()
-	if utils.match_input('member', splitargs[0], server=message.server) != None:
+	if utils.match_input('member', splitargs[0], server=message.server) is not None:
 		embed = emb.error('That member is apparently still on this server! Not doing anything.')
 		await __main__.reply(message, emb=embed)
 		return
@@ -988,7 +988,7 @@ async def rules(client, message, **kwargs):
 		embed = emb.warning('Rules are not (yet) set for this server.')
 		await __main__.reply(message, emb=embed)
 		return
-	if kwargs['arguments'] != None and kwargs['arguments'].isdigit():
+	if kwargs['arguments'] is not None and kwargs['arguments'].isdigit():
 		try:
 			events.rules[message.server.id][int(kwargs['arguments'])-1]
 
@@ -2095,7 +2095,7 @@ async def sudo(client, message, **kwargs):
 	else:
 		# Check if it's an alias
 		for c, p in commands.items():
-			if p[2] != None and command in p[2]:
+			if p[2] is not None and command in p[2]:
 				func = commands[c]
 				break
 		else:

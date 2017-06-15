@@ -576,7 +576,7 @@ async def on_message(m):
 	else:
 		# Check if it's an alias
 		for c, p in commands.commands.items():
-			if p[2] != None and command in p[2]:
+			if p[2] is not None and command in p[2]:
 				func = commands.commands[c]
 				break
 		else:
@@ -595,7 +595,7 @@ async def on_message(m):
 		e = emb.error(__main__.t['noprivate'])
 		await __main__.reply(m, emb=e)
 		return
-	if func[1] != None and not func[1](m.author):
+	if func[1] is not None and not func[1](m.author):
 		e = emb.error(__main__.t['you_no_permission'])
 		__main__.logfailedcommand(command, arguments, m)
 		await __main__.reply(m, emb=e)
@@ -1392,7 +1392,7 @@ async def on_socket_raw_receive(payload):
 			return
 		# Check if on_message_delete() was already called by this message
 		# If it was, then return
-		if discord.utils.find(lambda m: m.id == event['d']['id'], __main__.client.messages) != None:
+		if discord.utils.find(lambda m: m.id == event['d']['id'], __main__.client.messages) is not None:
 			# If the message lingers in deleted_messages, it doesn't really matter for now
 			return
 		if event['d']['id'] in __main__.owncache:
@@ -1423,7 +1423,7 @@ async def on_socket_raw_receive(payload):
 		if __main__.logdisabled('message_updateuncached', mchan.server):
 			return
 		# Check if the message is in the cache and return if it is
-		if discord.utils.find(lambda m: m.id == event['d']['id'], __main__.client.messages) != None:
+		if discord.utils.find(lambda m: m.id == event['d']['id'], __main__.client.messages) is not None:
 			return
 
 		schan = __main__.getspecialchannel(mchan.server)
@@ -1486,7 +1486,7 @@ async def on_socket_raw_receive(payload):
 			return
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(lambda m: m.id == event['d']['message_id'], __main__.client.messages) \
-		!= None:
+		is not None:
 			return
 
 		schan = __main__.getspecialchannel(mchan.server)
@@ -1525,7 +1525,7 @@ async def on_socket_raw_receive(payload):
 			).format(
 				name=event['d']['emoji']['name'],
 				id=event['d']['emoji']['id'],
-			) if event['d']['emoji']['id'] != None else event['d']['emoji']['name'],
+			) if event['d']['emoji']['id'] is not None else event['d']['emoji']['name'],
 		)
 		await __main__.client.send_message(schan, embed=e)
 	elif event['t'] == 'MESSAGE_REACTION_REMOVE':
@@ -1533,7 +1533,7 @@ async def on_socket_raw_receive(payload):
 			return
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(lambda m: m.id == event['d']['message_id'], __main__.client.messages) \
-		!= None:
+		is not None:
 			return
 
 		schan = __main__.getspecialchannel(mchan.server)
@@ -1570,7 +1570,7 @@ async def on_socket_raw_receive(payload):
 			).format(
 				name=event['d']['emoji']['name'],
 				id=event['d']['emoji']['id'],
-			) if event['d']['emoji']['id'] != None else event['d']['emoji']['name'],
+			) if event['d']['emoji']['id'] is not None else event['d']['emoji']['name'],
 		)
 		await __main__.client.send_message(schan, embed=e)
 	elif event['t'] == 'MESSAGE_REACTION_REMOVE_ALL':
@@ -1578,7 +1578,7 @@ async def on_socket_raw_receive(payload):
 			return
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(lambda m: m.id == event['d']['message_id'], __main__.client.messages) \
-		!= None:
+		is not None:
 			return
 
 		schan = __main__.getspecialchannel(mchan.server)

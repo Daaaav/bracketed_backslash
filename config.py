@@ -206,7 +206,7 @@ configs = {
 s = {}
 
 def get_s(skey, serverid=None):
-	if serverid != None and serverid in s[skey]:
+	if serverid is not None and serverid in s[skey]:
 		return s[skey][serverid]
 	return s[skey]['master']
 
@@ -214,7 +214,7 @@ def set_s(skey, value, serverid=None):
 	if is_array(skey):
 		raise TypeError('Array options cannot be set using the standard config.set_s() function!')
 		return
-	if serverid != None and serverid in s[skey]:
+	if serverid is not None and serverid in s[skey]:
 		s[skey][serverid] = input_to_type_key(value, skey)
 	else:
 		s[skey]['master'] = input_to_type_key(value, skey)
@@ -223,7 +223,7 @@ def insert_s(skey, value, serverid=None):
 	if not is_array(skey):
 		raise TypeError('You cannot insert something into an option that isn\'t an array')
 		return
-	if serverid != None and serverid in s[skey]:
+	if serverid is not None and serverid in s[skey]:
 		s[skey][serverid].append(input_to_type_key(value, skey))
 	else:
 		s[skey]['master'].append(input_to_type_key(value, skey))
@@ -232,13 +232,13 @@ def remove_s(skey, value, serverid=None):
 	if not is_array(skey):
 		raise TypeError('You cannot remove something from an option that isn\'t an array')
 		return
-	if serverid != None and serverid in s[skey]:
+	if serverid is not None and serverid in s[skey]:
 		s[skey][serverid].remove(input_to_type_key(value, skey))
 	else:
 		s[skey]['master'].remove(input_to_type_key(value, skey))
 
 def restore_default(skey, serverid=None):
-	if is_array(skey) and serverid != None and serverid in s[skey]:
+	if is_array(skey) and serverid is not None and serverid in s[skey]:
 		s[skey][serverid] = copy.deepcopy(get_default(skey))
 	elif is_array(skey):
 		s[skey]['master'] = copy.deepcopy(get_default(skey))

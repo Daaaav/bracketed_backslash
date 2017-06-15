@@ -389,7 +389,7 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 
 	# .mod / .admin / .bot
 	m = re.match('^(?P<a>c(aller)?|t(arget)?)\.(?P<b>mod|admin|bot)$', condstring)
-	if m != None:
+	if m is not None:
 		if m.group('a') in ('c', 'caller'):
 			checkmember = caller
 		elif m.group('a') in ('t', 'target'):
@@ -422,13 +422,13 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 
 	# Role ID?
 	m = re.match('^c(aller)?\.([0-9]+)$', condstring)
-	if m != None:
+	if m is not None:
 		for role in caller.roles:
 			if role.id == m.group(2):
 				return True
 		return False
 	m = re.match('^t(arget)?\.([0-9]+)$', condstring)
-	if m != None:
+	if m is not None:
 		if target is None:
 			raise InvalidExpression((
 					'There is no target member, '
@@ -450,22 +450,22 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 		# That means we need to check whether this has the correct syntax.
 		# Are all characters valid? We're also not expecting any brackets anymore
 		m = re.match('.*?([^a-z0-9\.\~\|\&])', condstring)
-		if m != None:
+		if m is not None:
 			raise InvalidExpression('Syntax error, unrecognized `{}`'.format(
 				utils.mdspecialchars(m.group(1))
 			)
 		)
 		# No two operators in a row?
 		m = re.match('(.*?)([\~\|\&]{2})', condstring)
-		if m != None:
+		if m is not None:
 			raise InvalidExpression('Syntax error at `{}`'.format(m.group(2)))
 		# No operator at the end of the line?
 		m = re.match('(.*?)[\~\|\&]$', condstring)
-		if m != None:
+		if m is not None:
 			raise InvalidExpression('Syntax error, unexpected end of expression')
 		# Nor at the beginning?
 		m = re.match('([\~\|\&])', condstring)
-		if m != None:
+		if m is not None:
 			raise InvalidExpression((
 					'Syntax error, unexpected `{}` '
 					'at start of expression'
