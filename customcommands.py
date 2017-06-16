@@ -8,7 +8,7 @@ import re
 
 import checks
 import events
-import __main__ as main
+import bot
 import utils
 
 class InvalidExpression(Exception):
@@ -139,7 +139,7 @@ async def run(
 						'expects {}.'
 					).format(expected)
 				)
-				await main.reply(message, emb=embed)
+				await bot.reply(message, emb=embed)
 				return
 			if requiredargs == 2:
 				splitargs = arguments.split(' ', 1)
@@ -154,7 +154,7 @@ async def run(
 							'as arguments.'
 						)
 					)
-					await main.reply(message, emb=embed)
+					await bot.reply(message, emb=embed)
 					return
 			elif com['expiry'] == 'input':
 				expiryarg = arguments
@@ -167,7 +167,7 @@ async def run(
 			'forever','infinity','inf','none','x','∞','no'
 		):
 			setexpirytimer = True
-			expirytime = main.parsereltime(expiryarg)
+			expirytime = utils.parsereltime(expiryarg)
 			if expirytime is None:
 				embed = emb.error((
 						'Invalid expiry time. Please input a relative time '
@@ -178,15 +178,15 @@ async def run(
 						'Roles have not been changed.'
 					)
 				)
-				await main.reply(message, emb=embed)
+				await bot.reply(message, emb=embed)
 				return
 
 		if com['target'] == 'input':
 			try:
 				targetmember = utils.match_input('member', memberarg, server=server)
 			except (AttributeError, TypeError):
-				embed = emb.error(main.t['specify_user'])
-				await main.reply(message, emb=embed)
+				embed = emb.error(bot.t['specify_user'])
+				await bot.reply(message, emb=embed)
 				return
 
 		# And are we allowed to do this?
@@ -198,11 +198,11 @@ async def run(
 					targetmember.mention
 				)
 			)
-			await main.reply(message, emb=embed)
+			await bot.reply(message, emb=embed)
 			return
 
 		# Now let's apply the change.
-		await main.givetakeroles(
+		await utils.givetakeroles(
 			targetmember, message.server, com['giverole'], com['takerole']
 		)
 
@@ -213,9 +213,9 @@ async def run(
 				).format(
 					targetmember.mention,
 					's' if len(com['giverole']) > 1 else '',
-					main.listroles_id(com['giverole']),
+					utils.listroles_id(com['giverole']),
 					's' if len(com['takerole']) > 1 else '',
-					main.listroles_id(com['takerole'])
+					utils.listroles_id(com['takerole'])
 				)
 			)
 		elif len(com['giverole']) > 0:
@@ -224,7 +224,7 @@ async def run(
 				).format(
 					targetmember.mention,
 					's' if len(com['giverole']) > 1 else '',
-					main.listroles_id(com['giverole'])
+					utils.listroles_id(com['giverole'])
 				)
 			)
 		elif len(com['takerole']) > 0:
@@ -232,7 +232,7 @@ async def run(
 					'Successfully taken the role{} {} from {}.'
 				).format(
 					's' if len(com['takerole']) > 1 else '',
-					main.listroles_id(com['takerole']),
+					utils.listroles_id(com['takerole']),
 					targetmember.mention
 				)
 			)
@@ -242,14 +242,14 @@ async def run(
 				)
 			)
 
-		await main.reply(message, emb=embed)
+		await bot.reply(message, emb=embed)
 
 		# Does it expire?
 		if setexpirytimer:
 			# It does!
-			main.addexpiryentry(server.id, targetmember.id, expirytime)
-			main.rolexpiresave()
-			await main.handleExpiryTimer()
+			utils.addexpiryentry(server.id, targetmember.id, expirytime)
+			utils.rolexpiresave()
+			await utils.handleExpiryTimer()
 
 		# Do we want to remember the member for an `\expires`?
 		if com['setlatestroled']:
@@ -262,7 +262,7 @@ async def run(
 					'Maybe it will work with a longer chain?'
 				)
 			)
-			await main.reply(message, emb=embed)
+			await bot.reply(message, emb=embed)
 			return
 		referrers.append(command)
 
@@ -283,10 +283,10 @@ async def run(
 					com['to']
 				)
 			)
-			await main.reply(message, emb=embed)
+			await bot.reply(message, emb=embed)
 	else:
 		embed = emb.error('Custom command type `{}` not supported!'.format(com['type']))
-		await main.reply(message, emb=embed)
+		await bot.reply(message, emb=embed)
 
 def parseroleconditional(condstring, caller, target, recursivecall=0):
 	"""Parses a role conditional expression and returns its result
