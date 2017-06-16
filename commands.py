@@ -1431,8 +1431,15 @@ async def _eval(client, message, **kwargs):
 		splitargs = kwargs['arguments'].split(' ', 1)
 		evalvar = splitargs[0]
 		evaluate = splitargs[1]
+	env = {
+		'message': message,
+		'server': message.server,
+		'channel': message.channel,
+		'author': message.author,
+	}
+	env.update(globals())
 	try:
-		evaluate = eval(evaluate)
+		evaluate = eval(evaluate, env)
 		if inspect.isawaitable(evaluate):
 			evaluate = await evaluate
 		if kwargs['command'] == 'setvar':
