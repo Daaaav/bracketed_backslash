@@ -1431,7 +1431,12 @@ async def _eval(client, message, **kwargs):
 		splitargs = kwargs['arguments'].split(' ', 1)
 		evalvar = splitargs[0]
 		evaluate = splitargs[1]
+	entireoutput = ''
+	def output(request):
+		nonlocal entireoutput
+		entireoutput += request + '\n'
 	env = {
+		'output': output,
 		'message': message,
 		'server': message.server,
 		'channel': message.channel,
@@ -1445,6 +1450,8 @@ async def _eval(client, message, **kwargs):
 			evaluate = await evaluate
 		if kwargs['command'] == 'setvar':
 			globals()[evalvar] = evaluate
+		if entireoutput:
+			evaluate = entireoutput
 	except Exception:
 		evaluate = traceback.format_exc()
 	content = '```py\n{0}```'.format(utils.wrapbackticks(str(evaluate)))
