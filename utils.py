@@ -819,7 +819,3 @@ async def newmemberroles(member, specialchannel, bypassjoinchannel):
 					discord.utils.get(member.server.roles, id=rid)
 				)
 			await bot.client.add_roles(member, *addingtheseroles)
-
-def setglobal(s, x):
-	globals()[s] = x
-	return x

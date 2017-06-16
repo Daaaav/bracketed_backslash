@@ -1436,7 +1436,7 @@ async def _eval(client, message, **kwargs):
 		if inspect.isawaitable(evaluate):
 			evaluate = await evaluate
 		if kwargs['command'] == 'setvar':
-			evaluate = utils.setglobal(evalvar, evaluate)
+			globals()[evalvar] = evaluate
 	except Exception:
 		evaluate = traceback.format_exc()
 	content = '```py\n{0}```'.format(utils.wrapbackticks(str(evaluate)))
