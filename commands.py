@@ -1439,6 +1439,7 @@ async def _eval(client, message, **kwargs):
 	}
 	env.update(globals())
 	try:
+		evaluate = compile(evaluate, 'eval', 'single')
 		evaluate = eval(evaluate, env)
 		if inspect.isawaitable(evaluate):
 			evaluate = await evaluate
