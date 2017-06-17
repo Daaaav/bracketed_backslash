@@ -19,6 +19,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import contextlib
+import io
 import inspect
 import json
 import os
@@ -1444,17 +1446,24 @@ async def _eval(client, message, **kwargs):
 		'author': message.author,
 	}
 	env.update(globals())
+	stdout = io.StringIO()
 	to_compile = 'async def func():\n' + textwrap.indent(evaluate, '\t')
 	try:
 		exec(to_compile, env)
-		evaluate = await env['func']()
+		with contextlib.redirect_stdout(stdout):
+			evaluate = await env['func']()
 	except Exception:
-		evaluate = traceback.format_exc()
+		value = stdout.getvalue()
+		evaluate = value + traceback.format_exc()
 	else:
+		value = stdout.getvalue()
 		if kwargs['command'] == 'setvar':
 			globals()[evalvar] = evaluate
-		if entireoutput:
-			evaluate = entireoutput
+		if evaluate is None:
+			if value:
+				evaluate = value
+		else:
+			evaluate = value + evaluate
 	content = '```py\n{0}```'.format(utils.wrapbackticks(str(evaluate)))
 	if len(content) > 2000:
 		print((
