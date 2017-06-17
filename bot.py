@@ -126,29 +126,25 @@ async def reply(messageobject, message=None, emb=None):
 		else:
 			dispemb = str(emb.to_dict())
 		logging.info(
-			(
-				(
-					'A message reply() was rejected, with exception %s\n'
-					'The server it was attemped to be sent to is:\n'
-					'%s\n'
-					'The channel it was attempted to be sent to is:\n'
-					'\tType: %s\n'
-					'\tName: %s\n'
-					'\tID: %s\n'
-					'\n'
-					'The content of the rejected message is:\n'
-					'\t%s\n'
-					'The rich embed of the rejected message is:\n'
-					'\t%s\n'
-				),
-				type(e).__name__,
-				servinfo,
-				str(messageobject.channel.type).title(),
-				messageobject.channel,
-				messageobject.id,
-				events.msg_start + message,
-				dispemb,
-			)
+			'A message reply() was rejected, with exception %s\n'
+			'The server it was attemped to be sent to is:\n'
+			'%s\n'
+			'The channel it was attempted to be sent to is:\n'
+			'\tType: %s\n'
+			'\tName: %s\n'
+			'\tID: %s\n'
+			'\n'
+			'The content of the rejected message is:\n'
+			'\t%s\n'
+			'The rich embed of the rejected message is:\n'
+			'\t%s\n',
+			type(e).__name__,
+			servinfo,
+			str(messageobject.channel.type).title(),
+			messageobject.channel,
+			messageobject.id,
+			events.msg_start + message,
+			dispemb,
 		)
 		raise
 
