@@ -1432,7 +1432,7 @@ async def _eval(client, message, **kwargs):
 		evalvar = splitargs[0]
 		evaluate = splitargs[1]
 	entireoutput = ''
-	def output(request):
+	def output(request : str):
 		nonlocal entireoutput
 		entireoutput += request + '\n'
 	env = {
