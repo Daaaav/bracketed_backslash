@@ -1439,7 +1439,6 @@ async def _eval(client, message, **kwargs):
 		nonlocal entireoutput
 		entireoutput += request + '\n'
 	env = {
-		'output': output,
 		'message': message,
 		'server': message.server,
 		'channel': message.channel,
