@@ -27,6 +27,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import textwrap
 import time
 import traceback
 
@@ -1443,24 +1444,24 @@ async def _eval(client, message, **kwargs):
 		'author': message.author,
 	}
 	env.update(globals())
+	to_compile = 'async def func():\n' + textwrap.indent(evaluate, '\t')
 	try:
-		evaluate = compile(evaluate, 'eval', 'single')
-		evaluate = eval(evaluate, env)
-		if inspect.isawaitable(evaluate):
-			evaluate = await evaluate
+		exec(to_compile, env)
+		evaluate = await env['func']()
+	except Exception:
+		evaluate = traceback.format_exc()
+	else:
 		if kwargs['command'] == 'setvar':
 			globals()[evalvar] = evaluate
 		if entireoutput:
 			evaluate = entireoutput
-	except Exception:
-		evaluate = traceback.format_exc()
 	content = '```py\n{0}```'.format(utils.wrapbackticks(str(evaluate)))
 	if len(content) > 2000:
 		print((
 			'The result of your latest evaluation command is:\n'
 			'{}\n'
 			'End of results.'
-		).format(content))
+		).format(evaluate))
 		embed = emb.warning('Content too large to print. Printing to terminal instead.')
 		await bot.reply(message, emb=embed)
 		return
