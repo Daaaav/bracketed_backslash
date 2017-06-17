@@ -28,4 +28,5 @@ logging.basicConfig(level=logging.INFO)
 with open('bot_token.conf', 'r') as f:
 	token = f.readline(60).split('\n')[0]
 
-bot.client.run(token)
+if __name__ == '__main__':
+	bot.client.run(token)
