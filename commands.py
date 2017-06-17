@@ -1462,7 +1462,7 @@ async def _eval(client, message, **kwargs):
 			if value:
 				evaluate = value
 		else:
-			evaluate = value + evaluate
+			evaluate = value + str(evaluate)
 	content = '```py\n{0}```'.format(utils.wrapbackticks(str(evaluate)))
 	if len(content) > 2000:
 		print((
