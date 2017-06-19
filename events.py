@@ -541,7 +541,8 @@ async def on_message(m):
 	if not priv and \
 	not checks.is_mod(m.author) and \
 	not config.get_s('alloweverywhere', m.server.id) and \
-	not m.channel.id in config.get_s('allowedchannels', m.server.id):
+	not m.channel.id in config.get_s('allowedchannels', m.server.id) and \
+	not command in config.get_s('globalcommands', m.server.id):
 		return
 	if not priv and command in config.get_s('disabledcommands', m.server.id):
 		e = emb.error('This command is currently disabled{onthisserv}.'.format(

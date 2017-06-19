@@ -46,6 +46,14 @@ configs = {
 		'detachable': True,
 		'shown': True,
 	},
+	'globalcommands': {
+		'default': [],
+		'type': 'str',
+		'is_array': True,
+		'expl': 'Commands that can be used by anyone in any channel, even if alloweverywhere is false and outside of allowedchannels.',
+		'detachable': True,
+		'shown': True,
+	},
 	'rolecachemode': {
 		'default': 0,
 		'type': 'int',
