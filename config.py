@@ -13,6 +13,7 @@ import logging
 # rid: role ID
 # cid: channel ID (channels can be mentioned)
 # sid: server ID
+# dct: dictionary
 configs = {
 	'gamestatus': {
 		'default': '​',
@@ -222,6 +223,10 @@ def set_s(skey, value, serverid=None):
 	if is_array(skey):
 		raise TypeError('Array options cannot be set using the standard config.set_s() function!')
 		return
+	if get_type(skey) == 'cus':
+		raise TypeError(
+			'Custom options cannot be set using the standard config.set_s() function!'
+		)
 	if serverid is not None and serverid in s[skey]:
 		s[skey][serverid] = input_to_type_key(value, skey)
 	else:
