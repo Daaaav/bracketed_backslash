@@ -2435,8 +2435,6 @@ async def archive(client, message, **kwargs):
 	# think about read and history permissions later. If opening it up to everyone, there should
 	# be a detachable config option for the maximum limit for non-staff.
 
-	errors = ''
-
 	if kwargs['arguments'] is None:
 		em = emb.error('Please supply at least a channel mention.')
 		await bot.reply(message, emb=em)
