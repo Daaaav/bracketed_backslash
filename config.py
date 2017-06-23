@@ -13,7 +13,7 @@ import logging
 # rid: role ID
 # cid: channel ID (channels can be mentioned)
 # sid: server ID
-# dct: dictionary
+# cus: dictionary
 configs = {
 	'gamestatus': {
 		'default': '​',
