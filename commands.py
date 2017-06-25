@@ -1870,10 +1870,10 @@ async def revertban(client, message, **kwargs):
 	thisexpiry = events.rolexpires[message.server.id][targetmember.id]
 	if thisexpiry['msgedit_message'] != '0':
 		thisexpiry['msgedit_newcontent'] = ''
-		await bot.editexpirymessage(message.server, thisexpiry)
+		await utils.editexpirymessage(message.server, thisexpiry)
 
-	bot.removeexpiryentry(message.server.id, targetmember.id)
-	bot.rolexpiresave()
+	utils.removeexpiryentry(message.server.id, targetmember.id)
+	utils.rolexpiresave()
 
 @shadow(auth=checks.is_admin, aliases=['tntgb_maint_p'])
 async def tntgb_maint(client, message, **kwargs):
