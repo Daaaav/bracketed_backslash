@@ -1603,7 +1603,7 @@ async def b(client, message, **kwargs):
 				continue
 
 			try:
-				await bot.removeRestrictiveRoles(
+				await utils.removeRestrictiveRoles(
 					message.server.get_member(currentexpiry[0]),
 					message.server
 				)
@@ -1843,7 +1843,7 @@ async def revertban(client, message, **kwargs):
 			'member', kwargs['arguments'], server=message.server,
 		)
 
-		await bot.removeRestrictiveRoles(targetmember, message.server)
+		await utils.removeRestrictiveRoles(targetmember, message.server)
 
 		embed = emb.info('Ban on {} was reverted by {}.'.format(
 				targetmember.mention, message.author.mention
