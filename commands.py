@@ -1863,6 +1863,7 @@ async def revertban(client, message, **kwargs):
 	except (AttributeError,TypeError):
 		embed = emb.error(bot.t['specify_user'])
 		await client.send_message(specialchannel, embed=embed)
+		raise
 
 @shadow(auth=checks.is_admin, aliases=['tntgb_maint_p'])
 async def tntgb_maint(client, message, **kwargs):
