@@ -19,6 +19,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import contextlib
+import io
+import inspect
 import json
 import os
 import random
@@ -1436,24 +1439,30 @@ async def _eval(client, message, **kwargs):
 		nonlocal entireoutput
 		entireoutput += request + '\n'
 	env = {
-		'output': output,
 		'message': message,
 		'server': message.server,
 		'channel': message.channel,
 		'author': message.author,
 	}
 	env.update(globals())
+	stdout = io.StringIO()
 	to_compile = 'async def func():\n' + textwrap.indent(evaluate, '\t')
 	try:
 		exec(to_compile, env)
-		evaluate = await env['func']()
+		with contextlib.redirect_stdout(stdout):
+			evaluate = await env['func']()
 	except Exception:
-		evaluate = traceback.format_exc()
+		value = stdout.getvalue()
+		evaluate = value + traceback.format_exc()
 	else:
+		value = stdout.getvalue()
 		if kwargs['command'] == 'setvar':
 			globals()[evalvar] = evaluate
-		if entireoutput:
-			evaluate = entireoutput
+		if evaluate is None:
+			if value:
+				evaluate = value
+		else:
+			evaluate = value + str(evaluate)
 	content = '```py\n{0}```'.format(utils.wrapbackticks(str(evaluate)))
 	if len(content) > 2000:
 		print((
@@ -2426,8 +2435,6 @@ async def archive(client, message, **kwargs):
 	# Note that this command currently only allows admins to run it, particularly so that we can
 	# think about read and history permissions later. If opening it up to everyone, there should
 	# be a detachable config option for the maximum limit for non-staff.
-
-	errors = ''
 
 	if kwargs['arguments'] is None:
 		em = emb.error('Please supply at least a channel mention.')
