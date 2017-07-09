@@ -25,9 +25,6 @@ class UnexpectedExprParserState(Exception):
 	pass
 
 
-commands = {}
-
-
 def save():
 	with open('customcommands.json', 'w') as outfile:
 		json.dump(commands, outfile)
@@ -35,11 +32,15 @@ def save():
 def load():
 	try:
 		with open('customcommands.json', 'r') as infile:
-			# This is basically the own module, for some reason everything doesn't work
-			__import__(__name__).commands = json.load(infile)
+			return json.load(infile)
 	except FileNotFoundError:
 		logging.info('Did not find customcommands file so making a new one')
 		save()
+		return {}
+
+commands = {}
+commands = load()
+
 
 def add_custom_command(server, command, dictionary):
 	"""Add a custom command. Assumes non-DM, assumes the command doesn't already exist

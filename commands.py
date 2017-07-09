@@ -46,7 +46,6 @@ import images
 import op_ids
 import utils
 
-customcommands.load()
 op_ids.load()
 
 # This file contains all the bot commands as functions.
