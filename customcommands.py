@@ -106,6 +106,8 @@ async def run(
 	"""Run the given custom command. Assumes that you checked if the command exists, and that
 	this isn't in a direct message conversation.
 	"""
+	infinities = ('forever','infinity','inf','none','x','∞','no')
+
 	if not recursivecall:
 		referrers = []
 
@@ -113,9 +115,11 @@ async def run(
 
 	if com['type'] == 'role':
 		requiredargs = 0
-		if com['expiry'] == 'input':
+
+		# How is expiry decided?
+		if com['expiry'] == 'input_strict':
 			requiredargs += 1
-		elif com['expiry'] != 'no':
+		elif com['expiry'] not in ('no', 'input'):
 			expiryarg = com['expiry']
 
 		# Who gets the role change?
@@ -126,13 +130,19 @@ async def run(
 
 		if requiredargs > 0:
 			if arguments is None:
+				# This requires arguments, but we've not been given any.
 				if requiredargs == 2:
 					expected = (
 						'a relative expiry time and a member '
 						'representation as arguments'
 					)
-				elif com['expiry'] == 'input':
+				elif com['expiry'] == 'input_strict':
 					expected = 'a relative expiry time as an argument'
+				elif com['expiry'] == 'input':
+					expected = (
+						'optionally a relative expiry time, but must be '
+						'given a member representation'
+					)
 				else:
 					expected = 'a member representation as an argument'
 				embed = emb.error((
@@ -143,6 +153,7 @@ async def run(
 				await bot.reply(message, emb=embed)
 				return
 			if requiredargs == 2:
+				# Both a mandatory expiry time as a member representation
 				splitargs = arguments.split(' ', 1)
 				try:
 					expiryarg = splitargs[0]
@@ -158,15 +169,47 @@ async def run(
 					await bot.reply(message, emb=embed)
 					return
 			elif com['expiry'] == 'input':
+				# We may give an expiry time, but we don't have to.
+				if requiredargs == 1:
+					# The name is required, though!
+					splitargs = arguments.split(' ', 1)
+					if len(splitargs) == 2:
+						# Expiry time was not required, but we have it!
+						# ...Unless it's actually part of a name.
+						if utils.parsereltime(splitargs[0]) is None and \
+						splitargs[0] not in infinities:
+							expiryarg = 'x'
+							memberarg = arguments
+						else:
+							expiryarg = splitargs[0]
+							memberarg = splitargs[1]
+					elif len(splitargs) == 1:
+						# This is only one word, so it must be a name.
+						expiryarg = 'x'
+						memberarg = arguments
+					else:
+						# Nothing?
+						embed = emb.error((
+								'No arguments specified. This '
+								'command can optionally be given a '
+								'relative expiry time, but expects '
+								'a member representation.'
+							)
+						)
+						await bot.reply(message, emb=embed)
+						return
+				else:
+					# Maybe we have input, maybe we don't!
+					if arguments is not None:
+						expiryarg = arguments
+			elif com['expiry'] == 'input_strict':
 				expiryarg = arguments
 			else:
 				memberarg = arguments
 
 		# Before we change any roles, prepare expiry, just in case it's invalid.
 		setexpirytimer = False
-		if com['expiry'] != 'no' and expiryarg not in (
-			'forever','infinity','inf','none','x','∞','no'
-		):
+		if com['expiry'] != 'no' and expiryarg not in infinities:
 			setexpirytimer = True
 			expirytime = utils.parsereltime(expiryarg)
 			if expirytime is None:
