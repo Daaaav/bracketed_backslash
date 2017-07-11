@@ -205,7 +205,7 @@ async def run(
 					expiryarg = arguments
 		elif com['expiry'] == 'input_strict':
 			expiryarg = arguments
-		elseif requiredargs > 0:
+		elif requiredargs > 0:
 			memberarg = arguments
 
 		# Before we change any roles, prepare expiry, just in case it's invalid.
