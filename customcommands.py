@@ -203,6 +203,8 @@ async def run(
 				# Maybe we have input, maybe we don't!
 				if arguments is not None:
 					expiryarg = arguments
+				else:
+					expiryarg = 'x'
 		elif com['expiry'] == 'input_strict':
 			expiryarg = arguments
 		elif requiredargs > 0:
