@@ -2250,7 +2250,8 @@ async def addcustomrolecommand(client, message, **kwargs):
 		)
 		await bot.reply(message, emb=embed)
 		return
-	if splitargs[2] not in ('no', 'input', 'command') and utils.parsereltime(splitargs[2]) is None:
+	if splitargs[2] not in ('no', 'input', 'input_strict', 'command') and \
+	utils.parsereltime(splitargs[2]) is None:
 		embed = emb.error('The expiry `{}` is invalid, please see the `\help`'.format(
 				utils.mdspecialchars(splitargs[2])
 			)
