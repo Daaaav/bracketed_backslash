@@ -228,6 +228,10 @@ async def run(
 		if com['target'] == 'input':
 			try:
 				targetmember = utils.match_input('member', memberarg, server=server)
+
+				# Very quick fix
+				if targetmember is None:
+					raise AttributeError('Target member is None')
 			except (AttributeError, TypeError):
 				embed = emb.error(bot.t['specify_user'])
 				await bot.reply(message, emb=embed)
