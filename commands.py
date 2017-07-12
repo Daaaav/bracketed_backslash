@@ -1781,27 +1781,27 @@ async def b_id(client, message, **kwargs):
 	elif request.startswith('<@') and request.endswith('>'):
 		request = request[2:-1] # Same
 
-	targetmember = message.server.get_member(input)
+	targetmember = message.server.get_member(request)
 
 	if targetmember is None:
 		# Just as I thought, they left
-		if not utils.removerolecache(input, message.server.id):
+		if not utils.removerolecache(request, message.server.id):
 			embed = emb.error((
 				'Member {} cannot be found in the role cache. '
 				'Please note you have to enter an ID, not any form of name!'
-			).format(input))
+			).format(request))
 			await bot.reply(message, emb=embed)
 			return
 
 		# Okay, removing their entry altogether was a bit drastic
-		events.memberroles[message.server.id][input] = []
-		events.memberroles[message.server.id][input].append('243076976565288960')
+		events.memberroles[message.server.id][request] = []
+		events.memberroles[message.server.id][request].append('243076976565288960')
 
 		# Alright, just send a message about it now!
 		# The extra space is intentional, it's a 'hidden' indicator to
 		# see whether the ban was made after the person left the server
 		announcemsg = '<@!{}>  has been banned for 5 days by {} in {} for {}.'.format(
-			input,
+			request,
 			message.author.display_name,
 			message.channel.mention,
 			splitargs[1]
@@ -1816,11 +1816,11 @@ async def b_id(client, message, **kwargs):
 		# Also set an expiry timer
 		expirytime = utils.parsereltime('5d')
 
-		utils.addexpiryentry(message.server.id, input, expirytime,
+		utils.addexpiryentry(message.server.id, request, expirytime,
 			e_channel=sentmessage.channel.id, e_message=sentmessage.id,
 			e_newcontent='[LIFTED] ' + announcemsg,
 			p_channel=events.banlogchannel_tntgb.id,
-			p_content='The ban on <@!{}> has expired.'.format(input)
+			p_content='The ban on <@!{}> has expired.'.format(request)
 		)
 
 		utils.rolexpiresave()
