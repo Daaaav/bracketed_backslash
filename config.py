@@ -12,7 +12,7 @@ import logging
 # uid: user/member Discord ID (members can be searched)
 # rid: role ID
 # cid: channel ID (channels can be mentioned)
-# sid: server ID
+# gid: guild ID
 # cus: dictionary
 configs = {
 	'gamestatus': {
@@ -180,7 +180,7 @@ configs = {
 	},
 	'tntgb_servers': {
 		'default': [],
-		'type': 'sid',
+		'type': 'gid',
 		'is_array': True,
 		'expl': 'The list of servers which have TNTGB running on them',
 		'detachable': False,
@@ -214,12 +214,12 @@ configs = {
 
 s = {}
 
-def get_s(skey, serverid=None):
-	if serverid is not None and serverid in s[skey]:
-		return s[skey][serverid]
+def get_s(skey, guildid=None):
+	if guildid is not None and guildid in s[skey]:
+		return s[skey][guildid]
 	return s[skey]['master']
 
-def set_s(skey, value, serverid=None):
+def set_s(skey, value, guildid=None):
 	if is_array(skey):
 		raise TypeError('Array options cannot be set using the standard config.set_s() function!')
 		return
@@ -227,50 +227,50 @@ def set_s(skey, value, serverid=None):
 		raise TypeError(
 			'Custom options cannot be set using the standard config.set_s() function!'
 		)
-	if serverid is not None and serverid in s[skey]:
-		s[skey][serverid] = input_to_type_key(value, skey)
+	if guildid is not None and guildid in s[skey]:
+		s[skey][guildid] = input_to_type_key(value, skey)
 	else:
 		s[skey]['master'] = input_to_type_key(value, skey)
 
-def insert_s(skey, value, serverid=None):
+def insert_s(skey, value, guildid=None):
 	if not is_array(skey):
 		raise TypeError('You cannot insert something into an option that isn\'t an array')
 		return
-	if serverid is not None and serverid in s[skey]:
-		s[skey][serverid].append(input_to_type_key(value, skey))
+	if guildid is not None and guildid in s[skey]:
+		s[skey][guildid].append(input_to_type_key(value, skey))
 	else:
 		s[skey]['master'].append(input_to_type_key(value, skey))
 
-def remove_s(skey, value, serverid=None):
+def remove_s(skey, value, guildid=None):
 	if not is_array(skey):
 		raise TypeError('You cannot remove something from an option that isn\'t an array')
 		return
-	if serverid is not None and serverid in s[skey]:
-		s[skey][serverid].remove(input_to_type_key(value, skey))
+	if guildid is not None and guildid in s[skey]:
+		s[skey][guildid].remove(input_to_type_key(value, skey))
 	else:
 		s[skey]['master'].remove(input_to_type_key(value, skey))
 
-def restore_default(skey, serverid=None):
-	if is_array(skey) and serverid is not None and serverid in s[skey]:
-		s[skey][serverid] = copy.deepcopy(get_default(skey))
+def restore_default(skey, guildid=None):
+	if is_array(skey) and guildid is not None and guildid in s[skey]:
+		s[skey][guildid] = copy.deepcopy(get_default(skey))
 	elif is_array(skey):
 		s[skey]['master'] = copy.deepcopy(get_default(skey))
 	else:
-		set_s(skey, get_default(skey), serverid)
+		set_s(skey, get_default(skey), guildid)
 
-def detach(skey, serverid):
+def detach(skey, guildid):
 	if not is_detachable(skey):
 		raise ValueError('Setting {} is not detachable'.format(skey))
 		return
-	if not is_detached(skey, serverid):
-		s[skey][serverid] = copy.deepcopy(get_default(skey))
+	if not is_detached(skey, guildid):
+		s[skey][guildid] = copy.deepcopy(get_default(skey))
 
-def reattach(skey, serverid):
-	if is_detached(skey, serverid):
-		del s[skey][serverid]
+def reattach(skey, guildid):
+	if is_detached(skey, guildid):
+		del s[skey][guildid]
 
-def is_detached(skey, serverid):
-	return serverid in s[skey]
+def is_detached(skey, guildid):
+	return guildid in s[skey]
 
 def exists(skey):
 	return skey in s
@@ -295,21 +295,22 @@ def get_expl(skey):
 def get_shown(skey):
 	return configs[skey]['shown']
 
-def input_to_type_key(input, skey):
-	return input_to_type(input, get_type(skey))
+def input_to_type_key(request, skey):
+	return input_to_type(request, get_type(skey))
 
-def input_to_type(input, type):
-	if type == 'int':
-		return int(input)
-	if type == 'bln':
+def input_to_type(request, category):
+	if category == 'int' or \
+	(category.endswith('id') and category[0] in ('d', 'u', 'r', 'c', 's')):
+		return int(request)
+	elif category == 'bln':
 		# This may look noobish and redundant, but it's actually needed here
-		if input == True or input == '1' or input.lower() in (
+		if request == True or request == '1' or request.lower() in (
 			'true', 't', 'yes', 'y', 'on', 'enable', 'enabled'
 		):
 			return True
 		else:
 			return False
-	return input
+	return request
 
 def saveconfig():
 	with open('config.json', 'w') as outfile:
@@ -336,7 +337,7 @@ def load():
 			s[loadedsetting]['master'] = loadedconfig[loadedsetting]['master']
 			for loadedlocalsetting in loadedconfig[loadedsetting]:
 				if loadedlocalsetting != 'master':
-					s[loadedsetting][loadedlocalsetting] = loadedconfig[loadedsetting][loadedlocalsetting]
+					s[loadedsetting][int(loadedlocalsetting)] = loadedconfig[loadedsetting][loadedlocalsetting]
 	except FileNotFoundError:
 		logging.info('did not find a config file so making a new one')
 		saveconfig()

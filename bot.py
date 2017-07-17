@@ -48,8 +48,8 @@ time.tzset()
 boottime = time.strftime(config.get_s('timeformat'))
 boottimeunix = time.time()
 
-with open('opserverid.conf', 'r') as f:
-	opserverid = f.readline(18).split('\n')[0]
+with open('opguildid.conf', 'r') as f:
+	opguildid = int(f.readline(18).split('\n')[0])
 
 minutemessageedits = {}
 
@@ -98,29 +98,25 @@ async def reply(messageobject, message=None, emb=None):
 		content = events.msg_start + message
 		contentlines = content.split('\n')
 		cut = math.floor(len(contentlines)/2)
-		await client.send_message(messageobject.channel, '\n'.join(contentlines[:cut]))
+		await messageobject.channel.send('\n'.join(contentlines[:cut]))
 		if emb != None:
-			await client.send_message(messageobject.channel, '\n'.join(contentlines[cut:]), embed=emb)
+			await messageobject.channel.send('\n'.join(contentlines[cut:]), embed=emb)
 		else:
-			await client.send_message(messageobject.channel, '\n'.join(contentlines[cut:]))
+			await messageobject.channel.send('\n'.join(contentlines[cut:]))
 		return
 	try:
 		if emb != None:
-			await client.send_message(
-				messageobject.channel,
-				events.msg_start + message,
-				embed=emb,
-			)
+			await messageobject.channel.send(events.msg_start + message, embed=emb)
 		else:
-			await client.send_message(messageobject.channel, events.msg_start + message)
+			await messageobject.channel.send(events.msg_start + message)
 	except(discord.errors.HTTPException, discord.errors.Forbidden) as e:
-		if messageobject.channel.type == discord.ChannelType.private:
-			servinfo = '\t(direct message)\n'
+		if isinstance(messageobject.channel, discord.abc.PrivateChannel):
+			guildinfo = '\t(direct message)\n'
 		else:
-			servinfo = (
+			guildinfo = (
 				'\tName: {0.name}\n'
 				'\tID: {0.id}\n'
-			).format(messageobject.server)
+			).format(messageobject.guild)
 		if emb is None:
 			dispemb = '\t(none)\n'
 		else:
@@ -139,7 +135,7 @@ async def reply(messageobject, message=None, emb=None):
 			'The rich embed of the rejected message is:\n'
 			'\t%s\n',
 			type(e).__name__,
-			servinfo,
+			guildinfo,
 			str(messageobject.channel.type).title(),
 			messageobject.channel,
 			messageobject.id,
@@ -150,4 +146,7 @@ async def reply(messageobject, message=None, emb=None):
 
 async def replyattach(messageobject, filetoattach, fname, message=''):
 	# Don't bother with handling >2000 character messages just yet
-	await client.send_file(destination=messageobject.channel, content = events.msg_start + message, fp=filetoattach, filename=fname)
+	await messageobject.channel.send(
+		events.msg_start + message,
+		file=discord.File(filetoattach, fname),
+	)

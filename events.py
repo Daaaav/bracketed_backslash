@@ -33,38 +33,38 @@ disabledrules = []
 botschannel = None
 botschannel_tntgb = None
 banlogchannel_tntgb = None
-opserver = None
-opserver_botservers = None
-productionserver = '153368829160849408'
-tntgbserver = '242099933665034240'
+opguild = None
+opguild_botguilds = None
+productionguild = 153368829160849408
+tntgbguild = 242099933665034240
 
 msg_start = ''
 latestroled = ''
 
 async def on_ready():
-	global memberroles, rules, disabledrules, botschannel, botschannel_tntgb, banlogchannel_tntgb, rolexpires, opserver, opserver_botservers
-	server = discord.utils.get(bot.client.servers, id=productionserver)
-	server_tntgb = discord.utils.get(bot.client.servers, id=tntgbserver)
-	specialchannel_prod = discord.utils.get(server.channels, id='234185735266238464')
-	botschannel = discord.utils.get(server.channels, id='201130047736643584')
-	botschannel_tntgb = discord.utils.get(server_tntgb.channels, id='266626198249930764')
-	banlogchannel_tntgb = discord.utils.get(server_tntgb.channels, id='242253449922609152')
-	opserver = discord.utils.find(lambda s: s.id == bot.opserverid, bot.client.servers)
-	opserver_botservers = discord.utils.find(
-		lambda c: c.id == '291764490578558977',
-		opserver.channels,
+	global memberroles, rules, disabledrules, botschannel, botschannel_tntgb, \
+	banlogchannel_tntgb, rolexpires, opguild, opguild_botguilds
+	guild = discord.utils.get(bot.client.guilds, id=productionguild)
+	guild_tntgb = discord.utils.get(bot.client.guilds, id=tntgbguild)
+	specialchannel_prod = discord.utils.get(guild.channels, id=234185735266238464)
+	botschannel = discord.utils.get(guild.channels, id=201130047736643584)
+	botschannel_tntgb = discord.utils.get(guild_tntgb.channels, id=266626198249930764)
+	banlogchannel_tntgb = discord.utils.get(guild_tntgb.channels, id=242253449922609152)
+	opguild = discord.utils.find(lambda s: s.id == bot.opguildid, bot.client.guilds)
+	opguild_botguilds = discord.utils.find(
+		lambda c: c.id == 291764490578558977,
+		opguild.channels,
 	)
 	logging.info('logged in as %s with id %s', bot.client.user.name, bot.client.user.id)
 	await bot.client.change_presence(game=discord.Game(name=config.get_s('gamestatus')))
 	embed = discord.Embed(
 		title='🔌BOT CONNECTED',
 		colour=discord.utils.find(
-			lambda s: s.id == op_ids.ids['opserver'], bot.client.servers,
+			lambda s: s.id == op_ids.ids['opguild'], bot.client.guilds,
 		).me.colour,
 	)
 	embed.add_field(name='Startup Time', value=utils.reltime(bot.boottimeunix))
-	await bot.client.send_message(
-		discord.Object(op_ids.ids['opserver_chans']['connections']),
+	await bot.client.get_channel(int(op_ids.ids['opguild_chans']['connections'])).send(
 		embed=embed,
 	)
 
@@ -73,17 +73,24 @@ async def on_ready():
 			memberroles = json.load(infile)
 
 		# Now look what I've woken up to.
-		for ser in memberroles:
-			if config.get_s('rolecachemode', ser) == 0:
+		for gld in memberroles:
+			if config.get_s('rolecachemode', gld) == 0:
 				continue
 			rcwarnings = ''
-			for mem in bot.client.get_server(ser).members:
-				if not str(mem.id) in memberroles[ser]:
+			for mem in bot.client.get_guild(gld).members:
+				if not str(mem.id) in memberroles[gld]:
 					if len(mem.roles) >= 2:
 						rcwarnings += '\nUser {}#{} ({}) is not in the cache! (They’re suddenly in the server.) Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
-						memberroles[ser][str(mem.id)] = list(utils.rolelist(mem.roles)) # Possibly redundant list() tbh, just making sure since I can't test and I don't know python well enough to know whether it's redundant
+
+						# Possibly redundant list() tbh, just making sure
+						# since I can't test and I don't know python well
+						# enough to know whether it's redundant
+						memberroles[gld][str(mem.id)] = \
+						list(utils.rolelist(mem.roles))
+
 					continue
-				if set(memberroles[ser][str(mem.id)]) != set(utils.rolelist(mem.roles)):
+				if set(memberroles[gld][str(mem.id)]) != \
+				set(utils.rolelist(mem.roles)):
 					rcwarnings += (
 						'\n'
 						'User {}#{} ({}) has different roles than in the cache! Maybe you want to correct things.\n'
@@ -91,13 +98,13 @@ async def on_ready():
 						'    **`Seen:`** {}'
 					).format(
 						mem.name, mem.discriminator, mem.id,
-						utils.listroles_id(memberroles[ser][str(mem.id)]),
+						utils.listroles_id(memberroles[gld][str(mem.id)]),
 						utils.listroles(mem.roles),
 					)
 			if rcwarnings:
 				logging.warning(
 					'Role cache warnings for server %s: %s',
-					ser,
+					gld,
 					rcwarnings,
 				)
 				rcwarnings = (
@@ -105,21 +112,18 @@ async def on_ready():
 					'Full warning output has been sent to the terminal.\n'
 					+ rcwarnings
 				)
-				await bot.client.send_message(
-					utils.getspecialchannel(
-						discord.utils.get(bot.client.servers, id=ser)
-					),
-					rcwarnings[:1900]
-				)
+				await utils.getspecialchannel(
+						discord.utils.get(bot.client.guilds, id=gld)
+				).send(rcwarnings[:1900])
 
 	except FileNotFoundError:
 		# Maybe we do have an old members.json?
 		try:
 			with open('members.json', 'r') as infile:
 				memberrolesold = json.load(infile)
-			# Convert it to the new system where all servers can use it!
+			# Convert it to the new system where all guilds can use it!
 			logging.info('CONVERTING OLD members.json TO memberroles.json')
-			memberroles = {productionserver: memberrolesold}
+			memberroles = {productionguild: memberrolesold}
 
 			with open('memberroles.json', 'w') as outfile:
 				json.dump(memberroles, outfile)
@@ -133,7 +137,10 @@ async def on_ready():
 			with open('memberroles.json', 'w') as outfile:
 				json.dump(memberroles, outfile)
 
-			await bot.client.send_message(specialchannel_prod, 'Members file didn’t yet exist, created a new one. Please run `\\rolesync` to sync up the roles cache.')
+			await specialchannel_prod.send(
+				'Members file didn’t yet exist, created a new one.'
+				' Please run `\\rolesync` to sync up the roles cache.',
+			)
 
 	try:
 		with open('rules.json', 'r') as infile:
@@ -144,7 +151,7 @@ async def on_ready():
 		with open('rules.json', 'w') as outfile:
 			json.dump(rules, outfile)
 
-		await bot.client.send_message(specialchannel_prod, 'Rules file didn’t exist yet, created a new one.')
+		await specialchannel_prod.send('Rules file didn’t exist yet, created a new one.')
 
 	try:
 		with open('disabledrules.json', 'r') as infile:
@@ -155,7 +162,9 @@ async def on_ready():
 		with open('disabledrules.json', 'w') as outfile:
 			json.dump(disabledrules, outfile)
 
-		await bot.client.send_message(specialchannel_prod, 'Disabledrules file didn’t exist yet, created a new one.')
+		await specialchannel_prod.send(
+			'Disabledrules file didn’t exist yet, created a new one.',
+		)
 
 	try:
 		with open('rolexpires.json', 'r') as infile:
@@ -166,25 +175,27 @@ async def on_ready():
 		with open('rolexpires.json', 'w') as outfile:
 			json.dump(rolexpires, outfile)
 
-		await bot.client.send_message(specialchannel_prod, 'Rolexpires file didn’t exist yet, created a new one.')
+		await specialchannel_prod.send(
+			'Rolexpires file didn’t exist yet, created a new one.',
+		)
 
 	await utils.handleExpiryTimer()
 
 	for chan in bot.client.get_all_channels():
-		if chan.type == discord.ChannelType.text:
-			msgs = bot.client.logs_from(chan)
+		if isinstance(chan, discord.TextChannel):
+			msgs = chan.history()
 			try:
 				async for m in msgs:
-					bot.client.messages.append(m)
+					bot.client._connection._messages.append(m)
 			except discord.errors.Forbidden:
 				logging.info(
 					'Failed to retrieve message history for'
 					' %s (%s)#%s (%s).',
-					chan.server.name, chan.server.id, chan.name, chan.id,
+					chan.guild.name, chan.guild.id, chan.name, chan.id,
 				)
 
 	# Now set up our own cache, that Discord.py won't remove messages from before telling us!
-	for m in bot.client.messages:
+	for m in bot.client._connection._messages:
 		bot.owncache.append(m.id)
 
 async def on_message(m):
@@ -193,16 +204,15 @@ async def on_message(m):
 	if m.author == bot.client.user or m.author.bot:
 		return
 
-	if m.channel.is_private:
+	if isinstance(m.channel, discord.abc.PrivateChannel):
 		e = discord.Embed(
 			description=m.content,
-			timestamp=m.timestamp,
-			colour=bot.client.get_server(op_ids.ids['opserver']).me.colour,
+			timestamp=m.created_at,
+			colour=bot.client.get_guild(op_ids.ids['opguild']).me.colour,
 		)
 		e.set_author(name=m.author.name, icon_url=m.author.avatar_url)
 		e.set_footer(text=utils.id_summary(uid=m.author.id, mid=m.id, cid=m.channel.id))
-		await bot.client.send_message(
-			bot.client.get_channel(op_ids.ids['opserver_chans']['direct_messages']),
+		await bot.client.get_channel(op_ids.ids['opguild_chans']['direct_messages']).send(
 			embed=e,
 		)
 
@@ -222,11 +232,11 @@ async def on_message(m):
 	)
 	if indisp[-12:] == '``**`\\n`**``​':
 		indisp += '``'
-	priv = utils.isprivatemessage(m.server)
+	priv = utils.isprivatemessage(m.guild)
 
-	if not isinstance(m.author, discord.User) and \
+	if not priv and \
 	m.author.status is discord.Status.offline and \
-	not utils.logdisabled('invisible_sentmessage', m.server):
+	not utils.logdisabled('invisible_sentmessage', m.guild):
 		e = discord.Embed(
 			title=(
 				':ghost:INVISIBLE WHILE SENDING MESSAGE IN {chanmen}'
@@ -243,7 +253,7 @@ async def on_message(m):
 				'userid={0.author.id}&messageid={0.id}'
 			).format(m)
 		)
-		await bot.client.send_message(schan, embed=e)
+		await schan.send(embed=e)
 
 	if not priv and m.tts:
 		e = discord.Embed(
@@ -253,7 +263,7 @@ async def on_message(m):
 			).format(m),
 			description=m.content,
 			colour=m.author.colour,
-			timestamp=m.timestamp
+			timestamp=m.created_at,
 		)
 		e.set_author(
 			name=m.author.display_name,
@@ -263,16 +273,16 @@ async def on_message(m):
 			name='Message author',
 			value='<@!{id}> ({id})'.format(id=m.author.id)
 		)
-		await bot.client.send_message(schan, embed=e)
+		await schan.send(embed=e)
 
 	if not priv and m.attachments:
-		a = await utils.fetch(m.attachments[0]['url'])
+		a = await utils.fetch(m.attachments[0].url)
 		fn = (
 			'{atchcche}/{id}_{fn}'
 		).format(
 			atchcche=bot.attachcache,
-			id=m.attachments[0]['id'],
-			fn=m.attachments[0]['filename'],
+			id=m.attachments[0].id,
+			fn=m.attachments[0].filename,
 		)
 		with open(fn, 'wb') as f:
 			f.write(a)
@@ -280,13 +290,13 @@ async def on_message(m):
 
 	if not priv and m.embeds != []:
 		for n, e in enumerate(m.embeds):
-			if e['type'] == 'image':
+			if e.type == 'image':
 				# get the filename from the url
 				# i.e. the part after the last forward slash
-				fn = e['url'].split('/')[-1]
+				fn = e.url.split('/')[-1]
 
 				# fetch the embed preview discord fetches
-				img = await utils.fetch(e['thumbnail']['proxy_url'])
+				img = await utils.fetch(e.thumbnail.proxy_url)
 
 				# cache the image
 				dfn = '{embedcache}/{m.id}_{n}_{fn}'.format(
@@ -299,7 +309,7 @@ async def on_message(m):
 					f.write(img)
 					f.close()
 
-	if not priv and m.author.id in config.get_s('blacklist', m.server.id):
+	if not priv and m.author.id in config.get_s('blacklist', m.guild.id):
 		return
 
 	if priv and m.author.id in config.get_s('blacklist'):
@@ -314,11 +324,11 @@ async def on_message(m):
 	elif m.content.startswith(bot.hangmaninvoker):
 		hangmaninvokeractive = True
 	else:
-		# Not of the bot's interest, but is this in the join channel for this server?
+		# Not of the bot's interest, but is this in the join channel for this guild?
 		if not priv and \
-		config.get_s('rolecachemode', m.server.id) == 2 and \
-		m.channel.id == config.get_s('joinchannel', m.server.id):
-			await bot.client.delete_message(m)
+		config.get_s('rolecachemode', m.guild.id) == 2 and \
+		m.channel.id == config.get_s('joinchannel', m.guild.id):
+			await m.delete()
 			bot.messages_deleted_by_bot.append(m)
 		return
 
@@ -347,8 +357,8 @@ async def on_message(m):
 			)
 		if priv:
 			e = emb.error('Guesses are not accepted via PM.')
-			await bot.client.send_message(m.channel, msg_start, embed=e)
-		if m.channel.id != '201130047736643584':
+			await m.channel.send(msg_start, embed=e)
+		if m.channel.id != 201130047736643584:
 			return
 		hangmanguessed = m.content[1:]
 
@@ -359,14 +369,14 @@ async def on_message(m):
 					'The character ``{}`` is invalid.'
 					.format(utils.wrapbackticks(hangmanguessed.upper()))
 				)
-				await bot.client.send_message(m.channel, msg_start, embed=e)
+				await m.channel.send(msg_start, embed=e)
 				return
 			if guessedletters[bot.alphabet.find(hangmanguessed.upper())]:
 				e = emb.error(
 					'The letter **{}** has already been used.'
 					.format(hangmanguessed.upper())
 				)
-				await bot.client.send_message(m.channel, msg_start, embed=e)
+				await m.channel.send(msg_start, embed=e)
 				return
 			# Ok, so does this letter occur in the word?
 			if hangmanchosenword.upper().find(hangmanguessed.upper()) != -1:
@@ -378,7 +388,7 @@ async def on_message(m):
 						worddisp=utils.hangmanworddisp(hangmanchosenword)
 					)
 				msg = msg_start + con
-				await bot.client.send_message(m.channel, msg)
+				await m.channel.send(msg)
 
 				if algeraden:
 					hangmanactive = False
@@ -387,7 +397,7 @@ async def on_message(m):
 						' You made {n} mistakes in total.'
 						.format(n=hangmantotalattempts-hangmanattempts)
 					)
-					await bot.client.send_message(m.channel, con)
+					await m.channel.send(con)
 					return
 			else:
 				# Set the guessed letter correctly, and it has to be a letter
@@ -404,7 +414,7 @@ async def on_message(m):
 						word=hangmanchosenword,
 					)
 					msg = msg_start + con
-					await bot.client.send_message(m.channel, msg)
+					await m.channel.send(msg)
 					return
 				else:
 					if hangmanattempts != 1:
@@ -422,7 +432,7 @@ async def on_message(m):
 						worddisp=utils.hangmanworddisp(hangmanchosenword),
 					)
 					msg = msg_start + con
-					await bot.client.send_message(m.channel, msg)
+					await m.channel.send(msg)
 					return
 		else:
 			# We're guessing the entire word. Well, is it the word?
@@ -436,7 +446,7 @@ async def on_message(m):
 					n=hangmantotalattempts-hangmanattempts,
 				)
 				msg = msg_start + con
-				await bot.client.send_message(m.channel, msg)
+				await m.channel.send(msg)
 				return
 			elif len(hangmanguessed) != len(hangmanchosenword):
 				# We're not even trying. It's not the same length.
@@ -444,7 +454,7 @@ async def on_message(m):
 				# if before was "not even trying", this is -1 trying
 				if not hangmanguessed:
 					e = emb.error('You should probably enter in a letter.')
-					await bot.client.send_message(m.channel, msg_start, embed=e)
+					await m.channel.send(msg_start, embed=e)
 					return
 				e = emb.error(
 					(
@@ -454,7 +464,7 @@ async def on_message(m):
 						guess=utils.wrapbackticks(hangmanguessed)
 					)
 				)
-				await bot.client.send_message(m.channel, msg_start, embed=e)
+				await m.channel.send(msg_start, embed=e)
 				return
 			hangmanattempts -= 1
 
@@ -468,7 +478,7 @@ async def on_message(m):
 					word=hangmanchosenword,
 				)
 				msg = msg_start + con
-				await bot.client.send_message(m.channel, msg)
+				await m.channel.send(msg)
 				return
 			con = (
 				'**{guess}** is not the word!'
@@ -479,7 +489,7 @@ async def on_message(m):
 				worddisp=utils.hangmanworddisp(hangmanchosenword),
 			)
 			msg = msg_start + con
-			await bot.client.send_message(m.channel, msg)
+			await m.channel.send(msg)
 			return
 
 		return
@@ -507,48 +517,47 @@ async def on_message(m):
 	clean_command = clean_command.split(' ', 1)[0]
 	# Prevent access to those who aren't supposed to send messages
 	if not priv and \
-	config.get_s('rolecachemode', m.server.id) == 2 and \
-	m.channel.id == config.get_s('joinchannel', m.server.id):
+	config.get_s('rolecachemode', m.guild.id) == 2 and \
+	m.channel.id == config.get_s('joinchannel', m.guild.id):
 		# Join channel
 		if command == 'join' and len(m.author.roles) <= 1:
-			await utils.newmemberroles(m.author, utils.getspecialchannel(m.server), True)
-		await bot.client.delete_message(m)
+			await utils.newmemberroles(m.author, utils.getspecialchannel(m.guild), True)
+		await m.delete()
 		bot.messages_deleted_by_bot.append(m)
 		return
 	# But react to the message as a hint to the message sender
 	if not priv and \
 	not checks.is_mod(m.author) and \
-	m.channel.id != '201130047736643584' and \
-	m.server.id == productionserver and \
-	not (checks.is_dev(m.author) and m.channel.id == '238423391571279872') and \
+	m.channel.id != 201130047736643584 and \
+	m.guild.id == productionguild and \
+	not (checks.is_dev(m.author) and m.channel.id == 238423391571279872) and \
 	not command in ('rule', 'rules', 'rulefind', 'rulesfind') and \
-	not (m.channel.id == '256924583737819146' and command in ('votevoicemute', 'vy', 'vn')):
+	not (m.channel.id == 256924583737819146 and command in ('votevoicemute', 'vy', 'vn')):
 		if utils.is_valid_command(command) and command != '':
-			await bot.client.add_reaction(
-				m,
+			await m.add_reaction(
 				discord.utils.get(
-					m.server.emojis,
-					id='262051482549878796',
+					m.guild.emojis,
+					id=262051482549878796,
 				),
 			)
 		return
 	if not priv and \
-	m.server.id == tntgbserver and \
+	m.guild.id == tntgbguild and \
 	m.channel != botschannel_tntgb and \
 	not checks.is_tntgb_mod(m.author) and \
 	command != 'selfban':
 		return
 	if not priv and \
 	not checks.is_mod(m.author) and \
-	not config.get_s('alloweverywhere', m.server.id) and \
-	not m.channel.id in config.get_s('allowedchannels', m.server.id) and \
-	not command in config.get_s('globalcommands', m.server.id):
+	not config.get_s('alloweverywhere', m.guild.id) and \
+	not m.channel.id in config.get_s('allowedchannels', m.guild.id) and \
+	not command in config.get_s('globalcommands', m.guild.id):
 		return
-	if not priv and command in config.get_s('disabledcommands', m.server.id):
-		e = emb.error('This command is currently disabled{onthisserv}.'.format(
-			onthisserv=(
+	if not priv and command in config.get_s('disabledcommands', m.guild.id):
+		e = emb.error('This command is currently disabled{onthisguild}.'.format(
+			onthisguild=(
 				' on this server'
-				if config.is_detached('disabledcommands', m.server.id) else
+				if config.is_detached('disabledcommands', m.guild.id) else
 				'')
 			)
 		)
@@ -562,10 +571,10 @@ async def on_message(m):
 
 	if command in commands.commands:
 		func = commands.commands[command]
-	elif customcommands.exists(m.server, command):
+	elif customcommands.exists(m.guild, command):
 		try:
 			await customcommands.run(
-				m.server, command, m, arguments, clean_arguments, invokesymbol
+				m.guild, command, m, arguments, clean_arguments, invokesymbol
 			)
 		except discord.errors.Forbidden:
 			e = emb.error(bot.t['no_permission'])
@@ -583,7 +592,7 @@ async def on_message(m):
 				func = commands.commands[c]
 				break
 		else:
-			if (not priv and config.get_s('notify_invalidcmd', m.server.id)) or \
+			if (not priv and config.get_s('notify_invalidcmd', m.guild.id)) or \
 			(priv and config.get_s('notify_invalidcmd')):
 				e = emb.warning(
 					(
@@ -594,7 +603,7 @@ async def on_message(m):
 				await bot.reply(m, emb=e)
 			return
 
-	if m.channel.is_private and func[3]:
+	if isinstance(m.channel, discord.abc.PrivateChannel) and func[3]:
 		e = emb.error(bot.t['noprivate'])
 		await bot.reply(m, emb=e)
 		return
@@ -623,7 +632,7 @@ async def on_message(m):
 
 async def on_message_delete(msg):
 	bot.deleted_messages.append(msg)
-	if utils.isprivatemessage(msg.server):
+	if utils.isprivatemessage(msg.guild):
 		return
 	if msg.author == bot.client.user:
 		logging.info(
@@ -631,12 +640,12 @@ async def on_message_delete(msg):
 			' in channel %s (%s) at %s utc deleted,'
 			' original content is\n%s',
 			msg.id, msg.author.name, msg.author.discriminator, msg.author.id,
-			msg.channel.id, msg.channel.name, msg.timestamp,
+			msg.channel.id, msg.channel.name, msg.created_at,
 			msg.content,
 		)
 		return
 	if (msg.content == '' and msg.attachments == []) \
-	or utils.logdisabled('message_delete', msg.server):
+	or utils.logdisabled('message_delete', msg.guild):
 		return
 	schan = utils.getspecialchannel_reply(msg)
 	em = discord.Embed(
@@ -644,7 +653,7 @@ async def on_message_delete(msg):
 			'\N{NO ENTRY SIGN}MESSAGE {withatch}DELETED (SENT {reltime} IN #{chan})'
 		).format(
 			withatch='WITH ATTACHMENT ' if msg.attachments != [] else '',
-			reltime=utils.reltime(time.mktime(msg.timestamp.timetuple())),
+			reltime=utils.reltime(time.mktime(msg.created_at.timetuple())),
 			chan=utils.mdspecialchars(msg.channel.name),
 		),
 		description=msg.content,
@@ -655,7 +664,7 @@ async def on_message_delete(msg):
 		icon_url=msg.author.avatar_url,
 	)
 	em.set_footer(text=utils.id_summary(uid=msg.author.id, mid=msg.id, cid=msg.channel.id))
-	await bot.client.send_message(schan, embed=em)
+	await schan.send(embed=em)
 	if msg.attachments != []:
 		fp = (
 				'{atchcche}/{id}_{fn}'
@@ -669,32 +678,33 @@ async def on_message_delete(msg):
 				'_\N{PAPERCLIP}The attachment for message {0.id} is attached._'
 			).format(msg)
 			try:
-				await bot.client.send_file(
-					destination=schan,
-					content=con,
-					fp=fp,
-					filename=msg.attachments[0]['filename'],
+				await schan.send(
+					con,
+					file=discord.File(
+						fp,
+						filename=msg.attachments[0]['filename'],
+					),
 				)
 			except discord.HTTPException:
 				con = (
 					'_Failed to upload the attachment for message {0.id}._'
 				).format(msg)
-				await bot.client.send_message(schan, con)
+				await schan.send(con)
 		else:
 			con = (
 				'_The attachment for message {0.id} was not found'
 				' in the message attachments cache._'
 			).format(msg)
-			await bot.client.send_message(schan, con)
+			await schan.send(con)
 	if msg in bot.messages_deleted_by_bot:
 		bot.messages_deleted_by_bot.remove(msg)
 		return
 	dthreshold = datetime.timedelta(
-		seconds=config.get_s('deleted_message_resend_timer', msg.server.id),
+		seconds=config.get_s('deleted_message_resend_timer', msg.guild.id),
 	)
-	if (datetime.datetime.now() - msg.timestamp) < dthreshold and \
+	if (datetime.datetime.now() - msg.created_at) < dthreshold and \
 	not msg.author.bot:
-		if config.get_s('deleted_message_resend_content', msg.server.id):
+		if config.get_s('deleted_message_resend_content', msg.guild.id):
 			em = discord.Embed(
 				title='UNDELETED MESSAGE',
 				description=msg.content,
@@ -712,18 +722,18 @@ async def on_message_delete(msg):
 				),
 			)
 		em.set_author(name=msg.author.display_name, icon_url=msg.author.avatar_url)
-		await bot.client.send_message(msg.channel, embed=em)
+		await msg.channel.send(embed=em)
 
 async def on_message_edit(old, new):
-	if utils.isprivatemessage(old.server):
+	if utils.isprivatemessage(old.guild):
 		return
 	schan = utils.getspecialchannel_reply(new)
-	if not old.pinned and new.pinned and not utils.logdisabled('message_pin', new.server):
+	if not old.pinned and new.pinned and not utils.logdisabled('message_pin', new.guild):
 		em = discord.Embed(
 			title=(
 				'\N{PUSHPIN}MESSAGE PINNED (SENT {reltime} IN #{chan})'
 			).format(
-				reltime=utils.reltime(time.mktime(new.timestamp.timetuple())),
+				reltime=utils.reltime(time.mktime(new.created_at.timetuple())),
 				chan=utils.mdspecialchars(new.channel.name),
 			),
 			description=new.content,
@@ -736,13 +746,13 @@ async def on_message_edit(old, new):
 		em.set_footer(
 			text=utils.id_summary(uid=new.author.id, mid=new.id, cid=new.channel.id),
 		)
-		await bot.client.send_message(schan, embed=em)
-	if old.pinned and not new.pinned and not utils.logdisabled('message_unpin', new.server):
+		await schan.send(embed=em)
+	if old.pinned and not new.pinned and not utils.logdisabled('message_unpin', new.guild):
 		em = discord.Embed(
 			title=(
 				'\N{PUSHPIN}MESSAGE UNPINNED (SENT {reltime} IN #{chan})'
 			).format(
-				reltime=utils.reltime(time.mktime(new.timestamp.timetuple())),
+				reltime=utils.reltime(time.mktime(new.created_at.timetuple())),
 				chan=utils.mdspecialchars(new.channel.name),
 			),
 			description=new.content,
@@ -755,7 +765,7 @@ async def on_message_edit(old, new):
 		em.set_footer(
 			text=utils.id_summary(uid=new.author.id, mid=new.id, cid=new.channel.id),
 		)
-		await bot.client.send_message(schan, embed=em)
+		await schan.send(embed=em)
 
 	# Preliminary checkings
 	if old.content == new.content:
@@ -764,14 +774,18 @@ async def on_message_edit(old, new):
 		# but this is just a refactor
 		return
 
-	if not utils.logdisabled('message_edit', new.server):
+	if not utils.logdisabled('message_edit', new.guild):
 		if len(new.content) > 1024 or len(new.content) > 1024:
 			em = discord.Embed(
 				title=(
 					'\N{MEMO}MESSAGE EDITED (SENT {reltime} IN #{chan}).'
 					' The older content is:'
 				).format(
-					reltime=utils.reltime(time.mktime(new.timestamp.timetuple())),
+					reltime=utils.reltime(
+						time.mktime(
+							new.created_at.timetuple(),
+						),
+					),
 					chan=utils.mdspecialchars(new.channel.name),
 				),
 				description=old.content,
@@ -786,7 +800,7 @@ async def on_message_edit(old, new):
 					uid=new.author.id, mid=new.id, cid=new.channel.id,
 				),
 			)
-			await bot.client.send_message(schan, embed=em)
+			await schan.send(embed=em)
 			em = discord.Embed(
 				title=(
 					'MESSAGE EDITED (SENT {reltime} IN #{chan}).'
@@ -794,7 +808,7 @@ async def on_message_edit(old, new):
 				).format(
 					reltime=utils.reltime(
 						time.mktime(
-							new.timestamp.timetuple(),
+							new.created_at.timetuple(),
 						),
 					),
 					chan=utils.mdspecialchars(new.channel.name),
@@ -811,7 +825,7 @@ async def on_message_edit(old, new):
 					uid=new.author.id, mid=new.id, cid=new.channel.id,
 				),
 			)
-			await bot.client.send_message(schan, embed=em)
+			await schan.send(embed=em)
 		else:
 			em = discord.Embed(
 				title=(
@@ -819,7 +833,7 @@ async def on_message_edit(old, new):
 				).format(
 					reltime=utils.reltime(
 						time.mktime(
-							new.timestamp.timetuple(),
+							new.created_at.timetuple(),
 						),
 					),
 					chan=utils.mdspecialchars(new.channel.name),
@@ -837,16 +851,16 @@ async def on_message_edit(old, new):
 					uid=new.author.id, mid=new.id, cid=new.channel.id,
 				),
 			)
-			await bot.client.send_message(schan, embed=em)
+			await schan.send(embed=em)
 
 	# Turning off this logging also turns off the feature
-	if not utils.logdisabled('message_overedit', new.server):
+	if not utils.logdisabled('message_overedit', new.guild):
 		# Delete a message if it has been edited more than 5 times in 30 seconds
 		await utils.handle_minute_message_edits(new, schan)
 
 async def on_member_update(before, after):
-	specialchannel = utils.getspecialchannel(after.server)
-	if before.nick != after.nick and not utils.logdisabled('member_nickname', after.server):
+	specialchannel = utils.getspecialchannel(after.guild)
+	if before.nick != after.nick and not utils.logdisabled('member_nickname', after.guild):
 		embed = discord.Embed(title='🇳📟CHANGED NICKNAME'.format(id=after.id), colour=after.colour)
 		embed.set_author(
 			name=after.display_name,
@@ -862,14 +876,14 @@ async def on_member_update(before, after):
 			embed.add_field(name='No Newer Nickname', value='_No Newer Nickname_')
 		else:
 			embed.add_field(name='Newer Nickname', value=utils.mdspecialchars(after.nick))
-		await bot.client.send_message(specialchannel, embed=embed)
+		await specialchannel.send(embed=embed)
 	if before.roles != after.roles:
-		if utils.logdisabled('member_roleadd', after.server):
+		if utils.logdisabled('member_roleadd', after.guild):
 			addedroles = []
 		else:
 			addedroles   = list(set(after.roles) - set(before.roles))
 
-		if utils.logdisabled('member_roleremove', after.server):
+		if utils.logdisabled('member_roleremove', after.guild):
 			removedroles = []
 		else:
 			removedroles = list(set(before.roles) - set(after.roles))
@@ -910,12 +924,12 @@ async def on_member_update(before, after):
 						)
 					)
 				)
-			await bot.client.send_message(specialchannel, embed=embed)
+			await specialchannel.send(embed=embed)
 
-		if config.get_s('rolecachemode', after.server.id) != 0:
+		if config.get_s('rolecachemode', after.guild.id) != 0:
 			utils.updaterolecache(after)
 			utils.rolecachesave()
-	if before.name != after.name and not utils.logdisabled('member_username', after.server):
+	if before.name != after.name and not utils.logdisabled('member_username', after.guild):
 		description = '🇺📟CHANGED USERNAME'.format(id=after.id)
 		if before.discriminator != after.discriminator:
 			description += ' AND DISCRIMINATOR 🔸'
@@ -926,110 +940,122 @@ async def on_member_update(before, after):
 		if before.discriminator != after.discriminator:
 			embed.add_field(name='Older Discriminator', value=before.discriminator, inline=False)
 			embed.add_field(name='Newer Discriminator', value=after.discriminator)
-		await bot.client.send_message(specialchannel, embed=embed)
+		await specialchannel.send(embed=embed)
 	if before.avatar_url != after.avatar_url and \
-	(not utils.logdisabled('member_botavatar', after.server) \
+	(not utils.logdisabled('member_botavatar', after.guild) \
 	if checks.is_bot(after) \
-	else not utils.logdisabled('member_avatar', after.server)):
+	else not utils.logdisabled('member_avatar', after.guild)):
 		embed = discord.Embed(description='👥<@!{id}> ({id}) changed avatar'.format(id=after.id), colour=after.colour, timestamp=datetime.datetime.now())
 		embed.set_author(name=after.display_name, icon_url=after.avatar_url)
 		embed.set_thumbnail(url=before.avatar_url)
 		embed.set_image(url=after.avatar_url)
 		embed.add_field(name='Older Avatar URL: None' if before.avatar_url == '' else 'Older Avatar URL (Thumbnail)', value='No Older Avatar URL' if before.avatar_url == '' else before.avatar_url)
 		embed.add_field(name='Newer Avatar URL: None' if after.avatar_url == '' else 'Newer Avatar URL (Inset Image)', value='No Newer Avatar URL' if after.avatar_url == '' else after.avatar_url, inline=False)
-		await bot.client.send_message(specialchannel, embed=embed)
+		await specialchannel.send(embed=embed)
 
 async def on_member_join(member):
-	if not utils.logdisabled('member_join', member.server):
-		specialchannel = utils.getspecialchannel(member.server)
-		embed = discord.Embed(description='➡<@!{id}> ({id}) joined server'.format(id=member.id), colour=member.server.me.colour, timestamp=datetime.datetime.now())
+	if not utils.logdisabled('member_join', member.guild):
+		specialchannel = utils.getspecialchannel(member.guild)
+		embed = discord.Embed(
+			description='➡<@!{id}> ({id}) joined server'.format(id=member.id),
+			colour=member.guild.me.colour,
+			timestamp=datetime.datetime.now(),
+		)
 		embed.add_field(
 			name='This server now has',
-			value=str(member.server.member_count) + ' members',
+			value=str(member.guild.member_count) + ' members',
 		)
 		embed.set_author(name=member.display_name)
 		embed.set_thumbnail(url=member.avatar_url)
-		await bot.client.send_message(specialchannel, embed=embed)
+		await specialchannel.send(embed=embed)
 	await utils.newmemberroles(member, specialchannel, False)
 
 async def on_member_remove(member):
-	if not utils.logdisabled('member_remove', member.server):
-		specialchannel = utils.getspecialchannel(member.server)
+	if not utils.logdisabled('member_remove', member.guild):
+		specialchannel = utils.getspecialchannel(member.guild)
 		embed = discord.Embed(description='🚪<@!{id}> ({id}) removed from server'.format(id=member.id), colour=member.colour, timestamp=datetime.datetime.now())
 		embed.add_field(name='Originally joined server', value=utils.reltime(time.mktime(member.joined_at.timetuple())))
 		embed.add_field(
 			name='This server now has',
-			value=str(member.server.member_count) + ' members',
+			value=str(member.guild.member_count) + ' members',
 		)
 		embed.set_author(name=member.display_name, icon_url=member.avatar_url)
 		embed.set_thumbnail(url=member.avatar_url)
-		await bot.client.send_message(specialchannel, embed=embed)
+		await specialchannel.send(embed=embed)
 
-async def on_member_ban(member):
-	if utils.logdisabled('member_ban', member.server):
+async def on_member_ban(guild, user):
+	if utils.logdisabled('member_ban', guild):
 		return
-	specialchannel = utils.getspecialchannel(member.server)
+	specialchannel = utils.getspecialchannel(guild)
 
-	msg = '**`>`**👞🚪⛔`user` **``{}``**`#{}` `({}) banned from server {} ({})`'.format(utils.wrapbackticks(member.name), member.discriminator, member.id, member.server.name, member.server.id)
-	await bot.client.send_message(specialchannel, msg)
+	msg = '**`>`**👞🚪⛔`user` **``{}``**`#{}` `({}) banned from server {} ({})`'.format(
+		utils.wrapbackticks(user.name), user.discriminator, user.id, guild.name, guild.id,
+	)
+	await specialchannel.send(msg)
 
-async def on_member_unban(server, user):
-	if utils.logdisabled('member_unban', server):
+async def on_member_unban(guild, user):
+	if utils.logdisabled('member_unban', guild):
 		return
-	specialchannel = utils.getspecialchannel(server)
-	msg = '**`>`**<:doormat:239361673532669953>`user` **``{}``**`#{}` `({}) unbanned from server {} ({})`'.format(utils.wrapbackticks(user.name), user.discriminator, user.id, server.name, server.id)
-	await bot.client.send_message(specialchannel, msg)
+	specialchannel = utils.getspecialchannel(guild)
+	msg = (
+		'**`>`**<:doormat:239361673532669953>`user` **``{}``**`#{}` `({})'
+		' unbanned from server {} ({})`'
+	).format(
+		utils.wrapbackticks(user.name), user.discriminator, user.id, guild.name, guild.id,
+	)
+	await specialchannel.send(msg)
 
 async def on_typing(channel, user, when):
 	try:
-		specialchannel = bot.getspecialchannel(channel.server)
+		specialchannel = bot.getspecialchannel(channel.guild)
 	except AttributeError: # this would happen if the typing event is in a private message
 		return
-	if specialchannel.id == channel.server.default_channel.id:
+	if specialchannel.id == channel.guild.default_channel.id:
 		specialchannel = channel
-	if str(user.status) == 'offline' and not utils.logdisabled('invisible_typing', channel.server):
+	if str(user.status) == 'offline' and \
+	not utils.logdisabled('invisible_typing', channel.guild):
 		embed = discord.Embed(title='👻INVISIBLE WHILE TYPING IN {}'.format(channel.mention), colour=user.colour)
 		embed.set_author(name=user.display_name, icon_url=user.avatar_url, url=utils.infourl('userid={}'.format(user.id)))
-		await bot.client.send_message(specialchannel, embed=embed)
+		await specialchannel.send(embed=embed)
 	else:
 		return # practically unnecessary, but this is for if we want to do things when members type later
 
-async def on_server_role_create(r):
-	if utils.logdisabled('role_create', r.server):
+async def on_guild_role_create(r):
+	if utils.logdisabled('role_create', r.guild):
 		return
-	schan = utils.getspecialchannel(r.server)
+	schan = utils.getspecialchannel(r.guild)
 	embed = discord.Embed(
 		title='ROLE ADD AT {time}'.format(time=str(r.created_at)),
 		description=utils.mdspecialchars(r.name),
 		colour=r.colour,
 	)
-	await bot.client.send_message(schan, embed=embed)
+	await schan.send(embed=embed)
 
-async def on_server_role_delete(r):
-	if utils.logdisabled('role_delete', r.server):
+async def on_guild_role_delete(r):
+	if utils.logdisabled('role_delete', r.guild):
 		return
-	schan = utils.getspecialchannel(r.server)
+	schan = utils.getspecialchannel(r.guild)
 	embed = discord.Embed(
 		title='ROLE REMOVE',
 		description=utils.mdspecialchars(r.name),
 		colour=r.colour,
 	)
 	embed.add_field(name='Original Creation Time', value=str(r.created_at))
-	await bot.client.send_message(schan, embed=embed)
+	await schan.send(embed=embed)
 
-async def on_server_role_update(before, after):
-	specialchannel = utils.getspecialchannel(before.server)
+async def on_guild_role_update(before, after):
+	specialchannel = utils.getspecialchannel(before.guild)
 	# If the name changed
-	if before.name != after.name and not utils.logdisabled('role_rename', before.server):
+	if before.name != after.name and not utils.logdisabled('role_rename', before.guild):
 		embed = discord.Embed(title='ROLE NAME CHANGE', description=utils.mdspecialchars(after.name), colour=after.colour)
 		embed.add_field(name='Older Name', value=utils.mdspecialchars(before.name))
 		embed.add_field(name='Newer Name', value=utils.mdspecialchars(after.name))
-		await bot.client.send_message(specialchannel, embed=embed)
+		await specialchannel.send(embed=embed)
 	# If "display online members separately" changed
 	if before.hoist != after.hoist:
 		# If the role has been hoisted
 		if before.hoist == 0 and after.hoist == 1 and not utils.logdisabled(
-			'role_hoist', before.server
+			'role_hoist', before.guild
 		):
 			embed = discord.Embed(
 				title='ROLE HOIST',
@@ -1039,10 +1065,10 @@ async def on_server_role_update(before, after):
 				),
 				colour=after.colour,
 			)
-			await bot.client.send_message(specialchannel, embed=embed)
+			await specialchannel.send(embed=embed)
 		# If the role has been lowered
 		if before.hoist == 1 and after.hoist == 0 and not utils.logdisabled(
-			'role_unhoist', before.server
+			'role_unhoist', before.guild
 		):
 			embed = discord.Embed(
 				title='ROLE UNHOIST',
@@ -1052,40 +1078,40 @@ async def on_server_role_update(before, after):
 				),
 				colour=after.colour,
 			)
-			await bot.client.send_message(specialchannel, embed=embed)
+			await specialchannel.send(embed=embed)
 	# If "allow everyone to mention this role" changed
 	if before.mentionable != after.mentionable:
 		# If the role is now mentionable
 		if before.mentionable == 0 and after.mentionable == 1 and not utils.logdisabled(
-			'role_mentionable', before.server
+			'role_mentionable', before.guild
 		):
 			msg = '**`>`**`role` **``{}``** `({}) is now mentionable`'.format(utils.wrapbackticks(after.name), after.id)
-			await bot.client.send_message(specialchannel, msg)
+			await specialchannel.send(msg)
 		# If the role is no longer mentionable
 		if before.mentionable == 1 and after.mentionable == 0 and not utils.logdisabled(
-			'role_unmentionable', before.server
+			'role_unmentionable', before.guild
 		):
 			msg = '**`>`**`role` **``{}``** `({}) is no longer mentionable`'.format(utils.wrapbackticks(after.name), after.id)
-			await bot.client.send_message(specialchannel, msg)
+			await specialchannel.send(msg)
 	# If the role has been moved up or down in the hierarchy
-	if before.position != after.position and not utils.logdisabled('role_hierarchy', before.server):
+	if before.position != after.position and not utils.logdisabled('role_hierarchy', before.guild):
 		# The role has been moved down
 		if before.position > after.position:
 			msg = '**`>`**`role` **``{}``** `({}) has been moved down by {} roles ({} to {})`'.format(utils.wrapbackticks(after.name), after.id, before.position - after.position, before.position, after.position)
-			await bot.client.send_message(specialchannel, msg)
+			await specialchannel.send(msg)
 		# The role has been moved up
 		if before.position < after.position:
 			msg = '**`>`**`role` **``{}``** `({}) has been moved up by {} roles ({} to {})`'.format(utils.wrapbackticks(after.name), after.id, after.position - before.position, before.position, after.position)
-			await bot.client.send_message(specialchannel, msg)
+			await specialchannel.send(msg)
 	# If the role color has changed
-	if before.colour != after.colour and not utils.logdisabled('role_color', before.server):
+	if before.colour != after.colour and not utils.logdisabled('role_color', before.guild):
 		embed = discord.Embed(title='ROLE COLOR CHANGE', description=utils.mdspecialchars(after.name), colour=after.colour)
 		embed.add_field(name='Older Color', value='(default)' if before.colour.value == 0 else str(before.colour).upper())
 		embed.add_field(name='Newer Color', value='(default)' if after.colour.value == 0 else str(after.colour).upper())
-		await bot.client.send_message(specialchannel, embed=embed)
+		await specialchannel.send(embed=embed)
 	# If any of the permissions has changed
 	if before.permissions != after.permissions and not utils.logdisabled(
-		'role_permissions', before.server
+		'role_permissions', before.guild
 	):
 		diff = list(set(before.permissions).symmetric_difference(set(after.permissions)))
 		e = discord.Embed(
@@ -1104,12 +1130,13 @@ async def on_server_role_update(before, after):
 			name='Newer Permission',
 			value=str(dict(after.permissions)[diff[0][0]]),
 		)
-		await bot.client.send_message(specialchannel, embed=e)
+		await specialchannel.send(embed=e)
 
 async def on_reaction_add(r, u):
-	if utils.isprivatemessage(r.message.server) or utils.logdisabled('reaction_add', r.message.server):
+	if utils.isprivatemessage(r.message.guild) \
+	or utils.logdisabled('reaction_add', r.message.guild):
 		return
-	specialchannel = utils.getspecialchannel(r.message.server)
+	specialchannel = utils.getspecialchannel(r.message.guild)
 	try:
 		iscustomemote = True
 		emotename = r.emoji.name
@@ -1118,7 +1145,7 @@ async def on_reaction_add(r, u):
 		emotename = r.emoji
 	embed = discord.Embed(
 		title='REACTION ADDED TO MESSAGE (SENT {rtime} IN {c.mention})'.format(
-			rtime=utils.reltime(time.mktime(r.message.timestamp.timetuple())),
+			rtime=utils.reltime(time.mktime(r.message.created_at.timetuple())),
 			c=r.message.channel,
 		),
 		description=r.message.content,
@@ -1151,12 +1178,13 @@ async def on_reaction_add(r, u):
 			)
 		),
 	)
-	await bot.client.send_message(specialchannel, embed=embed)
+	await specialchannel.send(embed=embed)
 
 async def on_reaction_remove(r, u):
-	if utils.isprivatemessage(r.message.server) or utils.logdisabled('reaction_remove', r.message.server):
+	if utils.isprivatemessage(r.message.guild) \
+	or utils.logdisabled('reaction_remove', r.message.guild):
 		return
-	specialchannel = utils.getspecialchannel(r.message.server)
+	specialchannel = utils.getspecialchannel(r.message.guild)
 	try:
 		iscustomemote = True
 		emotename = r.emoji.name
@@ -1165,7 +1193,7 @@ async def on_reaction_remove(r, u):
 		emotename = r.emoji
 	embed = discord.Embed(
 		title='REACTION REMOVED FROM MESSAGE (SENT {rtime} IN {c.mention})'.format(
-			rtime=utils.reltime(time.mktime(r.message.timestamp.timetuple())),
+			rtime=utils.reltime(time.mktime(r.message.created_at.timetuple())),
 			c=r.message.channel,
 		),
 		description=r.message.content,
@@ -1196,12 +1224,12 @@ async def on_reaction_remove(r, u):
 			)
 		),
 	)
-	await bot.client.send_message(specialchannel, embed=embed)
+	await specialchannel.send(embed=embed)
 
 async def on_reaction_clear(m, rs):
-	if utils.isprivatemessage(m.server) or utils.logdisabled('reaction_clear', m.server):
+	if utils.isprivatemessage(m.guild) or utils.logdisabled('reaction_clear', m.guild):
 		return
-	schan = utils.getspecialchannel(m.server)
+	schan = utils.getspecialchannel(m.guild)
 	rlist = ''
 	for r in rs:
 		try:
@@ -1220,7 +1248,7 @@ async def on_reaction_clear(m, rs):
 			rlist += name + '\n'
 	embed = discord.Embed(
 		title='REACTIONS CLEARED FROM MESSAGE (SENT {rtime} IN {c.mention})'.format(
-			rtime=utils.reltime(time.mktime(m.timestamp.timetuple())),
+			rtime=utils.reltime(time.mktime(m.created_at.timetuple())),
 			c=m.channel,
 		),
 		description=m.content,
@@ -1228,30 +1256,31 @@ async def on_reaction_clear(m, rs):
 	)
 	embed.add_field(name='Message ID (temp)', value=m.id)
 	embed.add_field(name='Reactions', value=rlist)
-	await bot.client.send_message(schan, embed=embed)
+	await schan.send(embed=embed)
 
-async def on_server_update(before, after):
+async def on_guild_update(before, after):
 	specialchannel = utils.getspecialchannel(after)
-	if before.icon != after.icon and not utils.logdisabled('server_icon', after):
+	if before.icon != after.icon and not utils.logdisabled('guild_icon', after):
 		embed = discord.Embed(description='Server changed icon')
 		embed.set_thumbnail(url=before.icon_url)
 		embed.add_field(name='Older Icon URL: None' if before.icon_url == '' else 'Older Icon URL (Thumbnail)', value='No Older Icon URL' if before.icon_url == '' else before.icon_url)
 		embed.add_field(name='Newer Icon URL: None' if after.icon_url == '' else 'Newer Icon URL (Inset Image)', value='No Newer Icon URL' if after.icon_url == '' else after.icon_url)
 		embed.set_image(url=after.icon_url)
-		await bot.client.send_message(specialchannel, embed=embed)
-	if before.name != after.name and not utils.logdisabled('server_rename', after):
+		await specialchannel.send(embed=embed)
+	if before.name != after.name and not utils.logdisabled('guild_rename', after):
 		embed = discord.Embed(description='Server changed name')
 		embed.set_thumbnail(url=after.icon_url)
 		embed.add_field(name='Older Name', value=utils.mdspecialchars(before.name))
 		embed.add_field(name='Newer Name', value=utils.mdspecialchars(after.name))
-		await bot.client.send_message(specialchannel, embed=embed)
-	if before.region != after.region and not utils.logdisabled('server_region', after):
+		await specialchannel.send(embed=embed)
+	if before.region != after.region and not utils.logdisabled('guild_region', after):
 		embed = discord.Embed(description='VOICE REGION CHANGE')
 		embed.set_thumbnail(url=after.icon_url)
 		embed.add_field(name='Older Region', value=str(before.region))
 		embed.add_field(name='Newer Region', value=str(after.region))
-		await bot.client.send_message(specialchannel, embed=embed)
-	if before.afk_timeout != after.afk_timeout and not utils.logdisabled('server_afktimeout', after):
+		await specialchannel.send(embed=embed)
+	if before.afk_timeout != after.afk_timeout and \
+	not utils.logdisabled('guild_afktimeout', after):
 		b_m, b_s = divmod(before.afk_timeout, 60)
 		b_h, b_m = divmod(b_m, 60)
 		a_m, a_s = divmod(after.afk_timeout, 60)
@@ -1266,8 +1295,9 @@ async def on_server_update(before, after):
 			name='Newer Timeout',
 			value='{h}h {m}m {s}s'.format(h=a_h, m=a_m, s=a_s),
 		)
-		await bot.client.send_message(specialchannel, embed=embed)
-	if before.afk_channel != after.afk_channel and not utils.logdisabled('server_afkchannel', after):
+		await specialchannel.send(embed=embed)
+	if before.afk_channel != after.afk_channel and \
+	not utils.logdisabled('guild_afkchannel', after):
 		embed = discord.Embed(description='AFK CHANNEL CHANGE')
 		embed.set_thumbnail(url=after.icon_url)
 		embed.add_field(
@@ -1278,9 +1308,9 @@ async def on_server_update(before, after):
 			name='Newer Channel: None' if after.afk_channel is None else 'Newer Channel',
 			value='No Newer Channel' if after.afk_channel is None else '{name} ({0.id})'.format(after.afk_channel, name=utils.mdspecialchars(after.afk_channel.name)),
 		)
-		await bot.client.send_message(specialchannel, embed=embed)
+		await specialchannel.send(embed=embed)
 	if before.verification_level != after.verification_level and not utils.logdisabled(
-		'server_verificationlevel', after
+		'guild_verificationlevel', after
 	):
 		embed = discord.Embed(description='VERIFICATION LEVEL CHANGE')
 		embed.set_thumbnail(url=after.icon_url)
@@ -1292,22 +1322,19 @@ async def on_server_update(before, after):
 			name='Newer Level',
 			value=str(after.verification_level).title(),
 		)
-		await bot.client.send_message(specialchannel, embed=embed)
-	if before.mfa_level != after.mfa_level and not utils.logdisabled('server_2fa', after):
+		await specialchannel.send(embed=embed)
+	if before.mfa_level != after.mfa_level and not utils.logdisabled('guild_2fa', after):
 		if before.mfa_level == 0 and after.mfa_level == 1:
 			embed=discord.Embed(description='SERVER 2FA ENABLED')
 		elif before.mfa_level == 1 and after.mfa_level == 0:
 			embed=discord.Embed(description='SERVER 2FA DISABLED')
-		await bot.client.send_message(specialchannel, embed=embed)
+		await specialchannel.send(embed=embed)
 
-async def on_server_emojis_update(b, a):
-	try:
-		schan = utils.getspecialchannel(a[0].server)
-	except IndexError:
-		schan = utils.getspecialchannel(b[0].server)
-	if utils.logdisabled('server_emotes', schan.server):
+async def on_guild_emojis_update(guild, b, a):
+	if utils.logdisabled('guild_emotes', guild):
 		# We could split this into separate emotes_* log types
 		return
+	schan = utils.getspecialchannel(guild)
 	diff = list(set(b).symmetric_difference(set(a)))
 	elist = ''
 	for e in diff:
@@ -1330,298 +1357,299 @@ async def on_server_emojis_update(b, a):
 		)
 		embed.add_field(name='Older Name', value=embef.name)
 		embed.add_field(name='Newer Name', value=emaft.name)
-		await bot.client.send_message(schan, embed=embed)
+		await schan.send(embed=embed)
 		return
 	embed = discord.Embed(description=desc)
 	embed.add_field(name='Emotes', value=elist)
-	await bot.client.send_message(schan, embed=embed)
+	await schan.send(embed=embed)
 
-async def on_voice_state_update(old, new):
-	if old.voice.voice_channel == new.voice.voice_channel:
+async def on_voice_state_update(member, old, new):
+	if old.voice_channel == new.voice_channel:
 		return
 
 	vtcs = [
-		new.server.get_channel(i) for i in config.get_s(
-			'voicechat_channel_text', new.server.id,
+		member.guild.get_channel(i) for i in config.get_s(
+			'voicechat_channel_text', new.guild.id,
 		)
 	]
 	vvcs = [
-		new.server.get_channel(i) for i in config.get_s(
-			'voicechat_channel_voice', new.server.id,
+		member.guild.get_channel(i) for i in config.get_s(
+			'voicechat_channel_voice', new.guild.id,
 		)
 	]
 
 	for vtc, vvc in zip(vtcs, vvcs):
-		if new.voice.voice_channel and new.voice.voice_channel == vvc:
+		if new.voice_channel and new.voice_channel == vvc:
 			# Joined the voice channel
 			ow = discord.PermissionOverwrite(read_messages=True)
-			await bot.client.edit_channel_permissions(vtc, new, ow)
+			await vtc.set_permissions(member, ow)
 			break
 
-		if old.voice.voice_channel and old.voice.voice_channel == vvc:
+		if old.voice_channel and old.voice_channel == vvc:
 			# Left the voice channel
-			await bot.client.delete_channel_permissions(vtc, new)
+			await vtc.set_permissions(new, None)
 			break
 
-async def on_channel_create(c):
-	if c.type == discord.ChannelType.private or utils.logdisabled('channel_add', c.server):
+async def on_guild_channel_create(c):
+	if utils.logdisabled('channel_add', c.guild):
 		return
-	schan = utils.getspecialchannel(c.server)
+	schan = utils.getspecialchannel(c.guild)
 	embed = discord.Embed(
 		description='{type} CHANNEL ADD\n{0.name} ({0.id})'.format(
 			c,
 			type=str(c.type).upper(),
 		),
 	)
-	await bot.client.send_message(schan, embed=embed)
+	await schan.send(embed=embed)
 
-async def on_channel_delete(c):
-	if c.type == discord.ChannelType.private or utils.logdisabled('channel_remove', c.server):
+async def on_guild_channel_delete(c):
+	if utils.logdisabled('channel_remove', c.guild):
 		return
-	schan = utils.getspecialchannel(c.server)
+	schan = utils.getspecialchannel(c.guild)
 	embed = discord.Embed(
 		description='{type} CHANNEL REMOVE\n{0.name} ({0.id})'.format(
 			c,
 			type=str(c.type).upper(),
 		),
 	)
-	await bot.client.send_message(schan, embed=embed)
+	await schan.send(embed=embed)
 
-async def on_socket_raw_receive(payload):
-	try:
-		event = json.loads(payload)
-	except UnicodeDecodeError:
+async def on_raw_message_delete(message_id, channel_id):
+	# We must first know what channel it is
+	mchan = bot.client.get_channel(channel_id)
+	if isinstance(mchan, discord.abc.PrivateChannel) or \
+	utils.logdisabled('message_deleteuncached', mchan.guild):
+			return
+	# Check if on_message_delete() was already called by this message
+	# If it was, then return
+	if discord.utils.find(
+		lambda m: m.id == message_id, bot.client._connection._messages,
+	) != None:
+		# If the message lingers in deleted_messages, it doesn't really matter for now
+		return
+	if message_id in bot.owncache:
+		# Already removed from the cache, but we still haven't run on_message_delete
+		# This happens all the time.
+		bot.owncache.remove(message_id)
+		return
+	for m in bot.deleted_messages:
+		if m.id == message_id:
+			# on_message_delete was faster
+			bot.deleted_messages.remove(m)
+			return
+
+	schan = utils.getspecialchannel(mchan.guild)
+	e = discord.Embed(
+		title='UNCACHED MESSAGE DELETED IN {0.mention}'.format(mchan),
+		url=utils.infourl('messageid=' + message_id),
+		description=(
+			'Since this message is uncached, I can’t give you'
+			' any more information than its ID and its channel.'
+		),
+		colour=mchan.guild.me.colour,
+	)
+	await schan.send(embed=e)
+
+async def on_raw_message_edit(message_id, data):
+	# We must first know what channel it is
+	mchan = bot.client.get_channel(data['channel_id'])
+	if isinstance(mchan, discord.abc.PrivateChannel) or \
+	utils.logdisabled('message_updateuncached', mchan.guild):
+		return
+	# Check if the message is in the cache and return if it is
+	if discord.utils.find(
+		lambda m: m.id == message_id, bot.client._connection._messages,
+	) != None:
 		return
 
-	# Events to check
-	ckevnts = [
-		'MESSAGE_DELETE',
-		'MESSAGE_UPDATE',
-		'MESSAGE_REACTION_ADD',
-		'MESSAGE_REACTION_REMOVE',
-		'MESSAGE_REACTION_REMOVE_ALL',
-	]
-	if event['t'] not in ckevnts:
-		return
-
-	# We must first know what server it is
-	mchan = bot.client.get_channel(event['d']['channel_id'])
-	if mchan.type == discord.ChannelType.private:
-		return
-
-	if event['t'] == 'MESSAGE_DELETE':
-		if utils.logdisabled('message_deleteuncached', mchan.server):
-			return
-		# Check if on_message_delete() was already called by this message
-		# If it was, then return
-		if discord.utils.find(lambda m: m.id == event['d']['id'], bot.client.messages) != None:
-			# If the message lingers in deleted_messages, it doesn't really matter for now
-			return
-		if event['d']['id'] in bot.owncache:
-			# Already removed from the cache, but we still haven't run on_message_delete
-			# This happens all the time.
-			bot.owncache.remove(event['d']['id'])
-			return
-		for m in bot.deleted_messages:
-			if m.id == event['d']['id']:
-				# on_message_delete was faster
-				bot.deleted_messages.remove(m)
-				return
-
-		schan = utils.getspecialchannel(
-			mchan.server
-		)
-		e = discord.Embed(
-			title='UNCACHED MESSAGE DELETED IN {0.mention}'.format(mchan),
-			url=utils.infourl('messageid=' + event['d']['id']),
-			description=(
-				'Since this message is uncached, I can’t give you'
-				' any more information than its ID and its channel.'
+	schan = utils.getspecialchannel(mchan.guild)
+	athr = mchan.guild.get_member(data['author']['id'])
+	e = discord.Embed(
+		title=(
+			'UNCACHED MESSAGE UPDATED (SENT {rltm}'
+			' IN {0.mention}).'
+			' NEWER CONTENT AND PROPERTIES:'
+		).format(
+			mchan,
+			rltm=utils.reltime(
+				time.mktime(
+					discord.utils.parse_time(data['timestamp']).timetuple(),
+				)
 			),
-			colour=mchan.server.me.colour,
-		)
-		await bot.client.send_message(schan, embed=e)
-	elif event['t'] == 'MESSAGE_UPDATE':
-		if utils.logdisabled('message_updateuncached', mchan.server):
-			return
-		# Check if the message is in the cache and return if it is
-		if discord.utils.find(lambda m: m.id == event['d']['id'], bot.client.messages) != None:
-			return
-
-		schan = utils.getspecialchannel(mchan.server)
-		athr = mchan.server.get_member(event['d']['author']['id'])
-		e = discord.Embed(
-			title=(
-				'UNCACHED MESSAGE UPDATED (SENT {rltm}'
-				' IN {0.mention}).'
-				' NEWER CONTENT AND PROPERTIES:'
+		),
+		description=data['content'],
+		colour=athr.colour,
+	)
+	e.set_author(
+		name=athr.display_name,
+		icon_url=athr.avatar_url,
+		url=utils.infourl(
+			(
+				'userid={uid}&messageid={mid}'
 			).format(
-				mchan,
-				rltm=utils.reltime(
-					time.mktime(
-						discord.utils.parse_time(
-							event['d']['timestamp']
-						).timetuple()
-					)
-				),
-			),
-			description=event['d']['content'],
-			colour=athr.colour,
-		)
-		e.set_author(
-			name=athr.display_name,
-			icon_url=athr.avatar_url,
-			url=utils.infourl(
-				(
-					'userid={uid}&messageid={mid}'
-				).format(
-					uid=athr.id,
-					mid=event['d']['id'],
-				),
-			)
-		)
-		e.add_field(
-			name='Pinned',
-			value='Yes' if event['d']['pinned'] else 'No',
-		)
-		e.add_field(
-			name='TTS',
-			value='Yes' if event['d']['tts'] else 'No',
-		)
-		e.add_field(
-			name='Rich Embed',
-			value=(
-				'``{}``'.format(utils.wrapbackticks(str(event['d']['embeds']['rich'])))
-				if 'rich' in event['d']['embeds']
-				else '(none)'
+				uid=athr.id,
+				mid=data['id'],
 			),
 		)
-		e.set_footer(
-			text=(
-				'Since this message is uncached,'
-				' I can’t give you its older properties.'
-			)
+	)
+	e.add_field(
+		name='Pinned',
+		value='Yes' if data['pinned'] else 'No',
+	)
+	e.add_field(
+		name='TTS',
+		value='Yes' if data['tts'] else 'No',
+	)
+	e.add_field(
+		name='Rich Embed',
+		value=(
+			'``{}``'.format(utils.wrapbackticks(str(data['embeds']['rich'])))
+			if 'rich' in data['embeds']
+			else '(none)'
+		),
+	)
+	e.set_footer(
+		text=(
+			'Since this message is uncached,'
+			' I can’t give you its older properties.'
 		)
-		await bot.client.send_message(schan, embed=e)
-	elif event['t'] == 'MESSAGE_REACTION_ADD':
-		if utils.logdisabled('reaction_adduncached', mchan.server):
-			return
-		# Check if the message is in the cache and return if it is
-		if discord.utils.find(lambda m: m.id == event['d']['message_id'], bot.client.messages) \
-		!= None:
-			return
+	)
+	await schan.send(embed=e)
 
-		schan = utils.getspecialchannel(mchan.server)
-		athr = mchan.server.get_member(event['d']['user_id'])
-		mdetails = athr.mention
-		if athr.status == discord.Status.offline:
-			mdetails += ' (Invisible)'
-		e = discord.Embed(
-			title='REACTION ADDED TO UNCACHED MESSAGE IN {0.mention}'.format(mchan),
-			description=(
-				'Since this message is uncached, I can’t give you'
-				' any more information than its ID, author, and channel.'
-			),
-			colour=mchan.server.me.colour,
-		)
-		e.set_author(
-			name=athr.display_name,
-			icon_url=athr.avatar_url,
-			url=utils.infourl(
-				(
-					'userid={uid}&messageid={mid}'
-				).format(
-					uid=athr.id,
-					mid=event['d']['message_id'],
-				),
-			)
-		)
-		e.add_field(
-			name='Member of Reaction',
-			value=mdetails,
-		)
-		e.add_field(
-			name='Reaction',
-			value=(
-				'<:{name}:{id}>'
-			).format(
-				name=event['d']['emoji']['name'],
-				id=event['d']['emoji']['id'],
-			) if event['d']['emoji']['id'] is not None else event['d']['emoji']['name'],
-		)
-		await bot.client.send_message(schan, embed=e)
-	elif event['t'] == 'MESSAGE_REACTION_REMOVE':
-		if utils.logdisabled('reaction_removeuncached', mchan.server):
-			return
-		# Check if the message is in the cache and return if it is
-		if discord.utils.find(lambda m: m.id == event['d']['message_id'], bot.client.messages) \
-		!= None:
-			return
-
-		schan = utils.getspecialchannel(mchan.server)
-		athr = mchan.server.get_member(event['d']['user_id'])
-		mdetails = athr.mention
-		e = discord.Embed(
-			title='REACTION REMOVED FROM UNCACHED MESSAGE IN {0.mention}'.format(mchan),
-			description=(
-				'Since this message is uncached, I can’t give you'
-				' any more information than its ID, author, and channel.'
-			),
-			colour=mchan.server.me.colour,
-		)
-		e.set_author(
-			name=athr.display_name,
-			icon_url=athr.avatar_url,
-			url=utils.infourl(
-				(
-					'userid={uid}&messageid={mid}'
-				).format(
-					uid=athr.id,
-					mid=event['d']['message_id'],
-				),
-			)
-		)
-		e.add_field(
-			name='Member of Reaction',
-			value=mdetails,
-		)
-		e.add_field(
-			name='Reaction',
-			value=(
-				'<:{name}:{id}>'
-			).format(
-				name=event['d']['emoji']['name'],
-				id=event['d']['emoji']['id'],
-			) if event['d']['emoji']['id'] is not None else event['d']['emoji']['name'],
-		)
-		await bot.client.send_message(schan, embed=e)
-	elif event['t'] == 'MESSAGE_REACTION_REMOVE_ALL':
-		if utils.logdisabled('reaction_clearuncached', mchan.server):
-			return
-		# Check if the message is in the cache and return if it is
-		if discord.utils.find(lambda m: m.id == event['d']['message_id'], bot.client.messages) \
-		!= None:
-			return
-
-		schan = utils.getspecialchannel(mchan.server)
-		e = discord.Embed(
-			title=(
-				'REACTIONS CLEARED FROM UNCACHED MESSAGE'
-				' IN {0.mention}'
-			).format(mchan),
-			url=utils.infourl('messageid=' + event['d']['message_id']),
-			description=(
-				'Since this message is uncached, I can’t give you'
-				' any more information than its ID and its channel.'
-			),
-			colour=mchan.server.me.colour,
-		)
-		await bot.client.send_message(schan, embed=e)
-
-async def on_channel_update(b, a):
-	if a.type == discord.ChannelType.private or utils.logdisabled('channel_rename', a.server):
+async def on_raw_reaction_add(emoji, message_id, channel_id, user_id):
+	# We must first know what channel it is
+	mchan = bot.client.get_channel(channel_id)
+	if isinstance(mchan, discord.abc.PrivateChannel) or \
+	utils.logdisabled('reaction_adduncached', mchan.guild):
 		return
-	schan = utils.getspecialchannel(a.server)
+
+	# Check if the message is in the cache and return if it is
+	if discord.utils.find(
+		lambda m: m.id == message_id, bot.client._connection._messages,
+	) != None:
+		return
+
+	schan = utils.getspecialchannel(mchan.guild)
+	athr = mchan.guild.get_member(user_id)
+	mdetails = athr.mention
+	if athr.status == discord.Status.offline:
+		mdetails += ' (Invisible)'
+	e = discord.Embed(
+		title='REACTION ADDED TO UNCACHED MESSAGE IN {0.mention}'.format(mchan),
+		description=(
+			'Since this message is uncached, I can’t give you'
+			' any more information than its ID, author, and channel.'
+		),
+		colour=mchan.guild.me.colour,
+	)
+	e.set_author(
+		name=athr.display_name,
+		icon_url=athr.avatar_url,
+		url=utils.infourl(
+			(
+				'userid={uid}&messageid={mid}'
+			).format(
+				uid=athr.id,
+				mid=message_id,
+			),
+		)
+	)
+	e.add_field(
+		name='Member of Reaction',
+		value=mdetails,
+	)
+	e.add_field(
+		name='Reaction',
+		value=(
+			'<:{name}:{id}>'
+		).format(
+			name=emoji.name,
+			id=emoji.id,
+		) if emoji.id is not None else emoji.name,
+	)
+	await schan.send(embed=e)
+
+async def on_raw_reaction_remove(emoji, message_id, channel_id, user_id):
+	# We must first know what channel it is
+	mchan = bot.client.get_channel(channel_id)
+	if isinstance(mchan, discord.abc.PrivateChannel) or \
+	utils.logdisabled('reaction_removeuncached', mchan.guild):
+		return
+	# Check if the message is in the cache and return if it is
+	if discord.utils.find(
+		lambda m: m.id == message_id, bot.client._connection._messages,
+	) != None:
+		return
+
+	schan = utils.getspecialchannel(mchan.guild)
+	athr = mchan.guild.get_member(user_id)
+	mdetails = athr.mention
+	e = discord.Embed(
+		title='REACTION REMOVED FROM UNCACHED MESSAGE IN {0.mention}'.format(mchan),
+		description=(
+			'Since this message is uncached, I can’t give you'
+			' any more information than its ID, author, and channel.'
+		),
+		colour=mchan.guild.me.colour,
+	)
+	e.set_author(
+		name=athr.display_name,
+		icon_url=athr.avatar_url,
+		url=utils.infourl(
+			(
+				'userid={uid}&messageid={mid}'
+			).format(
+				uid=athr.id,
+				mid=message_id,
+			),
+		)
+	)
+	e.add_field(
+		name='Member of Reaction',
+		value=mdetails,
+	)
+	e.add_field(
+		name='Reaction',
+		value=(
+			'<:{name}:{id}>'
+		).format(
+			name=emoji.name,
+			id=emoji.id,
+		) if emoji.id is not None else emoji.name,
+	)
+	await schan.send(embed=e)
+
+async def on_raw_reaction_clear(message_id, channel_id):
+	# We must first know what channel it is
+	mchan = bot.client.get_channel(channel_id)
+	if isinstance(mchan, discord.abc.PrivateChannel) or \
+	utils.logdisabled('reaction_clearuncached', mchan.guild):
+		return
+	# Check if the message is in the cache and return if it is
+	if discord.utils.find(
+		lambda m: m.id == message_id, bot.client._connection._messages,
+	) != None:
+		return
+
+	schan = utils.getspecialchannel(mchan.guild)
+	e = discord.Embed(
+		title=(
+			'REACTIONS CLEARED FROM UNCACHED MESSAGE'
+			' IN {0.mention}'
+		).format(mchan),
+		url=utils.infourl('messageid=' + message_id),
+		description=(
+			'Since this message is uncached, I can’t give you'
+			' any more information than its ID and its channel.'
+		),
+		colour=mchan.guild.me.colour,
+	)
+	await schan.send(embed=e)
+
+async def on_guild_channel_update(b, a):
+	if utils.logdisabled('channel_rename', a.guild):
+		return
+	schan = utils.getspecialchannel(a.guild)
 	if b.name != a.name:
 		e = discord.Embed(
 			title='{type} CHANNEL UPDATE'.format(type=str(a.type).upper()),
@@ -1631,32 +1659,32 @@ async def on_channel_update(b, a):
 				name=utils.mdspecialchars(a.name),
 				id=a.id,
 			),
-			colour=a.server.me.colour,
+			colour=a.guild.me.colour,
 		)
 		e.add_field(name='Older Name', value=utils.mdspecialchars(b.name))
 		e.add_field(name='Newer Name', value=utils.mdspecialchars(a.name))
-		await bot.client.send_message(schan, embed=e)
+		await schan.send(embed=e)
 
-async def on_server_join(serv):
+async def on_guild_join(guild):
 	em = discord.Embed(
 		title='BOT ADDED TO SERVER',
 		description='**{name}** ({id})'.format(
-			name=utils.mdspecialchars(serv.name),
-			id=serv.id,
+			name=utils.mdspecialchars(guild.name),
+			id=guild.id,
 		),
-		colour=opserver.me.colour,
+		colour=opguild.me.colour,
 	)
-	em.set_image(url=serv.icon_url)
-	await bot.client.send_message(opserver_botservers, embed=em)
+	em.set_image(url=guild.icon_url)
+	await opguild_botguilds.send(embed=em)
 
-async def on_server_remove(serv):
+async def on_guild_remove(guild):
 	em = discord.Embed(
 		title='BOT REMOVED FROM SERVER',
 		description='**{name}** ({id})'.format(
-			name=utils.mdspecialchars(serv.name),
-			id=serv.id,
+			name=utils.mdspecialchars(guild.name),
+			id=guild.id,
 		),
-		colour=opserver.me.colour,
+		colour=opguild.me.colour,
 	)
-	em.set_image(url=serv.icon_url)
-	await bot.client.send_message(opserver_botservers, embed=em)
+	em.set_image(url=guild.icon_url)
+	await opguild_botguilds.send(embed=em)

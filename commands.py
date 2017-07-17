@@ -52,7 +52,7 @@ op_ids.load()
 
 commands = {}
 
-def shadow(auth=None, aliases=None, servonly=False):
+def shadow(auth=None, aliases=None, guildonly=False):
 	def living_shadow(func):
 		name = func.__name__
 		matchargs = [r'__[0-9a-f]{4}', name, re.IGNORECASE]
@@ -65,12 +65,12 @@ def shadow(auth=None, aliases=None, servonly=False):
 				name = name.replace(encodings[count], symbols[count])
 		if name.startswith('_'):
 			name = name[1:]
-		commands[name] = [func, auth, aliases, servonly]
+		commands[name] = [func, auth, aliases, guildonly]
 	return living_shadow
 
 @shadow()
 async def _help(client, message, **kwargs):
-	content = (bot.help_info_string + utils.helplist(bot.cmds, message.server))
+	content = (bot.help_info_string + utils.helplist(bot.cmds, message.guild))
 
 	# General
 	if kwargs['arguments'] is None:
@@ -81,7 +81,7 @@ async def _help(client, message, **kwargs):
 			if kwargs['arguments'] == cat['cat_slug']:
 				content = utils.helplist(
 					bot.cmds,
-					message.server,
+					message.guild,
 					kwargs['arguments'],
 				)
 				matched = True
@@ -101,7 +101,7 @@ async def _help(client, message, **kwargs):
 						)
 					matched = True
 					break
-			for cmd in customcommands.list_commands(message.server):
+			for cmd in customcommands.list_commands(message.guild):
 				if kwargs['arguments'] == cmd:
 					content = '[Custom command, more info NYI]'
 					matched = True
@@ -121,7 +121,7 @@ async def _help(client, message, **kwargs):
 async def restart(client, message, **kwargs):
 	embed = emb.success('Restarting.', True)
 	embed.add_field(name='Uptime', value=utils.reltime(bot.boottimeunix, True))
-	embed.add_field(name='Messages in Cache', value=str(len(client.messages)))
+	embed.add_field(name='Messages in Cache', value=str(len(client._connection._messages)))
 	utils.logcommand(kwargs['command'], kwargs['arguments'], message)
 	await bot.reply(message, emb=embed)
 	os.execv(sys.executable, ['python'] + sys.argv)
@@ -137,8 +137,8 @@ async def kill(client, message, **kwargs):
 
 @shadow(auth=checks.is_operator)
 async def _config(client, message, **kwargs):
-	if message.server and \
-	message.server.id == op_ids.ids['opserver'] and \
+	if message.guild and \
+	message.guild.id == op_ids.ids['opguild'] and \
 	not checks.is_host(message.author):
 		embed = emb.error(bot.t['no_permission'])
 		utils.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
@@ -173,8 +173,14 @@ async def _config(client, message, **kwargs):
 			(kwargs['arguments'] == 'listhidden' and config.get_shown(c)):
 				continue
 			try:
-				content += '\n{} [{}] = {}'.format(c, config.get_type(c) + ('*' if config.is_array(c) else ''), config.get_s(c, message.server.id) if not config.is_array(c) else '[{}]'.format(len(config.get_s(c, message.server.id))))
-				if config.is_detached(c, message.server.id):
+				content += '\n{} [{}] = {}'.format(
+					c,
+					config.get_type(c) + ('*' if config.is_array(c) else ''),
+					config.get_s(c, message.guild.id)
+					if not config.is_array(c)
+					else '[{}]'.format(len(config.get_s(c, message.guild.id))),
+				)
+				if config.is_detached(c, message.guild.id):
 					content += ' [local value]'
 			except AttributeError:
 				content += '\n{} [{}] = {}'.format(c, config.get_type(c) + ('*' if config.is_array(c) else ''), config.get_s(c) if not config.is_array(c) else '[{}]'.format(len(config.get_s(c))))
@@ -205,8 +211,8 @@ async def _config(client, message, **kwargs):
 			await bot.reply(message, emb=embed)
 			return
 		try:
-			config.set_s(splitargs[1], splitargs[2], message.server.id)
-			editingmaster = not config.is_detached(splitargs[1], message.server.id)
+			config.set_s(splitargs[1], splitargs[2], message.guild.id)
+			editingmaster = not config.is_detached(splitargs[1], message.guild.id)
 		except AttributeError:
 			config.set_s(splitargs[1], splitargs[2])
 		config.saveconfig()
@@ -225,7 +231,20 @@ async def _config(client, message, **kwargs):
 			await bot.reply(message, emb=embed)
 			return
 		try:
-			content = 'Key: `{}`   Type: `{}`   Array: `{}`   Detachable: `{}`   Using: `{}`\n'.format(splitargs[1], config.get_type(splitargs[1]), config.is_array(splitargs[1]), config.is_detachable(splitargs[1]), ('Local value' if config.is_detached(splitargs[1], message.server.id) else 'Master value'))
+			content = (
+				'Key: `{}`   Type: `{}`   Array: `{}`'
+				'   Detachable: `{}`   Using: `{}`\n'
+			).format(
+				splitargs[1],
+				config.get_type(splitargs[1]),
+				config.is_array(splitargs[1]),
+				config.is_detachable(splitargs[1]),
+				(
+					'Local value' if
+					config.is_detached(splitargs[1], message.guild.id) else
+					'Master value'
+				),
+			)
 		except AttributeError:
 			content = 'Key: `{}`   Type: `{}`   Array: `{}`   Detachable: `{}`   Using: `{}`\n'.format(splitargs[1], config.get_type(splitargs[1]), config.is_array(splitargs[1]), config.is_detachable(splitargs[1]), 'Master value')
 		if config.get_expl(splitargs[1]) is not None:
@@ -234,14 +253,17 @@ async def _config(client, message, **kwargs):
 
 		if config.is_array(splitargs[1]):
 			try:
-				for val in config.get_s(splitargs[1], message.server.id):
+				for val in config.get_s(splitargs[1], message.guild.id):
 					content += ' `{}`,'.format(val)
 			except AttributeError:
 				for val in config.get_s(splitargs[1]):
 					content += ' `{}`,'.format(val)
 		else:
 			try:
-				content += ' `{}`\nDefault: `{}`'.format(config.get_s(splitargs[1], message.server.id), config.get_default(splitargs[1]))
+				content += ' `{}`\nDefault: `{}`'.format(
+					config.get_s(splitargs[1], message.guild.id),
+					config.get_default(splitargs[1]),
+				)
 			except AttributeError:
 				content += ' `{}`\nDefault: `{}`'.format(config.get_s(splitargs[1]), config.get_default(splitargs[1]))
 		await bot.reply(message, content)
@@ -260,8 +282,11 @@ async def _config(client, message, **kwargs):
 			return
 		if splitargs[0] == 'insert':
 			try:
-				config.insert_s(splitargs[1], splitargs[2], message.server.id)
-				editingmaster = not config.is_detached(splitargs[1], message.server.id)
+				config.insert_s(splitargs[1], splitargs[2], message.guild.id)
+				editingmaster = not config.is_detached(
+					splitargs[1],
+					message.guild.id,
+				)
 			except AttributeError:
 				config.insert_s(splitargs[1], splitargs[2])
 			embed = emb.success('Inserted `{}` into array `{}`{}'.format(
@@ -273,8 +298,11 @@ async def _config(client, message, **kwargs):
 			)
 		else:
 			try:
-				config.remove_s(splitargs[1], splitargs[2], message.server.id)
-				editingmaster = not config.is_detached(splitargs[1], message.server.id)
+				config.remove_s(splitargs[1], splitargs[2], message.guild.id)
+				editingmaster = not config.is_detached(
+					splitargs[1],
+					message.guild.id,
+				)
 			except AttributeError:
 				config.remove_s(splitargs[1], splitargs[2])
 			embed = emb.success('Removed `{}` from array `{}`{}'.format(
@@ -298,13 +326,13 @@ async def _config(client, message, **kwargs):
 			return
 		if splitargs[0] == 'detach':
 			try:
-				config.detach(splitargs[1], message.server.id)
+				config.detach(splitargs[1], message.guild.id)
 				embed = emb.success('Setting `{}` now uses a local value for this server.'.format(splitargs[1]))
 			except AttributeError:
 				embed = emb.error('Can’t detach values for non-servers.')
 		else:
 			try:
-				config.reattach(splitargs[1], message.server.id)
+				config.reattach(splitargs[1], message.guild.id)
 				embed = emb.success('Setting `{}` is now using the master value again on this server.'.format(splitargs[1]))
 			except AttributeError:
 				embed = emb.error('Can’t reattach values for non-servers.')
@@ -317,7 +345,7 @@ async def _config(client, message, **kwargs):
 			await bot.reply(message, emb=embed)
 			return
 		try:
-			config.restore_default(splitargs[1], message.server.id)
+			config.restore_default(splitargs[1], message.guild.id)
 		except AttributeError:
 			config.restore_default(splitargs[1])
 		config.saveconfig()
@@ -334,12 +362,12 @@ async def echo(client, message, **kwargs):
 		arguments = ''
 	else:
 		arguments = kwargs['clean_arguments']
-	if (not message.channel.is_private and \
-	message.channel.permissions_for(message.server.me).embed_links) \
-	or message.channel.is_private:
+	if (isinstance(message.channel, discord.abc.GuildChannel) and \
+	message.channel.permissions_for(message.guild.me).embed_links) \
+	or isinstance(message.channel, discord.abc.PrivateChannel):
 		displayarguments = arguments[:2048-len(events.msg_start)]
 		try:
-			echocolor = message.server.me.colour
+			echocolor = message.guild.me.colour
 		except AttributeError:
 			echocolor = discord.Embed.Empty
 		em = discord.Embed(description=displayarguments, colour=echocolor)
@@ -355,7 +383,7 @@ async def hangman(client, message, **kwargs):
 		embed = emb.error('Hangman is already running. It can be aborted by the starter or by a mod with `\stophangman`.')
 		await bot.reply(message, emb=embed)
 		return
-	if not utils.isprivatemessage(message.server):
+	if not utils.isprivatemessage(message.guild):
 		embed = emb.error('For now, this can only be run via DM.')
 		await bot.reply(message, emb=embed)
 		return
@@ -381,7 +409,7 @@ async def hangman(client, message, **kwargs):
 	msg_start = '**`>`**``{}``**`{}`**``\{} {}``\n'.format(utils.wrapbackticks(message.author.name), kwargs['invokesymbol'], utils.wrapbackticks(kwargs['command'].split(' ')[0]), '*'*len(events.hangmanchosenword)) # you will never have mod/admin perms in private messages (probably), where the hangman will be started from, so for now theres no mod/admin check to make the input display different
 	content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "{}" followed by the letter (for example {}a) or the word. {} attempts left.\n{}'.format(events.hangmanstarter.id, bot.hangmaninvoker, bot.hangmaninvoker, events.hangmanattempts, utils.hangmanworddisp(events.hangmanchosenword))
 	msg = msg_start + content
-	await client.send_message(events.botschannel, msg)
+	await events.botschannel.send(msg)
 
 	content = 'https://discord.gg/gj6YmtV'
 	await bot.reply(message, content)
@@ -399,7 +427,7 @@ async def stophangman(client, message, **kwargs):
 
 	events.hangmanactive = False
 	content = 'Game of hangman aborted. The word was: **{}**'.format(events.hangmanchosenword)
-	await client.send_message(events.botschannel, content)
+	await events.botschannel.send(content)
 
 @shadow()
 async def source(client, message, **kwargs):
@@ -412,7 +440,7 @@ async def findu(client, message, **kwargs):
 		targetmember = message.author
 	else:
 		targetmember = utils.match_input(
-			'member', kwargs['arguments'], server=message.server
+			'member', kwargs['arguments'], guild=message.guild
 		)
 	if targetmember is None:
 		embed = emb.error('Unable to find that member. ' + bot.t['specify_user'])
@@ -451,18 +479,30 @@ async def findu(client, message, **kwargs):
 	embed.add_field(name=displaygameurlstatus, value=displaygameurl)
 	embed.add_field(name='Status', value='Do Not Disturb' if str(targetmember.status) == 'dnd' else str(targetmember.status).title())
 	embed.add_field(name='Default Avatar', value=str(targetmember.default_avatar).title())
-	embed.add_field(name='Joined Server At', value=time.strftime(config.get_s('timeformat', message.server.id), targetmember.joined_at.timetuple()))
-	embed.add_field(name='Joined Discord At', value=time.strftime(config.get_s('timeformat', message.server.id), targetmember.created_at.timetuple()))
+	embed.add_field(
+		name='Joined Server At',
+		value=time.strftime(
+			config.get_s('timeformat', message.guild.id),
+			targetmember.joined_at.timetuple(),
+		),
+	)
+	embed.add_field(
+		name='Joined Discord At',
+		value=time.strftime(
+			config.get_s('timeformat', message.guild.id),
+			targetmember.created_at.timetuple(),
+		),
+	)
 	embed.add_field(name='Color', value='_(default)_' if str(targetmember.colour) == '#000000' else str(targetmember.colour).upper())
 	# IMPORTANT: in `embed.add_field()`, `name` or `value` cannot be an empty string or you will get a 400 bad request when sending it
 	# (i learned that the hard way)
 	# (that was about twenty restarts smh)
 	await bot.reply(message, emb=embed)
 
-@shadow(servonly=True)
+@shadow(guildonly=True)
 async def findc(client, message, **kwargs):
 	if not kwargs['arguments']:
-		# No channel for me to get? Have a list of the server's channels, then.
+		# No channel for me to get? Have a list of the guild's channels, then.
 
 		# Lists
 		tchans = ''
@@ -473,25 +513,25 @@ async def findc(client, message, **kwargs):
 		vchanc = 0
 
 		# Generation of the lists
-		for c in sorted(message.server.channels, key=lambda c: c.position):
+		for c in sorted(message.guild.channels, key=lambda c: c.position):
 			apnd = '**{name}** ({id})\n'.format(
 				name=utils.mdspecialchars(c.name),
 				id=c.id,
 			)
-			if c.type == discord.ChannelType.text:
+			if isinstance(c, discord.TextChannel):
 				tchans += apnd
 				tchanc += 1
-			elif c.type == discord.ChannelType.voice:
+			elif isinstance(c, discord.VoiceChannel):
 				vchans += apnd
 				vchanc += 1
 
-		# Some servers can have no voice channels. You can't have no text channels, though.
+		# Some guilds can have no voice channels. You can't have no text channels, though.
 		vchans = '_(none)_' if not vchans else vchans
 
-		em = discord.Embed(colour=message.server.me.colour)
-		em.set_thumbnail(url=message.server.icon_url)
+		em = discord.Embed(colour=message.guild.me.colour)
+		em.set_thumbnail(url=message.guild.icon_url)
 
-		# Some servers have a lot of channels that can't be fit in one embed field.
+		# Some guilds have a lot of channels that can't be fit in one embed field.
 		# So, go ahead and paginate that.
 		# TODO: Maybe abstract pagination to a function or something.
 		if len(tchans) > 1024:
@@ -555,22 +595,22 @@ async def findc(client, message, **kwargs):
 		await bot.reply(message, emb=em)
 		return
 
-	tgt = utils.match_input('channel', kwargs['arguments'], server=message.server)
+	tgt = utils.match_input('channel', kwargs['arguments'], guild=message.guild)
 	if not tgt:
 		em = emb.error('Unable to find that channel. ' + bot.t['specify_channel'])
 		await bot.reply(message, emb=em)
 		return
 
 	readbleby = 0
-	for i in message.server.members:
+	for i in message.guild.members:
 		readbleby += 1 if tgt.permissions_for(i).read_messages else 0
 
-	em = discord.Embed(description='Matched ' + tgt.mention, colour=message.server.me.colour)
-	em.set_thumbnail(url=message.server.icon_url)
+	em = discord.Embed(description='Matched ' + tgt.mention, colour=message.guild.me.colour)
+	em.set_thumbnail(url=message.guild.icon_url)
 	em.add_field(name='Name', value=utils.mdspecialchars(tgt.name))
 	em.add_field(name='ID', value=tgt.id)
 	em.add_field(name='Type', value=str(tgt.type).title())
-	em.add_field(name='Default', value='Yes' if tgt.is_default else 'No')
+	em.add_field(name='Default', value='Yes' if tgt.is_default() else 'No')
 	em.add_field(
 		name='Position',
 		value='{0} from the top of {1} list'.format(
@@ -584,25 +624,25 @@ async def findc(client, message, **kwargs):
 	em.add_field(
 		name='Created At',
 		value=time.strftime(
-			config.get_s('timeformat', message.server.id),
+			config.get_s('timeformat', message.guild.id),
 			tgt.created_at.timetuple(),
 		),
 	)
 	em.add_field(
 		name='User Limit',
-		value='N/A' if tgt.type != discord.ChannelType.voice else str(tgt.user_limit),
+		value='N/A' if not isinstance(tgt, discord.VoiceChannel) else str(tgt.user_limit),
 	)
 	em.add_field(
 		name='Voice Members',
 		value=(
-			'N/A' if tgt.type != discord.ChannelType.voice else
-			str(len(tgt.voice_members))
+			'N/A' if not isinstance(tgt, discord.VoiceChannel) else
+			str(len(tgt.members))
 		),
 	)
 	em.add_field(
 		name='Bitrate',
 		value=(
-			'N/A' if tgt.type != discord.ChannelType.voice else
+			'N/A' if not isinstance(tgt, discord.VoiceChannel) else
 			str(int(tgt.bitrate / 1000)) + ' kbps'
 		),
 	)
@@ -610,7 +650,7 @@ async def findc(client, message, **kwargs):
 	em.add_field(
 		name='Readable By',
 		value=(
-			'N/A' if tgt.type != discord.ChannelType.text else
+			'N/A' if not isinstance(tgt, discord.TextChannel) else
 			str(readbleby) + ' members'
 		),
 	)
@@ -618,17 +658,17 @@ async def findc(client, message, **kwargs):
 
 @shadow(auth=checks.is_mod, aliases=['voiceunmute'])
 async def voicemute(client, message, **kwargs):
-	targetmember = utils.match_input('member', kwargs['arguments'], server=message.server)
+	targetmember = utils.match_input('member', kwargs['arguments'], guild=message.guild)
 	content = None
 	try:
 		if targetmember.voice.voice_channel is None:
 			embed = emb.error('User is not in a voice channel.')
 		elif kwargs['command'] == 'voicemute':
-			await client.server_voice_state(targetmember, mute=1)
+			await targetmember.edit(mute=True)
 			content = targetmember.mention
 			embed = emb.success('Voice muted <@{}>.'.format(targetmember.id))
 		elif kwargs['command'] == 'voiceunmute':
-			await client.server_voice_state(targetmember, mute=0)
+			await targetmember.edit(mute=False)
 			content = targetmember.mention
 			embed = emb.success('Voice unmuted <@{}>.'.format(targetmember.id))
 	except AttributeError:
@@ -645,7 +685,7 @@ async def votevoicemute(client, message, **kwargs):
 		await bot.reply(message, emb=embed)
 		return
 
-	targetmember = utils.match_input('member', kwargs['arguments'], server=message.server)
+	targetmember = utils.match_input('member', kwargs['arguments'], guild=message.guild)
 	try:
 		if message.author.voice.voice_channel is None:
 			embed = emb.error('You have to be in a voice channel to be able to start a vote.')
@@ -656,11 +696,10 @@ async def votevoicemute(client, message, **kwargs):
 		else:
 			# Count the amount of people in all the voice channels
 			voicechatters = 0
-			for chan in message.server.channels:
-				if str(chan.type) == 'voice':
-					voicechatters += len(chan.voice_members)
+			for chan in message.guild.voice_channels:
+				voicechatters += len(chan.members)
 
-			if voicechatters < config.get_s('votevmute_minmembers', message.server.id):
+			if voicechatters < config.get_s('votevmute_minmembers', message.guild.id):
 				embed = emb.warning('There are not enough members in voice channels to start a vote.')
 				await bot.reply(message, emb=embed)
 				return
@@ -671,7 +710,16 @@ async def votevoicemute(client, message, **kwargs):
 				'opponents': []
 			}
 			content = 'A vote has been started to voice mute <@{}>.\nTo vote in favor of muting, type **`\\vy`**.\nTo vote against muting, type **`\\vn`**.\nModerators can cancel the vote by typing **`\\vc`**.'.format(targetmember.id)
-			await bot.replyattach(message, images.votebar(1/voicechatters*100, 0, config.get_s('votevmute_threshold', message.server.id)), 'temp.png', content)
+			await bot.replyattach(
+				message,
+				images.votebar(
+					(1 / voicechatters) * 100,
+					0,
+					config.get_s('votevmute_threshold', message.guild.id),
+				),
+				'temp.png',
+				content,
+			)
 			return
 	except AttributeError:
 		embed = emb.error(bot.t['specify_user'])
@@ -722,29 +770,37 @@ async def vy(client, message, **kwargs):
 		voicechatters = 0
 		numproponents = 0
 		numopponents  = 0
-		for chan in message.server.channels:
-			if str(chan.type) == 'voice':
-				voicechatters += len(chan.voice_members)
+		for chan in message.guild.voice_channels:
+			voicechatters += len(chan.members)
 
-				for voicemember in chan.voice_members:
-					if voicemember.id in bot.votemutes[mutee]['proponents']:
-						numproponents += 1
-					if voicemember.id in bot.votemutes[mutee]['opponents']:
-						numopponents  += 1
+			for voicemember in chan.members:
+				if voicemember.id in bot.votemutes[mutee]['proponents']:
+					numproponents += 1
+				if voicemember.id in bot.votemutes[mutee]['opponents']:
+					numopponents  += 1
 
 		percpro = numproponents/voicechatters*100
 		percopp = numopponents /voicechatters*100
 
-		if percpro >= config.get_s('votevmute_threshold', message.server.id):
-			targetmember = utils.match_input('member', mutee, server=message.server)
-			await client.server_voice_state(targetmember, mute=1)
+		if percpro >= config.get_s('votevmute_threshold', message.guild.id):
+			targetmember = utils.match_input('member', mutee, guild=message.guild)
+			await targetmember.edit(mute=True)
 			content += '\n{}% of the members have now voted in favor of muting, so <@{}> is now voice muted.'.format(round(percpro,1), mutee)
 			del bot.votemutes[mutee]
-		elif percopp > 100-config.get_s('votevmute_threshold', message.server.id):
+		elif percopp > 100-config.get_s('votevmute_threshold', message.guild.id):
 			content += '\n{}% of the members have now voted against muting, so <@{}> is not getting voice muted.'.format(round(percopp,1), mutee)
 			del bot.votemutes[mutee]
 
-		await bot.replyattach(message, images.votebar(percpro, percopp, config.get_s('votevmute_threshold', message.server.id)), 'temp.png', content)
+		await bot.replyattach(
+			message,
+			images.votebar(
+				percpro,
+				percopp,
+				config.get_s('votevmute_threshold', message.guild.id),
+			),
+			'temp.png',
+			content,
+		)
 		return
 	await bot.reply(message, emb=embed)
 
@@ -764,14 +820,14 @@ async def vc(client, message, **kwargs):
 		embed = emb.success('The vote on <@{}> has been vetoed.'.format(mutee))
 	await bot.reply(message, emb=embed)
 
-@shadow(auth=checks.is_mod, servonly=True)
+@shadow(auth=checks.is_mod, guildonly=True)
 async def rolerst(client, message, **kwargs):
-	targetmember = utils.match_input('member', kwargs['arguments'], server=message.server)
+	targetmember = utils.match_input('member', kwargs['arguments'], guild=message.guild)
 	if targetmember is None:
 		embed = emb.error(bot.t['specify_user'])
 		await bot.reply(message, emb=embed)
 		return
-	await utils.removeRestrictiveRoles(targetmember, message.server)
+	await utils.removeRestrictiveRoles(targetmember, message.guild)
 	embed = emb.success('Reset roles for <@{}> back to normal.'.format(targetmember.id))
 	await bot.reply(message, emb=embed)
 
@@ -810,7 +866,7 @@ async def expires(client, message, **kwargs):
 	else:
 		try:
 			targetmember = utils.match_input(
-				'member', splitargs[1], server=message.server,
+				'member', splitargs[1], guild=message.guild,
 			)
 			targetmemberid = targetmember.id
 		except AttributeError:
@@ -818,7 +874,7 @@ async def expires(client, message, **kwargs):
 			await bot.reply(message, emb=embed)
 			return
 
-	utils.addexpiryentry(message.server.id, targetmemberid, expirytime)
+	utils.addexpiryentry(message.guild.id, targetmemberid, expirytime)
 
 	utils.rolexpiresave()
 	await utils.handleExpiryTimer()
@@ -838,9 +894,9 @@ async def expiryremove(client, message, **kwargs):
 
 	try:
 		targetmember = utils.match_input(
-			'member', kwargs['arguments'], server=message.server,
+			'member', kwargs['arguments'], guild=message.guild,
 		)
-		if bot.removeexpiryentry(message.server.id, targetmember.id):
+		if bot.removeexpiryentry(message.guild.id, targetmember.id):
 			embed = emb.success(
 				'Roles for <@{}> will no longer automatically expire.'.format(
 					targetmember.id
@@ -861,13 +917,13 @@ async def expiryremove(client, message, **kwargs):
 
 @shadow()
 async def expirylist(client, message, **kwargs):
-	if message.channel.is_private:
+	if isinstance(message.channel, discord.abc.PrivateChannel):
 		if not kwargs['arguments']:
 			embed = emb.error('You should probably specify a server.')
 			await bot.reply(message, emb=embed)
 			return
-		server = utils.match_input('server', kwargs['arguments'], client=client)
-		if not server or (message.author not in server.members and not kwargs['sudo']):
+		guild = utils.match_input('guild', kwargs['arguments'], client=client)
+		if not guild or (message.author not in guild.members and not kwargs['sudo']):
 			embed = emb.error(
 				(
 					'Either the bot isn’t in that server,'
@@ -877,13 +933,13 @@ async def expirylist(client, message, **kwargs):
 			)
 			await bot.reply(message, emb=embed)
 			return
-		content = 'Expiry list for server **{0.name}** ({0.id}):\n'.format(server)
+		content = 'Expiry list for server **{0.name}** ({0.id}):\n'.format(guild)
 	else:
-		server = message.server
+		guild = message.guild
 		content = ''
 
-	if server.id in events.rolexpires:
-		for k, v in sorted(events.rolexpires[server.id].items(), key=lambda i: i[1]['time']):
+	if guild.id in events.rolexpires:
+		for k, v in sorted(events.rolexpires[guild.id].items(), key=lambda i: i[1]['time']):
 			content += '<@{}>: {}\n'.format(k, utils.reltime(v['time']))
 
 	if content == '':
@@ -894,7 +950,7 @@ async def expirylist(client, message, **kwargs):
 
 @shadow(auth=checks.is_mod)
 async def rolecacherst(client, message, **kwargs):
-	if config.get_s('rolecachemode', message.server.id) == 0:
+	if config.get_s('rolecachemode', message.guild.id) == 0:
 		embed = emb.error(bot.t['rolecachedisabled'])
 		await bot.reply(message, emb=embed)
 		return
@@ -902,12 +958,12 @@ async def rolecacherst(client, message, **kwargs):
 		embed = emb.error('Please give an ID.')
 		await bot.reply(message, emb=embed)
 		return
-	elif utils.match_input('member', kwargs['arguments'], server=message.server) is not None:
+	elif utils.match_input('member', kwargs['arguments'], guild=message.guild) is not None:
 		embed = emb.error('That member is apparently still on this server! Not removing from the cache.')
 		await bot.reply(message, emb=embed)
 		return
 
-	if utils.removerolecache(kwargs['arguments'], message.server.id):
+	if utils.removerolecache(kwargs['arguments'], message.guild.id):
 		embed = emb.success('Member {} successfully removed from role cache.'.format(kwargs['arguments']))
 		await bot.reply(message, emb=embed)
 		utils.rolecachesave()
@@ -917,7 +973,7 @@ async def rolecacherst(client, message, **kwargs):
 
 @shadow(auth=checks.is_mod)
 async def rolecacheadd(client, message, **kwargs):
-	if config.get_s('rolecachemode', message.server.id) == 0:
+	if config.get_s('rolecachemode', message.guild.id) == 0:
 		embed = emb.error(bot.t['rolecachedisabled'])
 		await bot.reply(message, emb=embed)
 		return
@@ -927,7 +983,7 @@ async def rolecacheadd(client, message, **kwargs):
 		return
 
 	splitargs = kwargs['arguments'].split()
-	if utils.match_input('member', splitargs[0], server=message.server) is not None:
+	if utils.match_input('member', splitargs[0], guild=message.guild) is not None:
 		embed = emb.error('That member is apparently still on this server! Not doing anything.')
 		await bot.reply(message, emb=embed)
 		return
@@ -937,10 +993,10 @@ async def rolecacheadd(client, message, **kwargs):
 		await bot.reply(message, emb=embed)
 		return
 
-	if splitargs[0] not in events.memberroles[message.server.id]:
-		events.memberroles[message.server.id][splitargs[0]] = []
+	if splitargs[0] not in events.memberroles[message.guild.id]:
+		events.memberroles[message.guild.id][splitargs[0]] = []
 
-	events.memberroles[message.server.id][splitargs[0]].append(splitargs[1])
+	events.memberroles[message.guild.id][splitargs[0]].append(splitargs[1])
 	utils.rolecachesave()
 
 	embed = emb.success('Successfully added role {} to member {} in the role cache.'.format(splitargs[1], splitargs[0]))
@@ -948,19 +1004,19 @@ async def rolecacheadd(client, message, **kwargs):
 
 @shadow()
 async def rolesync(client, message, **kwargs):
-	perms = discord.Channel.permissions_for(message.channel, message.author)
+	perms = message.channel.permissions_for(message.author)
 	if not perms.manage_roles:
 		embed = emb.error(bot.t['you_no_permission'])
 		utils.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 		await bot.reply(message, emb=embed)
 		return
-	elif config.get_s('rolecachemode', message.server.id) == 0:
+	elif config.get_s('rolecachemode', message.guild.id) == 0:
 		embed = emb.error(bot.t['rolecachedisabled'])
 		await bot.reply(message, emb=embed)
 		return
 
-	for mem in message.server.members:
-		utils.updaterolecache(mem, message.server.id)
+	for mem in message.guild.members:
+		utils.updaterolecache(mem, message.guild.id)
 
 	utils.rolecachesave()
 
@@ -969,32 +1025,39 @@ async def rolesync(client, message, **kwargs):
 
 @shadow(auth=checks.is_mod)
 async def rolecacheinfo(client, message, **kwargs):
-	if config.get_s('rolecachemode', message.server.id) == 0:
+	if config.get_s('rolecachemode', message.guild.id) == 0:
 		embed = emb.error(bot.t['rolecachedisabled'])
 		await bot.reply(message, emb=embed)
 		return
-	if kwargs['arguments'] not in events.memberroles[message.server.id]:
+	if kwargs['arguments'] not in events.memberroles[message.guild.id]:
 		embed = emb.error('That member is not in the role cache.')
 		await bot.reply(message, emb=embed)
 		return
 
-	content = 'According to the role cache, this member has the following roles: ' + utils.listroles_id(events.memberroles[message.server.id][kwargs['arguments']])
+	content = (
+		'According to the role cache, this member has the following roles: '
+		+ utils.listroles_id(events.memberroles[message.guild.id][kwargs['arguments']])
+	)
 
 	await bot.reply(message, content)
 
-@shadow(aliases=['rule'], servonly=True)
+@shadow(aliases=['rule'], guildonly=True)
 async def rules(client, message, **kwargs):
-	if message.server.id in events.disabledrules and not checks.is_mod(message.author):
+	if message.guild.id in events.disabledrules and not checks.is_mod(message.author):
 		embed = emb.error('The rules system is currently disabled for this server.')
 		await bot.reply(message, emb=embed)
 		return
-	if not message.server.id in events.rules:
+	if not message.guild.id in events.rules:
 		embed = emb.warning('Rules are not (yet) set for this server.')
 		await bot.reply(message, emb=embed)
 		return
 	if kwargs['arguments'] is not None and kwargs['arguments'].isdigit():
-		if int(kwargs['arguments']) - 1 in events.rules[message.server.id]:
-			content = 'Rule **{}** for server `{}`:\n{}'.format(int(kwargs['arguments']), utils.wrapbackticks(message.server.name), events.rules[message.server.id][int(kwargs['arguments'])-1])
+		if int(kwargs['arguments']) - 1 in events.rules[message.guild.id]:
+			content = 'Rule **{}** for server `{}`:\n{}'.format(
+				int(kwargs['arguments']),
+				utils.wrapbackticks(message.guild.name),
+				events.rules[message.guild.id][int(kwargs['arguments'])-1],
+			)
 			await bot.reply(message, content)
 			return
 		elif int(kwargs['arguments']) in bot.funnynumbers:
@@ -1002,19 +1065,22 @@ async def rules(client, message, **kwargs):
 			await bot.reply(message, content)
 			return
 	n = 1
-	content = 'Rules for server `{}`:{}'.format(utils.wrapbackticks(message.server.name), ' (Disabled)' if message.server.id in events.disabledrules else '')
-	for rule in events.rules[message.server.id]:
+	content = 'Rules for server `{}`:{}'.format(
+		utils.wrapbackticks(message.guild.name),
+		' (Disabled)' if message.guild.id in events.disabledrules else '',
+	)
+	for rule in events.rules[message.guild.id]:
 		content += '\n**{}.** {}'.format(n, rule)
 		n += 1
 	await bot.reply(message, content)
 
-@shadow(servonly=True)
+@shadow(guildonly=True)
 async def rulefind(client, message, **kwargs):
-	if message.server.id in events.disabledrules and not checks.is_mod(message.author):
+	if message.guild.id in events.disabledrules and not checks.is_mod(message.author):
 		embed = emb.error('The rules system is currently disabled for this server.')
 		await bot.reply(message, emb=embed)
 		return
-	if not message.server.id in events.rules:
+	if not message.guild.id in events.rules:
 		embed = emb.warning('Rules are not (yet) set for this server.')
 		await bot.reply(message, emb=embed)
 		return
@@ -1024,14 +1090,21 @@ async def rulefind(client, message, **kwargs):
 		return
 	matched = False
 	n = 1
-	content = 'Rules for server **``{}``** matching **``{}``**:'.format(utils.wrapbackticks(message.server.name), utils.wrapbackticks(kwargs['arguments']))
-	for rule in events.rules[message.server.id]:
+	content = 'Rules for server **``{}``** matching **``{}``**:'.format(
+		utils.wrapbackticks(message.guild.name),
+		utils.wrapbackticks(kwargs['arguments']),
+	)
+	for rule in events.rules[message.guild.id]:
 		if rule.lower().find(kwargs['arguments'].lower()) != -1:
 			content += '\n**{}.** {}'.format(n, rule)
 			matched = True
 		n += 1
 	if not matched:
-		embed = emb.warning('No rules on server `{}` matching `{}`.'.format(utils.wrapbackticks(message.server.name), utils.wrapbackticks(kwargs['arguments'])))
+		embed = emb.warning('No rules on server `{}` matching `{}`.'.format(
+				utils.wrapbackticks(message.guild.name),
+				utils.wrapbackticks(kwargs['arguments']),
+			),
+		)
 		await bot.reply(message, emb=embed)
 		return
 	await bot.reply(message, content)
@@ -1045,7 +1118,8 @@ async def ruleadd(client, message, **kwargs):
 			content = utils.respondtorule(splitargs[0])
 			await bot.reply(message, content)
 			return
-		elif splitargs[0].isdigit() and int(splitargs[0]) > len(events.rules[message.server.id]):
+		elif splitargs[0].isdigit() and \
+		int(splitargs[0]) > len(events.rules[message.guild.id]):
 			embed = emb.warning('Why are you mentioning the number if you want to add this as the last rule?')
 			await bot.reply(message, emb=embed)
 			return
@@ -1060,20 +1134,26 @@ async def ruleadd(client, message, **kwargs):
 		embed = emb.error('I’m not going to think up any rules by myself.')
 		await bot.reply(message, emb=embed)
 		return
-	if not message.server.id in events.rules:
-		events.rules[message.server.id] = []
+	if not message.guild.id in events.rules:
+		events.rules[message.guild.id] = []
 
 	splitargs = kwargs['arguments'].split(' ', 1)
 	if splitargs[0].isdigit():
-		if int(splitargs[0]) > len(events.rules[message.server.id]):
+		if int(splitargs[0]) > len(events.rules[message.guild.id]):
 			content = '**Why are you mentioning the number if you’re adding this at the end?**\n'
 		else:
 			content = ''
-		events.rules[message.server.id].insert(int(splitargs[0])-1, splitargs[1])
+		events.rules[message.guild.id].insert(int(splitargs[0])-1, splitargs[1])
 		content += 'New rule {} inserted:\n{}'.format(int(splitargs[0]), splitargs[1])      # Yes, this one is "inserted"...
 	else:
-		events.rules[message.server.id].append(kwargs['arguments'])
-		content = 'New rule {} added:\n{}'.format(len(events.rules[message.server.id]), kwargs['arguments']) # ...and this one is "added". That is on purpose, not an inconsistency.
+		events.rules[message.guild.id].append(kwargs['arguments'])
+
+		# ...and this one is "added". That is on purpose, not an inconsistency.
+		content = 'New rule {} added:\n{}'.format(
+			len(events.rules[message.guild.id]),
+			kwargs['arguments'],
+		)
+
 	embed = emb.success(content)
 	utils.rulesave()
 	await bot.reply(message, emb=embed)
@@ -1084,7 +1164,7 @@ async def ruleedit(client, message, **kwargs):
 		embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
 		await bot.reply(message, emb=embed)
 		return
-	if not message.server.id in events.rules:
+	if not message.guild.id in events.rules:
 		embed = emb.error('No rules to edit.')
 		await bot.reply(message, emb=embed)
 		return
@@ -1092,15 +1172,19 @@ async def ruleedit(client, message, **kwargs):
 	splitargs = kwargs['arguments'].split(' ', 1)
 	if splitargs[0].isdigit():
 		try:
-			events.rules[message.server.id][int(splitargs[0])-1]
+			events.rules[message.guild.id][int(splitargs[0])-1]
 		except IndexError:
 			embed = emb.error('Rule {} does not appear to exist.'.format(int(splitargs[0])))
 			await bot.reply(message, emb=embed)
 			return
 
-		embed = emb.success('Rule {} successfully edited from:\n{}\nTo:\n{}'.format(int(splitargs[0]), events.rules[message.server.id][int(splitargs[0])-1], splitargs[1]))
+		embed = emb.success('Rule {} successfully edited from:\n{}\nTo:\n{}'.format(
+				int(splitargs[0]),
+				events.rules[message.guild.id][int(splitargs[0])-1], splitargs[1],
+			),
+		)
 
-		events.rules[message.server.id][int(splitargs[0])-1] = splitargs[1]
+		events.rules[message.guild.id][int(splitargs[0])-1] = splitargs[1]
 		utils.rulesave()
 	else:
 		embed = emb.error('Invalid rule number given, just check the help entry.')
@@ -1112,7 +1196,7 @@ async def rulemove(client, message, **kwargs):
 		embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
 		await bot.reply(message, emb=embed)
 		return
-	if not message.server.id in events.rules:
+	if not message.guild.id in events.rules:
 		embed = emb.error('No rules to move.')
 		await bot.reply(message, emb=embed)
 		return
@@ -1120,16 +1204,18 @@ async def rulemove(client, message, **kwargs):
 	splitargs = kwargs['arguments'].split(' ', 1)
 	if splitargs[0].isdigit() and splitargs[1].isdigit():
 		if any(
-			x not in events.rules[message.server.id]
+			x not in events.rules[message.guild.id]
 			for x in (int(splitargs[0]) - 1, int(splitargs[1]) - 1)
 		):
 			embed = emb.error('Either rule {} does not exist or {} is not a slot it can be moved to.'.format(int(splitargs[0]), int(splitargs[1])))
 			await bot.reply(message, emb=embed)
 			return
 
-		rulecontent = events.rules[message.server.id][int(splitargs[0])-1]
-		events.rules[message.server.id].remove(events.rules[message.server.id][int(splitargs[0])-1])
-		events.rules[message.server.id].insert(int(splitargs[1])-1, rulecontent)
+		rulecontent = events.rules[message.guild.id][int(splitargs[0])-1]
+		events.rules[message.guild.id].remove(
+			events.rules[message.guild.id][int(splitargs[0])-1],
+		)
+		events.rules[message.guild.id].insert(int(splitargs[1])-1, rulecontent)
 		utils.rulesave()
 
 		embed = emb.success('Rule {} successfully moved to number {}.'.format(int(splitargs[0]), int(splitargs[1])))
@@ -1143,22 +1229,28 @@ async def ruleremove(client, message, **kwargs):
 		embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
 		await bot.reply(message, emb=embed)
 		return
-	if not message.server.id in events.rules:
+	if not message.guild.id in events.rules:
 		embed = emb.error('No rules to delete.')
 		await bot.reply(message, emb=embed)
 		return
 
 	if kwargs['arguments'].isdigit():
 		try:
-			events.rules[message.server.id][int(kwargs['arguments'])-1]
+			events.rules[message.guild.id][int(kwargs['arguments'])-1]
 		except IndexError:
 			embed = emb.error('Rule {} does not appear to exist.'.format(int(kwargs['arguments'])))
 			await bot.reply(message, emb=embed)
 			return
 
-		embed = emb.success('Rule {} successfully removed:\n{}'.format(int(kwargs['arguments']), events.rules[message.server.id][int(kwargs['arguments'])-1]))
+		embed = emb.success('Rule {} successfully removed:\n{}'.format(
+				int(kwargs['arguments']),
+				events.rules[message.guild.id][int(kwargs['arguments'])-1],
+			),
+		)
 
-		events.rules[message.server.id].remove(events.rules[message.server.id][int(kwargs['arguments'])-1])
+		events.rules[message.guild.id].remove(
+			events.rules[message.guild.id][int(kwargs['arguments'])-1],
+		)
 		utils.rulesave()
 	else:
 		embed = emb.error('Invalid rule number given, just check the help entry.')
@@ -1166,11 +1258,11 @@ async def ruleremove(client, message, **kwargs):
 
 @shadow(auth=checks.is_mod)
 async def rulemaint(client, message, **kwargs):
-	if message.server.id in events.disabledrules:
-		events.disabledrules.remove(message.server.id)
+	if message.guild.id in events.disabledrules:
+		events.disabledrules.remove(message.guild.id)
 		embed = emb.success('Rules system enabled for this server.')
 	else:
-		events.disabledrules.append(message.server.id)
+		events.disabledrules.append(message.guild.id)
 		embed = emb.success('Rules system disabled for this server.')
 	with open('disabledrules.json', 'w') as outfile:
 		json.dump(events.disabledrules, outfile)
@@ -1178,7 +1270,7 @@ async def rulemaint(client, message, **kwargs):
 
 @shadow()
 async def info(client, message, **kwargs):
-	persontocheck = utils.match_input('member', kwargs['arguments'], server=message.server)
+	persontocheck = utils.match_input('member', kwargs['arguments'], guild=message.guild)
 	yesperm = '☑'
 	noperm = '❎'
 	try:
@@ -1192,7 +1284,12 @@ async def info(client, message, **kwargs):
 	for detected_p in iter(perms):
 		leftover.append(detected_p[0])
 
-	content = 'Permissions for **``{}``**`#{}` in <#{}>:\n**`Server Owner:`** {}'.format(persontocheck.name, persontocheck.discriminator, message.channel.id, yesperm if persontocheck == persontocheck.server.owner else noperm)
+	content = 'Permissions for **``{}``**`#{}` in <#{}>:\n**`Server Owner:`** {}'.format(
+		persontocheck.name,
+		persontocheck.discriminator,
+		message.channel.id,
+		yesperm if persontocheck == persontocheck.guild.owner else noperm,
+	)
 
 	for stored_p in bot.permissionlabels:
 		if not stored_p[0] in leftover:
@@ -1263,13 +1360,13 @@ async def botok(client, message, **kwargs):
 @shadow()
 async def uptime(client, message, **kwargs):
 	hostuptime = subprocess.Popen(['uptime', '-p'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
-	embed = discord.Embed(colour=col.r_success, timestamp=message.timestamp)
+	embed = discord.Embed(colour=col.r_success, timestamp=message.created_at)
 	embed.set_author(name='Uptime Statistics', icon_url=client.user.avatar_url)
 	embed.set_thumbnail(url=client.user.avatar_url)
 	embed.set_footer(text='Uptime Statistics', icon_url=client.user.avatar_url)
 	embed.add_field(name='Boot Time', value=bot.boottime)
 	try:
-		now = config.get_s('timeformat', message.server.id)
+		now = config.get_s('timeformat', message.guild.id)
 	except AttributeError:
 		now = config.get_s('timeformat')
 	embed.add_field(name='Current Time', value=time.strftime(now))
@@ -1287,7 +1384,7 @@ async def invite(client, message, **kwargs):
 
 @shadow()
 async def version(client, message, **kwargs):
-	embed = discord.Embed(colour=col.r_success, timestamp=message.timestamp)
+	embed = discord.Embed(colour=col.r_success, timestamp=message.created_at)
 	embed.set_author(name='Version Information', icon_url=client.user.avatar_url)
 	embed.set_thumbnail(url=client.user.avatar_url)
 	embed.set_footer(text='Version Information', icon_url=client.user.avatar_url)
@@ -1305,9 +1402,9 @@ async def getrawmessagecontent(client, message, **kwargs):
 		if len(argsplit) == 1:
 			# Just the message ID, try finding it in all the channels
 			getmessage = None
-			for channel in message.server.channels:
+			for channel in message.guild.text_channels:
 				try:
-					getmessage = await client.get_message(channel, argsplit[0])
+					getmessage = await channel.get_message(argsplit[0])
 					break
 				except discord.errors.HTTPException:
 					# If I can/may not view this message, or it's
@@ -1318,9 +1415,9 @@ async def getrawmessagecontent(client, message, **kwargs):
 		else:
 			arg0 = argsplit[0]
 			arg1 = argsplit[1]
-			channelid = arg0[2:-1]
+			channelid = int(arg0[2:-1])
 			getchannel = client.get_channel(channelid)
-			getmessage = await client.get_message(getchannel, arg1)
+			getmessage = await getchannel.get_message(arg1)
 		content = '``{}``'.format(utils.wrapbackticks(getmessage.content[:1900]))
 		await bot.reply(message, content)
 		if getmessage.embeds != []:
@@ -1340,28 +1437,31 @@ async def countpins(client, message, **kwargs):
 	if kwargs['arguments'] is None:
 		getchannel = message.channel
 	else:
-		channelid = kwargs['arguments'][2:-1]
+		channelid = int(kwargs['arguments'][2:-1])
 		getchannel = client.get_channel(channelid)
 	try:
-		pins = await client.pins_from(getchannel)
+		pins = await getchannel.pins()
 		content = '{} currently has {} pins, {} remaining.'.format(getchannel.mention, len(pins), 50-len(pins))
 		await bot.replyattach(message, images.progressbar(len(pins)*2), 'temp.png', content)
 	except AttributeError:
 		embed = emb.error('The channel doesn’t exist, has been deleted, or it’s not a channel at all. Input `{invoker}help {command}` for more information.'.format(invoker=bot.invoker, command=kwargs['command']))
 		await bot.reply(message, emb=embed)
 
-@shadow(servonly=True)
+@shadow(guildonly=True)
 async def countallpins(client, message, **kwargs):
-	await client.send_typing(message.channel)
-	content = ''
-	for chan in sorted(message.server.channels, key=lambda c: c.position):
-		if str(chan.type) == 'text':
+	async with message.channel.typing():
+		content = ''
+		for chan in message.guild.text_channels:
 			try:
-				pins = await client.pins_from(chan)
-				content += '{} – {} pins, {} remaining\n'.format(chan.mention, len(pins), 50-len(pins))
+				pins = await chan.pins()
+				content += '{} – {} pins, {} remaining\n'.format(
+					chan.mention,
+					len(pins),
+					50 - len(pins),
+				)
 			except discord.errors.Forbidden:
-				content += '{} - Unable to get data\n'.format(chan.mention)
-	await bot.reply(message, content)
+				content += chan.mention + '{} - Unable to get data\n'
+		await bot.reply(message, content)
 
 @shadow()
 async def _math(client, message, **kwargs):
@@ -1439,7 +1539,7 @@ async def _eval(client, message, **kwargs):
 		entireoutput += request + '\n'
 	env = {
 		'message': message,
-		'server': message.server,
+		'guild': message.guild,
 		'channel': message.channel,
 		'author': message.author,
 	}
@@ -1476,30 +1576,29 @@ async def _eval(client, message, **kwargs):
 
 @shadow(aliases=['serverban', 'unserverban'])
 async def kick(client, message, **kwargs):
-	targetmember = utils.match_input('member', kwargs['arguments'], server=message.server)
+	targetmember = utils.match_input('member', kwargs['arguments'], guild=message.guild)
 	try:
 		if kwargs['command'] == 'kick':
-			if not message.author.server_permissions.kick_members and \
-			not kwargs['sudo']:
+			if not message.author.guild_permissions.kick_members and not kwargs['sudo']:
 				bot.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 				embed = emb.error(bot.t['you_no_permission'])
 				await bot.reply(message, emb=embed)
 				return
-			await client.kick(targetmember)
+			await targetmember.kick()
 		elif kwargs['command'] == 'serverban':
-			if not message.author.server_permissions.ban_members and not kwargs['sudo']:
+			if not message.author.guild_permissions.ban_members and not kwargs['sudo']:
 				bot.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 				embed = emb.error(bot.t['you_no_permission'])
 				await bot.reply(message, emb=embed)
 				return
-			await client.ban(targetmember, 0)
+			await targetmember.ban(delete_message_days=0)
 		elif kwargs['command'] == 'serverunban':
-			if not message.author.server_permissions.ban_members and not kwargs['sudo']:
+			if not message.author.guild_permissions.ban_members and not kwargs['sudo']:
 				bot.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 				embed = emb.error(bot.t['you_no_permission'])
 				await bot.reply(message, emb=embed)
 				return
-			await client.unban(message.server, targetmember)
+			await message.guild.unban(targetmember)
 		content = targetmember.mention
 		embed = emb.success('{}ed <@{}>.'.format(kwargs['command'].title() if kwargs['command'] == 'kick' else kwargs['command'].title() + 'n', targetmember.id))
 	except AttributeError:
@@ -1513,7 +1612,7 @@ async def kick(client, message, **kwargs):
 @shadow()
 async def bans(client, message, **kwargs):
 	try:
-		bans = await client.get_bans(message.server)
+		bans = await message.guild.bans()
 	except discord.errors.Forbidden:
 		embed = emb.error(bot.t['no_permission'])
 		await bot.reply(message, emb=embed)
@@ -1532,7 +1631,7 @@ async def bans(client, message, **kwargs):
 		description=ulist,
 		colour=col.r_success,
 	)
-	embed.set_thumbnail(url=message.server.icon_url)
+	embed.set_thumbnail(url=message.guild.icon_url)
 	await bot.reply(message, emb=embed)
 
 @shadow(auth=checks.is_operator)
@@ -1548,7 +1647,7 @@ async def join(client, message, **kwargs):
 
 @shadow(auth=checks.is_tntgb_mod, aliases=['b_mod'])
 async def b(client, message, **kwargs):
-	if message.server.id != events.tntgbserver:
+	if message.guild.id != events.tntgbguild:
 		embed = emb.error(bot.t['tntgb_only'])
 		await bot.reply(message, emb=embed)
 		return
@@ -1562,16 +1661,16 @@ async def b(client, message, **kwargs):
 
 	banningnonmod = True
 	announcemsg = ''
-	specialchannel = utils.getspecialchannel(message.channel.server)
-	targetmember = utils.match_input('member', splitargs[0], server=message.server)
+	specialchannel = utils.getspecialchannel(message.channel.guild)
+	targetmember = utils.match_input('member', splitargs[0], guild=message.guild)
 	if targetmember is None:
 		embed = emb.error(bot.t['specify_user'])
-		await client.send_message(specialchannel, embed=embed)
+		await specialchannel.send(embed=embed)
 		banningnonmod = False
 		return
 	if checks.is_tntgb_banned(targetmember):
 		embed = emb.warning('{} is already banned!'.format(targetmember.mention))
-		await client.send_message(specialchannel, embed=embed)
+		await specialchannel.send(embed=embed)
 		banningnonmod = False  # See this as "don't set expiry timer"
 	elif checks.is_tntgb_mod(targetmember):
 		if kwargs['command'] != 'b_mod':
@@ -1581,10 +1680,10 @@ async def b(client, message, **kwargs):
 					'to cause the oldest two bans to be lifted!'
 				).format(targetmember.mention)
 			)
-			await client.send_message(specialchannel, embed=embed)
+			await specialchannel.send(embed=embed)
 
 			# We're doing this in a public channel
-			await client.delete_message(message)
+			await message.delete()
 			bot.messages_deleted_by_bot.append(message)
 
 			return
@@ -1596,22 +1695,22 @@ async def b(client, message, **kwargs):
 		content = 'Lifted bans:'
 
 		for _ in range(0, 2):
-			currentexpiry = utils.getearliestexpiry(message.server.id)
+			currentexpiry = utils.getearliestexpiry(message.guild.id)
 
 			if currentexpiry is None:
 				continue
 
 			try:
 				await utils.removeRestrictiveRoles(
-					message.server.get_member(currentexpiry[0]),
-					message.server
+					message.guild.get_member(currentexpiry[0]),
+					message.guild
 				)
 				content +='\n<@!{}> lifted normally'.format(
 					currentexpiry[0]
 				)
 			except (AttributeError, TypeError):
 				# Look in the role cache
-				if utils.removerolecache(currentexpiry[0], message.server.id):
+				if utils.removerolecache(currentexpiry[0], message.guild.id):
 					utils.rolecachesave()
 					content += '\n<@!{}> lifted via role cache'.format(
 						currentexpiry[0]
@@ -1624,26 +1723,26 @@ async def b(client, message, **kwargs):
 			# Shorten this again
 			thisexpiry = currentexpiry[1]
 			if thisexpiry['msgedit_message'] != '0':
-				await utils.editexpirymessage(message.server, thisexpiry)
-			if not utils.removeexpiryentry(message.server.id, currentexpiry[0]):
+				await utils.editexpirymessage(message.guild, thisexpiry)
+			if not utils.removeexpiryentry(message.guild.id, currentexpiry[0]):
 				em = emb.warning((
 					'Could not remove expiry entry for '
 					'<@!{}>! Debug: S:{} M:{} SI:{} MI:{}'
 				).format(
 					currentexpiry[0],
-					message.server.id,
+					message.guild.id,
 					currentexpiry[0],
-					message.server.id in events.rolexpires,
+					message.guild.id in events.rolexpires,
 					currentexpiry[0] in events.rolexpires
 				))
-				await client.send_message(specialchannel, embed=em)
+				await specialchannel.send(embed=em)
 			expiredmentions.append('<@!{}>'.format(currentexpiry[0]))
 
 		utils.rolexpiresave()
 
 		# Send administration info
 		embed = emb.info(content)
-		await client.send_message(specialchannel, embed=embed)
+		await specialchannel.send(embed=embed)
 
 		# Now annouce it to the world
 		if len(expiredmentions) == 2:
@@ -1670,13 +1769,11 @@ async def b(client, message, **kwargs):
 			splitargs[1],
 			message.channel.mention
 		)
-		await client.send_message(events.banlogchannel_tntgb, announcemsg)
+		await events.banlogchannel_tntgb.send(announcemsg)
 		banningnonmod = False
 	else:
-		await client.replace_roles(targetmember,
-			discord.utils.get(message.server.roles,
-				id='243076976565288960'
-			)
+		await targetmember.edit(
+			roles=discord.utils.get(message.guild.roles, id=243076976565288960),
 		)
 		announcemsg = '{} has been banned for 5 days by {} in {} for {}.'.format(
 			targetmember.mention,
@@ -1685,17 +1782,17 @@ async def b(client, message, **kwargs):
 			splitargs[1]
 		)
 		content = '⛔ ' + announcemsg
-		sentmessage = await client.send_message(events.banlogchannel_tntgb, content)
+		sentmessage = await events.banlogchannel_tntgb.send(content)
 
 	# Now delete the calling message
-	await client.delete_message(message)
+	await message.delete()
 	bot.messages_deleted_by_bot.append(message)
 
 	if banningnonmod:
 		# Also set an expiry timer
 		expirytime = utils.parsereltime('5d')
 
-		utils.addexpiryentry(message.server.id, targetmember.id, expirytime,
+		utils.addexpiryentry(message.guild.id, targetmember.id, expirytime,
 			e_channel=sentmessage.channel.id, e_message=sentmessage.id,
 			e_newcontent='[LIFTED] ' + announcemsg,
 			p_channel=events.banlogchannel_tntgb.id,
@@ -1707,7 +1804,7 @@ async def b(client, message, **kwargs):
 
 @shadow()
 async def selfban(client, message, **kwargs):
-	if message.server.id != events.tntgbserver:
+	if message.guild.id != events.tntgbguild:
 		embed = emb.error(bot.t['tntgb_only'])
 		await bot.reply(message, emb=embed)
 		return
@@ -1717,12 +1814,12 @@ async def selfban(client, message, **kwargs):
 		await bot.reply(message, emb=embed)
 		return
 	if checks.is_tntgb_mod(message.author):
-		specialchannel = utils.getspecialchannel(message.channel.server)
+		specialchannel = utils.getspecialchannel(message.channel.guild)
 		embed = emb.warning('Sorry, moderators cannot use `\selfban`!')
-		await client.send_message(specialchannel, embed=embed)
+		await specialchannel.send(embed=embed)
 
 		# We're doing this in a public channel
-		await client.delete_message(message)
+		await message.delete()
 		bot.messages_deleted_by_bot.append(message)
 
 		return
@@ -1730,10 +1827,8 @@ async def selfban(client, message, **kwargs):
 	if kwargs['arguments'] is None or kwargs['arguments'] == '':
 		kwargs['arguments'] = '(no given reason)'
 
-	await client.replace_roles(message.author,
-		discord.utils.get(message.server.roles,
-			id='243076976565288960'
-		)
+	await message.author.edit(
+		roles=discord.utils.get(message.guild.roles, id=243076976565288960)
 	)
 	announcemsg = '{} has carried out a self-ban for 5 days in {} for {}.'.format(
 		message.author.mention,
@@ -1741,20 +1836,23 @@ async def selfban(client, message, **kwargs):
 		kwargs['arguments']
 	)
 	content = '⛔ ' + announcemsg
-	sentmessage = await client.send_message(events.banlogchannel_tntgb, content)
+	sentmessage = await events.banlogchannel_tntgb.send(content)
 
 	# Now delete the calling message
-	await client.delete_message(message)
+	await message.delete()
 	bot.messages_deleted_by_bot.append(message)
 
 	# Also set an expiry timer
 	expirytime = utils.parsereltime('5d')
 
-	utils.addexpiryentry(message.server.id, message.author.id, expirytime,
+	utils.addexpiryentry(
+		message.guild.id,
+		message.author.id,
+		expirytime,
 		e_channel=sentmessage.channel.id, e_message=sentmessage.id,
 		e_newcontent='[LIFTED] ' + announcemsg,
 		p_channel=events.banlogchannel_tntgb.id,
-		p_content='The ban on {} has expired.'.format(message.author.mention)
+		p_content='The ban on {} has expired.'.format(message.author.mention),
 	)
 
 	utils.rolexpiresave()
@@ -1762,7 +1860,7 @@ async def selfban(client, message, **kwargs):
 
 @shadow(auth=checks.is_tntgb_mod, aliases=['b_left', 'b_offserver'])
 async def b_id(client, message, **kwargs):
-	if message.server.id != events.tntgbserver:
+	if message.guild.id != events.tntgbguild:
 		embed = emb.error(bot.t['tntgb_only'])
 		await bot.reply(message, emb=embed)
 		return
@@ -1781,11 +1879,11 @@ async def b_id(client, message, **kwargs):
 	elif request.startswith('<@') and request.endswith('>'):
 		request = request[2:-1] # Same
 
-	targetmember = message.server.get_member(request)
+	targetmember = message.guild.get_member(request)
 
 	if targetmember is None:
 		# Just as I thought, they left
-		if not utils.removerolecache(request, message.server.id):
+		if not utils.removerolecache(request, message.guild.id):
 			embed = emb.error((
 				'Member {} cannot be found in the role cache. '
 				'Please note you have to enter an ID, not any form of name!'
@@ -1794,12 +1892,12 @@ async def b_id(client, message, **kwargs):
 			return
 
 		# Okay, removing their entry altogether was a bit drastic
-		events.memberroles[message.server.id][request] = []
-		events.memberroles[message.server.id][request].append('243076976565288960')
+		events.memberroles[message.guild.id][request] = []
+		events.memberroles[message.guild.id][request].append(243076976565288960)
 
 		# Alright, just send a message about it now!
 		# The extra space is intentional, it's a 'hidden' indicator to
-		# see whether the ban was made after the person left the server
+		# see whether the ban was made after the person left the guild
 		announcemsg = '<@!{}>  has been banned for 5 days by {} in {} for {}.'.format(
 			request,
 			message.author.display_name,
@@ -1807,76 +1905,78 @@ async def b_id(client, message, **kwargs):
 			splitargs[1]
 		)
 		content = '⛔ ' + announcemsg
-		sentmessage = await client.send_message(events.banlogchannel_tntgb, content)
+		sentmessage = await events.banlogchannel_tntgb.send(content)
 
 		# Now delete the calling message
-		await client.delete_message(message)
+		await message.delete()
 		bot.messages_deleted_by_bot.append(message)
 
 		# Also set an expiry timer
 		expirytime = utils.parsereltime('5d')
 
-		utils.addexpiryentry(message.server.id, request, expirytime,
+		utils.addexpiryentry(
+			message.guild.id,
+			input,
+			expirytime,
 			e_channel=sentmessage.channel.id, e_message=sentmessage.id,
 			e_newcontent='[LIFTED] ' + announcemsg,
 			p_channel=events.banlogchannel_tntgb.id,
-			p_content='The ban on <@!{}> has expired.'.format(request)
+			p_content='The ban on <@!{}> has expired.'.format(request),
 		)
 
 		utils.rolexpiresave()
 		await utils.handleExpiryTimer()
 	else:
-		# Okay, they are on the server, so why not use \b?
+		# Okay, they are on the guild, so why not use \b?
 		await b(client, message, **kwargs)
 
 @shadow(auth=checks.is_tntgb_mod, aliases=['banrevert'])
 async def revertban(client, message, **kwargs):
-	if message.server.id != events.tntgbserver:
+	if message.guild.id != events.tntgbguild:
 		embed = emb.error(bot.t['tntgb_only'])
 		await bot.reply(message, emb=embed)
 		return
-
-	specialchannel = utils.getspecialchannel(message.channel.server)
+	specialchannel = utils.getspecialchannel(message.guild)
 
 	targetmember = utils.match_input(
-		'member', kwargs['arguments'], server=message.server,
+		'member', kwargs['arguments'], guild=message.guild,
 	)
 
 	if targetmember is None:
 		embed = emb.error(bot.t['specify_user'])
-		await client.send_message(specialchannel, embed=embed)
+		await specialchannel.send(embed=embed)
 		return
 
-	await utils.removeRestrictiveRoles(targetmember, message.server)
+	await utils.removeRestrictiveRoles(targetmember, message.guild)
 
 	embed = emb.info('Ban on {} was reverted by {}.'.format(
 			targetmember.mention, message.author.mention
 		)
 	)
-	await client.send_message(specialchannel, embed=embed)
+	await specialchannel.send(embed=embed)
 
 	# That member is also in the role cache. Right?
-	if message.server.id not in events.rolexpires or \
-	targetmember.id not in events.rolexpires[message.server.id]:
+	if message.guild.id not in events.rolexpires or \
+	targetmember.id not in events.rolexpires[message.guild.id]:
 		embed = emb.warning('Could not find {} in the role cache!'.format(
 				targetmember.mention
 			)
 		)
-		await client.send_message(specialchannel, embed=embed)
+		await specialchannel.send(embed=embed)
 		return
 
 	# It's even longer this time
-	thisexpiry = events.rolexpires[message.server.id][targetmember.id]
+	thisexpiry = events.rolexpires[message.guild.id][targetmember.id]
 	if thisexpiry['msgedit_message'] != '0':
 		thisexpiry['msgedit_newcontent'] = ''
-		await utils.editexpirymessage(message.server, thisexpiry)
+		await utils.editexpirymessage(message.guild, thisexpiry)
 
-	utils.removeexpiryentry(message.server.id, targetmember.id)
+	utils.removeexpiryentry(message.guild.id, targetmember.id)
 	utils.rolexpiresave()
 
 @shadow(auth=checks.is_admin, aliases=['tntgb_maint_p'])
 async def tntgb_maint(client, message, **kwargs):
-	if message.server.id != events.tntgbserver:
+	if message.guild.id != events.tntgbguild:
 		embed = emb.error(bot.t['tntgb_only'])
 		await bot.reply(message, emb=embed)
 		return
@@ -1888,10 +1988,11 @@ async def tntgb_maint(client, message, **kwargs):
 
 	while True:
 		if kwargs['command'] == 'tntgb_maint_p':
-			message2 = await client.wait_for_message(
+			message2 = await client.wait_for(
+				'message',
+				check=lambda x: x.author == message.author and \
+				x.channel == message.channel,
 				timeout=120,
-				author=message.author,
-				channel=message.channel
 			)
 			if message2 is None:
 				embed = emb.info('Timed out, closing prompt')
@@ -1904,17 +2005,17 @@ async def tntgb_maint(client, message, **kwargs):
 			splitargs[1] = message2.content
 		output = ''
 		if splitargs[0] == 'liftmsg':
-			getmessage = await client.get_message(events.banlogchannel_tntgb, splitargs[1])
+			getmessage = await events.banlogchannel_tntgb.get_message(splitargs[1])
 			content = getmessage.content
 			if content.find('⛔') == -1:
 				embed = emb.error('Cannot find the ⛔!')
 				await bot.reply(message, emb=embed)
 				return
 			content = content.replace('⛔', '[LIFTED]', 1)
-			await client.edit_message(getmessage, new_content=content)
+			await getmessage.edit(new_content=content)
 			output = 'Edited successfully.'
 		elif splitargs[0] == 'addtimer':
-			getmessage = await client.get_message(events.banlogchannel_tntgb, splitargs[1])
+			getmessage = events.banlogchannel_tntgb.get_message(splitargs[1])
 			content = getmessage.content
 			m = re.search('<@!?([0-9]+)>', content)
 			if m is None:
@@ -1923,7 +2024,7 @@ async def tntgb_maint(client, message, **kwargs):
 				return
 			userid = m.group(1)
 			newexpires = utils.parsereltime('5d',
-				now=time.mktime(getmessage.timestamp.timetuple())
+				now=time.mktime(getmessage.created_at.timetuple())
 			)
 
 			sentbybot = False
@@ -1936,18 +2037,26 @@ async def tntgb_maint(client, message, **kwargs):
 					return
 				content = content.replace('⛔', '[LIFTED]', 1)
 
-				utils.addexpiryentry(message.server.id, userid, newexpires,
-					e_channel=getmessage.channel.id, e_message=getmessage.id,
+				utils.addexpiryentry(
+					message.guild.id,
+					userid,
+					newexpires,
+					e_channel=getmessage.channel.id,
+					e_message=getmessage.id,
 					e_newcontent=content,
 					p_channel=events.banlogchannel_tntgb.id,
-					p_content='The ban on <@!{}> has expired.'.format(userid)
+					p_content='The ban on <@!{}> has expired.'.format(userid),
 				)
 			else:
-				utils.addexpiryentry(message.server.id, userid, newexpires,
-					e_channel='0', e_message='0',
+				utils.addexpiryentry(
+					message.guild.id,
+					userid,
+					newexpires,
+					e_channel='0',
+					e_message='0',
 					e_newcontent='',
 					p_channel=events.banlogchannel_tntgb.id,
-					p_content='The ban on <@!{}> has expired.'.format(userid)
+					p_content='The ban on <@!{}> has expired.'.format(userid),
 				)
 
 			output = 'I found the member <@!{}>, and it expires {}. Also, the message was {} sent by me. Did I do it right?'.format(
@@ -1979,10 +2088,9 @@ async def uploadfile(client, message, **kwargs):
 			)
 			await bot.reply(message, emb=e)
 			return
-		await client.send_file(
-			message.channel,
-			kwargs['arguments'],
-			content=events.msg_start,
+		await message.channel.send(
+			events.msg_start,
+			file=discord.File(kwargs['arguments']),
 		)
 		return
 	except FileNotFoundError:
@@ -1996,31 +2104,31 @@ async def uploadfile(client, message, **kwargs):
 		raise
 	await bot.reply(message, emb=e)
 
-@shadow(auth=checks.is_mod, aliases=['blackunlist'], servonly=True)
+@shadow(auth=checks.is_mod, aliases=['blackunlist'], guildonly=True)
 async def blacklist(client, message, **kwargs):
-	tgtmem = utils.match_input('member', kwargs['arguments'], server=message.server)
+	tgtmem = utils.match_input('member', kwargs['arguments'], guild=message.guild)
 	if tgtmem is None:
 		embed = emb.error('Unable to find that member. ' + bot.t['specify_user'])
 		await bot.reply(message, emb=embed)
 		return
-	if not config.is_detached('blacklist', message.server.id):
-		config.detach('blacklist', message.server.id)
+	if not config.is_detached('blacklist', message.guild.id):
+		config.detach('blacklist', message.guild.id)
 	if kwargs['command'] == 'blacklist':
-		if tgtmem.id in config.get_s('blacklist', message.server.id):
+		if tgtmem.id in config.get_s('blacklist', message.guild.id):
 			embed = emb.error('{0.mention} is already blacklisted.'.format(tgtmem))
 			await bot.reply(message, emb=embed)
 			return
-		config.insert_s('blacklist', tgtmem.id, message.server.id)
+		config.insert_s('blacklist', tgtmem.id, message.guild.id)
 		config.saveconfig()
 		embed = emb.success('Blacklisted {0.mention} from this server.'.format(tgtmem))
 		await bot.reply(message, emb=embed)
 		return
 	elif kwargs['command'] == 'blackunlist':
-		if tgtmem.id not in config.get_s('blacklist', message.server.id):
+		if tgtmem.id not in config.get_s('blacklist', message.guild.id):
 			embed = emb.error('{0.mention} is not blacklisted.'.format(tgtmem))
 			await bot.reply(message, emb=embed)
 			return
-		config.remove_s('blacklist', tgtmem.id, message.server.id)
+		config.remove_s('blacklist', tgtmem.id, message.guild.id)
 		config.saveconfig()
 		embed = emb.success('Blackunlisted {0.mention} from this server.'.format(tgtmem))
 		await bot.reply(message, emb=embed)
@@ -2128,7 +2236,7 @@ async def sudo(client, message, **kwargs):
 	kwargs['sudo'] = True
 	await func[0](client, message, **kwargs)
 
-@shadow(auth=checks.is_channel_manager, servonly=True)
+@shadow(auth=checks.is_channel_manager, guildonly=True)
 async def joinchannel(client, message, **kwargs):
 	splitargs = kwargs['arguments'].split(' ')
 	if len(splitargs) != 2:
@@ -2143,7 +2251,7 @@ async def joinchannel(client, message, **kwargs):
 		)
 	if splitargs[0] == 'set':
 		try:
-			chan = client.get_channel(splitargs[1][2:-1])
+			chan = client.get_channel(int(splitargs[1][2:-1]))
 		except IndexError:
 			em = emb.error('You should probably enter in a channel.')
 			await bot.reply(message, emb=em)
@@ -2157,9 +2265,9 @@ async def joinchannel(client, message, **kwargs):
 			)
 			await bot.reply(message, emb=em)
 			return
-		if not config.is_detached('joinchannel', message.server.id):
-			config.detach('joinchannel', message.server.id)
-		config.set_s('joinchannel', chan.id, message.server.id)
+		if not config.is_detached('joinchannel', message.guild.id):
+			config.detach('joinchannel', message.guild.id)
+		config.set_s('joinchannel', chan.id, message.guild.id)
 		config.saveconfig()
 		em = emb.success(
 			'Set {0.mention} to be the join channel for this server.'.format(chan)
@@ -2167,19 +2275,19 @@ async def joinchannel(client, message, **kwargs):
 		await bot.reply(message, emb=em)
 		return
 	elif splitargs[0] == 'unset':
-		if not config.is_detached('joinchannel', message.server.id):
-			config.detach('joinchannel', message.server.id)
-		config.restore_default('joinchannel', message.server.id)
+		if not config.is_detached('joinchannel', message.guild.id):
+			config.detach('joinchannel', message.guild.id)
+		config.restore_default('joinchannel', message.guild.id)
 		config.saveconfig()
 		em = emb.success('Unset the join channel for this server.')
 		await bot.reply(message, emb=em)
 		return
 	elif splitargs[0] == 'get':
-		chanid = config.get_s('joinchannel', message.server.id)
+		chanid = config.get_s('joinchannel', message.guild.id)
 		if chanid == '0':
 			em = emb.info('There is no join channel set for this server.')
 		else:
-			chan = message.server.get_channel(chanid)
+			chan = message.guild.get_channel(chanid)
 			if chan:
 				em = emb.info(
 					(
@@ -2208,12 +2316,12 @@ async def joinchannel(client, message, **kwargs):
 		await bot.reply(message, emb=em)
 		return
 
-@shadow(servonly=True)
+@shadow(guildonly=True)
 async def testroleconditional(client, message, **kwargs):
 	try:
 		splitargs = kwargs['arguments'].split(' ')
 
-		tgtmem = utils.match_input('member', splitargs[0], server=message.server)
+		tgtmem = utils.match_input('member', splitargs[0], guild=message.guild)
 		if tgtmem is None:
 			tgtmem = message.author
 		embed = emb.success('Result: {}'.format(
@@ -2233,7 +2341,7 @@ async def testroleconditional(client, message, **kwargs):
 
 	await bot.reply(message, emb=embed)
 
-@shadow(auth=checks.is_admin, servonly=True)
+@shadow(auth=checks.is_admin, guildonly=True)
 async def addcustomrolecommand(client, message, **kwargs):
 	if kwargs['arguments'] is None:
 		kwargs['arguments'] = ''
@@ -2285,7 +2393,7 @@ async def addcustomrolecommand(client, message, **kwargs):
 	else:
 		takeroles = splitargs[5][1:-1].split(',')
 
-	if customcommands.exists(message.server, splitargs[0]):
+	if customcommands.exists(message.guild, splitargs[0]):
 		embed = emb.error('The custom command `{}` already exists!'.format(
 				utils.mdspecialchars(splitargs[0])
 			)
@@ -2309,7 +2417,7 @@ async def addcustomrolecommand(client, message, **kwargs):
 		await bot.reply(message, emb=embed)
 		return
 
-	customcommands.add_custom_command(message.server, splitargs[0],
+	customcommands.add_custom_command(message.guild, splitargs[0],
 		{
 			'type': 'role',
 			'precondition': splitargs[3],
@@ -2328,7 +2436,7 @@ async def addcustomrolecommand(client, message, **kwargs):
 	)
 	await bot.reply(message, emb=embed)
 
-@shadow(auth=checks.is_admin, servonly=True)
+@shadow(auth=checks.is_admin, guildonly=True)
 async def addcustomaliascommand(client, message, **kwargs):
 	if kwargs['arguments'] is None:
 		kwargs['arguments'] = ''
@@ -2338,7 +2446,7 @@ async def addcustomaliascommand(client, message, **kwargs):
 		await bot.reply(message, emb=embed)
 		return
 
-	if customcommands.exists(message.server, splitargs[0]):
+	if customcommands.exists(message.guild, splitargs[0]):
 		embed = emb.error('The custom command `{}` already exists!'.format(
 				utils.mdspecialchars(splitargs[0])
 			)
@@ -2386,7 +2494,7 @@ async def addcustomaliascommand(client, message, **kwargs):
 		await bot.reply(message, emb=embed)
 		return
 
-	customcommands.add_custom_command(message.server, splitargs[0],
+	customcommands.add_custom_command(message.guild, splitargs[0],
 		{
 			'type': 'alias',
 			'to': splitargs[1]
@@ -2394,7 +2502,7 @@ async def addcustomaliascommand(client, message, **kwargs):
 	)
 	customcommands.save()
 
-	if customcommands.exists(message.server, splitargs[1]):
+	if customcommands.exists(message.guild, splitargs[1]):
 		embed = emb.success('Successfully added command `\{}`'.format(
 				utils.mdspecialchars(splitargs[0])
 			)
@@ -2410,19 +2518,19 @@ async def addcustomaliascommand(client, message, **kwargs):
 		)
 	await bot.reply(message, emb=embed)
 
-@shadow(auth=checks.is_admin, servonly=True)
+@shadow(auth=checks.is_admin, guildonly=True)
 async def removecustomcommand(client, message, **kwargs):
 	if kwargs['arguments'] is None:
 		embed = emb.error('Please supply the name of the command to remove.')
 		await bot.reply(message, emb=embed)
 		return
 
-	if not customcommands.exists(message.server, kwargs['arguments']):
+	if not customcommands.exists(message.guild, kwargs['arguments']):
 		embed = emb.error('The custom command to remove doesn’t exist.')
 		await bot.reply(message, emb=embed)
 		return
 
-	customcommands.remove_custom_command(message.server, kwargs['arguments'])
+	customcommands.remove_custom_command(message.guild, kwargs['arguments'])
 	customcommands.save()
 
 	embed = emb.success('Command `\{}` has been removed.'.format(
@@ -2431,7 +2539,7 @@ async def removecustomcommand(client, message, **kwargs):
 	)
 	await bot.reply(message, emb=embed)
 
-@shadow(auth=checks.is_admin, servonly=True)
+@shadow(auth=checks.is_admin, guildonly=True)
 async def archive(client, message, **kwargs):
 	# Note that this command currently only allows admins to run it, particularly so that we can
 	# think about read and history permissions later. If opening it up to everyone, there should
@@ -2444,13 +2552,13 @@ async def archive(client, message, **kwargs):
 
 	splitargs = kwargs['arguments'].split(' ')
 
-	tgt = utils.match_input('channel', splitargs[0], server=message.server)
+	tgt = utils.match_input('channel', splitargs[0], guild=message.guild)
 	if tgt is None:
 		em = emb.error('Unable to find that channel. ' + bot.t['specify_channel'])
 		await bot.reply(message, emb=em)
 		return
 
-	if tgt.type is not discord.ChannelType.text:
+	if not isinstance(tgt, discord.VoiceChannel):
 		em = emb.error('Matched a voice channel - text-to-speech is not implemented.')
 		await bot.reply(message, emb=em)
 		return
@@ -2478,13 +2586,13 @@ async def archive(client, message, **kwargs):
 
 	log = []
 
-	msgs = client.logs_from(tgt, limit=lim)
+	msgs = tgt.history(limit=lim)
 	try:
 		async for m in msgs:
 			log.append('[{}] {}#{}: {}'.format(
 					time.strftime(
-						config.get_s('timeformat', message.server.id),
-						m.timestamp.timetuple()
+						config.get_s('timeformat', message.guild.id),
+						m.created_at.timetuple()
 					),
 					m.author.name,
 					m.author.discriminator,
@@ -2503,17 +2611,21 @@ async def archive(client, message, **kwargs):
 		temp.write(textlog.encode())
 		temp.flush()
 		try:
-			await client.send_file(
-				destination=message.channel,
-				content='{} latest messages from {}'.format(
+			await message.channel.send(
+				'{} latest messages from {}'.format(
 					lim, tgt.mention
 				),
-				fp=temp.name,
-				filename='{}.{}.{}.log'.format(
-					utils.safefilename(message.server.name),
-					utils.safefilename(tgt.name), # Better be futureproof
-					int(time.time())
-				)
+				file=discord.File(
+					temp.name,
+					'{}.{}.{}.log'.format(
+						utils.safefilename(message.guild.name),
+
+						# Better be futureproof
+						utils.safefilename(tgt.name),
+
+						int(time.time()),
+					),
+				),
 			)
 		except discord.HTTPException:
 			em = emb.error('An error occurred while uploading the file.')

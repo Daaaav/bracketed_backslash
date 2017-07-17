@@ -19,7 +19,7 @@
 	},
 	"permissionlabels": [
 		["administrator", "Administrator"],
-		["manage_server", "Manage Server"],
+		["manage_guild", "Manage Server"],
 		["manage_channels", "Manage Channels"],
 		["manage_roles", "Manage Roles"],
 		["ban_members", "Ban Members"],

@@ -23,7 +23,7 @@ import op_ids
 
 def is_admin(member):
 	try:
-		perms = member.server_permissions
+		perms = member.guild_permissions
 	except AttributeError:
 		return False
 	if perms.administrator:
@@ -33,7 +33,7 @@ def is_admin(member):
 def is_mod(member):
 	# Same here. No need to use is_admin and is_mod in the same conditional.
 	try:
-		perms = member.server_permissions
+		perms = member.guild_permissions
 	except AttributeError:
 		return False
 	if perms.manage_messages:
@@ -42,13 +42,13 @@ def is_mod(member):
 
 def is_channel_manager(member):
 	try:
-		return member.server_permissions.manage_channels
+		return member.guild_permissions.manage_channels
 	except AttributeError:
 		return False
 
 def is_role_manager(member):
 	try:
-		return member.server_permissions.manage_roles
+		return member.guild_permissions.manage_roles
 	except AttributeError:
 		return False
 
@@ -61,7 +61,7 @@ def is_bot(member):
 def is_dev(member):
 	# Alright then. [2]
 	for role in member.roles:
-		if role.id == '238424544379928576': # [\] dev role
+		if role.id == 238424544379928576: # [\] dev role
 			return True
 	return False
 
@@ -70,13 +70,13 @@ def is_operator(member):
 
 def is_tntgb_mod(member):
 	for role in member.roles:
-		if role.id == '266590337269497856': # TNTGB moderator role
+		if role.id == 266590337269497856: # TNTGB moderator role
 			return True
 	return False
 
 def is_tntgb_banned(member):
 	for role in member.roles:
-		if role.id == '243076976565288960': # TNTGB banned role
+		if role.id == 243076976565288960: # TNTGB banned role
 			return True
 	return False
 

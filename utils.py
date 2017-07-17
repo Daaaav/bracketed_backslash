@@ -80,7 +80,7 @@ async def handle_delete_overedited_message(msg, schan):
 	if len(bot.minutemessageedits[msg.id]) >= 5:
 		# Ok, that's enough editing.
 		try:
-			await bot.client.delete_message(msg)
+			await msg.delete()
 			bot.messages_deleted_by_bot.append(msg)
 			em = discord.Embed(
 				title=('\N{MEMO}' * 5) + (
@@ -119,29 +119,27 @@ async def handle_delete_overedited_message(msg, schan):
 				name='Message author',
 				value='<@!{id}> ({id})'.format(id=msg.author.id),
 			)
-		await bot.client.send_message(schan, embed=em)
+		await schan.send(embed=em)
 
 		# Also actually reply
-		await bot.client.send_message(
-			msg.channel,
-			(
-				'{0.author.mention}. Were you going to stop editing that message?'
-			).format(msg),
+		await msg.channel.send(
+			'{0.author.mention}. Were you going to stop editing that message?'
+			.format(msg),
 		)
 
-def match_input(objtype, request, *, server=None, client=None):
-	"""Return a member/server/channel/role/emoji object given an input which could be anything
+def match_input(objtype, request, *, guild=None, client=None):
+	"""Return a member/guild/channel/role/emoji object given an input which could be anything
 	that identifies that object. If it can't be found, return None.
 
 	objtype: A string that specifies the type of object to search for. Can be either 'member',
-	'server', 'channel', 'role', or 'emoji'.
+	'guild', 'channel', 'role', or 'emoji'.
 
 	request: A string that will be tried to be matched to.
 
-	server (optional): A discord.Server object, which is the scope of where
+	guild (optional): A discord.Guild object, which is the scope of where
 	members/channels/roles/emojis will be searched. Defaults to None.
 
-	client (optional): A discord.Client object, which is the scope of where servers will be
+	client (optional): A discord.Client object, which is the scope of where guilds will be
 	searched. Defaults to None.
 
 	The following priority is used:
@@ -159,14 +157,14 @@ def match_input(objtype, request, *, server=None, client=None):
 	11) Case-insensitive name partial match: Info, tOL, own
 	12) (Members only) Discriminator only (either with or without #): 3737
 	"""
-	acceptvals = ('member', 'server', 'channel', 'role', 'emoji')
+	acceptvals = ('member', 'guild', 'channel', 'role', 'emoji')
 	if objtype not in acceptvals:
 		raise ValueError('objtype has to be one of ' + str(acceptvals))
 
-	# Is there a Discord server in between us, did we get a client,
+	# Is there a Discord guild in between us, did we get a client,
 	# or is the request anything at all?
-	if (not server and objtype != 'server') or \
-	(not client and objtype == 'server') or \
+	if (not guild and objtype != 'guild') or \
+	(not client and objtype == 'guild') or \
 	not request:
 		return None
 
@@ -174,28 +172,37 @@ def match_input(objtype, request, *, server=None, client=None):
 	if request.startswith('<') and request.endswith('>'):
 		if (objtype == 'member' and request[1:3] == '@!') or \
 		(objtype == 'role' and request[1:3] == '@&'):
-			request = request[3:-1]
+			request = int(request[3:-1])
 		elif (objtype == 'member' and request[1] == '@') or \
 		(objtype == 'channel' and request[1] == '#'):
-			request = request[2:-1]
+			request = int(request[2:-1])
 		elif objtype == 'emoji' and request[1] == request[-20] == ':':
-			request = request[-19:-1]
+			request = int(request[-19:-1])
 
-	# Now get the object from the ID
-	tgt = server.get_member(request) if objtype == 'member' else \
-	client.get_server(request) if objtype == 'server' else \
-	server.get_channel(request) if objtype == 'channel' else \
-	discord.utils.find(lambda r: r.id == request, server.roles) if objtype == 'role' else \
-	discord.utils.find(lambda e: e.id == request, server.emojis) if objtype == 'emoji' else None
+	if isinstance(request, int):
+		# Now get the object from the ID
+		tgt = guild.get_member(request) if objtype == 'member' else \
+		client.get_guild(request) if objtype == 'guild' else \
+		guild.get_channel(request) if objtype == 'channel' else \
+		discord.utils.find(
+			lambda r: r.id == request,
+			guild.roles,
+		) if objtype == 'role' else \
+		discord.utils.find(
+			lambda e: e.id == request,
+			guild.emojis,
+		) if objtype == 'emoji' else None
+	else:
+		tgt = None
 
 	if not tgt:
 		# Not an ID
 
 		if objtype == 'member':
-			tgt = server.get_member_named(request) if objtype == 'member' else tgt
+			tgt = guild.get_member_named(request) if objtype == 'member' else tgt
 
 			if not tgt:
-				# Not found by server.get_member_named()
+				# Not found by guild.get_member_named()
 
 				# Everything else fails? Then try searching.
 				# Nicknames have priority, then usernames.
@@ -205,7 +212,7 @@ def match_input(objtype, request, *, server=None, client=None):
 				nickfound = None
 				userfound = None
 				discmatched = None
-				for mem in server.members:
+				for mem in guild.members:
 					if mem.nick and mem.nick.lower() == request.lower():
 						tgt = mem
 						nickmatched = True
@@ -235,10 +242,10 @@ def match_input(objtype, request, *, server=None, client=None):
 			namematched = None
 			namefound = None
 
-			searchthru = client.servers if objtype == 'server' else \
-			server.channels if objtype == 'channel' else \
-			server.roles if objtype == 'role' else \
-			server.emojis if objtype == 'emoji' else None
+			searchthru = client.guilds if objtype == 'guild' else \
+			guild.channels if objtype == 'channel' else \
+			guild.roles if objtype == 'role' else \
+			guild.emojis if objtype == 'emoji' else None
 			for i in searchthru:
 				if i.name is None:
 					continue
@@ -311,50 +318,48 @@ async def id_lookup(uid):
 	Note that it is inconsistent whether or not the object returned is a discord.Member or a
 	discord.User.
 
-	Note that if a discord.Member object is returned server-specific attributes will be
+	Note that if a discord.Member object is returned guild-specific attributes will be
 	inconsistent. The only attributes that should be used are:
 	- name
 	- id
 	- discriminator
-	- avatar/avatar_url
+	- avatar/avatar_url/avatar_url_as
 	- bot
 	- default_avatar/default_avatar_url
-	- mention
+	- mention/mentioned_in
 	- created_at
 	"""
-	member = None
 
-	for x in bot.client.get_all_members():
-		# Look through all members the bot can see for any matching the ID
-		if x.id == uid:
-			member = x
-			break
+	# Look through all members the bot can see for any matching the ID
+	member = bot.client.get_user(uid)
 
 	if member is None:
 		# Look up the ID by banning it
-		opserver = bot.client.get_server(op_ids.ids['opserver'])
+		opguild = bot.client.get_guild(op_ids.ids['opguild'])
 		try:
-			await bot.client.http.ban(uid, opserver.id, 0)
+			await opguild.ban(uid, delete_message_days=0)
 		except discord.errors.HTTPException:
 			pass
 		else:
-			bans = await bot.client.get_bans(opserver)
+			bans = await opguild.bans()
 			for x in bans:
 				if x.id == uid:
 					member = x
 					break
 			if member is not None:
 				try:
-					await bot.client.unban(opserver, member)
+					await opguild.unban(member)
 				except discord.errors.HTTPException:
 					pass
 
 	return member
 
-def isprivatemessage(server): # this is a function because so in the future more checks for if its a private message can ezily be added
-	return not bool(server)
+def isprivatemessage(guild):
+	# this is a function because so in the future more checks for if its a private message can
+	# ezily be added
+	return not bool(guild)
 
-def helplist(cats, server, onlycat=None):
+def helplist(cats, guild, onlycat=None):
 	returnage = ''
 	for cat in cats:
 		if (onlycat is None and cat['cat_shown']) or onlycat == cat['cat_slug']:
@@ -368,8 +373,8 @@ def helplist(cats, server, onlycat=None):
 				returnage += '\n__`{}:`__'.format(cat['cat_name'])
 
 			first = True
-			if cat['cat_slug'] == 'server':
-				helpcommands = customcommands.list_commands_help(server)
+			if cat['cat_slug'] == 'guild':
+				helpcommands = customcommands.list_commands_help(guild)
 			else:
 				helpcommands = cat['commands']
 			for cmd in helpcommands:
@@ -427,16 +432,16 @@ def rolelist(roles):
 
 	return rlist
 
-def updaterolecache(member, serverid=None):
-	if serverid is None:
-		serverid = member.server.id
-	if serverid not in events.memberroles:
-		events.memberroles[serverid] = {}
-	events.memberroles[serverid][member.id] = rolelist(member.roles)
+def updaterolecache(member, guildid=None):
+	if guildid is None:
+		guildid = member.guild.id
+	if guildid not in events.memberroles:
+		events.memberroles[guildid] = {}
+	events.memberroles[guildid][member.id] = rolelist(member.roles)
 
-def removerolecache(memberid, serverid):
+def removerolecache(memberid, guildid):
 	try:
-		del events.memberroles[serverid][memberid]
+		del events.memberroles[guildid][memberid]
 	except KeyError:
 		return False
 	return True
@@ -471,17 +476,17 @@ def listroles_id(lijst):
 		returnage += '<@&{}>'.format(role)
 	return returnage
 
-def getspecialchannel(server):
-	theconfig = config.get_s('specialchannel', server.id)
+def getspecialchannel(guild):
+	theconfig = config.get_s('specialchannel', guild.id)
 	if theconfig != '0':
 		return bot.client.get_channel(id=theconfig)
-	return server.default_channel
+	return guild.default_channel
 
 def getspecialchannel_reply(message):
-	if message.server is None:
+	if message.guild is None:
 		return message.channel
-	specialchannel = getspecialchannel(message.server)
-	if specialchannel == message.server.default_channel:
+	specialchannel = getspecialchannel(message.guild)
+	if specialchannel == message.guild.default_channel:
 		return message.channel
 	return specialchannel
 
@@ -555,8 +560,8 @@ async def handleExpiryTimer():
 
 	entriesleft = False
 
-	for serverid in events.rolexpires:  # Merge with next for maybe
-		if events.rolexpires[serverid]:
+	for guildid in events.rolexpires:  # Merge with next for maybe
+		if events.rolexpires[guildid]:
 			entriesleft = True
 			break
 
@@ -567,10 +572,10 @@ async def handleExpiryTimer():
 
 	timelowscore = 9999999999
 
-	for serverid in events.rolexpires:
-		for userid in events.rolexpires[serverid]:
-			if events.rolexpires[serverid][userid]['time'] < timelowscore:
-				timelowscore = events.rolexpires[serverid][userid]['time']
+	for guildid in events.rolexpires:
+		for userid in events.rolexpires[guildid]:
+			if events.rolexpires[guildid][userid]['time'] < timelowscore:
+				timelowscore = events.rolexpires[guildid][userid]['time']
 
 	if timelowscore <= int(time.time()):
 		logging.info('Immediately calling autoExpiry() because we’re overdue in resetting someone’s roles')
@@ -592,40 +597,41 @@ async def autoExpiry():
 	now = int(time.time())
 
 	# So apparently someone needs to be unbanned?
-	for serverid in events.rolexpires:
+	for guildid in events.rolexpires:
 		content = ''
 		successfulresets = []
 
-		cserver = discord.utils.get(bot.client.servers, id=serverid)
-		for userid in events.rolexpires[serverid]:
-			if events.rolexpires[serverid][userid]['time'] <= now:
+		cguild = discord.utils.get(bot.client.guilds, id=guildid)
+		for userid in events.rolexpires[guildid]:
+			if events.rolexpires[guildid][userid]['time'] <= now:
 				try:
-					await removeRestrictiveRoles(cserver.get_member(userid), cserver)
+					await removeRestrictiveRoles(
+						cguild.get_member(userid),
+						cguild,
+					)
 					content += '\nRoles for <@!{}> reset.'.format(userid)
 				except (AttributeError, TypeError):
 					# Look if they are in the role cache, and reset it there instead.
-					if removerolecache(userid, serverid):
+					if removerolecache(userid, guildid):
 						content += '\n<@!{}> was supposed to have their roles reset now, they aren’t on the server, but they’ve successfully been removed from the role cache.'.format(userid)
 						rolecachesave()
 					else:
 						content += '\n<@!{}> was supposed to have their roles reset now, but they can be found neither on the server nor in the role cache!'.format(userid)
 
 				# Shorten the following thing so we don't have to keep typing it.
-				thisexpiry = events.rolexpires[serverid][userid]
+				thisexpiry = events.rolexpires[guildid][userid]
 				if thisexpiry['msgedit_message'] != '0':
-					await editexpirymessage(cserver, thisexpiry)
+					await editexpirymessage(cguild, thisexpiry)
 				if thisexpiry['msgpost_channel'] != '0':
 					# We want to announce it with a new message!
-					await bot.client.send_message(
-						discord.utils.get(cserver.channels,
-							id=thisexpiry['msgpost_channel']
-						),
-						thisexpiry['msgpost_content']
-					)
+					await discord.utils.get(
+						cguild.channels,
+						id=thisexpiry['msgpost_channel'],
+					).send(thisexpiry['msgpost_content'])
 
 				successfulresets.append(userid)
 		for userid in successfulresets:
-			removeexpiryentry(serverid, userid)
+			removeexpiryentry(guildid, userid)
 
 		if successfulresets:
 			if not content:
@@ -633,36 +639,35 @@ async def autoExpiry():
 
 			content = '**Auto expiry:**' + content
 
-			await bot.client.send_message(getspecialchannel(cserver), content)
+			await getspecialchannel(cguild).send(content)
 
 	rolexpiresave()
 
 	await handleExpiryTimer()
 
-async def removeRestrictiveRoles(member, server):
-	try:
-		await givetakeroles(
-			member, server,
-			config.get_s('defaultbotroles' if member.bot else 'defaultroles',server.id),
-			config.get_s('restrictiveroles', server.id)
-		)
-	except (AttributeError,TypeError) as e:
-		raise e
+async def removeRestrictiveRoles(member, guild):
+	await givetakeroles(
+		member,
+		guild,
+		config.get_s(
+			'defaultbotroles'
+			if member.bot
+			else 'defaultroles',
+			guild.id,
+		),
+		config.get_s('restrictiveroles', guild.id),
+	)
 
-async def givetakeroles(member, server, giveids, takeids):
+async def givetakeroles(member, guild, giveids, takeids):
 	badroles = [] # All the roles that are potentially deleted
 	removingtheseroles = [] # Roles that the user has which will be deleted
 	addingtheseroles = [] # Roles that the user doesn't have which will be added
 	otherroles = [] # Other roles the user has
 
 	for rid in takeids:
-		badroles.append(
-			discord.utils.get(server.roles, id=rid)
-		)
+		badroles.append(discord.utils.get(guild.roles, id=rid))
 	for rid in giveids:
-		addingtheseroles.append(
-			discord.utils.get(server.roles, id=rid)
-		)
+		addingtheseroles.append(discord.utils.get(guild.roles, id=rid))
 	for role in member.roles:
 		if role in badroles:
 			# This member has that bad role, we need to get rid of it!
@@ -679,34 +684,32 @@ async def givetakeroles(member, server, giveids, takeids):
 		return
 	if addingtheseroles and removingtheseroles:
 		# Replace - luckily the union of these is this simple!
-		await bot.client.replace_roles(member, *addingtheseroles, *otherroles)
+		await member.edit(roles=[addingtheseroles] + [otherroles])
 	elif addingtheseroles:
 		# Only adding
-		await bot.client.add_roles(member, *addingtheseroles)
+		await member.add_roles(*addingtheseroles)
 	else:
 		# Only removing
-		await bot.client.remove_roles(member, *removingtheseroles)
+		await member.remove_roles(*removingtheseroles)
 
-async def editexpirymessage(cserver, thisexpiry):
+async def editexpirymessage(cguild, thisexpiry):
 	# We want to edit a message to reflect the ban!
-	getmessage = await bot.client.get_message(
-		discord.utils.get(cserver.channels,
-			id=thisexpiry['msgedit_channel']
-		),
-		thisexpiry['msgedit_message']
-	)
+	getmessage = discord.utils.get(
+		cguild.channels,
+		id=thisexpiry['msgedit_channel']
+	).get_message(thisexpiry['msgedit_message'])
 	if thisexpiry['msgedit_newcontent'] == '':
-		await bot.client.delete_message(getmessage)
+		await getmessage.delete()
 	else:
-		await bot.client.edit_message(getmessage, new_content=thisexpiry['msgedit_newcontent'])
+		await getmessage.edit(content=thisexpiry['msgedit_newcontent'])
 
-def addexpiryentry(serverid, memberid, expirytime,
+def addexpiryentry(guildid, memberid, expirytime,
 e_channel='0', e_message='0', e_newcontent='',
 p_channel='0', p_content=''):
-	if serverid not in events.rolexpires:
-		events.rolexpires[serverid] = {}
+	if guildid not in events.rolexpires:
+		events.rolexpires[guildid] = {}
 
-	events.rolexpires[serverid][memberid] = {
+	events.rolexpires[guildid][memberid] = {
 		'time': expirytime,
 		'msgedit_channel': e_channel,
 		'msgedit_message': e_message,
@@ -715,29 +718,29 @@ p_channel='0', p_content=''):
 		'msgpost_content': p_content,
 	}
 
-def removeexpiryentry(serverid, memberid):
-	if serverid not in events.rolexpires:
+def removeexpiryentry(guildid, memberid):
+	if guildid not in events.rolexpires:
 		return False
 
-	if memberid not in events.rolexpires[serverid]:
+	if guildid not in events.rolexpires[guildid]:
 		return False
 
-	del events.rolexpires[serverid][memberid]
+	del events.rolexpires[guildid][memberid]
 	return True
 
-def getearliestexpiry(serverid):  # Returns: [userid, entry]
-	if serverid not in events.rolexpires or not events.rolexpires[serverid]:
+def getearliestexpiry(guildid):  # Returns: [userid, entry]
+	if guildid not in events.rolexpires or not events.rolexpires[guildid]:
 		return None
 
 	timelowscore = 9999999999
 	earliestuserid = '0'
 	earliestexpiry = None  # Entry
 
-	for userid in events.rolexpires[serverid]:
-		if events.rolexpires[serverid][userid]['time'] < timelowscore:
-			timelowscore = events.rolexpires[serverid][userid]['time']
+	for userid in events.rolexpires[guildid]:
+		if events.rolexpires[guildid][userid]['time'] < timelowscore:
+			timelowscore = events.rolexpires[guildid][userid]['time']
 			earliestuserid = userid
-			earliestexpiry = events.rolexpires[serverid][userid]
+			earliestexpiry = events.rolexpires[guildid][userid]
 
 	return [earliestuserid, earliestexpiry]
 
@@ -753,7 +756,7 @@ def logfailedcommand(command, arguments, message):
 		'%s %s attempted by %s#%s (uuid %s) at %s utc but failed',
 		command, arguments,
 		message.author.name, message.author.discriminator, message.author.id,
-		message.timestamp,
+		message.created_at,
 	)
 
 def logcommand(command, arguments, message):
@@ -763,18 +766,18 @@ def logcommand(command, arguments, message):
 		'%s %s called by %s#%s (uuid %s) at %s utc',
 		command, arguments,
 		message.author.name, message.author.discriminator, message.author.id,
-		message.timestamp,
+		message.created_at,
 	)
 
 def infourl(query):
 	return 'https://tolp2.nl/showdiscordinfo.php?' + query
 
-def logdisabled(key, server):
+def logdisabled(key, guild):
 	checks = [key, key.split('_')[0] + '_*', '*']
 
-	if any(x in config.get_s('disabledlogs', server.id) for x in checks):
+	if any(x in config.get_s('disabledlogs', guild.id) for x in checks):
 		return True
-	if any(x in config.get_s('enabledlogs', server.id) for x in checks):
+	if any(x in config.get_s('enabledlogs', guild.id) for x in checks):
 		return False
 	return True
 
@@ -784,38 +787,38 @@ def respondtorule(rule):
 	return 'Wow, you’re the FIRST one to come up with that. I wish I could be as funny as you, I dunno how I’m ever gonna top "rule {}", though. That shit is genius.'.format(rule)
 
 async def newmemberroles(member, specialchannel, bypassjoinchannel):
-	if config.get_s('rolecachemode', member.server.id) == 1 and checks.is_bot(member):
+	if config.get_s('rolecachemode', member.guild.id) == 1 and checks.is_bot(member):
 		# Give them the bot roles!
 		addingtheseroles = []
-		for rid in config.get_s('defaultbotroles', member.server.id):
+		for rid in config.get_s('defaultbotroles', member.guild.id):
 			addingtheseroles.append(
-				discord.utils.get(member.server.roles, id=rid)
+				discord.utils.get(member.guild.roles, id=rid)
 			)
-		await bot.client.add_roles(member, *addingtheseroles) # bot role
+		await member.add_roles(*addingtheseroles) # bot role
 		return
 
-	if config.get_s('rolecachemode', member.server.id) != 0 and member.server.id in events.memberroles:
+	if config.get_s('rolecachemode', member.guild.id) != 0 and member.guild.id in events.memberroles:
 		# Are they in our database of members which had roles before?
-		if member.id in events.memberroles[member.server.id]:
+		if member.id in events.memberroles[member.guild.id]:
 			addingtheseroles = []
 			# They're found in the database! Give them the groups they should have
-			for rid in events.memberroles[member.server.id][member.id]:
-				addingrole = discord.utils.get(member.server.roles, id=rid)
+			for rid in events.memberroles[member.guild.id][member.id]:
+				addingrole = discord.utils.get(member.guild.roles, id=rid)
 				if addingrole.is_everyone:
 					continue
 				addingtheseroles.append(addingrole)
-			await bot.client.add_roles(member, *addingtheseroles)
+			await member.add_roles(*addingtheseroles)
 			content = '<@!{id}> ({id}) found in the role cache\n'.format(id=member.id)
 			value = '_{} role'.format(str(len(addingtheseroles)))
 			value += 's:' if len(addingtheseroles) != 1 else ':'
 			value += listroles(addingtheseroles) + '_'
 			content += 'Given them back their roles:\n' + value
-			await bot.client.send_message(specialchannel, content)
-		elif config.get_s('rolecachemode', member.server.id) == 1 or bypassjoinchannel:
+			await specialchannel.send(content)
+		elif config.get_s('rolecachemode', member.guild.id) == 1 or bypassjoinchannel:
 			# Not found, so just give them the default roles
 			addingtheseroles = []
-			for rid in config.get_s('defaultroles', member.server.id):
+			for rid in config.get_s('defaultroles', member.guild.id):
 				addingtheseroles.append(
-					discord.utils.get(member.server.roles, id=rid)
+					discord.utils.get(member.guild.roles, id=rid)
 				)
-			await bot.client.add_roles(member, *addingtheseroles)
+			await member.send(*addingtheseroles)

@@ -42,43 +42,43 @@ commands = {}
 commands = load()
 
 
-def add_custom_command(server, command, dictionary):
+def add_custom_command(guild, command, dictionary):
 	"""Add a custom command. Assumes non-DM, assumes the command doesn't already exist
 	(otherwise it'll just be overwritten).
 	"""
-	if server.id not in commands:
-		commands[server.id] = {}
-	commands[server.id][command] = dictionary
+	if guild.id not in commands:
+		commands[guild.id] = {}
+	commands[guild.id][command] = dictionary
 
-def remove_custom_command(server, command):
+def remove_custom_command(guild, command):
 	"""Remove a custom command. Assumes non-DM, assumes the command exists.
 	"""
-	if server.id not in commands:
+	if guild.id not in commands:
 		return
-	del commands[server.id][command]
+	del commands[guild.id][command]
 
-def any_commands(server):
-	"""Returns True if the server has at least one custom command
+def any_commands(guild):
+	"""Returns True if the guild has at least one custom command
 	"""
-	if server is None:
+	if guild is None:
 		return False
-	if server.id not in commands:
+	if guild.id not in commands:
 		return False
-	if len(commands[server.id]) == 0:
+	if len(commands[guild.id]) == 0:
 		return False
 	return True
 
-def list_commands(server):
-	"""Returns a list of all commands on the server.
+def list_commands(guild):
+	"""Returns a list of all commands on the guild.
 	"""
-	if not any_commands(server):
+	if not any_commands(guild):
 		return []
-	return commands[server.id]
+	return commands[guild.id]
 
-def list_commands_help(server):
-	"""Returns a list of all commands on the server as help entries.
+def list_commands_help(guild):
+	"""Returns a list of all commands on the guild as help entries.
 	"""
-	cmdlist = list_commands(server)
+	cmdlist = list_commands(guild)
 	cmdlist_help = []
 	for cmd in cmdlist:
 		cmdlist_help.append(
@@ -90,17 +90,17 @@ def list_commands_help(server):
 		)
 	return cmdlist_help
 
-def exists(server, command):
-	"""Returns True if the given custom command exists on the given server, False if not.
+def exists(guild, command):
+	"""Returns True if the given custom command exists on the given guild, False if not.
 	"""
-	if not any_commands(server):
+	if not any_commands(guild):
 		return False
-	if command not in commands[server.id]:
+	if command not in commands[guild.id]:
 		return False
 	return True
 
 async def run(
-	server, command, message, arguments, clean_arguments, invokesymbol,
+	guild, command, message, arguments, clean_arguments, invokesymbol,
 	recursivecall=False, referrers=None
 ):
 	"""Run the given custom command. Assumes that you checked if the command exists, and that
@@ -111,7 +111,7 @@ async def run(
 	if not recursivecall:
 		referrers = []
 
-	com = commands[server.id][command]
+	com = commands[guild.id][command]
 
 	if com['type'] == 'role':
 		requiredargs = 0
@@ -230,7 +230,7 @@ async def run(
 
 		if com['target'] == 'input':
 			try:
-				targetmember = utils.match_input('member', memberarg, server=server)
+				targetmember = utils.match_input('member', memberarg, guild=guild)
 
 				# Very quick fix
 				if targetmember is None:
@@ -254,7 +254,7 @@ async def run(
 
 		# Now let's apply the change.
 		await utils.givetakeroles(
-			targetmember, message.server, com['giverole'], com['takerole']
+			targetmember, message.guild, com['giverole'], com['takerole']
 		)
 
 		if len(com['giverole']) > 0 and len(com['takerole']) > 0:
@@ -298,7 +298,7 @@ async def run(
 		# Does it expire?
 		if setexpirytimer:
 			# It does!
-			utils.addexpiryentry(server.id, targetmember.id, expirytime)
+			utils.addexpiryentry(guild.id, targetmember.id, expirytime)
 			utils.rolexpiresave()
 			await utils.handleExpiryTimer()
 
@@ -317,9 +317,9 @@ async def run(
 			return
 		referrers.append(command)
 
-		if exists(server, com['to']):
+		if exists(guild, com['to']):
 			await run(
-				server,
+				guild,
 				com['to'],
 				message,
 				arguments,

@@ -7,7 +7,8 @@ This bot is in active development.
 # Installation Instructions
 ## Requirements
 - Python ≥3.6 is required.
-- [`discord.py`](https://github.com/Rapptz/discord.py) is required.
+- [`discord.py` rewrite](https://github.com/Rapptz/discord.py/tree/rewrite) is
+  required.
 - [Pillow](https://github.com/python-pillow/Pillow) is required.
 
 ## Downloading
