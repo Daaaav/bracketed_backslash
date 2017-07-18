@@ -42,6 +42,7 @@ import config
 import customcommands
 import emb
 import events
+import hangman
 import images
 import op_ids
 import utils
@@ -378,17 +379,17 @@ async def echo(client, message, **kwargs):
 	await bot.reply(message, **replyargs)
 
 @shadow()
-async def hangman(client, message, **kwargs):
-	if events.hangmanactive:
-		embed = emb.error('Hangman is already running. It can be aborted by the starter or by a mod with `\stophangman`.')
-		await bot.reply(message, emb=embed)
-		return
-	if not utils.isprivatemessage(message.guild):
-		embed = emb.error('For now, this can only be run via DM.')
+async def _hangman(client, message, **kwargs):
+	if message.channel.id in hangman.games and hangman.games[message.channel.id].active:
+		embed = emb.error((
+				'Hangman is already running in this channel. It can be '
+				'aborted by the starter or by a mod with `\stophangman`.'
+			)
+		)
 		await bot.reply(message, emb=embed)
 		return
 	if kwargs['arguments'] is None:
-		embed = emb.error('Please specify a word.')
+		embed = emb.error('Please specify a word. (Yeah, for a bit, you need to send the word in public, we’ll change that Soon™)')
 		await bot.reply(message, emb=embed)
 		return
 	if not kwargs['arguments'].isalpha():
@@ -400,34 +401,37 @@ async def hangman(client, message, **kwargs):
 		await bot.reply(message, emb=embed)
 		return
 
-	events.hangmanchosenword = kwargs['arguments']
-	events.hangmanattempts = 10
-	events.hangmantotalattempts = 10
-	events.hangmanactive = True
-	events.hangmanstarter = message.author
-	events.guessedletters = [False]*26
-	msg_start = '**`>`**``{}``**`{}`**``\{} {}``\n'.format(utils.wrapbackticks(message.author.name), kwargs['invokesymbol'], utils.wrapbackticks(kwargs['command'].split(' ')[0]), '*'*len(events.hangmanchosenword)) # you will never have mod/admin perms in private messages (probably), where the hangman will be started from, so for now theres no mod/admin check to make the input display different
-	content = 'New game of hangman initiated by <@{}> with a custom word. Guess letters by chatting "{}" followed by the letter (for example {}a) or the word. {} attempts left.\n{}'.format(events.hangmanstarter.id, bot.hangmaninvoker, bot.hangmaninvoker, events.hangmanattempts, utils.hangmanworddisp(events.hangmanchosenword))
-	msg = msg_start + content
-	await events.botschannel.send(msg)
+	hm_inst = hangman.HangmanGame(kwargs['arguments'], message.author)
+	hangman.games[message.channel.id] = hm_inst
 
-	content = 'https://discord.gg/gj6YmtV'
+	content = (
+		'New game of hangman initiated by {starter} with a custom word. Guess letters '
+		'by chatting "{inv}" followed by the letter (for example {inv}a) or the word. '
+		'{attempts} attempts left.\n{worddisp}'
+	).format(
+		starter=hm_inst.starter.mention,
+		inv=bot.hangmaninvoker,
+		attempts=hm_inst.maxmistakes,
+		worddisp=hm_inst.worddisp()
+	)
 	await bot.reply(message, content)
 
 @shadow()
 async def stophangman(client, message, **kwargs):
-	if not events.hangmanactive:
+	if message.channel.id not in hangman.games or not hangman.games[message.channel.id].active:
 		embed = emb.error('Can’t abort hangman because it’s not running.')
 		await bot.reply(message, emb=embed)
 		return
-	elif not checks.is_mod(message.author) and message.author.id != events.hangmanstarter.id:
+	hm_inst = hangman.games[message.channel.id]
+	if not checks.is_mod(message.author) and not hm_inst.isstarter(message.author):
 		embed = emb.error('Can’t abort hangman because you haven’t started this game.')
 		await bot.reply(message, emb=embed)
 		return
 
-	events.hangmanactive = False
-	content = 'Game of hangman aborted. The word was: **{}**'.format(events.hangmanchosenword)
+	hm_inst.stop()
+	content = 'Game of hangman aborted. The word was: **{}**'.format(hm_inst.word)
 	await events.botschannel.send(content)
+	del hangman.games[message.channel.id]
 
 @shadow()
 async def source(client, message, **kwargs):
