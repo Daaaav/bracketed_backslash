@@ -15,16 +15,9 @@ import config
 import commands
 import customcommands
 import emb
+import hangman
 import op_ids
 import utils
-
-hangmanchosenword = ''
-hangmanattempts = 0
-hangmantotalattempts = 0
-hangmanactive = False
-hangmanstarter = None
-guessedletters = [False]*26
-algeraden = False
 
 memberroles = {}
 rolexpires = {}
@@ -216,8 +209,7 @@ async def on_message(m):
 			embed=e,
 		)
 
-	global msg_start, hangmanchosenword, hangmanattempts, hangmantotalattempts, hangmanactive, \
-	hangmanstarter, guessedletters, algeraden
+	global msg_start
 	schan = utils.getspecialchannel_reply(m)
 	indisp = (
 		(
@@ -339,7 +331,12 @@ async def on_message(m):
 	else:
 		invokesymbol = '$'
 	if hangmaninvokeractive:
-		if not hangmanactive:
+		if m.channel.id not in hangman.games:
+			return
+		hm_inst = hangman.games[m.channel.id]
+		if not hm_inst.active:
+			# We didn't clean up?
+			del hangman.games[m.channel.id]
 			return
 		if checks.is_mod(m.author):
 			msg_start = (
@@ -358,20 +355,19 @@ async def on_message(m):
 		if priv:
 			e = emb.error('Guesses are not accepted via PM.')
 			await m.channel.send(msg_start, embed=e)
-		if m.channel.id != 201130047736643584:
 			return
 		hangmanguessed = m.content[1:]
 
 		if len(hangmanguessed) == 1:
 			# Have we already used that letter? And is it a valid letter?
-			if bot.alphabet.find(hangmanguessed.upper()) == -1:
+			if not hangman.validletter(hangmanguessed):
 				e = emb.error(
 					'The character ``{}`` is invalid.'
 					.format(utils.wrapbackticks(hangmanguessed.upper()))
 				)
 				await m.channel.send(msg_start, embed=e)
 				return
-			if guessedletters[bot.alphabet.find(hangmanguessed.upper())]:
+			if hm_inst.alreadyguessed(hangmanguessed):
 				e = emb.error(
 					'The letter **{}** has already been used.'
 					.format(hangmanguessed.upper())
@@ -379,45 +375,40 @@ async def on_message(m):
 				await m.channel.send(msg_start, embed=e)
 				return
 			# Ok, so does this letter occur in the word?
-			if hangmanchosenword.upper().find(hangmanguessed.upper()) != -1:
-				# Set the guessed letter correctly
-				guessedletters[bot.alphabet.find(hangmanguessed.upper())] = True
-
+			if hm_inst.guess(hangmanguessed):
+				# It does!
 				con = '**{ltr}** is correct!\n{worddisp}'.format(
 						ltr=hangmanguessed.upper(),
-						worddisp=utils.hangmanworddisp(hangmanchosenword)
+						worddisp=hm_inst.worddisp()
 					)
 				msg = msg_start + con
-				await m.channel.send(msg)
 
-				if algeraden:
-					hangmanactive = False
-					con = (
-						'You guessed the word correctly!'
+				if hm_inst.fullyguessed():
+					msg += (
+						'\nYou guessed the word correctly!'
 						' You made {n} mistakes in total.'
-						.format(n=hangmantotalattempts-hangmanattempts)
+						.format(n=hm_inst.mistakes)
 					)
-					await m.channel.send(con)
+					await m.channel.send(msg)
 					return
-			else:
-				# Set the guessed letter correctly, and it has to be a letter
-				guessedletters[bot.alphabet.find(hangmanguessed.upper())] = True
-				hangmanattempts -= 1
 
-				if hangmanattempts == 0:
-					hangmanactive = False
+				await m.channel.send(msg)
+			else:
+				# It doesn't.
+				if hm_inst.isgameover():
 					con = (
 						'**{ltr}** is incorrect! Game over.'
 						' The word was: **{word}**'
 					).format(
 						ltr=hangmanguessed.upper(),
-						word=hangmanchosenword,
+						word=hm_inst.word,
 					)
 					msg = msg_start + con
 					await m.channel.send(msg)
 					return
 				else:
-					if hangmanattempts != 1:
+					attleft = hm_inst.attemptsleft()
+					if attleft != 1:
 						plural = 's'
 					else:
 						plural = ''
@@ -427,32 +418,20 @@ async def on_message(m):
 						'{worddisp}'
 					).format(
 						ltr=hangmanguessed.upper(),
-						attempts=hangmanattempts,
+						attempts=attleft,
 						pl=plural,
-						worddisp=utils.hangmanworddisp(hangmanchosenword),
+						worddisp=hm_inst.worddisp(),
 					)
 					msg = msg_start + con
 					await m.channel.send(msg)
 					return
 		else:
 			# We're guessing the entire word. Well, is it the word?
-			if hangmanguessed.lower() == hangmanchosenword.lower():
-				hangmanactive = False
-				con = (
-					'You guessed the word ({word}) correctly!'
-					' You made {n} mistakes in total.'
-				).format(
-					word=hangmanchosenword,
-					n=hangmantotalattempts-hangmanattempts,
-				)
-				msg = msg_start + con
-				await m.channel.send(msg)
-				return
-			elif len(hangmanguessed) != len(hangmanchosenword):
+			if not hm_inst.correctlength(hangmanguessed):
 				# We're not even trying. It's not the same length.
 
-				# if before was "not even trying", this is -1 trying
 				if not hangmanguessed:
+					# if before was "not even trying", this is -1 trying
 					e = emb.error('You should probably enter in a letter.')
 					await m.channel.send(msg_start, embed=e)
 					return
@@ -466,27 +445,43 @@ async def on_message(m):
 				)
 				await m.channel.send(msg_start, embed=e)
 				return
-			hangmanattempts -= 1
+			elif hm_inst.fullwordguess(hangmanguessed):
+				con = (
+					'You guessed the word ({word}) correctly!'
+					' You made {n} mistakes in total.'
+				).format(
+					word=hm_inst.word,
+					n=hm_inst.mistakes,
+				)
+				msg = msg_start + con
+				await m.channel.send(msg)
+				return
 
-			if hangmanattempts == 0:
-				hangmanactive = False
+			if hm_inst.isgameover():
 				con = (
 					'**{guess}** is not the word! Game over.'
 					' The word was: **{word}**'
 				).format(
 					guess=hangmanguessed,
-					word=hangmanchosenword,
+					word=hm_inst.word,
 				)
 				msg = msg_start + con
 				await m.channel.send(msg)
 				return
+
+			attleft = hm_inst.attemptsleft()
+			if attleft != 1:
+				plural = 's'
+			else:
+				plural = ''
 			con = (
 				'**{guess}** is not the word!'
-				' {n} attempts left.\n{worddisp}'
+				' {attempts} attempt{pl} left.\n{worddisp}'
 			).format(
 				guess=hangmanguessed,
-				n=hangmanattempts,
-				worddisp=utils.hangmanworddisp(hangmanchosenword),
+				attempts=attleft,
+				pl=plural,
+				worddisp=hm_inst.worddisp(),
 			)
 			msg = msg_start + con
 			await m.channel.send(msg)

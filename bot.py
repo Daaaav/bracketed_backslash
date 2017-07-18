@@ -39,9 +39,6 @@ invoker = '\\' # command invoker
 altinvoker = 'ok glass, ' # alt command invoker
 hangmaninvoker = '-'
 
-# Hangman stuff
-alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-
 os.environ['TZ'] = 'UTC'
 time.tzset()
 
