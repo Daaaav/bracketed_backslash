@@ -70,7 +70,7 @@ async def on_ready():
 
 	try:
 		with open('memberroles.json', 'r') as infile:
-			memberroles = json.load(infile)
+			memberroles = {int(k): v for k, v in json.load(infile).items()}
 
 		# Now look what I've woken up to.
 		for gld in memberroles:
@@ -144,7 +144,7 @@ async def on_ready():
 
 	try:
 		with open('rules.json', 'r') as infile:
-			rules = json.load(infile)
+			rules = {int(k): v for k, v in json.load(infile).items()}
 	except FileNotFoundError:
 		logging.info('rules file does not exist yet so creating it now')
 
@@ -155,7 +155,7 @@ async def on_ready():
 
 	try:
 		with open('disabledrules.json', 'r') as infile:
-			disabledrules = json.load(infile)
+			disabledrules = {int(k): v for k, v in json.load(infile).items()}
 	except FileNotFoundError:
 		logging.info('disabledrules file does not exist yet so creating it now')
 
@@ -168,7 +168,7 @@ async def on_ready():
 
 	try:
 		with open('rolexpires.json', 'r') as infile:
-			rolexpires = json.load(infile)
+			rolexpires = {int(k): v for k, v in json.load(infile).items()}
 	except FileNotFoundError:
 		logging.info('rolexpires file does not exist yet so creating it now')
 
