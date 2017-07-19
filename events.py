@@ -148,7 +148,7 @@ async def on_ready():
 
 	try:
 		with open('disabledrules.json', 'r') as infile:
-			disabledrules = {int(k): v for k, v in json.load(infile).items()}
+			disabledrules = [int(i) for i in json.load(infile)]
 	except FileNotFoundError:
 		logging.info('disabledrules file does not exist yet so creating it now')
 
