@@ -1447,7 +1447,7 @@ async def on_raw_message_delete(message_id, channel_id):
 
 async def on_raw_message_edit(message_id, data):
 	# We must first know what channel it is
-	mchan = bot.client.get_channel(data['channel_id'])
+	mchan = bot.client.get_channel(int(data['channel_id']))
 	if isinstance(mchan, discord.abc.PrivateChannel) or \
 	utils.logdisabled('message_updateuncached', mchan.guild):
 		return
