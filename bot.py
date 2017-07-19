@@ -133,7 +133,13 @@ async def reply(messageobject, message=None, emb=None):
 			'\t%s\n',
 			type(e).__name__,
 			guildinfo,
-			str(messageobject.channel.type).title(),
+			(
+				'Text'
+				if isinstance(messageobject.channel, discord.TextChannel)
+				else 'Voice'
+				if isinstance(messageobject.channel, discord.VoiceChannel)
+				else 'Unknown'
+			),
 			messageobject.channel,
 			messageobject.id,
 			events.msg_start + message,

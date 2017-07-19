@@ -860,7 +860,7 @@ async def on_member_update(before, after):
 		embed.set_author(
 			name=after.display_name,
 			icon_url=after.avatar_url,
-			url=utils.infourl('userid=' + after.id),
+			url=utils.infourl('userid=' + str(after.id)),
 		)
 		if before.nick is None:
 			embed.add_field(name='No Older Nickname', value='_No Older Nickname_')
@@ -901,7 +901,7 @@ async def on_member_update(before, after):
 			embed.set_author(
 				name=after.display_name,
 				icon_url=after.avatar_url,
-				url=utils.infourl('userid=' + after.id),
+				url=utils.infourl('userid=' + str(after.id)),
 			)
 			for role in addedroles:
 				embed.add_field(
@@ -929,7 +929,11 @@ async def on_member_update(before, after):
 		if before.discriminator != after.discriminator:
 			description += ' AND DISCRIMINATOR 🔸'
 		embed = discord.Embed(title=description, colour=after.colour)
-		embed.set_author(name=after.display_name, icon_url=after.avatar_url, url=utils.infourl('userid=' + after.id))
+		embed.set_author(
+			name=after.display_name,
+			icon_url=after.avatar_url,
+			url=utils.infourl('userid=' + str(after.id)),
+		)
 		embed.add_field(name='Older Username', value=utils.mdspecialchars(before.name))
 		embed.add_field(name='Newer Username', value=utils.mdspecialchars(after.name))
 		if before.discriminator != after.discriminator:
@@ -1392,7 +1396,11 @@ async def on_guild_channel_create(c):
 	embed = discord.Embed(
 		description='{type} CHANNEL ADD\n{0.name} ({0.id})'.format(
 			c,
-			type=str(c.type).upper(),
+			type=(
+				'TEXT' if isinstance(c, discord.TextChannel) else
+				'VOICE' if isinstance(c, discord.VoiceChannel) else
+				'UNKNOWN TYPE'
+			),
 		),
 	)
 	await schan.send(embed=embed)
@@ -1404,7 +1412,11 @@ async def on_guild_channel_delete(c):
 	embed = discord.Embed(
 		description='{type} CHANNEL REMOVE\n{0.name} ({0.id})'.format(
 			c,
-			type=str(c.type).upper(),
+			type=(
+				'TEXT' if isinstance(c, discord.TextChannel) else
+				'VOICE' if isinstance(c, discord.VoiceChannel) else
+				'UNKNOWN TYPE'
+			),
 		),
 	)
 	await schan.send(embed=embed)
@@ -1436,7 +1448,7 @@ async def on_raw_message_delete(message_id, channel_id):
 	schan = utils.getspecialchannel(mchan.guild)
 	e = discord.Embed(
 		title='UNCACHED MESSAGE DELETED IN {0.mention}'.format(mchan),
-		url=utils.infourl('messageid=' + message_id),
+		url=utils.infourl('messageid=' + str(message_id)),
 		description=(
 			'Since this message is uncached, I can’t give you'
 			' any more information than its ID and its channel.'
@@ -1632,7 +1644,7 @@ async def on_raw_reaction_clear(message_id, channel_id):
 			'REACTIONS CLEARED FROM UNCACHED MESSAGE'
 			' IN {0.mention}'
 		).format(mchan),
-		url=utils.infourl('messageid=' + message_id),
+		url=utils.infourl('messageid=' + str(message_id)),
 		description=(
 			'Since this message is uncached, I can’t give you'
 			' any more information than its ID and its channel.'
@@ -1647,7 +1659,13 @@ async def on_guild_channel_update(b, a):
 	schan = utils.getspecialchannel(a.guild)
 	if b.name != a.name:
 		e = discord.Embed(
-			title='{type} CHANNEL UPDATE'.format(type=str(a.type).upper()),
+			title='{type} CHANNEL UPDATE'.format(
+				type=(
+					'TEXT' if isinstance(a, discord.TextChannel) else
+					'VOICE' if isinstance(a, discord.VoiceChannel) else
+					'UNKNOWN TYPE'
+				),
+			),
 			description=(
 				'**{name}** ({id})'
 			).format(
