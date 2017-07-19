@@ -430,7 +430,7 @@ async def stophangman(client, message, **kwargs):
 
 	hm_inst.stop()
 	content = 'Game of hangman aborted. The word was: **{}**'.format(hm_inst.word)
-	await events.botschannel.send(content)
+	await bot.reply(message, content)
 	del hangman.games[message.channel.id]
 
 @shadow()
