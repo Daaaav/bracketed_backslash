@@ -35,13 +35,13 @@ def id_summary(uid=None, mid=None, cid=None, rid=None):
 	"""Return a oneline summary of IDs."""
 	summary = ''
 	if uid:
-		summary += ' \N{BUST IN SILHOUETTE}' + uid
+		summary += ' \N{BUST IN SILHOUETTE}' + str(uid)
 	if mid:
-		summary += ' \N{SPEECH BALLOON}' + mid
+		summary += ' \N{SPEECH BALLOON}' + str(mid)
 	if cid:
-		summary += ' \N{TELEVISION}' + cid
+		summary += ' \N{TELEVISION}' + str(cid)
 	if rid:
-		summary += ' \N{KEY}' + rid
+		summary += ' \N{KEY}' + str(rid)
 	if summary.startswith(' '):
 		summary = summary[1:]
 	return summary
