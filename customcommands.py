@@ -32,7 +32,7 @@ def save():
 def load():
 	try:
 		with open('customcommands.json', 'r') as infile:
-			return json.load(infile)
+			return {int(k): v for k, v in json.load(infile).items()}
 	except FileNotFoundError:
 		logging.info('Did not find customcommands file so making a new one')
 		save()
