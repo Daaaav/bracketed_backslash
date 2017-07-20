@@ -178,12 +178,12 @@ configs = {
 		'detachable': True,
 		'shown': True,
 	},
-	'tntgb_servers': {
-		'default': [],
-		'type': 'gid',
-		'is_array': True,
-		'expl': 'The list of servers which have TNTGB running on them',
-		'detachable': False,
+	'tntgb': {
+		'default': {},
+		'type': 'dic',
+		'is_array': False,
+		'expl': 'Config options for the TNTGB gamemode.',
+		'detachable': True,
 		'shown': False,
 	},
 	'allowedchannels': {
