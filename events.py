@@ -27,8 +27,6 @@ disabledrules = []
 botschannel = None
 botschannel_tntgb = None
 banlogchannel_tntgb = None
-opguild = None
-opguild_botguilds = None
 productionguild = 153368829160849408
 tntgbguild = 242099933665034240
 
@@ -37,18 +35,13 @@ latestroled = ''
 
 async def on_ready():
 	global memberroles, rules, disabledrules, botschannel, botschannel_tntgb, \
-	banlogchannel_tntgb, rolexpires, opguild, opguild_botguilds
+	banlogchannel_tntgb, rolexpires
 	guild = discord.utils.get(wrapper.client.guilds, id=productionguild)
 	guild_tntgb = discord.utils.get(wrapper.client.guilds, id=tntgbguild)
 	specialchannel_prod = discord.utils.get(guild.channels, id=234185735266238464)
 	botschannel = discord.utils.get(guild.channels, id=201130047736643584)
 	botschannel_tntgb = discord.utils.get(guild_tntgb.channels, id=266626198249930764)
 	banlogchannel_tntgb = discord.utils.get(guild_tntgb.channels, id=242253449922609152)
-	opguild = discord.utils.find(lambda s: s.id == bot.opguildid, wrapper.client.guilds)
-	opguild_botguilds = discord.utils.find(
-		lambda c: c.id == 291764490578558977,
-		opguild.channels,
-	)
 	logging.info('logged in as %s with id %s', wrapper.client.user.name, wrapper.client.user.id)
 	await wrapper.client.change_presence(game=discord.Game(name=config.get_s('gamestatus')))
 	embed = discord.Embed(
@@ -1686,10 +1679,10 @@ async def on_guild_join(guild):
 			name=utils.mdspecialchars(guild.name),
 			id=guild.id,
 		),
-		colour=opguild.me.colour,
+		colour=wrapper.client.get_guild(op_ids.ids['opguild']).me.colour,
 	)
 	em.set_image(url=guild.icon_url)
-	await opguild_botguilds.send(embed=em)
+	await wrapper.client.get_channel(op_ids.ids['bot_guilds']).send(embed=em)
 
 async def on_guild_remove(guild):
 	em = discord.Embed(
@@ -1698,7 +1691,7 @@ async def on_guild_remove(guild):
 			name=utils.mdspecialchars(guild.name),
 			id=guild.id,
 		),
-		colour=opguild.me.colour,
+		colour=wrapper.client.get_guild(op_ids.ids['opguild']).me.colour,
 	)
 	em.set_image(url=guild.icon_url)
-	await opguild_botguilds.send(embed=em)
+	await wrapper.client.get_channel(op_ids.ids['bot_guilds']).send(embed=em)
