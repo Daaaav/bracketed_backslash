@@ -514,21 +514,6 @@ async def on_message(m):
 		await m.delete()
 		bot.messages_deleted_by_bot.append(m)
 		return
-	# But react to the message as a hint to the message sender
-	if not priv and \
-	not checks.is_mod(m.author) and \
-	m.channel.id != 201130047736643584 and \
-	m.guild.id == productionguild and \
-	not command in ('rule', 'rules', 'rulefind', 'rulesfind') and \
-	not (m.channel.id == 256924583737819146 and command in ('votevoicemute', 'vy', 'vn')):
-		if utils.is_valid_command(command) and command != '':
-			await m.add_reaction(
-				discord.utils.get(
-					m.guild.emojis,
-					id=262051482549878796,
-				),
-			)
-		return
 	if not priv and \
 	m.guild.id == tntgbguild and \
 	m.channel != botschannel_tntgb and \
