@@ -176,20 +176,32 @@ async def _config(client, message, **kwargs):
 			try:
 				content += '\n{} [{}] = {}'.format(
 					c,
-					config.get_type(c) + ('*' if config.is_array(c) else ''),
+					config.get_type(c) + (
+						'*' if config.is_array(c) else
+						'&' if config.is_dic(c) else
+						''),
 					config.get_s(c, message.guild.id)
-					if not config.is_array(c)
+					if not (config.is_array(c) or config.is_dic(c))
 					else '[{}]'.format(len(config.get_s(c, message.guild.id))),
 				)
 				if config.is_detached(c, message.guild.id):
 					content += ' [local value]'
 			except AttributeError:
-				content += '\n{} [{}] = {}'.format(c, config.get_type(c) + ('*' if config.is_array(c) else ''), config.get_s(c) if not config.is_array(c) else '[{}]'.format(len(config.get_s(c))))
+				content += '\n{} [{}] = {}'.format(
+					c,
+					config.get_type(c) + (
+						'*' if config.is_array(c) else
+						'&' if config.is_dic(c) else
+						''),
+					(config.get_s(c)
+					if not (config.is_array(c) or config.is_dic(c))
+					else '[{}]'.format(len(config.get_s(c)))),
+				)
 		content += '\n```'
 		await bot.reply(message, content)
 		return
 
-	splitargs = kwargs['arguments'].split(' ', 2)
+	splitargs = kwargs['arguments'].split(' ', 3)
 
 	editingmaster = True
 
@@ -205,6 +217,10 @@ async def _config(client, message, **kwargs):
 			return
 		if config.is_array(splitargs[1]):
 			embed = emb.error('That doesn’t work for an array')
+			await bot.reply(message, emb=embed)
+			return
+		if config.is_dic(splitargs[1]):
+			embed = emb.error('That doesn’t work for a dic.')
 			await bot.reply(message, emb=embed)
 			return
 		if config.get_type(splitargs[1]) == 'int' and not splitargs[2].isdigit():
@@ -262,19 +278,24 @@ async def _config(client, message, **kwargs):
 		else:
 			try:
 				content += ' `{}`\nDefault: `{}`'.format(
-					config.get_s(splitargs[1], message.guild.id),
-					config.get_default(splitargs[1]),
+					str(config.get_s(splitargs[1], message.guild.id)),
+					str(config.get_default(splitargs[1])),
 				)
 			except AttributeError:
-				content += ' `{}`\nDefault: `{}`'.format(config.get_s(splitargs[1]), config.get_default(splitargs[1]))
+				content += ' `{}`\nDefault: `{}`'.format(
+					str(config.get_s(splitargs[1])),
+					str(config.get_default(splitargs[1])),
+				)
 		await bot.reply(message, content)
 	elif splitargs[0] == 'insert' or splitargs[0] == 'remove':
 		if not config.exists(splitargs[1]):
 			embed = emb.error('That setting does not exist')
 			await bot.reply(message, emb=embed)
 			return
-		if not config.is_array(splitargs[1]):
-			embed = emb.error('That doesn’t work for something that is not an array')
+		if not (config.is_array(splitargs[1]) or config.is_dic(splitargs[1])):
+			embed = emb.error(
+				'That doesn’t work for something that is not an array or dic',
+			)
 			await bot.reply(message, emb=embed)
 			return
 		if config.get_type(splitargs[1]) == 'int' and not splitargs[2].isdigit():
@@ -283,34 +304,69 @@ async def _config(client, message, **kwargs):
 			return
 		if splitargs[0] == 'insert':
 			try:
-				config.insert_s(splitargs[1], splitargs[2], message.guild.id)
-				editingmaster = not config.is_detached(
-					splitargs[1],
-					message.guild.id,
-				)
+				if config.is_dic(splitargs[1]):
+					config.insert_dic_s(
+						splitargs[1],
+						splitargs[2],
+						splitargs[3],
+						message.guild.id,
+					)
+				elif config.is_array(splitargs[1]):
+					config.insert_s(
+						splitargs[1],
+						splitargs[2],
+						message.guild.id,
+					)
+					editingmaster = not config.is_detached(
+						splitargs[1],
+						message.guild.id,
+					)
 			except AttributeError:
-				config.insert_s(splitargs[1], splitargs[2])
-			embed = emb.success('Inserted `{}` into array `{}`{}'.format(
+				if config.is_dic(splitargs[1]):
+					config.insert_dic_s(
+						splitargs[1],
+						splitargs[2],
+						splitargs[3],
+					)
+				elif config.is_array(splitargs[1]):
+					config.insert_s(splitargs[1], splitargs[2])
+			embed = emb.success('Inserted `{0}` into {type} `{1}`{2}'.format(
 					utils.wrapbackticks(
 						config.input_to_type_key(splitargs[2], splitargs[1])
 					), splitargs[1],
-					bot.t['editingmasterval'] if editingmaster else ''
+					bot.t['editingmasterval'] if editingmaster else '',
+					type=config.get_type(splitargs[1]),
 				)
 			)
 		else:
 			try:
-				config.remove_s(splitargs[1], splitargs[2], message.guild.id)
+				if config.is_dic(splitargs[1]):
+					config.remove_dic_s(
+						splitargs[1],
+						splitargs[2],
+						message.guild.id,
+					)
+				elif config.is_array(splitargs[1]):
+					config.remove_s(
+						splitargs[1],
+						splitargs[2],
+						message.guild.id,
+					)
 				editingmaster = not config.is_detached(
 					splitargs[1],
 					message.guild.id,
 				)
 			except AttributeError:
-				config.remove_s(splitargs[1], splitargs[2])
-			embed = emb.success('Removed `{}` from array `{}`{}'.format(
+				if config.is_dic(splitargs[1]):
+					config.remove_dic_s(splitargs[1], splitargs[2])
+				elif config.is_array(splitargs[1]):
+					config.remove_s(splitargs[1], splitargs[2])
+			embed = emb.success('Removed `{}` from {type} `{}`{}'.format(
 					utils.wrapbackticks(
 						config.input_to_type_key(splitargs[2], splitargs[1])
 					), splitargs[1],
-					bot.t['editingmasterval'] if editingmaster else ''
+					bot.t['editingmasterval'] if editingmaster else '',
+					type=config.get_type(splitargs[1]),
 				)
 			)
 		config.saveconfig()
