@@ -1304,30 +1304,30 @@ async def on_guild_emojis_update(guild, b, a):
 	await schan.send(embed=embed)
 
 async def on_voice_state_update(member, old, new):
-	if old.voice_channel == new.voice_channel:
+	if old.channel == new.channel:
 		return
 
 	vtcs = [
 		member.guild.get_channel(i) for i in config.get_s(
-			'voicechat_channel_text', new.guild.id,
+			'voicechat_channel_text', member.guild.id,
 		)
 	]
 	vvcs = [
 		member.guild.get_channel(i) for i in config.get_s(
-			'voicechat_channel_voice', new.guild.id,
+			'voicechat_channel_voice', member.guild.id,
 		)
 	]
 
 	for vtc, vvc in zip(vtcs, vvcs):
-		if new.voice_channel and new.voice_channel == vvc:
+		if new.channel is not None and new.channel == vvc:
 			# Joined the voice channel
 			ow = discord.PermissionOverwrite(read_messages=True)
-			await vtc.set_permissions(member, ow)
+			await vtc.set_permissions(member, overwrite=ow)
 			break
 
-		if old.voice_channel and old.voice_channel == vvc:
+		if old.channel is not None and old.channel == vvc:
 			# Left the voice channel
-			await vtc.set_permissions(new, None)
+			await vtc.set_permissions(member, overwrite=None)
 			break
 
 async def on_guild_channel_create(c):
