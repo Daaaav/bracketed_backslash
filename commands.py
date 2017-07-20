@@ -2634,3 +2634,13 @@ async def archive(client, message, **kwargs):
 		except discord.HTTPException:
 			em = emb.error('An error occurred while uploading the file.')
 			await bot.reply(message, emb=em)
+
+@shadow(auth=checks.is_host)
+async def reload(client, message, **kwargs):
+	embed = emb.success('Reloading.')
+	utils.logcommand(kwargs['command'], kwargs['arguments'], message)
+	await bot.reply(message, emb=embed)
+	__main__ = __import__('__main__')
+	if hasattr(__main__.recursive_reload, 'reloaded_modules'):
+		__main__.recursive_reload.reloaded_modules = []
+	__main__.reload_bot()

@@ -14,18 +14,17 @@ import discord
 
 import config
 import events
+import wrapper
 
 config.load()
 
 version = '1.0'
 
-client = discord.Client(max_messages=999999999) # defines all client.* commands
-
 def load_events():
 	global events
 	events = importlib.reload(events)
 	for i in inspect.getmembers(events, inspect.isfunction):
-		client.event(i[1])
+		wrapper.client.event(i[1])
 
 load_events()
 

@@ -19,6 +19,7 @@ import config
 import customcommands
 import events
 import op_ids
+import wrapper
 
 def mdspecialchars(string, character='\\'):
 	"""Return a Markdown-escaped version of a given string, for use in message output."""
@@ -331,11 +332,11 @@ async def id_lookup(uid):
 	"""
 
 	# Look through all members the bot can see for any matching the ID
-	member = bot.client.get_user(uid)
+	member = wrapper.client.get_user(uid)
 
 	if member is None:
 		# Look up the ID by banning it
-		opguild = bot.client.get_guild(op_ids.ids['opguild'])
+		opguild = wrapper.client.get_guild(op_ids.ids['opguild'])
 		try:
 			await opguild.ban(uid, delete_message_days=0)
 		except discord.errors.HTTPException:
@@ -452,7 +453,7 @@ def listroles_id(lijst):
 def getspecialchannel(guild):
 	theconfig = config.get_s('specialchannel', guild.id)
 	if theconfig != '0':
-		return bot.client.get_channel(id=theconfig)
+		return wrapper.client.get_channel(id=theconfig)
 	return guild.default_channel
 
 def getspecialchannel_reply(message):
@@ -560,7 +561,7 @@ async def handleExpiryTimer():
 		logging.info('Set expiry timer for %s seconds', timertime)
 
 def callAutoExpiry():
-	asyncio.run_coroutine_threadsafe(autoExpiry(), bot.client.loop)
+	asyncio.run_coroutine_threadsafe(autoExpiry(), wrapper.client.loop)
 
 async def autoExpiry():
 	"""Called by timers
@@ -574,7 +575,7 @@ async def autoExpiry():
 		content = ''
 		successfulresets = []
 
-		cguild = discord.utils.get(bot.client.guilds, id=guildid)
+		cguild = discord.utils.get(wrapper.client.guilds, id=guildid)
 		for userid in events.rolexpires[guildid]:
 			if events.rolexpires[guildid][userid]['time'] <= now:
 				try:

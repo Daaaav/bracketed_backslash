@@ -19,9 +19,40 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import inspect
+import importlib
 import logging
+import pkgutil
 
 import bot
+import wrapper
+
+def reload_bot():
+	global bot
+	bot = importlib.reload(bot)
+
+	include = [name for _, name, _ in pkgutil.iter_modules(['.'])]
+	include.remove('bot')
+	include.remove('wrapper')
+	include.remove('main')
+
+	recursive_reload(bot, include=include)
+
+	bot.config.load()
+	bot.load_events()
+
+def recursive_reload(module, *, include=None):
+	if not hasattr(recursive_reload, 'reloaded_modules'):
+		recursive_reload.reloaded_modules = []
+
+	if include is None:
+		include = []
+
+	for name, member in inspect.getmembers(module, inspect.ismodule):
+		if name in include and name not in recursive_reload.reloaded_modules:
+			recursive_reload.reloaded_modules.append(name)
+			setattr(module, name, importlib.reload(member))
+			recursive_reload(member, include=include)
 
 logging.basicConfig(level=logging.INFO)
 
@@ -29,4 +60,4 @@ with open('bot_token.conf', 'r') as f:
 	token = f.readline(60).split('\n')[0]
 
 if __name__ == '__main__':
-	bot.client.run(token)
+	wrapper.client.run(token)

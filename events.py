@@ -18,6 +18,7 @@ import emb
 import hangman
 import op_ids
 import utils
+import wrapper
 
 memberroles = {}
 rolexpires = {}
@@ -37,27 +38,27 @@ latestroled = ''
 async def on_ready():
 	global memberroles, rules, disabledrules, botschannel, botschannel_tntgb, \
 	banlogchannel_tntgb, rolexpires, opguild, opguild_botguilds
-	guild = discord.utils.get(bot.client.guilds, id=productionguild)
-	guild_tntgb = discord.utils.get(bot.client.guilds, id=tntgbguild)
+	guild = discord.utils.get(wrapper.client.guilds, id=productionguild)
+	guild_tntgb = discord.utils.get(wrapper.client.guilds, id=tntgbguild)
 	specialchannel_prod = discord.utils.get(guild.channels, id=234185735266238464)
 	botschannel = discord.utils.get(guild.channels, id=201130047736643584)
 	botschannel_tntgb = discord.utils.get(guild_tntgb.channels, id=266626198249930764)
 	banlogchannel_tntgb = discord.utils.get(guild_tntgb.channels, id=242253449922609152)
-	opguild = discord.utils.find(lambda s: s.id == bot.opguildid, bot.client.guilds)
+	opguild = discord.utils.find(lambda s: s.id == bot.opguildid, wrapper.client.guilds)
 	opguild_botguilds = discord.utils.find(
 		lambda c: c.id == 291764490578558977,
 		opguild.channels,
 	)
-	logging.info('logged in as %s with id %s', bot.client.user.name, bot.client.user.id)
-	await bot.client.change_presence(game=discord.Game(name=config.get_s('gamestatus')))
+	logging.info('logged in as %s with id %s', wrapper.client.user.name, wrapper.client.user.id)
+	await wrapper.client.change_presence(game=discord.Game(name=config.get_s('gamestatus')))
 	embed = discord.Embed(
 		title='🔌BOT CONNECTED',
 		colour=discord.utils.find(
-			lambda s: s.id == op_ids.ids['opguild'], bot.client.guilds,
+			lambda s: s.id == op_ids.ids['opguild'], wrapper.client.guilds,
 		).me.colour,
 	)
 	embed.add_field(name='Startup Time', value=utils.reltime(bot.boottimeunix))
-	await bot.client.get_channel(int(op_ids.ids['opguild_chans']['connections'])).send(
+	await wrapper.client.get_channel(int(op_ids.ids['opguild_chans']['connections'])).send(
 		embed=embed,
 	)
 
@@ -70,7 +71,7 @@ async def on_ready():
 			if config.get_s('rolecachemode', gld) == 0:
 				continue
 			rcwarnings = ''
-			for mem in bot.client.get_guild(gld).members:
+			for mem in wrapper.client.get_guild(gld).members:
 				if not str(mem.id) in memberroles[gld]:
 					if len(mem.roles) >= 2:
 						rcwarnings += '\nUser {}#{} ({}) is not in the cache! (They’re suddenly in the server.) Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
@@ -106,7 +107,7 @@ async def on_ready():
 					+ rcwarnings
 				)
 				await utils.getspecialchannel(
-						discord.utils.get(bot.client.guilds, id=gld)
+						discord.utils.get(wrapper.client.guilds, id=gld)
 				).send(rcwarnings[:1900])
 
 	except FileNotFoundError:
@@ -122,7 +123,7 @@ async def on_ready():
 				json.dump(memberroles, outfile)
 
 			logging.info('Exiting (aka restarting) now to make the conversion go smoothly...')
-			await bot.client.logout()
+			await wrapper.client.logout()
 			sys.exit(43)
 		except FileNotFoundError:
 			logging.info('memberroles file does not exist yet so creating it now')
@@ -174,12 +175,12 @@ async def on_ready():
 
 	await utils.handleExpiryTimer()
 
-	for chan in bot.client.get_all_channels():
+	for chan in wrapper.client.get_all_channels():
 		if isinstance(chan, discord.TextChannel):
 			msgs = chan.history()
 			try:
 				async for m in msgs:
-					bot.client._connection._messages.append(m)
+					wrapper.client._connection._messages.append(m)
 			except discord.errors.Forbidden:
 				logging.info(
 					'Failed to retrieve message history for'
@@ -188,24 +189,24 @@ async def on_ready():
 				)
 
 	# Now set up our own cache, that Discord.py won't remove messages from before telling us!
-	for m in bot.client._connection._messages:
+	for m in wrapper.client._connection._messages:
 		bot.owncache.append(m.id)
 
 async def on_message(m):
 	bot.owncache.append(m.id)
 
-	if m.author == bot.client.user or m.author.bot:
+	if m.author == wrapper.client.user or m.author.bot:
 		return
 
 	if isinstance(m.channel, discord.abc.PrivateChannel):
 		e = discord.Embed(
 			description=m.content,
 			timestamp=m.created_at,
-			colour=bot.client.get_guild(op_ids.ids['opguild']).me.colour,
+			colour=wrapper.client.get_guild(op_ids.ids['opguild']).me.colour,
 		)
 		e.set_author(name=m.author.name, icon_url=m.author.avatar_url)
 		e.set_footer(text=utils.id_summary(uid=m.author.id, mid=m.id, cid=m.channel.id))
-		await bot.client.get_channel(op_ids.ids['opguild_chans']['direct_messages']).send(
+		await wrapper.client.get_channel(op_ids.ids['opguild_chans']['direct_messages']).send(
 			embed=e,
 		)
 
@@ -615,7 +616,7 @@ async def on_message(m):
 		'sudo': False,
 	}
 	try:
-		await func[0](bot.client, m, **kwargs)
+		await func[0](wrapper.client, m, **kwargs)
 	except discord.errors.Forbidden:
 		e = emb.error(bot.t['no_permission'])
 		await bot.reply(m, emb=e)
@@ -629,7 +630,7 @@ async def on_message_delete(msg):
 	bot.deleted_messages.append(msg)
 	if utils.isprivatemessage(msg.guild):
 		return
-	if msg.author == bot.client.user:
+	if msg.author == wrapper.client.user:
 		logging.info(
 			'bot message %s by user %s#%s (%s)'
 			' in channel %s (%s) at %s utc deleted,'
@@ -1423,14 +1424,14 @@ async def on_guild_channel_delete(c):
 
 async def on_raw_message_delete(message_id, channel_id):
 	# We must first know what channel it is
-	mchan = bot.client.get_channel(channel_id)
+	mchan = wrapper.client.get_channel(channel_id)
 	if isinstance(mchan, discord.abc.PrivateChannel) or \
 	utils.logdisabled('message_deleteuncached', mchan.guild):
 			return
 	# Check if on_message_delete() was already called by this message
 	# If it was, then return
 	if discord.utils.find(
-		lambda m: m.id == message_id, bot.client._connection._messages,
+		lambda m: m.id == message_id, wrapper.client._connection._messages,
 	) != None:
 		# If the message lingers in deleted_messages, it doesn't really matter for now
 		return
@@ -1459,13 +1460,13 @@ async def on_raw_message_delete(message_id, channel_id):
 
 async def on_raw_message_edit(message_id, data):
 	# We must first know what channel it is
-	mchan = bot.client.get_channel(int(data['channel_id']))
+	mchan = wrapper.client.get_channel(int(data['channel_id']))
 	if isinstance(mchan, discord.abc.PrivateChannel) or \
 	utils.logdisabled('message_updateuncached', mchan.guild):
 		return
 	# Check if the message is in the cache and return if it is
 	if discord.utils.find(
-		lambda m: m.id == message_id, bot.client._connection._messages,
+		lambda m: m.id == message_id, wrapper.client._connection._messages,
 	) != None:
 		return
 
@@ -1525,14 +1526,14 @@ async def on_raw_message_edit(message_id, data):
 
 async def on_raw_reaction_add(emoji, message_id, channel_id, user_id):
 	# We must first know what channel it is
-	mchan = bot.client.get_channel(channel_id)
+	mchan = wrapper.client.get_channel(channel_id)
 	if isinstance(mchan, discord.abc.PrivateChannel) or \
 	utils.logdisabled('reaction_adduncached', mchan.guild):
 		return
 
 	# Check if the message is in the cache and return if it is
 	if discord.utils.find(
-		lambda m: m.id == message_id, bot.client._connection._messages,
+		lambda m: m.id == message_id, wrapper.client._connection._messages,
 	) != None:
 		return
 
@@ -1578,13 +1579,13 @@ async def on_raw_reaction_add(emoji, message_id, channel_id, user_id):
 
 async def on_raw_reaction_remove(emoji, message_id, channel_id, user_id):
 	# We must first know what channel it is
-	mchan = bot.client.get_channel(channel_id)
+	mchan = wrapper.client.get_channel(channel_id)
 	if isinstance(mchan, discord.abc.PrivateChannel) or \
 	utils.logdisabled('reaction_removeuncached', mchan.guild):
 		return
 	# Check if the message is in the cache and return if it is
 	if discord.utils.find(
-		lambda m: m.id == message_id, bot.client._connection._messages,
+		lambda m: m.id == message_id, wrapper.client._connection._messages,
 	) != None:
 		return
 
@@ -1628,13 +1629,13 @@ async def on_raw_reaction_remove(emoji, message_id, channel_id, user_id):
 
 async def on_raw_reaction_clear(message_id, channel_id):
 	# We must first know what channel it is
-	mchan = bot.client.get_channel(channel_id)
+	mchan = wrapper.client.get_channel(channel_id)
 	if isinstance(mchan, discord.abc.PrivateChannel) or \
 	utils.logdisabled('reaction_clearuncached', mchan.guild):
 		return
 	# Check if the message is in the cache and return if it is
 	if discord.utils.find(
-		lambda m: m.id == message_id, bot.client._connection._messages,
+		lambda m: m.id == message_id, wrapper.client._connection._messages,
 	) != None:
 		return
 
