@@ -13,7 +13,7 @@ import logging
 # rid: role ID
 # cid: channel ID (channels can be mentioned)
 # gid: guild ID
-# cus: dictionary
+# dic: dictionary
 configs = {
 	'gamestatus': {
 		'default': '​',
@@ -223,7 +223,7 @@ def set_s(skey, value, guildid=None):
 	if is_array(skey):
 		raise TypeError('Array options cannot be set using the standard config.set_s() function!')
 		return
-	if get_type(skey) == 'cus':
+	if get_type(skey) == 'dic':
 		raise TypeError(
 			'Custom options cannot be set using the standard config.set_s() function!'
 		)
@@ -250,10 +250,25 @@ def remove_s(skey, value, guildid=None):
 	else:
 		s[skey]['master'].remove(input_to_type_key(value, skey))
 
+def insert_dic_s(skey, indice, value, guild_id=None):
+	if not is_dic(skey):
+		raise TypeError("cannot insert an indice into an option that isn't a dic")
+	if guild_id is None or guild_id not in s[skey]:
+		guild_id = 'master'
+	base = s[skey][guild_id]
+	base[indice] = input_to_type_key(value, skey)
+
+def remove_dic_s(skey, indice, guild_id=None):
+	if not is_dic(skey):
+		raise TypeError("cannot remove an indice from an option that isn't a dic")
+	if guild_id is None or guild_id not in s[skey]:
+		guild_id = 'master'
+	del s[skey][guild_id][indice]
+
 def restore_default(skey, guildid=None):
-	if is_array(skey) and guildid is not None and guildid in s[skey]:
+	if (is_array(skey) or is_dic(skey)) and guildid is not None and guildid in s[skey]:
 		s[skey][guildid] = copy.deepcopy(get_default(skey))
-	elif is_array(skey):
+	elif is_array(skey) or is_dic(skey):
 		s[skey]['master'] = copy.deepcopy(get_default(skey))
 	else:
 		set_s(skey, get_default(skey), guildid)
@@ -277,6 +292,9 @@ def exists(skey):
 
 def is_array(skey):
 	return configs[skey]['is_array']
+
+def is_dic(skey):
+	return configs[skey]['type'] == 'dic'
 
 def is_detachable(skey):
 	return configs[skey]['detachable']
