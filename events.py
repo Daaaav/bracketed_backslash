@@ -27,7 +27,6 @@ disabledrules = []
 botschannel = None
 botschannel_tntgb = None
 banlogchannel_tntgb = None
-productionguild = 153368829160849408
 tntgbguild = 242099933665034240
 
 msg_start = ''
@@ -36,10 +35,7 @@ latestroled = ''
 async def on_ready():
 	global memberroles, rules, disabledrules, botschannel, botschannel_tntgb, \
 	banlogchannel_tntgb, rolexpires
-	guild = discord.utils.get(wrapper.client.guilds, id=productionguild)
 	guild_tntgb = discord.utils.get(wrapper.client.guilds, id=tntgbguild)
-	specialchannel_prod = discord.utils.get(guild.channels, id=234185735266238464)
-	botschannel = discord.utils.get(guild.channels, id=201130047736643584)
 	botschannel_tntgb = discord.utils.get(guild_tntgb.channels, id=266626198249930764)
 	banlogchannel_tntgb = discord.utils.get(guild_tntgb.channels, id=242253449922609152)
 	logging.info('logged in as %s with id %s', wrapper.client.user.name, wrapper.client.user.id)
@@ -104,31 +100,10 @@ async def on_ready():
 				).send(rcwarnings[:1900])
 
 	except FileNotFoundError:
-		# Maybe we do have an old members.json?
-		try:
-			with open('members.json', 'r') as infile:
-				memberrolesold = json.load(infile)
-			# Convert it to the new system where all guilds can use it!
-			logging.info('CONVERTING OLD members.json TO memberroles.json')
-			memberroles = {productionguild: memberrolesold}
+		logging.info('memberroles file does not exist yet so creating it now')
 
-			with open('memberroles.json', 'w') as outfile:
-				json.dump(memberroles, outfile)
-
-			logging.info('Exiting (aka restarting) now to make the conversion go smoothly...')
-			await wrapper.client.logout()
-			sys.exit(43)
-		except FileNotFoundError:
-			logging.info('memberroles file does not exist yet so creating it now')
-
-			with open('memberroles.json', 'w') as outfile:
-				json.dump(memberroles, outfile)
-
-			await specialchannel_prod.send(
-				'Members file didn’t yet exist, created a new one.'
-				' Please run `\\rolesync` to sync up the roles cache.',
-			)
-
+		with open('memberroles.json', 'w') as outfile:
+			json.dump(memberroles, outfile)
 	try:
 		with open('rules.json', 'r') as infile:
 			rules = {int(k): v for k, v in json.load(infile).items()}
@@ -137,9 +112,6 @@ async def on_ready():
 
 		with open('rules.json', 'w') as outfile:
 			json.dump(rules, outfile)
-
-		await specialchannel_prod.send('Rules file didn’t exist yet, created a new one.')
-
 	try:
 		with open('disabledrules.json', 'r') as infile:
 			disabledrules = [int(i) for i in json.load(infile)]
@@ -148,11 +120,6 @@ async def on_ready():
 
 		with open('disabledrules.json', 'w') as outfile:
 			json.dump(disabledrules, outfile)
-
-		await specialchannel_prod.send(
-			'Disabledrules file didn’t exist yet, created a new one.',
-		)
-
 	try:
 		with open('rolexpires.json', 'r') as infile:
 			rolexpires = {int(k): v for k, v in json.load(infile).items()}
@@ -161,10 +128,6 @@ async def on_ready():
 
 		with open('rolexpires.json', 'w') as outfile:
 			json.dump(rolexpires, outfile)
-
-		await specialchannel_prod.send(
-			'Rolexpires file didn’t exist yet, created a new one.',
-		)
 
 	await utils.handleExpiryTimer()
 
