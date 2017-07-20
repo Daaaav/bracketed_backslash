@@ -1537,10 +1537,6 @@ async def _eval(client, message, **kwargs):
 		splitargs = kwargs['arguments'].split(' ', 1)
 		evalvar = splitargs[0]
 		evaluate = splitargs[1]
-	entireoutput = ''
-	def output(request : str):
-		nonlocal entireoutput
-		entireoutput += request + '\n'
 	env = {
 		'message': message,
 		'guild': message.guild,
