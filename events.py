@@ -975,7 +975,7 @@ async def on_member_unban(guild, user):
 		return
 	specialchannel = utils.getspecialchannel(guild)
 	msg = (
-		'**`>`**<:doormat:239361673532669953>`user` **``{}``**`#{}` `({})'
+		'**`>`**\N{BABY ANGEL}`user` **``{}``**`#{}` `({})'
 		' unbanned from server {} ({})`'
 	).format(
 		utils.wrapbackticks(user.name), user.discriminator, user.id, guild.name, guild.id,
