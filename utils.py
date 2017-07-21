@@ -650,7 +650,7 @@ async def givetakeroles(member, guild, giveids, takeids):
 		if role in addingtheseroles:
 			# Oh, we already have that one
 			addingtheseroles.remove(role)
-		if not role.is_everyone:
+		if not role.is_default():
 			# If we're going to need to replace roles, keep these the same!
 			otherroles.append(role)
 	if not addingtheseroles and not removingtheseroles:
@@ -658,7 +658,7 @@ async def givetakeroles(member, guild, giveids, takeids):
 		return
 	if addingtheseroles and removingtheseroles:
 		# Replace - luckily the union of these is this simple!
-		await member.edit(roles=[addingtheseroles] + [otherroles])
+		await member.edit(roles=addingtheseroles + otherroles)
 	elif addingtheseroles:
 		# Only adding
 		await member.add_roles(*addingtheseroles)
@@ -668,7 +668,7 @@ async def givetakeroles(member, guild, giveids, takeids):
 
 async def editexpirymessage(cguild, thisexpiry):
 	# We want to edit a message to reflect the ban!
-	getmessage = discord.utils.get(
+	getmessage = await discord.utils.get(
 		cguild.channels,
 		id=thisexpiry['msgedit_channel']
 	).get_message(thisexpiry['msgedit_message'])
@@ -696,7 +696,7 @@ def removeexpiryentry(guildid, memberid):
 	if guildid not in events.rolexpires:
 		return False
 
-	if guildid not in events.rolexpires[guildid]:
+	if memberid not in events.rolexpires[guildid]:
 		return False
 
 	del events.rolexpires[guildid][memberid]
@@ -778,7 +778,7 @@ async def newmemberroles(member, specialchannel, bypassjoinchannel):
 			# They're found in the database! Give them the groups they should have
 			for rid in events.memberroles[member.guild.id][member.id]:
 				addingrole = discord.utils.get(member.guild.roles, id=rid)
-				if addingrole.is_everyone:
+				if addingrole.is_default():
 					continue
 				addingtheseroles.append(addingrole)
 			await member.add_roles(*addingtheseroles)
@@ -796,3 +796,15 @@ async def newmemberroles(member, specialchannel, bypassjoinchannel):
 					discord.utils.get(member.guild.roles, id=rid)
 				)
 			await member.send(*addingtheseroles)
+
+def convert_id_keys_to_int(dictionary):
+	result = {}
+
+	for key, value in dictionary.items():
+		if isinstance(key, str) and key.isdigit():
+			key = int(key)
+		if isinstance(value, dict):
+			value = convert_id_keys_to_int(value)
+		result.update({key: value})
+
+	return result

@@ -19,6 +19,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import discord
+
+import config
 import op_ids
 
 def is_admin(member):
@@ -62,14 +65,23 @@ def is_operator(member):
 	return member.id in op_ids.ids['operators'] or member.id == op_ids.ids['host']
 
 def is_tntgb_mod(member):
-	for role in member.roles:
-		if role.id == 266590337269497856: # TNTGB moderator role
-			return True
-	return False
+	if member.guild is None or \
+	(not config.is_detached('tntgb', member.guild.id)) or \
+	'mod_role' not in config.get_s('tntgb', member.guild.id):
+		return False
+
+	return discord.utils.find(
+		lambda r: r.id == config.get_s('tntgb', member.guild.id)['mod_role'],
+		member.roles,
+	) is not None
 
 def is_tntgb_banned(member):
-	for role in member.roles:
-		if role.id == 243076976565288960: # TNTGB banned role
+	if member.guild is None or not config.is_detached('restrictiveroles', member.guild.id):
+		return False
+
+	for role_id in config.get_s('restrictiveroles', member.guild.id):
+		if \
+		discord.utils.find(lambda r: r.id == role_id, member.guild.roles) in member.roles:
 			return True
 	return False
 

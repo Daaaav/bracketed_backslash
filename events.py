@@ -24,20 +24,12 @@ memberroles = {}
 rolexpires = {}
 rules = {}
 disabledrules = []
-botschannel = None
-botschannel_tntgb = None
-banlogchannel_tntgb = None
-tntgbguild = 242099933665034240
 
 msg_start = ''
 latestroled = ''
 
 async def on_ready():
-	global memberroles, rules, disabledrules, botschannel, botschannel_tntgb, \
-	banlogchannel_tntgb, rolexpires
-	guild_tntgb = discord.utils.get(wrapper.client.guilds, id=tntgbguild)
-	botschannel_tntgb = discord.utils.get(guild_tntgb.channels, id=266626198249930764)
-	banlogchannel_tntgb = discord.utils.get(guild_tntgb.channels, id=242253449922609152)
+	global memberroles, rules, disabledrules, rolexpires
 	logging.info('logged in as %s with id %s', wrapper.client.user.name, wrapper.client.user.id)
 	await wrapper.client.change_presence(game=discord.Game(name=config.get_s('gamestatus')))
 	embed = discord.Embed(
@@ -53,7 +45,7 @@ async def on_ready():
 
 	try:
 		with open('memberroles.json', 'r') as infile:
-			memberroles = {int(k): v for k, v in json.load(infile).items()}
+			memberroles = utils.convert_id_keys_to_int(json.load(infile))
 
 		# Now look what I've woken up to.
 		for gld in memberroles:
@@ -61,18 +53,18 @@ async def on_ready():
 				continue
 			rcwarnings = ''
 			for mem in wrapper.client.get_guild(gld).members:
-				if not str(mem.id) in memberroles[gld]:
+				if not mem.id in memberroles[gld]:
 					if len(mem.roles) >= 2:
 						rcwarnings += '\nUser {}#{} ({}) is not in the cache! (They’re suddenly in the server.) Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
 
 						# Possibly redundant list() tbh, just making sure
 						# since I can't test and I don't know python well
 						# enough to know whether it's redundant
-						memberroles[gld][str(mem.id)] = \
+						memberroles[gld][mem.id] = \
 						list(utils.rolelist(mem.roles))
 
 					continue
-				if set(memberroles[gld][str(mem.id)]) != \
+				if set(memberroles[gld][mem.id]) != \
 				set(utils.rolelist(mem.roles)):
 					rcwarnings += (
 						'\n'
@@ -81,7 +73,7 @@ async def on_ready():
 						'    **`Seen:`** {}'
 					).format(
 						mem.name, mem.discriminator, mem.id,
-						utils.listroles_id(memberroles[gld][str(mem.id)]),
+						utils.listroles_id(memberroles[gld][mem.id]),
 						utils.listroles(mem.roles),
 					)
 			if rcwarnings:
@@ -106,7 +98,7 @@ async def on_ready():
 			json.dump(memberroles, outfile)
 	try:
 		with open('rules.json', 'r') as infile:
-			rules = {int(k): v for k, v in json.load(infile).items()}
+			rules = utils.convert_id_keys_to_int(json.load(infile))
 	except FileNotFoundError:
 		logging.info('rules file does not exist yet so creating it now')
 
@@ -122,7 +114,7 @@ async def on_ready():
 			json.dump(disabledrules, outfile)
 	try:
 		with open('rolexpires.json', 'r') as infile:
-			rolexpires = {int(k): v for k, v in json.load(infile).items()}
+			rolexpires = utils.convert_id_keys_to_int(json.load(infile))
 	except FileNotFoundError:
 		logging.info('rolexpires file does not exist yet so creating it now')
 
@@ -478,16 +470,11 @@ async def on_message(m):
 		bot.messages_deleted_by_bot.append(m)
 		return
 	if not priv and \
-	m.guild.id == tntgbguild and \
-	m.channel != botschannel_tntgb and \
-	not checks.is_tntgb_mod(m.author) and \
-	command != 'selfban':
-		return
-	if not priv and \
 	not checks.is_mod(m.author) and \
 	not config.get_s('alloweverywhere', m.guild.id) and \
 	not m.channel.id in config.get_s('allowedchannels', m.guild.id) and \
 	not command in config.get_s('globalcommands', m.guild.id):
+		print('failed check 1')
 		return
 	if not priv and command in config.get_s('disabledcommands', m.guild.id):
 		e = emb.error('This command is currently disabled{onthisguild}.'.format(
@@ -539,8 +526,14 @@ async def on_message(m):
 				await bot.reply(m, emb=e)
 			return
 
-	if isinstance(m.channel, discord.abc.PrivateChannel) and func[3]:
+	if isinstance(m.channel, discord.abc.PrivateChannel) and (func[3] or func[4]):
 		e = emb.error(bot.t['noprivate'])
+		await bot.reply(m, emb=e)
+		return
+	if func[4] and \
+	('active' not in config.get_s('tntgb', m.guild.id)
+	or not config.get_s('tntgb', m.guild.id)['active']):
+		e = emb.error(bot.t['tntgb_only'])
 		await bot.reply(m, emb=e)
 		return
 	if func[1] is not None and not func[1](m.author):

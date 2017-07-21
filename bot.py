@@ -13,6 +13,7 @@ import time
 import discord
 
 import config
+import emb
 import events
 import wrapper
 

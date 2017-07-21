@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import asyncio
 import contextlib
 import io
 import inspect
@@ -46,6 +47,7 @@ import hangman
 import images
 import op_ids
 import utils
+import wrapper
 
 op_ids.load()
 
@@ -53,7 +55,7 @@ op_ids.load()
 
 commands = {}
 
-def shadow(auth=None, aliases=None, guildonly=False):
+def shadow(auth=None, aliases=None, guildonly=False, tntgbguildonly=False):
 	def living_shadow(func):
 		name = func.__name__
 		matchargs = [r'__[0-9a-f]{4}', name, re.IGNORECASE]
@@ -66,7 +68,7 @@ def shadow(auth=None, aliases=None, guildonly=False):
 				name = name.replace(encodings[count], symbols[count])
 		if name.startswith('_'):
 			name = name[1:]
-		commands[name] = [func, auth, aliases, guildonly]
+		commands[name] = [func, auth, aliases, guildonly, tntgbguildonly]
 	return living_shadow
 
 @shadow()
@@ -201,7 +203,7 @@ async def _config(client, message, **kwargs):
 		await bot.reply(message, content)
 		return
 
-	splitargs = kwargs['arguments'].split(' ', 3)
+	splitargs = kwargs['arguments'].split(' ', 2)
 
 	editingmaster = True
 
@@ -1701,12 +1703,11 @@ async def join(client, message, **kwargs):
 	embed = emb.error('What an odd place to be using this command!')
 	await bot.reply(message, emb=embed)
 
-@shadow(auth=checks.is_tntgb_mod, aliases=['b_mod'])
+@shadow(auth=checks.is_tntgb_mod, aliases=['b_mod'], tntgbguildonly=True)
 async def b(client, message, **kwargs):
-	if message.guild.id != events.tntgbguild:
-		embed = emb.error(bot.t['tntgb_only'])
-		await bot.reply(message, emb=embed)
-		return
+	ban_log_channel = config.get_s('tntgb', message.guild.id)['ban_log_channel']
+	ban_log_channel = message.guild.get_channel(ban_log_channel)
+
 	# Who are we banning, and for what reason?
 	if kwargs['arguments'].find('\n') != -1:
 		splitargs = kwargs['arguments'].split('\n', 1)
@@ -1750,13 +1751,14 @@ async def b(client, message, **kwargs):
 		# Technical messages:
 		content = 'Lifted bans:'
 
-		for _ in range(0, 2):
+		for _ in range(0, config.get_s('tntgb', message.guild.id)['mod_mistake_lifts']):
 			currentexpiry = utils.getearliestexpiry(message.guild.id)
 
 			if currentexpiry is None:
 				continue
 
-			try:
+			getmember = message.guild.get_member(currentexpiry[0])
+			if getmember is not None:
 				await utils.removeRestrictiveRoles(
 					message.guild.get_member(currentexpiry[0]),
 					message.guild
@@ -1764,7 +1766,7 @@ async def b(client, message, **kwargs):
 				content +='\n<@!{}> lifted normally'.format(
 					currentexpiry[0]
 				)
-			except (AttributeError, TypeError):
+			else:
 				# Look in the role cache
 				if utils.removerolecache(currentexpiry[0], message.guild.id):
 					utils.rolecachesave()
@@ -1801,7 +1803,13 @@ async def b(client, message, **kwargs):
 		await specialchannel.send(embed=embed)
 
 		# Now annouce it to the world
-		if len(expiredmentions) == 2:
+		if len(expiredmentions) > 2:
+			whose = 'The bans on {mention_list}{last_joiner}{last_mention} have'.format(
+				mention_list=', '.join(expiredmentions[:-1]),
+				last_joiner=', and ',
+				last_mention=expiredmentions[-1],
+			)
+		elif len(expiredmentions) == 2:
 			whose = 'The bans on {} and {} have'.format(
 				expiredmentions[0], expiredmentions[1]
 			)
@@ -1825,20 +1833,25 @@ async def b(client, message, **kwargs):
 			splitargs[1],
 			message.channel.mention
 		)
-		await events.banlogchannel_tntgb.send(announcemsg)
+		await ban_log_channel.send(announcemsg)
 		banningnonmod = False
 	else:
 		await targetmember.edit(
-			roles=discord.utils.get(message.guild.roles, id=243076976565288960),
+			roles=[
+				discord.utils.find(lambda r: r.id == role_id, message.guild.roles)
+				for role_id in config.get_s('restrictiveroles', message.guild.id)
+			],
 		)
-		announcemsg = '{} has been banned for 5 days by {} in {} for {}.'.format(
+		ban_days = str(config.get_s('tntgb', message.guild.id)['ban_days'])
+		announcemsg = '{} has been banned for {ban_days} days by {} in {} for {}.'.format(
 			targetmember.mention,
 			message.author.display_name,
 			message.channel.mention,
-			splitargs[1]
+			splitargs[1],
+			ban_days=ban_days,
 		)
 		content = '⛔ ' + announcemsg
-		sentmessage = await events.banlogchannel_tntgb.send(content)
+		sentmessage = await ban_log_channel.send(content)
 
 	# Now delete the calling message
 	await message.delete()
@@ -1846,24 +1859,20 @@ async def b(client, message, **kwargs):
 
 	if banningnonmod:
 		# Also set an expiry timer
-		expirytime = utils.parsereltime('5d')
+		expirytime = utils.parsereltime(ban_days + 'd')
 
 		utils.addexpiryentry(message.guild.id, targetmember.id, expirytime,
 			e_channel=sentmessage.channel.id, e_message=sentmessage.id,
 			e_newcontent='[LIFTED] ' + announcemsg,
-			p_channel=events.banlogchannel_tntgb.id,
+			p_channel=ban_log_channel.id,
 			p_content='The ban on {} has expired.'.format(targetmember.mention)
 		)
 
 		utils.rolexpiresave()
 		await utils.handleExpiryTimer()
 
-@shadow()
+@shadow(tntgbguildonly=True)
 async def selfban(client, message, **kwargs):
-	if message.guild.id != events.tntgbguild:
-		embed = emb.error(bot.t['tntgb_only'])
-		await bot.reply(message, emb=embed)
-		return
 	if checks.is_tntgb_banned(message.author):
 		# Wait, what?
 		embed = emb.warning('How, then? You are already banned!')
@@ -1883,23 +1892,33 @@ async def selfban(client, message, **kwargs):
 	if kwargs['arguments'] is None or kwargs['arguments'] == '':
 		kwargs['arguments'] = '(no given reason)'
 
-	await message.author.edit(
-		roles=discord.utils.get(message.guild.roles, id=243076976565288960)
-	)
-	announcemsg = '{} has carried out a self-ban for 5 days in {} for {}.'.format(
+	roles = []
+
+	for role_id in config.get_s('restrictiveroles', message.guild.id):
+		role = discord.utils.find(lambda r: r.id == role_id, message.guild.roles)
+
+		if role is not None:
+			roles.append(role)
+
+	await message.author.edit(roles=roles)
+	ban_days = config.get_s('tntgb', message.guild.id)['ban_days']
+	announcemsg = '{} has carried out a self-ban for {ban_days} days in {} for {}.'.format(
 		message.author.mention,
 		message.channel.mention,
-		kwargs['arguments']
+		kwargs['arguments'],
+		ban_days=ban_days,
 	)
 	content = '⛔ ' + announcemsg
-	sentmessage = await events.banlogchannel_tntgb.send(content)
+	ban_log_channel = config.get_s('tntgb', message.guild.id)['ban_log_channel']
+	ban_log_channel = message.guild.get_channel(ban_log_channel)
+	sentmessage = await ban_log_channel.send(content)
 
 	# Now delete the calling message
 	await message.delete()
 	bot.messages_deleted_by_bot.append(message)
 
 	# Also set an expiry timer
-	expirytime = utils.parsereltime('5d')
+	expirytime = utils.parsereltime(str(ban_days) + 'd')
 
 	utils.addexpiryentry(
 		message.guild.id,
@@ -1907,19 +1926,15 @@ async def selfban(client, message, **kwargs):
 		expirytime,
 		e_channel=sentmessage.channel.id, e_message=sentmessage.id,
 		e_newcontent='[LIFTED] ' + announcemsg,
-		p_channel=events.banlogchannel_tntgb.id,
+		p_channel=ban_log_channel.id,
 		p_content='The ban on {} has expired.'.format(message.author.mention),
 	)
 
 	utils.rolexpiresave()
 	await utils.handleExpiryTimer()
 
-@shadow(auth=checks.is_tntgb_mod, aliases=['b_left', 'b_offserver'])
+@shadow(auth=checks.is_tntgb_mod, aliases=['b_left', 'b_offserver'], tntgbguildonly=True)
 async def b_id(client, message, **kwargs):
-	if message.guild.id != events.tntgbguild:
-		embed = emb.error(bot.t['tntgb_only'])
-		await bot.reply(message, emb=embed)
-		return
 	# Who are we banning, and for what reason?
 	if kwargs['arguments'].find('\n') != -1:
 		splitargs = kwargs['arguments'].split('\n', 1)
@@ -1949,7 +1964,8 @@ async def b_id(client, message, **kwargs):
 
 		# Okay, removing their entry altogether was a bit drastic
 		events.memberroles[message.guild.id][request] = []
-		events.memberroles[message.guild.id][request].append(243076976565288960)
+		for role_id in config.get_s('restrictiveroles', message.guild.id):
+			events.memberroles[message.guild.id][request].append(role_id)
 
 		# Alright, just send a message about it now!
 		# The extra space is intentional, it's a 'hidden' indicator to
@@ -1961,7 +1977,9 @@ async def b_id(client, message, **kwargs):
 			splitargs[1]
 		)
 		content = '⛔ ' + announcemsg
-		sentmessage = await events.banlogchannel_tntgb.send(content)
+		ban_log_channel = config.get_s('tntgb', message.guild.id)['ban_log_channel']
+		ban_log_channel = message.guild.get_channel(ban_log_channel)
+		sentmessage = await ban_log_channel.send(content)
 
 		# Now delete the calling message
 		await message.delete()
@@ -1976,7 +1994,7 @@ async def b_id(client, message, **kwargs):
 			expirytime,
 			e_channel=sentmessage.channel.id, e_message=sentmessage.id,
 			e_newcontent='[LIFTED] ' + announcemsg,
-			p_channel=events.banlogchannel_tntgb.id,
+			p_channel=ban_log_channel.id,
 			p_content='The ban on <@!{}> has expired.'.format(request),
 		)
 
@@ -1986,12 +2004,8 @@ async def b_id(client, message, **kwargs):
 		# Okay, they are on the guild, so why not use \b?
 		await b(client, message, **kwargs)
 
-@shadow(auth=checks.is_tntgb_mod, aliases=['banrevert'])
+@shadow(auth=checks.is_tntgb_mod, aliases=['banrevert'], tntgbguildonly=True)
 async def revertban(client, message, **kwargs):
-	if message.guild.id != events.tntgbguild:
-		embed = emb.error(bot.t['tntgb_only'])
-		await bot.reply(message, emb=embed)
-		return
 	specialchannel = utils.getspecialchannel(message.guild)
 
 	targetmember = utils.match_input(
@@ -2030,17 +2044,16 @@ async def revertban(client, message, **kwargs):
 	utils.removeexpiryentry(message.guild.id, targetmember.id)
 	utils.rolexpiresave()
 
-@shadow(auth=checks.is_admin, aliases=['tntgb_maint_p'])
+@shadow(auth=checks.is_admin, aliases=['tntgb_maint_p'], tntgbguildonly=True)
 async def tntgb_maint(client, message, **kwargs):
-	if message.guild.id != events.tntgbguild:
-		embed = emb.error(bot.t['tntgb_only'])
-		await bot.reply(message, emb=embed)
-		return
 	splitargs = kwargs['arguments'].split(' ')
 
 	if kwargs['command'] == 'tntgb_maint_p':
 		embed = emb.info('Opening prompt for `{}`'.format(splitargs[0]))
 		await bot.reply(message, emb=embed)
+
+	ban_log_channel = config.get_s('tntgb', message.guild.id)['ban_log_channel']
+	ban_log_channel = message.guild.get_channel(ban_log_channel)
 
 	while True:
 		if kwargs['command'] == 'tntgb_maint_p':
@@ -2061,7 +2074,7 @@ async def tntgb_maint(client, message, **kwargs):
 			splitargs[1] = message2.content
 		output = ''
 		if splitargs[0] == 'liftmsg':
-			getmessage = await events.banlogchannel_tntgb.get_message(splitargs[1])
+			getmessage = await ban_log_channel.get_message(splitargs[1])
 			content = getmessage.content
 			if content.find('⛔') == -1:
 				embed = emb.error('Cannot find the ⛔!')
@@ -2071,7 +2084,7 @@ async def tntgb_maint(client, message, **kwargs):
 			await getmessage.edit(new_content=content)
 			output = 'Edited successfully.'
 		elif splitargs[0] == 'addtimer':
-			getmessage = events.banlogchannel_tntgb.get_message(splitargs[1])
+			getmessage = ban_log_channel.get_message(splitargs[1])
 			content = getmessage.content
 			m = re.search('<@!?([0-9]+)>', content)
 			if m is None:
@@ -2100,7 +2113,7 @@ async def tntgb_maint(client, message, **kwargs):
 					e_channel=getmessage.channel.id,
 					e_message=getmessage.id,
 					e_newcontent=content,
-					p_channel=events.banlogchannel_tntgb.id,
+					p_channel=ban_log_channel.id,
 					p_content='The ban on <@!{}> has expired.'.format(userid),
 				)
 			else:
@@ -2111,7 +2124,7 @@ async def tntgb_maint(client, message, **kwargs):
 					e_channel='0',
 					e_message='0',
 					e_newcontent='',
-					p_channel=events.banlogchannel_tntgb.id,
+					p_channel=ban_log_channel.id,
 					p_content='The ban on <@!{}> has expired.'.format(userid),
 				)
 
@@ -2696,3 +2709,281 @@ async def reload(client, message, **kwargs):
 	if hasattr(__main__.recursive_reload, 'reloaded_modules'):
 		__main__.recursive_reload.reloaded_modules = []
 	__main__.reload_bot()
+
+@shadow(auth=checks.is_admin, guildonly=True)
+async def tntgb(client, message, **kwargs):
+	if kwargs['arguments'] is None:
+		embed = emb.error('You should probably type some arguments in.')
+		await bot.reply(message, emb=embed)
+		return
+
+	guild_id = message.guild.id
+	action = kwargs['arguments']
+
+	if action == 'init':
+		if config.is_detached('tntgb', guild_id) and \
+		'active' in config.get_s('tntgb', guild_id) and \
+		config.get_s('tntgb', guild_id)['active']:
+			embed = emb.error(
+				'TNTGB is already running in this server.'
+				' You can stop it by doing `\\tntgb stop`.'
+			)
+			await bot.reply(message, emb=embed)
+			return
+		elif config.is_detached('tntgb', guild_id) and \
+		'active' in config.get_s('tntgb', guild_id) and \
+		not config.get_s('tntgb', guild_id)['active']:
+			config.insert_dic_s('tntgb', 'active', True, guild_id)
+			config.saveconfig()
+			embed = emb.success('TNTGB has been initialized.')
+			await bot.reply(message, emb=embed)
+			return
+
+		config.detach('tntgb', guild_id)
+		if any(
+			indice not in config.get_s('tntgb', guild_id) for indice in
+			('ban_days', 'mod_mistake_lifts', 'mod_role', 'ban_log_channel')
+			# Also required: unbanned_role, banned_role, internal_log_channel
+		) or not (
+			config.get_s('defaultroles', guild_id) and
+			config.get_s('restrictiveroles', guild_id) and
+			config.get_s('specialchannel', guild_id) != '0'
+		):
+			embed = emb.info(
+				'Opening a prompt to set up TNTGB. Timeout length: 2 min.\n'
+				'Type `exit` to exit.\n'
+				'(If you’ve already set it up before, the settings were'
+				' corrupted or broken in some way.)',
+			)
+			await bot.reply(message, emb=embed)
+
+			questions = [
+				'How many days would you like someone to be rolebanned?',
+
+				'How many of the oldest bans should be lifted when a moderator'
+				' makes a mistake?',
+
+				'Please specify the moderator role, using anything from mentions'
+				' and IDs to partial matches.',
+
+				'Please specify the role that unbanned people will possess, using'
+				' anything from mentions and IDs to partial matches.',
+
+				'Please specify the banned role, using—you know what to use.',
+
+				'Please specify the public channel where bans and lifts will be'
+				' logged.',
+
+				'Please specify the private channel where messages only the'
+				' moderators should be able to see will be sent.',
+			]
+			responses = []
+			question = 0
+			while True:
+				embed = emb.info(questions[question])
+				await bot.reply(message, emb=embed)
+				try:
+					response = await wrapper.client.wait_for(
+						'message',
+						check=lambda m: m.author == message.author and \
+						m.channel == message.channel,
+						timeout=120,
+					)
+				except asyncio.TimeoutError:
+					embed = emb.info('Timed out, closing prompt.')
+					await bot.reply(message, emb=embed)
+					return
+
+				if response.content == 'exit':
+					embed = emb.info('Closing prompt.')
+					await bot.reply(message, emb=embed)
+					return
+
+				responses.append(response.content)
+				question += 1
+
+				if question >= len(questions):
+					break
+
+			embed = emb.info('You’re all done, no more questions.')
+			await bot.reply(message, emb=embed)
+
+			def parse_answers(answers):
+				parsed = []
+
+				for number, value in enumerate(answers):
+					if number in (0, 1):
+						try:
+							parsed.append(int(value))
+						except TypeError:
+							return False
+					elif number in range(2, 5):
+						value = utils.match_input(
+							'role', value, guild=message.guild,
+						)
+
+						if value is None:
+							return False
+						else:
+							parsed.append(value)
+					elif number in range(5, 7):
+						value = utils.match_input(
+							'channel', value, guild=message.guild,
+						)
+
+						if value is None:
+							return False
+						else:
+							parsed.append(value)
+
+				return parsed
+
+			values = parse_answers(responses)
+
+			if not values:
+				embed = emb.error(
+					'One of the responses you entered is either'
+					' not an integer, or not a role or channel,'
+					' please try again.'
+				)
+				await bot.reply(message, emb=embed)
+				return
+
+			tntgb_specific_setup = {
+				'ban_days': values[0],
+				'mod_mistake_lifts': values[1],
+				'mod_role': values[2].id,
+				'ban_log_channel': values[5].id,
+			}
+
+			for key, indice in tntgb_specific_setup.items():
+				config.insert_dic_s('tntgb', key, indice, guild_id)
+
+			common_roles_setup = {
+				'defaultroles': values[3].id,
+				'restrictiveroles': values[4].id,
+			}
+
+			for key, indice in common_roles_setup.items():
+				if not config.is_detached(key, guild_id):
+					config.detach(key, guild_id)
+
+				if indice in config.get_s(key, guild_id):
+					continue
+
+				config.insert_s(key, indice, guild_id)
+
+			internal_log_channel = values[6].id
+
+			if not config.is_detached('specialchannel', guild_id):
+				config.detach('specialchannel', guild_id)
+
+			config.set_s('specialchannel', internal_log_channel, guild_id)
+			config.saveconfig()
+
+			embed = emb.info('TNTGB has been set up and initialized.')
+			await bot.reply(message, emb=embed)
+			return
+	elif action == 'stop':
+		if config.is_detached('tntgb', guild_id) and \
+		config.get_s('tntgb', guild_id)['active']:
+			config.insert_dic_s('tntgb', 'active', False, guild_id)
+			config.saveconfig()
+			embed = emb.success('TNTGB has been stopped.')
+			await bot.reply(message, emb=embed)
+			return
+		embed = emb.error('TNTGB is not running in this server.')
+		await bot.reply(message, emb=embed)
+		return
+
+	try:
+		action, value = kwargs['arguments'].split(' ', 1)
+	except ValueError:
+		embed = emb.error('Not enough arguments.')
+		await bot.reply(message, emb=embed)
+		return
+
+	if action == 'set':
+		try:
+			setting, indice = value.split(' ', 1)
+		except ValueError:
+			embed = emb.error('Not enough arguments.')
+			await bot.reply(message, emb=embed)
+			return
+
+		setting_types = {
+			'ban_days': int,
+			'mod_mistake_lifts': int,
+			'mod_role': discord.Role,
+			'banned_role': discord.Role,
+			'unbanned_role': discord.Role,
+			'ban_log_channel': discord.TextChannel,
+			'internal_log_channel': discord.TextChannel,
+		}
+
+		if setting not in setting_types:
+			embed = emb.error(
+				'``{setting}`` is not a valid setting.'
+				.format(setting=utils.wrapbackticks(setting)),
+			)
+			await bot.reply(message, emb=embed)
+			return
+
+		# Input checking
+
+		errors = ''
+		category = setting_types[setting]
+
+		if category is int:
+			try:
+				indice = int(indice)
+			except ValueError:
+				errors += 'That is not a valid number.\n'
+		elif category is discord.Role:
+			indice = utils.match_input('role', indice, guild=message.guild)
+
+			if indice is None:
+				errors += 'That role doesn’t appear to exist.\n'
+
+		elif category is discord.TextChannel:
+			indice = utils.match_input('channel', indice, guild=message.guild)
+
+			if indice is None:
+				errors += 'That channel doesn’t appear to exist.\n'
+
+		if errors:
+			embed = emb.error(errors)
+			await bot.reply(message, emb=embed)
+			return
+
+		if not config.is_detached('tntgb', guild_id):
+			config.detach('tntgb', guild_id)
+
+		if category in (discord.Role, discord.TextChannel):
+			indice = indice.id
+			if setting == 'banned_role' and \
+			indice not in config.get_s('restrictiveroles', guild_id):
+				config.restore_default('restrictiveroles', guild_id)
+				config.insert_s('restrictiveroles', indice, guild_id)
+			elif setting == 'unbanned_role' and \
+			indice not in config.get_s('defaultroles', guild_id):
+				config.restore_default('defaultroles', guild_id)
+				config.insert_s('defaultroles', indice, guild_id)
+			elif setting == 'mod_role':
+				config.insert_dic_s('tntgb', setting, indice, guild_id)
+			elif setting == 'ban_log_channel':
+				config.insert_dic_s('tntgb', setting, indice, guild_id)
+			elif setting == 'internal_log_channel':
+				config.set_s('specialchannel', indice, guild_id)
+		elif category is int:
+			config.insert_dic_s('tntgb', setting, indice, guild_id)
+		config.saveconfig()
+
+		embed = emb.success(
+			'Successfully set `{setting}` to that value.'
+			.format(setting=setting),
+		)
+		await bot.reply(message, emb=embed)
+		return
+	embed = emb.error('Invalid action given.')
+	await bot.reply(message, emb=embed)
