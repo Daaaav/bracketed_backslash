@@ -256,21 +256,17 @@ async def on_message(m):
 	if priv and m.author.id in config.get_s('blacklist'):
 		return
 
-	if m.content.startswith(bot.invoker):
-		altinvokeractive = False
-		hangmaninvokeractive = False
-	elif m.content.startswith(bot.altinvoker):
-		altinvokeractive = True
-		hangmaninvokeractive = False
-	elif m.content.startswith(bot.hangmaninvoker):
+	if m.content.startswith(bot.hangmaninvoker):
 		hangmaninvokeractive = True
 	else:
-		# Not of the bot's interest, but is this in the join channel for this guild?
-		if not priv and \
-		config.get_s('rolecachemode', m.guild.id) == 2 and \
-		m.channel.id == config.get_s('joinchannel', m.guild.id):
-			await m.delete()
-			bot.messages_deleted_by_bot.append(m)
+		hangmaninvokeractive = False
+
+	# Not of the bot's interest, but is this in the join channel for this guild?
+	if not priv and \
+	config.get_s('rolecachemode', m.guild.id) == 2 and \
+	m.channel.id == config.get_s('joinchannel', m.guild.id):
+		await m.delete()
+		bot.messages_deleted_by_bot.append(m)
 		return
 
 	if priv:
@@ -438,12 +434,17 @@ async def on_message(m):
 
 		return
 
-	elif altinvokeractive:
-		command = m.content.split(bot)[1]
-		clean_command = m.clean_content.split(bot.altinvoker, 1)[1]
-	else:
-		command = m.content.split(bot.invoker, 1)[1]
-		clean_command = m.clean_content.split(bot.invoker, 1)[1]
+	prefixes = bot.prefixes
+
+	if config.is_detached('prefixes', m.guild.id):
+		prefixes.extend(config.get_s('prefixes', m.guild.id))
+
+	for prefix in prefixes:
+		if m.content.startswith(prefix):
+			command = m.content.split(prefix, 1)[1]
+			clean_command = m.clean_content.split(prefix, 1)[1]
+			break
+
 	msg_start = (
 		'**`>`**``{name}``**`{invsym}`**{indisp}\n'
 	).format(

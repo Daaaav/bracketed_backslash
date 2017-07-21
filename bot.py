@@ -35,8 +35,8 @@ cachelocation = './.cache'
 attachcache = cachelocation + '/' + 'attach' # define attachment caching location
 embedcache = cachelocation + '/' + 'embed'
 
-invoker = '\\' # command invoker
-altinvoker = 'ok glass, ' # alt command invoker
+prefixes = config.get_s('prefixes')
+
 hangmaninvoker = '-'
 
 os.environ['TZ'] = 'UTC'
