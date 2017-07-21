@@ -210,6 +210,14 @@ configs = {
 		'detachable': False,
 		'shown': True,
 	},
+	'prefixes': {
+		'default': ['slash '],
+		'type': 'str',
+		'is_array': True,
+		'expl': 'The prefixes of the bot.',
+		'detachable': True,
+		'shown': False,
+	},
 }
 
 s = {}
