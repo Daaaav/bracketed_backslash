@@ -602,8 +602,8 @@ async def on_message_delete(msg):
 				'{atchcche}/{id}_{fn}'
 		).format(
 			atchcche=bot.attachcache,
-			id=msg.attachments[0]['id'],
-			fn=msg.attachments[0]['filename'],
+			id=msg.attachments[0].id,
+			fn=msg.attachments[0].filename,
 		)
 		if os.path.isfile(fp):
 			con = (
@@ -614,7 +614,7 @@ async def on_message_delete(msg):
 					con,
 					file=discord.File(
 						fp,
-						filename=msg.attachments[0]['filename'],
+						filename=msg.attachments[0].filename,
 					),
 				)
 			except discord.HTTPException:
