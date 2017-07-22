@@ -1091,14 +1091,20 @@ async def rolecacheinfo(client, message, **kwargs):
 		embed = emb.error(bot.t['rolecachedisabled'])
 		await bot.reply(message, emb=embed)
 		return
-	if kwargs['arguments'] not in events.memberroles[message.guild.id]:
+	if not kwargs['arguments'].isdigit():
+		embed = emb.error('Invalid arguments. An ID can only be passed.')
+		await bot.reply(message, emb=embed)
+		return
+
+	member_id = int(kwargs['arguments'])
+	if member_id not in events.memberroles[message.guild.id]:
 		embed = emb.error('That member is not in the role cache.')
 		await bot.reply(message, emb=embed)
 		return
 
 	content = (
 		'According to the role cache, this member has the following roles: '
-		+ utils.listroles_id(events.memberroles[message.guild.id][kwargs['arguments']])
+		+ utils.listroles_id(events.memberroles[message.guild.id][member_id])
 	)
 
 	await bot.reply(message, content)
