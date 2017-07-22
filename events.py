@@ -444,6 +444,8 @@ async def on_message(m):
 			command = m.content.split(prefix, 1)[1]
 			clean_command = m.clean_content.split(prefix, 1)[1]
 			break
+	else:
+		return
 
 	msg_start = (
 		'**`>`**``{name}``**`{invsym}`**{indisp}\n'
