@@ -8,6 +8,7 @@ import json
 import logging
 import math
 import os
+import pathlib
 import time
 
 import discord
@@ -34,6 +35,9 @@ load_events()
 cachelocation = './.cache'
 attachcache = cachelocation + '/' + 'attach' # define attachment caching location
 embedcache = cachelocation + '/' + 'embed'
+
+for dir_path in (cachelocation, attachcache, embedcache):
+	pathlib.Path(dir_path).mkdir(parents=True, exist_ok=True)
 
 prefixes = config.get_s('prefixes')
 
