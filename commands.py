@@ -1956,6 +1956,8 @@ async def b_id(client, message, **kwargs):
 	elif request.startswith('<@') and request.endswith('>'):
 		request = request[2:-1] # Same
 
+	request = int(request)
+
 	targetmember = message.guild.get_member(request)
 
 	if targetmember is None:
@@ -1976,11 +1978,15 @@ async def b_id(client, message, **kwargs):
 		# Alright, just send a message about it now!
 		# The extra space is intentional, it's a 'hidden' indicator to
 		# see whether the ban was made after the person left the guild
-		announcemsg = '<@!{}>  has been banned for 5 days by {} in {} for {}.'.format(
+		ban_days = config.get_s('tntgb', message.guild.id)['ban_days']
+		announcemsg = (
+			'<@!{}>  has been banned for {ban_days} days by {} in {} for {}.'
+		).format(
 			request,
 			message.author.display_name,
 			message.channel.mention,
-			splitargs[1]
+			splitargs[1],
+			ban_days=ban_days,
 		)
 		content = '⛔ ' + announcemsg
 		ban_log_channel = config.get_s('tntgb', message.guild.id)['ban_log_channel']
@@ -1992,11 +1998,11 @@ async def b_id(client, message, **kwargs):
 		bot.messages_deleted_by_bot.append(message)
 
 		# Also set an expiry timer
-		expirytime = utils.parsereltime('5d')
+		expirytime = utils.parsereltime(str(ban_days) + 'd')
 
 		utils.addexpiryentry(
 			message.guild.id,
-			input,
+			request,
 			expirytime,
 			e_channel=sentmessage.channel.id, e_message=sentmessage.id,
 			e_newcontent='[LIFTED] ' + announcemsg,
