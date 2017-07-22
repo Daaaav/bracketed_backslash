@@ -2096,7 +2096,7 @@ async def tntgb_maint(client, message, **kwargs):
 			await getmessage.edit(content=content)
 			output = 'Edited successfully.'
 		elif splitargs[0] == 'addtimer':
-			getmessage = ban_log_channel.get_message(splitargs[1])
+			getmessage = await ban_log_channel.get_message(splitargs[1])
 			content = getmessage.content
 			m = re.search('<@!?([0-9]+)>', content)
 			if m is None:
