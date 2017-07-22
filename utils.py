@@ -788,14 +788,14 @@ async def newmemberroles(member, specialchannel, bypassjoinchannel):
 			value += listroles(addingtheseroles) + '_'
 			content += 'Given them back their roles:\n' + value
 			await specialchannel.send(content)
-		elif config.get_s('rolecachemode', member.guild.id) == 1 or bypassjoinchannel:
-			# Not found, so just give them the default roles
-			addingtheseroles = []
-			for rid in config.get_s('defaultroles', member.guild.id):
-				addingtheseroles.append(
-					discord.utils.get(member.guild.roles, id=rid)
-				)
-			await member.send(*addingtheseroles)
+	elif config.get_s('rolecachemode', member.guild.id) == 1 or bypassjoinchannel:
+		# Not found, so just give them the default roles
+		addingtheseroles = []
+		for rid in config.get_s('defaultroles', member.guild.id):
+			addingtheseroles.append(
+				discord.utils.get(member.guild.roles, id=rid)
+			)
+		await member.add_roles(*addingtheseroles)
 
 def convert_id_keys_to_int(dictionary):
 	result = {}

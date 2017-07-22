@@ -261,14 +261,6 @@ async def on_message(m):
 	else:
 		hangmaninvokeractive = False
 
-	# Not of the bot's interest, but is this in the join channel for this guild?
-	if not priv and \
-	config.get_s('rolecachemode', m.guild.id) == 2 and \
-	m.channel.id == config.get_s('joinchannel', m.guild.id):
-		await m.delete()
-		bot.messages_deleted_by_bot.append(m)
-		return
-
 	if priv:
 		invokesymbol = '@'
 	elif checks.is_mod(m.author):
@@ -462,7 +454,8 @@ async def on_message(m):
 		clean_arguments = None
 	command = command.split(' ', 1)[0]
 	clean_command = clean_command.split(' ', 1)[0]
-	# Prevent access to those who aren't supposed to send messages
+
+	# Not of the bot's interest, but is this in the join channel for this guild?
 	if not priv and \
 	config.get_s('rolecachemode', m.guild.id) == 2 and \
 	m.channel.id == config.get_s('joinchannel', m.guild.id):
@@ -472,6 +465,8 @@ async def on_message(m):
 		await m.delete()
 		bot.messages_deleted_by_bot.append(m)
 		return
+
+	# Prevent access to those who aren't supposed to send messages
 	if not priv and \
 	not checks.is_mod(m.author) and \
 	not config.get_s('alloweverywhere', m.guild.id) and \
@@ -890,8 +885,8 @@ async def on_member_update(before, after):
 		await specialchannel.send(embed=embed)
 
 async def on_member_join(member):
+	specialchannel = utils.getspecialchannel(member.guild)
 	if not utils.logdisabled('member_join', member.guild):
-		specialchannel = utils.getspecialchannel(member.guild)
 		embed = discord.Embed(
 			description='➡<@!{id}> ({id}) joined server'.format(id=member.id),
 			colour=member.guild.me.colour,
