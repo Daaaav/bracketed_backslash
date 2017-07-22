@@ -2104,8 +2104,10 @@ async def tntgb_maint(client, message, **kwargs):
 				await bot.reply(message, emb=embed)
 				return
 			userid = m.group(1)
-			newexpires = utils.parsereltime('5d',
-				now=time.mktime(getmessage.created_at.timetuple())
+			ban_days = config.get_s('tntgb', message.guild.id)['ban_days']
+			newexpires = utils.parsereltime(
+				str(ban_days) + 'd',
+				now=time.mktime(getmessage.created_at.timetuple()),
 			)
 
 			sentbybot = False
