@@ -2081,7 +2081,7 @@ async def tntgb_maint(client, message, **kwargs):
 				await bot.reply(message, emb=embed)
 				return
 			content = content.replace('⛔', '[LIFTED]', 1)
-			await getmessage.edit(new_content=content)
+			await getmessage.edit(content=content)
 			output = 'Edited successfully.'
 		elif splitargs[0] == 'addtimer':
 			getmessage = ban_log_channel.get_message(splitargs[1])
