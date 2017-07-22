@@ -426,6 +426,14 @@ async def on_message(m):
 
 		return
 
+	is_join_channel = (not priv) and \
+	config.get_s('rolecachemode', m.guild.id) == 2 and \
+	m.channel.id == config.get_s('joinchannel', m.guild.id)
+
+	if is_join_channel:
+		await m.delete()
+		bot.messages_deleted_by_bot.append(m)
+
 	prefixes = bot.prefixes
 
 	if config.is_detached('prefixes', m.guild.id):
@@ -454,17 +462,6 @@ async def on_message(m):
 		clean_arguments = None
 	command = command.split(' ', 1)[0]
 	clean_command = clean_command.split(' ', 1)[0]
-
-	# Not of the bot's interest, but is this in the join channel for this guild?
-	if not priv and \
-	config.get_s('rolecachemode', m.guild.id) == 2 and \
-	m.channel.id == config.get_s('joinchannel', m.guild.id):
-		# Join channel
-		if command == 'join' and len(m.author.roles) <= 1:
-			await utils.newmemberroles(m.author, utils.getspecialchannel(m.guild), True)
-		await m.delete()
-		bot.messages_deleted_by_bot.append(m)
-		return
 
 	# Prevent access to those who aren't supposed to send messages
 	if not priv and \
@@ -528,6 +525,14 @@ async def on_message(m):
 		e = emb.error(bot.t['noprivate'])
 		await bot.reply(m, emb=e)
 		return
+
+	if func[5] and not is_join_channel:
+		embed = emb.error('What an odd place to be using this command!')
+		await bot.reply(m, emb=embed)
+		return
+	elif not func[5] and is_join_channel:
+		return
+
 	if func[4] and \
 	('active' not in config.get_s('tntgb', m.guild.id)
 	or not config.get_s('tntgb', m.guild.id)['active']):

@@ -55,7 +55,7 @@ op_ids.load()
 
 commands = {}
 
-def shadow(auth=None, aliases=None, guildonly=False, tntgbguildonly=False):
+def shadow(auth=None, aliases=None, guildonly=False, tntgbguildonly=False, joinchannelonly=False):
 	def living_shadow(func):
 		name = func.__name__
 		matchargs = [r'__[0-9a-f]{4}', name, re.IGNORECASE]
@@ -68,7 +68,7 @@ def shadow(auth=None, aliases=None, guildonly=False, tntgbguildonly=False):
 				name = name.replace(encodings[count], symbols[count])
 		if name.startswith('_'):
 			name = name[1:]
-		commands[name] = [func, auth, aliases, guildonly, tntgbguildonly]
+		commands[name] = [func, auth, aliases, guildonly, tntgbguildonly, joinchannelonly]
 	return living_shadow
 
 @shadow()
@@ -1704,10 +1704,14 @@ async def reloadstrings(client, message, **kwargs):
 	embed = emb.success('Reloaded strings.')
 	await bot.reply(message, emb=embed)
 
-@shadow()
+@shadow(guildonly=True, joinchannelonly=True)
 async def join(client, message, **kwargs):
-	embed = emb.error('What an odd place to be using this command!')
-	await bot.reply(message, emb=embed)
+	if len(message.author.roles) <= 1:
+		await utils.newmemberroles(
+			message.author,
+			utils.getspecialchannel(message.guild),
+			True,
+		)
 
 @shadow(auth=checks.is_tntgb_mod, aliases=['b_mod'], tntgbguildonly=True)
 async def b(client, message, **kwargs):
