@@ -771,7 +771,9 @@ async def newmemberroles(member, specialchannel, bypassjoinchannel):
 		await member.add_roles(*addingtheseroles) # bot role
 		return
 
-	if config.get_s('rolecachemode', member.guild.id) != 0 and member.guild.id in events.memberroles:
+	if not bypassjoinchannel and \
+	config.get_s('rolecachemode', member.guild.id) != 0 and \
+	member.guild.id in events.memberroles:
 		# Are they in our database of members which had roles before?
 		if member.id in events.memberroles[member.guild.id]:
 			addingtheseroles = []
