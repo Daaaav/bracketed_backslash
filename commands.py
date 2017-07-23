@@ -1715,6 +1715,9 @@ async def join(client, message, **kwargs):
 
 @shadow(auth=checks.is_tntgb_mod, aliases=['b_mod'], tntgbguildonly=True)
 async def b(client, message, **kwargs):
+	await message.delete()
+	bot.messages_deleted_by_bot.append(message)
+
 	ban_log_channel = config.get_s('tntgb', message.guild.id)['ban_log_channel']
 	ban_log_channel = message.guild.get_channel(ban_log_channel)
 
@@ -1748,11 +1751,6 @@ async def b(client, message, **kwargs):
 				).format(targetmember.mention)
 			)
 			await specialchannel.send(embed=embed)
-
-			# We're doing this in a public channel
-			await message.delete()
-			bot.messages_deleted_by_bot.append(message)
-
 			return
 
 		# Get oldest two bans here and expire them
@@ -1862,10 +1860,6 @@ async def b(client, message, **kwargs):
 		)
 		content = '⛔ ' + announcemsg
 		sentmessage = await ban_log_channel.send(content)
-
-	# Now delete the calling message
-	await message.delete()
-	bot.messages_deleted_by_bot.append(message)
 
 	if banningnonmod:
 		# Also set an expiry timer
