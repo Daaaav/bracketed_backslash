@@ -436,7 +436,7 @@ async def on_message(m):
 
 	prefixes = bot.prefixes
 
-	if config.is_detached('prefixes', m.guild.id):
+	if not priv and config.is_detached('prefixes', m.guild.id):
 		prefixes.extend(config.get_s('prefixes', m.guild.id))
 
 	for prefix in prefixes:
