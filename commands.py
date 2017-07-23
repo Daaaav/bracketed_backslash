@@ -1935,6 +1935,9 @@ async def selfban(client, message, **kwargs):
 
 @shadow(auth=checks.is_tntgb_mod, aliases=['b_left', 'b_offserver'], tntgbguildonly=True)
 async def b_id(client, message, **kwargs):
+	await message.delete()
+	bot.messages_deleted_by_bot.append(message)
+
 	# Who are we banning, and for what reason?
 	if kwargs['arguments'].find('\n') != -1:
 		splitargs = kwargs['arguments'].split('\n', 1)
@@ -1986,10 +1989,6 @@ async def b_id(client, message, **kwargs):
 		ban_log_channel = config.get_s('tntgb', message.guild.id)['ban_log_channel']
 		ban_log_channel = message.guild.get_channel(ban_log_channel)
 		sentmessage = await ban_log_channel.send(content)
-
-		# Now delete the calling message
-		await message.delete()
-		bot.messages_deleted_by_bot.append(message)
 
 		# Also set an expiry timer
 		expirytime = utils.parsereltime(str(ban_days) + 'd')
