@@ -510,7 +510,8 @@ async def on_message(m):
 				func = commands.commands[c]
 				break
 		else:
-			if (not priv and config.get_s('notify_invalidcmd', m.guild.id)) or \
+			if (not is_join_channel) and \
+			(not priv and config.get_s('notify_invalidcmd', m.guild.id)) or \
 			(priv and config.get_s('notify_invalidcmd')):
 				e = emb.warning(
 					(
