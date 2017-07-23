@@ -1877,6 +1877,9 @@ async def b(client, message, **kwargs):
 
 @shadow(tntgbguildonly=True)
 async def selfban(client, message, **kwargs):
+	await message.delete()
+	bot.messages_deleted_by_bot.append(message)
+
 	if checks.is_tntgb_banned(message.author):
 		# Wait, what?
 		embed = emb.warning('How, then? You are already banned!')
@@ -1887,9 +1890,6 @@ async def selfban(client, message, **kwargs):
 		embed = emb.warning('Sorry, moderators cannot use `\selfban`!')
 		await specialchannel.send(embed=embed)
 
-		# We're doing this in a public channel
-		await message.delete()
-		bot.messages_deleted_by_bot.append(message)
 
 		return
 
@@ -1916,10 +1916,6 @@ async def selfban(client, message, **kwargs):
 	ban_log_channel = config.get_s('tntgb', message.guild.id)['ban_log_channel']
 	ban_log_channel = message.guild.get_channel(ban_log_channel)
 	sentmessage = await ban_log_channel.send(content)
-
-	# Now delete the calling message
-	await message.delete()
-	bot.messages_deleted_by_bot.append(message)
 
 	# Also set an expiry timer
 	expirytime = utils.parsereltime(str(ban_days) + 'd')
