@@ -1716,8 +1716,12 @@ async def join(client, message, **kwargs):
 
 @shadow(auth=checks.is_tntgb_mod, aliases=['b_mod'], tntgbguildonly=True)
 async def b(client, message, **kwargs):
-	await message.delete()
-	bot.messages_deleted_by_bot.append(message)
+	try:
+		await message.delete()
+	except discord.NotFound:
+		pass
+	else:
+		bot.messages_deleted_by_bot.append(message)
 
 	ban_log_channel = config.get_s('tntgb', message.guild.id)['ban_log_channel']
 	ban_log_channel = message.guild.get_channel(ban_log_channel)
