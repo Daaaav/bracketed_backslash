@@ -69,6 +69,7 @@ def shadow(auth=None, aliases=None, guildonly=False, tntgbguildonly=False, joinc
 		if name.startswith('_'):
 			name = name[1:]
 		commands[name] = [func, auth, aliases, guildonly, tntgbguildonly, joinchannelonly]
+		return func
 	return living_shadow
 
 @shadow()
@@ -1715,8 +1716,12 @@ async def join(client, message, **kwargs):
 
 @shadow(auth=checks.is_tntgb_mod, aliases=['b_mod'], tntgbguildonly=True)
 async def b(client, message, **kwargs):
-	await message.delete()
-	bot.messages_deleted_by_bot.append(message)
+	try:
+		await message.delete()
+	except discord.NotFound:
+		pass
+	else:
+		bot.messages_deleted_by_bot.append(message)
 
 	ban_log_channel = config.get_s('tntgb', message.guild.id)['ban_log_channel']
 	ban_log_channel = message.guild.get_channel(ban_log_channel)
@@ -1743,12 +1748,24 @@ async def b(client, message, **kwargs):
 		await specialchannel.send(embed=embed)
 		banningnonmod = False  # See this as "don't set expiry timer"
 	elif checks.is_tntgb_mod(targetmember):
+		mod_mistake_lifts = config.get_s('tntgb', message.guild.id)['mod_mistake_lifts']
 		if kwargs['command'] != 'b_mod':
 			embed = emb.warning(
-				(
-					'{} is a mod, please use `\\b_mod` instead '
-					'to cause the oldest two bans to be lifted!'
-				).format(targetmember.mention)
+				'{} is a mod, please use `\\b_mod` instead '
+				'to cause {bans} ban{s} to be lifted!'
+				.format(
+					targetmember.mention,
+					bans=(
+						str(mod_mistake_lifts)
+						if mod_mistake_lifts == 0
+						else 'the oldest' + (
+							''
+							if mod_mistake_lifts == 1
+							else ' ' + str(mod_mistake_lifts)
+						)
+					),
+					s='' if mod_mistake_lifts == 1 else 's',
+				)
 			)
 			await specialchannel.send(embed=embed)
 			return
@@ -1759,7 +1776,7 @@ async def b(client, message, **kwargs):
 		# Technical messages:
 		content = 'Lifted bans:'
 
-		for _ in range(0, config.get_s('tntgb', message.guild.id)['mod_mistake_lifts']):
+		for _ in range(0, mod_mistake_lifts):
 			currentexpiry = utils.getearliestexpiry(message.guild.id)
 
 			if currentexpiry is None:

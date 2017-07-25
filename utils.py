@@ -179,6 +179,8 @@ def match_input(objtype, request, *, guild=None, client=None):
 			request = int(request[2:-1])
 		elif objtype == 'emoji' and request[1] == request[-20] == ':':
 			request = int(request[-19:-1])
+	elif request.isdigit():
+		request = int(request)
 
 	if isinstance(request, int):
 		# Now get the object from the ID
