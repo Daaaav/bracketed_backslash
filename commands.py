@@ -1748,12 +1748,24 @@ async def b(client, message, **kwargs):
 		await specialchannel.send(embed=embed)
 		banningnonmod = False  # See this as "don't set expiry timer"
 	elif checks.is_tntgb_mod(targetmember):
+		mod_mistake_lifts = config.get_s('tntgb', message.guild.id)['mod_mistake_lifts']
 		if kwargs['command'] != 'b_mod':
 			embed = emb.warning(
-				(
-					'{} is a mod, please use `\\b_mod` instead '
-					'to cause the oldest two bans to be lifted!'
-				).format(targetmember.mention)
+				'{} is a mod, please use `\\b_mod` instead '
+				'to cause {bans} ban{s} to be lifted!'
+				.format(
+					targetmember.mention,
+					bans=(
+						str(mod_mistake_lifts)
+						if mod_mistake_lifts == 0
+						else 'the oldest' + (
+							''
+							if mod_mistake_lifts == 1
+							else ' ' + str(mod_mistake_lifts)
+						)
+					),
+					s='' if mod_mistake_lifts == 1 else 's',
+				)
 			)
 			await specialchannel.send(embed=embed)
 			return
@@ -1764,7 +1776,7 @@ async def b(client, message, **kwargs):
 		# Technical messages:
 		content = 'Lifted bans:'
 
-		for _ in range(0, config.get_s('tntgb', message.guild.id)['mod_mistake_lifts']):
+		for _ in range(0, mod_mistake_lifts):
 			currentexpiry = utils.getearliestexpiry(message.guild.id)
 
 			if currentexpiry is None:
