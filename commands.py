@@ -69,6 +69,7 @@ def shadow(auth=None, aliases=None, guildonly=False, tntgbguildonly=False, joinc
 		if name.startswith('_'):
 			name = name[1:]
 		commands[name] = [func, auth, aliases, guildonly, tntgbguildonly, joinchannelonly]
+		return func
 	return living_shadow
 
 @shadow()
