@@ -1626,7 +1626,7 @@ async def on_guild_join(guild):
 		colour=wrapper.client.get_guild(op_ids.ids['opguild']).me.colour,
 	)
 	em.set_image(url=guild.icon_url)
-	await wrapper.client.get_channel(op_ids.ids['bot_guilds']).send(embed=em)
+	await wrapper.client.get_channel(op_ids.ids['opguild_chans']['bot_guilds']).send(embed=em)
 
 async def on_guild_remove(guild):
 	em = discord.Embed(
@@ -1638,4 +1638,4 @@ async def on_guild_remove(guild):
 		colour=wrapper.client.get_guild(op_ids.ids['opguild']).me.colour,
 	)
 	em.set_image(url=guild.icon_url)
-	await wrapper.client.get_channel(op_ids.ids['bot_guilds']).send(embed=em)
+	await wrapper.client.get_channel(op_ids.ids['opguild_chans']['bot_guilds']).send(embed=em)
