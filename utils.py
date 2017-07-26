@@ -32,7 +32,7 @@ def mdspecialchars(string, character='\\'):
 	except AttributeError:
 		return string
 
-def id_summary(uid=None, mid=None, cid=None, rid=None):
+def id_summary(uid=None, mid=None, cid=None, rid=None, eid=None):
 	"""Return a oneline summary of IDs."""
 	summary = ''
 	if uid:
@@ -43,6 +43,8 @@ def id_summary(uid=None, mid=None, cid=None, rid=None):
 		summary += ' \N{TELEVISION}' + str(cid)
 	if rid:
 		summary += ' \N{KEY}' + str(rid)
+	if eid:
+		summary += ' \N{WHITE SMILING FACE}' + str(eid)
 	if summary.startswith(' '):
 		summary = summary[1:]
 	return summary
