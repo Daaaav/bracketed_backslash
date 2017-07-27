@@ -1069,98 +1069,97 @@ async def on_guild_role_update(before, after):
 		)
 		await specialchannel.send(embed=e)
 
-async def on_reaction_add(r, u):
-	if utils.isprivatemessage(r.message.guild) \
-	or utils.logdisabled('reaction_add', r.message.guild):
+async def on_reaction_add(reaction, user):
+	message = reaction.message
+
+	if utils.isprivatemessage(message.guild) \
+	or utils.logdisabled('reaction_add', message.guild):
 		return
-	specialchannel = utils.getspecialchannel(r.message.guild)
-	try:
-		iscustomemote = True
-		emotename = r.emoji.name
-	except AttributeError:
-		iscustomemote = False
-		emotename = r.emoji
+
+	specialchannel = utils.getspecialchannel(message.guild)
+
+	is_custom_emoji = hasattr(reaction.emoji, 'name')
+
 	embed = discord.Embed(
-		title='REACTION ADDED TO MESSAGE (SENT {rtime} IN {c.mention})'.format(
-			rtime=utils.reltime(time.mktime(r.message.created_at.timetuple())),
-			c=r.message.channel,
+		title='REACTION ADDED TO MESSAGE (SENT {reltime} IN #{name})'.format(
+			reltime=utils.reltime(time.mktime(message.created_at.timetuple())),
+			name=utils.mdspecialchars(message.channel.name),
 		),
-		description=r.message.content,
-		colour=u.colour,
+		description=message.content,
+		colour=user.colour,
 	)
+
 	embed.set_author(
-		name=u.display_name,
-		icon_url=u.avatar_url,
-		url=utils.infourl('userid={}&messageid={}'.format(u.id, r.message.id))
+		name=user.display_name,
+		icon_url=user.avatar_url,
 	)
-	mdetails = u.mention
-	if u.status == discord.Status.offline:
-		mdetails += ' (Invisible)'
-	embed.add_field(
-		name='Member of Reaction',
-		value=mdetails,
-	)
+
 	embed.add_field(
 		name='Reaction',
-		value=(
-			(emotename)
-			if
-			(not iscustomemote)
-			else
-			(
-				'{name} ({id})'.format(
-					name=str(r.emoji),
-					id=r.emoji.id,
-				)
-			)
+		value=':{}:'.format(utils.mdspecialchars(reaction.emoji.name))
+		if is_custom_emoji else reaction.emoji,
+	)
+
+	if is_custom_emoji:
+		embed.set_thumbnail(
+			url=discord.Emoji.url.__get__( # pylint: disable=too-many-function-args
+				reaction.emoji,
+			),
+		)
+
+	embed.set_footer(
+		text=utils.id_summary(
+			uid=user.id,
+			mid=message.id,
+			eid=reaction.emoji.id if is_custom_emoji else '',
 		),
 	)
+
 	await specialchannel.send(embed=embed)
 
-async def on_reaction_remove(r, u):
-	if utils.isprivatemessage(r.message.guild) \
-	or utils.logdisabled('reaction_remove', r.message.guild):
+async def on_reaction_remove(reaction, user):
+	message = reaction.message
+
+	if utils.isprivatemessage(message.guild) \
+	or utils.logdisabled('reaction_remove', message.guild):
 		return
-	specialchannel = utils.getspecialchannel(r.message.guild)
-	try:
-		iscustomemote = True
-		emotename = r.emoji.name
-	except AttributeError:
-		iscustomemote = False
-		emotename = r.emoji
+
+	specialchannel = utils.getspecialchannel(message.guild)
+
+	is_custom_emoji = hasattr(reaction.emoji, 'name')
+
 	embed = discord.Embed(
-		title='REACTION REMOVED FROM MESSAGE (SENT {rtime} IN {c.mention})'.format(
-			rtime=utils.reltime(time.mktime(r.message.created_at.timetuple())),
-			c=r.message.channel,
+		title='REACTION REMOVED FROM MESSAGE (SENT {reltime} IN #{name})'.format(
+			reltime=utils.reltime(time.mktime(message.created_at.timetuple())),
+			name=utils.mdspecialchars(message.channel.name),
 		),
-		description=r.message.content,
-		colour=u.colour,
+		description=message.content,
+		colour=user.colour,
 	)
-	embed.set_author(
-		name=u.display_name,
-		icon_url=u.avatar_url,
-		url=utils.infourl('userid={}&messageid={}'.format(u.id, r.message.id))
-	)
-	mdetails = u.mention
-	embed.add_field(
-		name='Member of Reaction',
-		value=mdetails,
-	)
+
+	embed.set_author(name=user.display_name, icon_url=user.avatar_url)
+
 	embed.add_field(
 		name='Reaction',
-		value=(
-			(emotename)
-			if
-			(not iscustomemote)
-			else
-			(
-				'{name} ({id})'.format(
-					name=str(r.emoji),
-					id=r.emoji.id,
-				)
-			)
+		value=':{}:'.format(utils.mdspecialchars(reaction.emoji.name))
+		if is_custom_emoji else reaction.emoji,
+	)
+
+	if is_custom_emoji:
+		embed.set_thumbnail(
+			url=discord.Emoji.url.__get__( # pylint: disable=too-many-function-args
+				reaction.emoji,
+			),
+		)
+
+	embed.set_footer(
+		text=utils.id_summary(
+			uid=user.id,
+			mid=message.id,
+			eid=reaction.emoji.id if is_custom_emoji else '',
 		),
 	)
+
 	await specialchannel.send(embed=embed)
 
 async def on_reaction_clear(m, rs):
