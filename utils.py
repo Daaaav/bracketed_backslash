@@ -775,11 +775,10 @@ async def newmemberroles(member, specialchannel, bypassjoinchannel):
 		await member.add_roles(*addingtheseroles) # bot role
 		return
 
-	if not bypassjoinchannel and \
-	config.get_s('rolecachemode', member.guild.id) != 0 and \
+	if config.get_s('rolecachemode', member.guild.id) != 0 and \
 	member.guild.id in events.memberroles:
 		# Are they in our database of members which had roles before?
-		if member.id in events.memberroles[member.guild.id]:
+		if not bypassjoinchannel and member.id in events.memberroles[member.guild.id]:
 			addingtheseroles = []
 			# They're found in the database! Give them the groups they should have
 			for rid in events.memberroles[member.guild.id][member.id]:
@@ -794,14 +793,14 @@ async def newmemberroles(member, specialchannel, bypassjoinchannel):
 			value += listroles(addingtheseroles) + '_'
 			content += 'Given them back their roles:\n' + value
 			await specialchannel.send(content)
-	elif config.get_s('rolecachemode', member.guild.id) == 1 or bypassjoinchannel:
-		# Not found, so just give them the default roles
-		addingtheseroles = []
-		for rid in config.get_s('defaultroles', member.guild.id):
-			addingtheseroles.append(
-				discord.utils.get(member.guild.roles, id=rid)
-			)
-		await member.add_roles(*addingtheseroles)
+		elif config.get_s('rolecachemode', member.guild.id) == 1 or bypassjoinchannel:
+			# Not found, so just give them the default roles
+			addingtheseroles = []
+			for rid in config.get_s('defaultroles', member.guild.id):
+				addingtheseroles.append(
+					discord.utils.get(member.guild.roles, id=rid)
+				)
+			await member.add_roles(*addingtheseroles)
 
 def convert_id_keys_to_int(dictionary):
 	result = {}
