@@ -1494,11 +1494,11 @@ async def getrawmessagecontent(client, message, **kwargs):
 			await bot.reply(message, content)
 		return
 	except AttributeError:
-		embed = emb.error('Invalid arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=bot.invoker, command=kwargs['command']))
+		embed = emb.error('Invalid arguments passed.')
 	except IndexError:
-		embed = emb.error('Invalid amount of arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=bot.invoker, command=kwargs['command']))
+		embed = emb.error('Invalid amount of arguments passed.')
 	except (discord.errors.HTTPException, KeyError):
-		embed = emb.error('Invalid channel or message ID given. Input `{invoker}help {command}` for more information.'.format(invoker=bot.invoker, command=kwargs['command']))
+		embed = emb.error('Invalid channel or message ID given.')
 	await bot.reply(message, emb=embed)
 
 @shadow()
@@ -1513,7 +1513,10 @@ async def countpins(client, message, **kwargs):
 		content = '{} currently has {} pins, {} remaining.'.format(getchannel.mention, len(pins), 50-len(pins))
 		await bot.replyattach(message, images.progressbar(len(pins)*2), 'temp.png', content)
 	except AttributeError:
-		embed = emb.error('The channel doesn’t exist, has been deleted, or it’s not a channel at all. Input `{invoker}help {command}` for more information.'.format(invoker=bot.invoker, command=kwargs['command']))
+		embed = emb.error(
+			'The channel doesn’t exist, has been deleted,'
+			' or it’s not a channel at all.',
+		)
 		await bot.reply(message, emb=embed)
 
 @shadow(guildonly=True)
@@ -1538,12 +1541,12 @@ async def _math(client, message, **kwargs):
 	try:
 		cmdbits = kwargs['arguments'].split() # should split it so [0] is number, [1] is operand, [2] is second number
 	except AttributeError:
-		embed = emb.error('Invalid arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=bot.invoker, command=kwargs['command']))
+		embed = emb.error('Invalid arguments passed.')
 		await bot.reply(message, emb=embed)
 		return
 	try:
 		if len(cmdbits) != 3: # the arguments should be [number], [operand], [number]
-			embed = emb.error('Invalid amount of arguments passed. Input `{invoker}help {command}` for more information.'.format(invoker=bot.invoker, command=kwargs['command']))
+			embed = emb.error('Invalid amount of arguments passed.')
 			await bot.reply(message, emb=embed)
 			return
 		numbers = ['', '']
@@ -1569,7 +1572,7 @@ async def _math(client, message, **kwargs):
 			for _ in range(int(numbers[1])): # decimal range isn't
 				out = out ** oper # iterate until tetration is finished
 		else: #invalid operand, we don't care what the inputs are
-			embed = emb.error('Invalid operands passed. Input `{invoker}help {command}` for more information.'.format(invoker=bot.invoker, command=kwargs['command']))
+			embed = emb.error('Invalid operands passed.')
 			await bot.reply(message, emb=embed)
 			return
 	except OverflowError:
@@ -2288,10 +2291,6 @@ async def sudo(client, message, **kwargs):
 
 	# TODO: This is the command-parsing code copied from main.py, but with some changes.
 	# Put the command-parsing code in a function instead.
-	if message.content.startswith(bot.invoker):
-		altinvokeractive = False
-	elif message.content.startswith(bot.altinvoker):
-		altinvokeractive = True
 	if command in commands:
 		func = commands[command]
 	else:
@@ -2316,13 +2315,9 @@ async def sudo(client, message, **kwargs):
 		return
 	utils.logcommand(kwargs['command'], kwargs['arguments'], message)
 	kwargs['command'] = command
-	if altinvokeractive:
-		clean_command = message.clean_content.split(bot.altinvoker, 1)[1]
-	else:
-		clean_command = message.clean_content.split(bot.invoker, 1)[1]
 	try:
 		kwargs['arguments'] = kwargs['arguments'].split(' ', 1)[1]
-		kwargs['clean_arguments'] = clean_command.split(' ', 2)[2]
+		kwargs['clean_arguments'] = kwargs['clean_command'].split(' ', 2)[2]
 	except IndexError:
 		kwargs['arguments'] = None
 		kwargs['clean_arguments'] = None
@@ -2333,15 +2328,7 @@ async def sudo(client, message, **kwargs):
 async def joinchannel(client, message, **kwargs):
 	splitargs = kwargs['arguments'].split(' ')
 	if len(splitargs) != 2:
-		em = emb.error(
-			(
-				'Invalid amount of arguments passed.'
-				' Input `{invoker}help {command}` for more information.'
-			).format(
-				invoker=bot.invoker,
-				command=kwargs['command'],
-			),
-		)
+		em = emb.error('Invalid amount of arguments passed.')
 	if splitargs[0] == 'set':
 		try:
 			chan = client.get_channel(int(splitargs[1][2:-1]))
@@ -2397,15 +2384,7 @@ async def joinchannel(client, message, **kwargs):
 				)
 		await bot.reply(message, emb=em)
 	else:
-		em = emb.error(
-			(
-				'Invalid arguments.'
-				' Input `{invoker}help {command}` for more information.'
-			).format(
-				invoker=bot.invoker,
-				command=kwargs['command'],
-			)
-		)
+		em = emb.error('Invalid arguments.')
 		await bot.reply(message, emb=em)
 		return
 
