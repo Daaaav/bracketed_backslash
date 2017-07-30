@@ -421,64 +421,6 @@
 			"cat_desc": "Custom commands that are specific to this server",
 			"cat_shown": true,
 			"commands": []
-		},
-		{
-			"cat_name": "Meme Commands",
-			"cat_slug": "\u200b5tr4 will never guess this one",
-			"cat_desc": "You found a secret, congratulations. The command to get this help message will change sometimes.",
-			"cat_shown": false,
-			"commands": [
-				{
-					"name": "",
-					"short": "Mentions you.",
-					"extra": "Don\u2019t type this command in if you don\u2019t want to be mentioned."
-				},
-				{
-					"name": "teddy",
-					"short": "The obvious counterpart to `\\info`.",
-					"extra": ""
-				},
-				{
-					"name": "samar",
-					"short": "The true name.",
-					"extra": ""
-				},
-				{
-					"name": "lui",
-					"short": "Obligatory \u201cpretty cool guy\u201d meme.",
-					"extra": ""
-				},
-				{
-					"name": "shiny",
-					"short": "He\u2019s a shiny trinket.",
-					"extra": ""
-				},
-				{
-					"name": "tainy",
-					"short": "Unobtaining is his name.",
-					"extra": ""
-				},
-				{
-					"name": "kys",
-					"short": "Will the bot listen?",
-					"extra": ""
-				},
-				{
-					"name": "*formatting*",
-					"short": "This is an example of italicized formatting.",
-					"extra": ""
-				},
-				{
-					"name": "/r/undertale",
-					"short": "NO CROPPED PORN AVATARS FOR YOU FUCK YOU.",
-					"extra": ""
-				},
-				{
-					"name": "fuckingdense",
-					"short": "Stop making fun of this guy! Person has children at age eighteen, after all.",
-					"extra": ""
-				}
-			]
 		}
 	]
 }
