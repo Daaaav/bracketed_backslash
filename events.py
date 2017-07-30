@@ -175,27 +175,6 @@ async def on_message(m):
 		indisp += '``'
 	priv = utils.isprivatemessage(m.guild)
 
-	if not priv and \
-	m.author.status is discord.Status.offline and \
-	not utils.logdisabled('invisible_sentmessage', m.guild):
-		e = discord.Embed(
-			title=(
-				':ghost:INVISIBLE WHILE SENDING MESSAGE IN {chanmen}'
-			).format(
-				chanmen=m.channel.mention
-			),
-			description=m.content,
-			colour=m.author.colour
-		)
-		e.set_author(
-			name=m.author.display_name,
-			icon_url=m.author.avatar_url,
-			url=utils.infourl(
-				'userid={0.author.id}&messageid={0.id}'
-			).format(m)
-		)
-		await schan.send(embed=e)
-
 	if not priv and m.tts:
 		e = discord.Embed(
 			title=(
@@ -941,21 +920,6 @@ async def on_member_unban(guild, user):
 		utils.wrapbackticks(user.name), user.discriminator, user.id, guild.name, guild.id,
 	)
 	await specialchannel.send(msg)
-
-async def on_typing(channel, user, when):
-	try:
-		specialchannel = bot.getspecialchannel(channel.guild)
-	except AttributeError: # this would happen if the typing event is in a private message
-		return
-	if specialchannel.id == channel.guild.default_channel.id:
-		specialchannel = channel
-	if str(user.status) == 'offline' and \
-	not utils.logdisabled('invisible_typing', channel.guild):
-		embed = discord.Embed(title='👻INVISIBLE WHILE TYPING IN {}'.format(channel.mention), colour=user.colour)
-		embed.set_author(name=user.display_name, icon_url=user.avatar_url, url=utils.infourl('userid={}'.format(user.id)))
-		await specialchannel.send(embed=embed)
-	else:
-		return # practically unnecessary, but this is for if we want to do things when members type later
 
 async def on_guild_role_create(r):
 	if utils.logdisabled('role_create', r.guild):
