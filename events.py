@@ -1060,7 +1060,7 @@ async def on_reaction_add(reaction, user):
 
 	embed.add_field(
 		name='Reaction',
-		value=':{}:'.format(utils.mdspecialchars(reaction.emoji.name))
+		value=utils.mdspecialchars(':{}:'.format(reaction.emoji.name))
 		if is_custom_emoji else reaction.emoji,
 	)
 
@@ -1105,7 +1105,7 @@ async def on_reaction_remove(reaction, user):
 
 	embed.add_field(
 		name='Reaction',
-		value=':{}:'.format(utils.mdspecialchars(reaction.emoji.name))
+		value=utils.mdspecialchars(':{}:'.format(reaction.emoji.name))
 		if is_custom_emoji else reaction.emoji,
 	)
 
