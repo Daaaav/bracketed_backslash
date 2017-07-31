@@ -1340,14 +1340,13 @@ async def rulemaint(client, message, **kwargs):
 @shadow()
 async def info(client, message, **kwargs):
 	persontocheck = utils.match_input('member', kwargs['arguments'], guild=message.guild)
-	yesperm = '☑'
-	noperm = '❎'
-	try:
-		perms = discord.Channel.permissions_for(message.channel, persontocheck)
-	except AttributeError:
+	if persontocheck is None:
 		embed = emb.error(bot.t['specify_user'])
 		await bot.reply(message, emb=embed)
 		return
+	yesperm = '☑'
+	noperm = '❎'
+	perms = message.channel.permissions_for(persontocheck)
 
 	leftover = []
 	for detected_p in iter(perms):
