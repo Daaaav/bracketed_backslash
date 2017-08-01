@@ -25,7 +25,6 @@ rolexpires = {}
 rules = {}
 disabledrules = []
 
-msg_start = ''
 latestroled = ''
 
 async def on_ready():
@@ -158,21 +157,7 @@ async def on_message(m):
 			embed=e,
 		)
 
-	global msg_start
 	schan = utils.getspecialchannel_reply(m)
-	indisp = (
-		(
-			'``{}``**`…`**'
-		).format(
-			utils.wrapbackticks(m.content[:100]).replace('discord.gg', 'discord\u200b.gg')
-		)
-	) if len(m.content) > 100 else (
-		'``{}``'.format(utils.wrapbackticks(m.content))
-		.replace('\n', '``**`\\n`**``​')
-		.replace('discord.gg', 'discord\u200b.gg')
-	)
-	if indisp[-12:] == '``**`\\n`**``​':
-		indisp += '``'
 	priv = utils.isprivatemessage(m.guild)
 
 	if not priv and m.tts:
@@ -254,23 +239,9 @@ async def on_message(m):
 			# We didn't clean up?
 			del hangman.games[m.channel.id]
 			return
-		if checks.is_mod(m.author):
-			msg_start = (
-				'**`>`**``{name}``**`#`**{indisp}\n'
-			).format(
-				name=utils.wrapbackticks(m.author.name),
-				indisp=indisp,
-			)
-		else:
-			msg_start = (
-				'**`>`**``{name}``**`$`**{indisp}\n'
-			).format(
-				name=utils.wrapbackticks(m.author.name),
-				indisp=indisp,
-			)
 		if priv:
 			e = emb.error('Guesses are not accepted via PM.')
-			await m.channel.send(msg_start, embed=e)
+			await bot.reply(m, emb=e)
 			return
 		hangmanguessed = m.content[1:]
 
@@ -281,14 +252,14 @@ async def on_message(m):
 					'The character ``{}`` is invalid.'
 					.format(utils.wrapbackticks(hangmanguessed.upper()))
 				)
-				await m.channel.send(msg_start, embed=e)
+				await bot.reply(m, emb=e)
 				return
 			if hm_inst.alreadyguessed(hangmanguessed):
 				e = emb.error(
 					'The letter **{}** has already been used.'
 					.format(hangmanguessed.upper())
 				)
-				await m.channel.send(msg_start, embed=e)
+				await bot.reply(m, emb=e)
 				return
 			# Ok, so does this letter occur in the word?
 			if hm_inst.guess(hangmanguessed):
@@ -297,18 +268,17 @@ async def on_message(m):
 						ltr=hangmanguessed.upper(),
 						worddisp=hm_inst.worddisp()
 					)
-				msg = msg_start + con
 
 				if hm_inst.fullyguessed():
-					msg += (
+					con += (
 						'\nYou guessed the word correctly!'
 						' You made {n} mistakes in total.'
 						.format(n=hm_inst.mistakes)
 					)
-					await m.channel.send(msg)
+					await bot.reply(m, con)
 					return
 
-				await m.channel.send(msg)
+				await bot.reply(m, con)
 			else:
 				# It doesn't.
 				if hm_inst.isgameover():
@@ -319,8 +289,7 @@ async def on_message(m):
 						ltr=hangmanguessed.upper(),
 						word=hm_inst.word,
 					)
-					msg = msg_start + con
-					await m.channel.send(msg)
+					await bot.reply(m, con)
 					return
 				else:
 					attleft = hm_inst.attemptsleft()
@@ -338,8 +307,7 @@ async def on_message(m):
 						pl=plural,
 						worddisp=hm_inst.worddisp(),
 					)
-					msg = msg_start + con
-					await m.channel.send(msg)
+					await bot.reply(m, con)
 					return
 		else:
 			# We're guessing the entire word. Well, is it the word?
@@ -349,7 +317,7 @@ async def on_message(m):
 				if not hangmanguessed:
 					# if before was "not even trying", this is -1 trying
 					e = emb.error('You should probably enter in a letter.')
-					await m.channel.send(msg_start, embed=e)
+					await bot.reply(m, emb=e)
 					return
 				e = emb.error(
 					(
@@ -359,7 +327,7 @@ async def on_message(m):
 						guess=utils.wrapbackticks(hangmanguessed)
 					)
 				)
-				await m.channel.send(msg_start, embed=e)
+				await bot.reply(m, emb=e)
 				return
 			elif hm_inst.fullwordguess(hangmanguessed):
 				con = (
@@ -369,8 +337,7 @@ async def on_message(m):
 					word=hm_inst.word,
 					n=hm_inst.mistakes,
 				)
-				msg = msg_start + con
-				await m.channel.send(msg)
+				await bot.reply(m, con)
 				return
 
 			if hm_inst.isgameover():
@@ -381,8 +348,7 @@ async def on_message(m):
 					guess=hangmanguessed,
 					word=hm_inst.word,
 				)
-				msg = msg_start + con
-				await m.channel.send(msg)
+				await bot.reply(m, con)
 				return
 
 			attleft = hm_inst.attemptsleft()
@@ -399,8 +365,7 @@ async def on_message(m):
 				pl=plural,
 				worddisp=hm_inst.worddisp(),
 			)
-			msg = msg_start + con
-			await m.channel.send(msg)
+			await bot.reply(m, con)
 			return
 
 		return
@@ -426,13 +391,6 @@ async def on_message(m):
 	else:
 		return
 
-	msg_start = (
-		'**`>`**``{name}``**`{invsym}`**{indisp}\n'
-	).format(
-		name=utils.wrapbackticks(m.author.name),
-		invsym=invokesymbol,
-		indisp=indisp,
-	)
 	try:
 		arguments = command.split(' ', 1)[1]
 		clean_arguments = clean_command.split(' ', 1)[1]

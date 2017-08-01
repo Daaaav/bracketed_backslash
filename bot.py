@@ -13,9 +13,11 @@ import time
 
 import discord
 
+import checks
 import config
 import emb
 import events
+import utils
 import wrapper
 
 config.load()
@@ -90,13 +92,47 @@ modificationtimecache = time.strftime(config.get_s('timeformat'), time.gmtime(ma
 
 maineventloop = asyncio.get_event_loop()
 
-async def reply(messageobject, message=None, emb=None):
+def calculate_msg_start(message):
+	# Removes the need for globalling msg_start every time
+	indisp = (
+		(
+			'``{}``**`…`**'
+		).format(
+			utils.wrapbackticks(message.content[:100]).replace('discord.gg', 'discord\u200b.gg')
+		)
+	) if len(message.content) > 100 else (
+		'``{}``'.format(utils.wrapbackticks(message.content))
+		.replace('\n', '``**`\\n`**``​')
+		.replace('discord.gg', 'discord\u200b.gg')
+	)
+	if indisp[-12:] == '``**`\\n`**``​':
+		indisp += '``'
+
+	if isinstance(message.channel, discord.abc.PrivateChannel):
+		invokesymbol = '@'
+	elif checks.is_mod(message.author):
+		invokesymbol = '#'
+	else:
+		invokesymbol = '$'
+
+	msg_start = (
+		'**`>`**``{name}``**`{invsym}`**{indisp}\n'
+	).format(
+		name=utils.wrapbackticks(message.author.name),
+		invsym=invokesymbol,
+		indisp=indisp,
+	)
+
+	return msg_start
+
+async def reply(messageobject, message=None, *, emb=None):
 	# Removes the need for adding msg_start manually every time
+	msg_start = calculate_msg_start(messageobject)
 	if message is None:
 		message = ''
-	if len(events.msg_start + message) >= 2000:
+	if len(msg_start + message) >= 2000:
 		# We can at least try in a totally not failsafe and kinda ugly way
-		content = events.msg_start + message
+		content = msg_start + message
 		contentlines = content.split('\n')
 		cut = math.floor(len(contentlines)/2)
 		await messageobject.channel.send('\n'.join(contentlines[:cut]))
@@ -107,9 +143,9 @@ async def reply(messageobject, message=None, emb=None):
 		return
 	try:
 		if emb != None:
-			await messageobject.channel.send(events.msg_start + message, embed=emb)
+			await messageobject.channel.send(msg_start + message, embed=emb)
 		else:
-			await messageobject.channel.send(events.msg_start + message)
+			await messageobject.channel.send(msg_start + message)
 	except(discord.errors.HTTPException, discord.errors.Forbidden) as e:
 		if isinstance(messageobject.channel, discord.abc.PrivateChannel):
 			guildinfo = '\t(direct message)\n'

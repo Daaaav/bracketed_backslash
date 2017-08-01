@@ -422,10 +422,13 @@ async def echo(client, message, **kwargs):
 		arguments = ''
 	else:
 		arguments = kwargs['clean_arguments']
+
+	msg_start = bot.calculate_msg_start(message)
+
 	if (isinstance(message.channel, discord.abc.GuildChannel) and \
 	message.channel.permissions_for(message.guild.me).embed_links) \
 	or isinstance(message.channel, discord.abc.PrivateChannel):
-		displayarguments = arguments[:2048-len(events.msg_start)]
+		displayarguments = arguments[:2048-len(msg_start)]
 		try:
 			echocolor = message.guild.me.colour
 		except AttributeError:
@@ -433,7 +436,7 @@ async def echo(client, message, **kwargs):
 		em = discord.Embed(description=displayarguments, colour=echocolor)
 		replyargs = {'emb': em}
 	else:
-		displayarguments = arguments[:2000-len(events.msg_start)]
+		displayarguments = arguments[:2000-len(msg_start)]
 		replyargs = {'message': displayarguments}
 	await bot.reply(message, **replyargs)
 
