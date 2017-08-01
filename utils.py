@@ -458,15 +458,11 @@ def getspecialchannel(guild):
 	theconfig = config.get_s('specialchannel', guild.id)
 	if theconfig != '0':
 		return wrapper.client.get_channel(id=theconfig)
-	return guild.default_channel
 
 def getspecialchannel_reply(message):
 	if message.guild is None:
 		return message.channel
-	specialchannel = getspecialchannel(message.guild)
-	if specialchannel == message.guild.default_channel:
-		return message.channel
-	return specialchannel
+	return getspecialchannel(message.guild)
 
 def reltime(timestamp, noago=False):
 	timestamp = int(timestamp)
