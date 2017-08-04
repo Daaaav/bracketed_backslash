@@ -556,8 +556,8 @@ async def handleExpiryTimer():
 		await autoExpiry()
 	else:
 		timertime = (timelowscore - time.time()) + 2  # 2 seconds extra, just to make sure we're not getting problems due to being one second off
-		exptimer = threading.Timer(timertime, callAutoExpiry)
-		exptimer.start()
+		bot.exptimer = threading.Timer(timertime, callAutoExpiry)
+		bot.exptimer.start()
 		logging.info('Set expiry timer for %s seconds', timertime)
 
 def callAutoExpiry():
