@@ -51,9 +51,6 @@ time.tzset()
 boottime = time.strftime(config.get_s('timeformat'))
 boottimeunix = time.time()
 
-with open('opguildid.conf', 'r') as f:
-	opguildid = int(f.readline(18).split('\n')[0])
-
 minutemessageedits = {}
 
 messages_deleted_by_bot = []
