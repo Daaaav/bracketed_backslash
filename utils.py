@@ -50,41 +50,41 @@ def id_summary(uid=None, mid=None, cid=None, rid=None, eid=None):
 	return summary
 
 async def handle_minute_message_edits(msg, schan):
-	if msg.id not in bot.minutemessageedits:
-		bot.minutemessageedits[msg.id] = [int(time.time())]
+	if msg.id not in wrapper.minutemessageedits:
+		wrapper.minutemessageedits[msg.id] = [int(time.time())]
 	else:
 		edittime = int(time.time())
 		while True:
-			if edittime in bot.minutemessageedits[msg.id]:
+			if edittime in wrapper.minutemessageedits[msg.id]:
 				edittime += .1
 			else:
-				bot.minutemessageedits[msg.id].append(edittime)
+				wrapper.minutemessageedits[msg.id].append(edittime)
 				break
-		if len(bot.minutemessageedits[msg.id]) >= 5:
+		if len(wrapper.minutemessageedits[msg.id]) >= 5:
 			await handle_delete_overedited_message(msg, schan)
 
 		# While we're at it, also clean up other messages.
 
 		# Copy because we may be removing elements from here
-		for k in list(bot.minutemessageedits):
+		for k in list(wrapper.minutemessageedits):
 			if k != msg.id:
-				for i in list(bot.minutemessageedits[k]):
+				for i in list(wrapper.minutemessageedits[k]):
 					if i < (int(time.time())-30):
-						bot.minutemessageedits[k].remove(i)
-				if not bot.minutemessageedits[k]:
-					del bot.minutemessageedits[k]
+						wrapper.minutemessageedits[k].remove(i)
+				if not wrapper.minutemessageedits[k]:
+					del wrapper.minutemessageedits[k]
 
 async def handle_delete_overedited_message(msg, schan):
 	# Copy the list, we may be removing elements from here
-	for i in list(bot.minutemessageedits[msg.id]):
+	for i in list(wrapper.minutemessageedits[msg.id]):
 		if i < (int(time.time())-30):
-			bot.minutemessageedits[msg.id].remove(i)
+			wrapper.minutemessageedits[msg.id].remove(i)
 
-	if len(bot.minutemessageedits[msg.id]) >= 5:
+	if len(wrapper.minutemessageedits[msg.id]) >= 5:
 		# Ok, that's enough editing.
 		try:
 			await msg.delete()
-			bot.messages_deleted_by_bot.append(msg)
+			wrapper.messages_deleted_by_bot.append(msg)
 			em = discord.Embed(
 				title=('\N{MEMO}' * 5) + (
 					'Message {0.id} was edited too many times in'
@@ -413,30 +413,30 @@ def rolelist(roles):
 def updaterolecache(member, guildid=None):
 	if guildid is None:
 		guildid = member.guild.id
-	if guildid not in events.memberroles:
-		events.memberroles[guildid] = {}
-	events.memberroles[guildid][member.id] = rolelist(member.roles)
+	if guildid not in wrapper.memberroles:
+		wrapper.memberroles[guildid] = {}
+	wrapper.memberroles[guildid][member.id] = rolelist(member.roles)
 
 def removerolecache(memberid, guildid):
 	try:
-		del events.memberroles[guildid][memberid]
+		del wrapper.memberroles[guildid][memberid]
 	except KeyError:
 		return False
 	return True
 
 def rolecachesave():
 	with open('memberroles.json', 'w') as outfile:
-		json.dump(events.memberroles, outfile)
+		json.dump(wrapper.memberroles, outfile)
 
 	return True
 
 def rulesave():
 	with open('rules.json', 'w') as outfile:
-		json.dump(events.rules, outfile)
+		json.dump(wrapper.rules, outfile)
 
 def rolexpiresave():
 	with open('rolexpires.json', 'w') as outfile:
-		json.dump(events.rolexpires, outfile)
+		json.dump(wrapper.rolexpires, outfile)
 
 def listroles(lijst):
 	returnage = ''
@@ -528,14 +528,14 @@ async def handleExpiryTimer():
 	Can be called on startup, when changing something, or at the end of autoExpiry
 	"""
 	# Cancel the existing timer, if it's running
-	if bot.exptimer != None:
-		bot.exptimer.cancel()
-		bot.exptimer = None  # Because there's no Timer.isCanceled()
+	if wrapper.exptimer != None:
+		wrapper.exptimer.cancel()
+		wrapper.exptimer = None  # Because there's no Timer.isCanceled()
 
 	entriesleft = False
 
-	for guildid in events.rolexpires:  # Merge with next for maybe
-		if events.rolexpires[guildid]:
+	for guildid in wrapper.rolexpires:  # Merge with next for maybe
+		if wrapper.rolexpires[guildid]:
 			entriesleft = True
 			break
 
@@ -546,18 +546,18 @@ async def handleExpiryTimer():
 
 	timelowscore = 9999999999
 
-	for guildid in events.rolexpires:
-		for userid in events.rolexpires[guildid]:
-			if events.rolexpires[guildid][userid]['time'] < timelowscore:
-				timelowscore = events.rolexpires[guildid][userid]['time']
+	for guildid in wrapper.rolexpires:
+		for userid in wrapper.rolexpires[guildid]:
+			if wrapper.rolexpires[guildid][userid]['time'] < timelowscore:
+				timelowscore = wrapper.rolexpires[guildid][userid]['time']
 
 	if timelowscore <= int(time.time()):
 		logging.info('Immediately calling autoExpiry() because we’re overdue in resetting someone’s roles')
 		await autoExpiry()
 	else:
 		timertime = (timelowscore - time.time()) + 2  # 2 seconds extra, just to make sure we're not getting problems due to being one second off
-		bot.exptimer = threading.Timer(timertime, callAutoExpiry)
-		bot.exptimer.start()
+		wrapper.exptimer = threading.Timer(timertime, callAutoExpiry)
+		wrapper.exptimer.start()
 		logging.info('Set expiry timer for %s seconds', timertime)
 
 def callAutoExpiry():
@@ -571,13 +571,13 @@ async def autoExpiry():
 	now = int(time.time())
 
 	# So apparently someone needs to be unbanned?
-	for guildid in events.rolexpires:
+	for guildid in wrapper.rolexpires:
 		content = ''
 		successfulresets = []
 
 		cguild = discord.utils.get(wrapper.client.guilds, id=guildid)
-		for userid in events.rolexpires[guildid]:
-			if events.rolexpires[guildid][userid]['time'] <= now:
+		for userid in wrapper.rolexpires[guildid]:
+			if wrapper.rolexpires[guildid][userid]['time'] <= now:
 				try:
 					await removeRestrictiveRoles(
 						cguild.get_member(userid),
@@ -593,7 +593,7 @@ async def autoExpiry():
 						content += '\n<@!{}> was supposed to have their roles reset now, but they can be found neither on the server nor in the role cache!'.format(userid)
 
 				# Shorten the following thing so we don't have to keep typing it.
-				thisexpiry = events.rolexpires[guildid][userid]
+				thisexpiry = wrapper.rolexpires[guildid][userid]
 				if thisexpiry['msgedit_message'] != '0':
 					await editexpirymessage(cguild, thisexpiry)
 				if thisexpiry['msgpost_channel'] != '0':
@@ -680,10 +680,10 @@ async def editexpirymessage(cguild, thisexpiry):
 def addexpiryentry(guildid, memberid, expirytime,
 e_channel='0', e_message='0', e_newcontent='',
 p_channel='0', p_content=''):
-	if guildid not in events.rolexpires:
-		events.rolexpires[guildid] = {}
+	if guildid not in wrapper.rolexpires:
+		wrapper.rolexpires[guildid] = {}
 
-	events.rolexpires[guildid][memberid] = {
+	wrapper.rolexpires[guildid][memberid] = {
 		'time': expirytime,
 		'msgedit_channel': e_channel,
 		'msgedit_message': e_message,
@@ -693,28 +693,28 @@ p_channel='0', p_content=''):
 	}
 
 def removeexpiryentry(guildid, memberid):
-	if guildid not in events.rolexpires:
+	if guildid not in wrapper.rolexpires:
 		return False
 
-	if memberid not in events.rolexpires[guildid]:
+	if memberid not in wrapper.rolexpires[guildid]:
 		return False
 
-	del events.rolexpires[guildid][memberid]
+	del wrapper.rolexpires[guildid][memberid]
 	return True
 
 def getearliestexpiry(guildid):  # Returns: [userid, entry]
-	if guildid not in events.rolexpires or not events.rolexpires[guildid]:
+	if guildid not in wrapper.rolexpires or not wrapper.rolexpires[guildid]:
 		return None
 
 	timelowscore = 9999999999
 	earliestuserid = '0'
 	earliestexpiry = None  # Entry
 
-	for userid in events.rolexpires[guildid]:
-		if events.rolexpires[guildid][userid]['time'] < timelowscore:
-			timelowscore = events.rolexpires[guildid][userid]['time']
+	for userid in wrapper.rolexpires[guildid]:
+		if wrapper.rolexpires[guildid][userid]['time'] < timelowscore:
+			timelowscore = wrapper.rolexpires[guildid][userid]['time']
 			earliestuserid = userid
-			earliestexpiry = events.rolexpires[guildid][userid]
+			earliestexpiry = wrapper.rolexpires[guildid][userid]
 
 	return [earliestuserid, earliestexpiry]
 
@@ -772,12 +772,12 @@ async def newmemberroles(member, specialchannel, bypassjoinchannel):
 		return
 
 	if config.get_s('rolecachemode', member.guild.id) != 0 and \
-	member.guild.id in events.memberroles:
+	member.guild.id in wrapper.memberroles:
 		# Are they in our database of members which had roles before?
-		if not bypassjoinchannel and member.id in events.memberroles[member.guild.id]:
+		if not bypassjoinchannel and member.id in wrapper.memberroles[member.guild.id]:
 			addingtheseroles = []
 			# They're found in the database! Give them the groups they should have
-			for rid in events.memberroles[member.guild.id][member.id]:
+			for rid in wrapper.memberroles[member.guild.id][member.id]:
 				addingrole = discord.utils.get(member.guild.roles, id=rid)
 				if addingrole.is_default():
 					continue

@@ -124,7 +124,7 @@ async def _help(client, message, **kwargs):
 @shadow(auth=checks.is_host)
 async def restart(client, message, **kwargs):
 	embed = emb.success('Restarting.', True)
-	embed.add_field(name='Uptime', value=utils.reltime(bot.boottimeunix, True))
+	embed.add_field(name='Uptime', value=utils.reltime(wrapper.boottimeunix, True))
 	embed.add_field(name='Messages in Cache', value=str(len(client._connection._messages)))
 	utils.logcommand(kwargs['command'], kwargs['arguments'], message)
 	await bot.reply(message, emb=embed)
@@ -133,7 +133,7 @@ async def restart(client, message, **kwargs):
 @shadow(auth=checks.is_host)
 async def kill(client, message, **kwargs):
 	embed = emb.success('Killing.', True)
-	embed.add_field(name='Uptime', value=utils.reltime(bot.boottimeunix, True))
+	embed.add_field(name='Uptime', value=utils.reltime(wrapper.boottimeunix, True))
 	utils.logcommand(kwargs['command'], kwargs['arguments'], message)
 	await bot.reply(message, emb=embed)
 	await client.logout()
@@ -442,7 +442,8 @@ async def echo(client, message, **kwargs):
 
 @shadow()
 async def _hangman(client, message, **kwargs):
-	if message.channel.id in hangman.games and hangman.games[message.channel.id].active:
+	if message.channel.id in wrapper.hangman_games and \
+	wrapper.hangman_games[message.channel.id].active:
 		embed = emb.error((
 				'Hangman is already running in this channel. It can be '
 				'aborted by the starter or by a mod with `\stophangman`.'
@@ -464,7 +465,7 @@ async def _hangman(client, message, **kwargs):
 		return
 
 	hm_inst = hangman.HangmanGame(kwargs['arguments'], message.author)
-	hangman.games[message.channel.id] = hm_inst
+	wrapper.hangman_games[message.channel.id] = hm_inst
 
 	content = (
 		'New game of hangman initiated by {starter} with a custom word. Guess letters '
@@ -480,11 +481,12 @@ async def _hangman(client, message, **kwargs):
 
 @shadow()
 async def stophangman(client, message, **kwargs):
-	if message.channel.id not in hangman.games or not hangman.games[message.channel.id].active:
+	if message.channel.id not in wrapper.hangman_games or \
+	not wrapper.hangman_games[message.channel.id].active:
 		embed = emb.error('Can’t abort hangman because it’s not running.')
 		await bot.reply(message, emb=embed)
 		return
-	hm_inst = hangman.games[message.channel.id]
+	hm_inst = wrapper.hangman_games[message.channel.id]
 	if not checks.is_mod(message.author) and not hm_inst.isstarter(message.author):
 		embed = emb.error('Can’t abort hangman because you haven’t started this game.')
 		await bot.reply(message, emb=embed)
@@ -493,7 +495,7 @@ async def stophangman(client, message, **kwargs):
 	hm_inst.stop()
 	content = 'Game of hangman aborted. The word was: **{}**'.format(hm_inst.word)
 	await bot.reply(message, content)
-	del hangman.games[message.channel.id]
+	del wrapper.hangman_games[message.channel.id]
 
 @shadow()
 async def source(client, message, **kwargs):
@@ -746,7 +748,7 @@ async def voicemute(client, message, **kwargs):
 @shadow()
 async def votevoicemute(client, message, **kwargs):
 	# TODO start supporting this. When voting, require (part of) name (or id/mention/disc/you know the drill) if more than one vote is running
-	if len(bot.votemutes) >= 1:
+	if len(wrapper.votemutes) >= 1:
 		embed = emb.error('Multiple votes running at the same time is not yet supported.')
 		await bot.reply(message, emb=embed)
 		return
@@ -793,13 +795,13 @@ async def votevoicemute(client, message, **kwargs):
 
 @shadow(aliases=['vn'])
 async def vy(client, message, **kwargs):
-	if not bot.votemutes:
+	if not wrapper.votemutes:
 		embed = emb.error('There are currently no votes running.')
-	elif len(bot.votemutes) > 1:
+	elif len(wrapper.votemutes) > 1:
 		embed = emb.error('Multiple votes running at the same time is not yet supported.')
 	else:
 		# First, who are we going to mute, again?
-		for m in bot.votemutes:
+		for m in wrapper.votemutes:
 			mutee = m
 			break
 
@@ -820,17 +822,17 @@ async def vy(client, message, **kwargs):
 
 		content = content.format(resulttext)
 
-		if message.author.id in bot.votemutes[mutee][side]:
+		if message.author.id in wrapper.votemutes[mutee][side]:
 			embed = emb.warning('You have already voted that.')
 			await bot.reply(message, emb=embed)
 			return
 
-		bot.votemutes[mutee][side].append(message.author.id)
+		wrapper.votemutes[mutee][side].append(message.author.id)
 
-		if message.author.id in bot.votemutes[mutee][oppositeside]:
+		if message.author.id in wrapper.votemutes[mutee][oppositeside]:
 			# Changing your mind, huh?
 			content = 'Changed vote to be {}.'.format(resulttext)
-			bot.votemutes[mutee][oppositeside].remove(message.author.id)
+			wrapper.votemutes[mutee][oppositeside].remove(message.author.id)
 
 		# For the amount of people who voted, only count those who are still inside the channel!
 		voicechatters = 0
@@ -840,9 +842,9 @@ async def vy(client, message, **kwargs):
 			voicechatters += len(chan.members)
 
 			for voicemember in chan.members:
-				if voicemember.id in bot.votemutes[mutee]['proponents']:
+				if voicemember.id in wrapper.votemutes[mutee]['proponents']:
 					numproponents += 1
-				if voicemember.id in bot.votemutes[mutee]['opponents']:
+				if voicemember.id in wrapper.votemutes[mutee]['opponents']:
 					numopponents  += 1
 
 		percpro = numproponents/voicechatters*100
@@ -852,10 +854,10 @@ async def vy(client, message, **kwargs):
 			targetmember = utils.match_input('member', mutee, guild=message.guild)
 			await targetmember.edit(mute=True)
 			content += '\n{}% of the members have now voted in favor of muting, so <@{}> is now voice muted.'.format(round(percpro,1), mutee)
-			del bot.votemutes[mutee]
+			del wrapper.votemutes[mutee]
 		elif percopp > 100-config.get_s('votevmute_threshold', message.guild.id):
 			content += '\n{}% of the members have now voted against muting, so <@{}> is not getting voice muted.'.format(round(percopp,1), mutee)
-			del bot.votemutes[mutee]
+			del wrapper.votemutes[mutee]
 
 		await bot.replyattach(
 			message,
@@ -872,17 +874,17 @@ async def vy(client, message, **kwargs):
 
 @shadow(auth=checks.is_mod)
 async def vc(client, message, **kwargs):
-	if not bot.votemutes:
+	if not wrapper.votemutes:
 		embed = emb.error('There are currently no votes running.')
-	elif len(bot.votemutes) > 1:
+	elif len(wrapper.votemutes) > 1:
 		embed = emb.error('Multiple votes running at the same time is not yet supported.')
 	else:
 		# We're going to cancel the vote on whom?
-		for m in bot.votemutes:
+		for m in wrapper.votemutes:
 			mutee = m
 			break
 
-		del bot.votemutes[mutee]
+		del wrapper.votemutes[mutee]
 		embed = emb.success('The vote on <@{}> has been vetoed.'.format(mutee))
 	await bot.reply(message, emb=embed)
 
@@ -1004,8 +1006,8 @@ async def expirylist(client, message, **kwargs):
 		guild = message.guild
 		content = ''
 
-	if guild.id in events.rolexpires:
-		for k, v in sorted(events.rolexpires[guild.id].items(), key=lambda i: i[1]['time']):
+	if guild.id in wrapper.rolexpires:
+		for k, v in sorted(wrapper.rolexpires[guild.id].items(), key=lambda i: i[1]['time']):
 			content += '<@{}>: {}\n'.format(k, utils.reltime(v['time']))
 
 	if content == '':
@@ -1059,10 +1061,10 @@ async def rolecacheadd(client, message, **kwargs):
 		await bot.reply(message, emb=embed)
 		return
 
-	if splitargs[0] not in events.memberroles[message.guild.id]:
-		events.memberroles[message.guild.id][splitargs[0]] = []
+	if splitargs[0] not in wrapper.memberroles[message.guild.id]:
+		wrapper.memberroles[message.guild.id][splitargs[0]] = []
 
-	events.memberroles[message.guild.id][splitargs[0]].append(splitargs[1])
+	wrapper.memberroles[message.guild.id][splitargs[0]].append(splitargs[1])
 	utils.rolecachesave()
 
 	embed = emb.success('Successfully added role {} to member {} in the role cache.'.format(splitargs[1], splitargs[0]))
@@ -1101,34 +1103,34 @@ async def rolecacheinfo(client, message, **kwargs):
 		return
 
 	member_id = int(kwargs['arguments'])
-	if member_id not in events.memberroles[message.guild.id]:
+	if member_id not in wrapper.memberroles[message.guild.id]:
 		embed = emb.error('That member is not in the role cache.')
 		await bot.reply(message, emb=embed)
 		return
 
 	content = (
 		'According to the role cache, this member has the following roles: '
-		+ utils.listroles_id(events.memberroles[message.guild.id][member_id])
+		+ utils.listroles_id(wrapper.memberroles[message.guild.id][member_id])
 	)
 
 	await bot.reply(message, content)
 
 @shadow(aliases=['rule'], guildonly=True)
 async def rules(client, message, **kwargs):
-	if message.guild.id in events.disabledrules and not checks.is_mod(message.author):
+	if message.guild.id in wrapper.disabledrules and not checks.is_mod(message.author):
 		embed = emb.error('The rules system is currently disabled for this server.')
 		await bot.reply(message, emb=embed)
 		return
-	if not message.guild.id in events.rules:
+	if not message.guild.id in wrapper.rules:
 		embed = emb.warning('Rules are not (yet) set for this server.')
 		await bot.reply(message, emb=embed)
 		return
 	if kwargs['arguments'] is not None and kwargs['arguments'].isdigit():
-		if int(kwargs['arguments']) - 1 in events.rules[message.guild.id]:
+		if int(kwargs['arguments']) - 1 in wrapper.rules[message.guild.id]:
 			content = 'Rule **{}** for server `{}`:\n{}'.format(
 				int(kwargs['arguments']),
 				utils.wrapbackticks(message.guild.name),
-				events.rules[message.guild.id][int(kwargs['arguments'])-1],
+				wrapper.rules[message.guild.id][int(kwargs['arguments'])-1],
 			)
 			await bot.reply(message, content)
 			return
@@ -1139,20 +1141,20 @@ async def rules(client, message, **kwargs):
 	n = 1
 	content = 'Rules for server `{}`:{}'.format(
 		utils.wrapbackticks(message.guild.name),
-		' (Disabled)' if message.guild.id in events.disabledrules else '',
+		' (Disabled)' if message.guild.id in wrapper.disabledrules else '',
 	)
-	for rule in events.rules[message.guild.id]:
+	for rule in wrapper.rules[message.guild.id]:
 		content += '\n**{}.** {}'.format(n, rule)
 		n += 1
 	await bot.reply(message, content)
 
 @shadow(guildonly=True)
 async def rulefind(client, message, **kwargs):
-	if message.guild.id in events.disabledrules and not checks.is_mod(message.author):
+	if message.guild.id in wrapper.disabledrules and not checks.is_mod(message.author):
 		embed = emb.error('The rules system is currently disabled for this server.')
 		await bot.reply(message, emb=embed)
 		return
-	if not message.guild.id in events.rules:
+	if not message.guild.id in wrapper.rules:
 		embed = emb.warning('Rules are not (yet) set for this server.')
 		await bot.reply(message, emb=embed)
 		return
@@ -1166,7 +1168,7 @@ async def rulefind(client, message, **kwargs):
 		utils.wrapbackticks(message.guild.name),
 		utils.wrapbackticks(kwargs['arguments']),
 	)
-	for rule in events.rules[message.guild.id]:
+	for rule in wrapper.rules[message.guild.id]:
 		if rule.lower().find(kwargs['arguments'].lower()) != -1:
 			content += '\n**{}.** {}'.format(n, rule)
 			matched = True
@@ -1191,7 +1193,7 @@ async def ruleadd(client, message, **kwargs):
 			await bot.reply(message, content)
 			return
 		elif splitargs[0].isdigit() and \
-		int(splitargs[0]) > len(events.rules[message.guild.id]):
+		int(splitargs[0]) > len(wrapper.rules[message.guild.id]):
 			embed = emb.warning('Why are you mentioning the number if you want to add this as the last rule?')
 			await bot.reply(message, emb=embed)
 			return
@@ -1206,23 +1208,23 @@ async def ruleadd(client, message, **kwargs):
 		embed = emb.error('I’m not going to think up any rules by myself.')
 		await bot.reply(message, emb=embed)
 		return
-	if not message.guild.id in events.rules:
-		events.rules[message.guild.id] = []
+	if not message.guild.id in wrapper.rules:
+		wrapper.rules[message.guild.id] = []
 
 	splitargs = kwargs['arguments'].split(' ', 1)
 	if splitargs[0].isdigit():
-		if int(splitargs[0]) > len(events.rules[message.guild.id]):
+		if int(splitargs[0]) > len(wrapper.rules[message.guild.id]):
 			content = '**Why are you mentioning the number if you’re adding this at the end?**\n'
 		else:
 			content = ''
-		events.rules[message.guild.id].insert(int(splitargs[0])-1, splitargs[1])
+		wrapper.rules[message.guild.id].insert(int(splitargs[0])-1, splitargs[1])
 		content += 'New rule {} inserted:\n{}'.format(int(splitargs[0]), splitargs[1])      # Yes, this one is "inserted"...
 	else:
-		events.rules[message.guild.id].append(kwargs['arguments'])
+		wrapper.rules[message.guild.id].append(kwargs['arguments'])
 
 		# ...and this one is "added". That is on purpose, not an inconsistency.
 		content = 'New rule {} added:\n{}'.format(
-			len(events.rules[message.guild.id]),
+			len(wrapper.rules[message.guild.id]),
 			kwargs['arguments'],
 		)
 
@@ -1236,7 +1238,7 @@ async def ruleedit(client, message, **kwargs):
 		embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
 		await bot.reply(message, emb=embed)
 		return
-	if not message.guild.id in events.rules:
+	if not message.guild.id in wrapper.rules:
 		embed = emb.error('No rules to edit.')
 		await bot.reply(message, emb=embed)
 		return
@@ -1244,7 +1246,7 @@ async def ruleedit(client, message, **kwargs):
 	splitargs = kwargs['arguments'].split(' ', 1)
 	if splitargs[0].isdigit():
 		try:
-			events.rules[message.guild.id][int(splitargs[0])-1]
+			wrapper.rules[message.guild.id][int(splitargs[0])-1]
 		except IndexError:
 			embed = emb.error('Rule {} does not appear to exist.'.format(int(splitargs[0])))
 			await bot.reply(message, emb=embed)
@@ -1252,11 +1254,11 @@ async def ruleedit(client, message, **kwargs):
 
 		embed = emb.success('Rule {} successfully edited from:\n{}\nTo:\n{}'.format(
 				int(splitargs[0]),
-				events.rules[message.guild.id][int(splitargs[0])-1], splitargs[1],
+				wrapper.rules[message.guild.id][int(splitargs[0])-1], splitargs[1],
 			),
 		)
 
-		events.rules[message.guild.id][int(splitargs[0])-1] = splitargs[1]
+		wrapper.rules[message.guild.id][int(splitargs[0])-1] = splitargs[1]
 		utils.rulesave()
 	else:
 		embed = emb.error('Invalid rule number given, just check the help entry.')
@@ -1268,7 +1270,7 @@ async def rulemove(client, message, **kwargs):
 		embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
 		await bot.reply(message, emb=embed)
 		return
-	if not message.guild.id in events.rules:
+	if not message.guild.id in wrapper.rules:
 		embed = emb.error('No rules to move.')
 		await bot.reply(message, emb=embed)
 		return
@@ -1276,18 +1278,18 @@ async def rulemove(client, message, **kwargs):
 	splitargs = kwargs['arguments'].split(' ', 1)
 	if splitargs[0].isdigit() and splitargs[1].isdigit():
 		if any(
-			x not in events.rules[message.guild.id]
+			x not in wrapper.rules[message.guild.id]
 			for x in (int(splitargs[0]) - 1, int(splitargs[1]) - 1)
 		):
 			embed = emb.error('Either rule {} does not exist or {} is not a slot it can be moved to.'.format(int(splitargs[0]), int(splitargs[1])))
 			await bot.reply(message, emb=embed)
 			return
 
-		rulecontent = events.rules[message.guild.id][int(splitargs[0])-1]
-		events.rules[message.guild.id].remove(
-			events.rules[message.guild.id][int(splitargs[0])-1],
+		rulecontent = wrapper.rules[message.guild.id][int(splitargs[0])-1]
+		wrapper.rules[message.guild.id].remove(
+			wrapper.rules[message.guild.id][int(splitargs[0])-1],
 		)
-		events.rules[message.guild.id].insert(int(splitargs[1])-1, rulecontent)
+		wrapper.rules[message.guild.id].insert(int(splitargs[1])-1, rulecontent)
 		utils.rulesave()
 
 		embed = emb.success('Rule {} successfully moved to number {}.'.format(int(splitargs[0]), int(splitargs[1])))
@@ -1301,14 +1303,14 @@ async def ruleremove(client, message, **kwargs):
 		embed = emb.error('This command expects you to enter some more info, maybe read its help entry.')
 		await bot.reply(message, emb=embed)
 		return
-	if not message.guild.id in events.rules:
+	if not message.guild.id in wrapper.rules:
 		embed = emb.error('No rules to delete.')
 		await bot.reply(message, emb=embed)
 		return
 
 	if kwargs['arguments'].isdigit():
 		try:
-			events.rules[message.guild.id][int(kwargs['arguments'])-1]
+			wrapper.rules[message.guild.id][int(kwargs['arguments'])-1]
 		except IndexError:
 			embed = emb.error('Rule {} does not appear to exist.'.format(int(kwargs['arguments'])))
 			await bot.reply(message, emb=embed)
@@ -1316,12 +1318,12 @@ async def ruleremove(client, message, **kwargs):
 
 		embed = emb.success('Rule {} successfully removed:\n{}'.format(
 				int(kwargs['arguments']),
-				events.rules[message.guild.id][int(kwargs['arguments'])-1],
+				wrapper.rules[message.guild.id][int(kwargs['arguments'])-1],
 			),
 		)
 
-		events.rules[message.guild.id].remove(
-			events.rules[message.guild.id][int(kwargs['arguments'])-1],
+		wrapper.rules[message.guild.id].remove(
+			wrapper.rules[message.guild.id][int(kwargs['arguments'])-1],
 		)
 		utils.rulesave()
 	else:
@@ -1330,14 +1332,14 @@ async def ruleremove(client, message, **kwargs):
 
 @shadow(auth=checks.is_mod)
 async def rulemaint(client, message, **kwargs):
-	if message.guild.id in events.disabledrules:
-		events.disabledrules.remove(message.guild.id)
+	if message.guild.id in wrapper.disabledrules:
+		wrapper.disabledrules.remove(message.guild.id)
 		embed = emb.success('Rules system enabled for this server.')
 	else:
-		events.disabledrules.append(message.guild.id)
+		wrapper.disabledrules.append(message.guild.id)
 		embed = emb.success('Rules system disabled for this server.')
 	with open('disabledrules.json', 'w') as outfile:
-		json.dump(events.disabledrules, outfile)
+		json.dump(wrapper.disabledrules, outfile)
 	await bot.reply(message, emb=embed)
 
 @shadow()
@@ -1390,13 +1392,13 @@ async def uptime(client, message, **kwargs):
 	embed.set_author(name='Uptime Statistics', icon_url=client.user.avatar_url)
 	embed.set_thumbnail(url=client.user.avatar_url)
 	embed.set_footer(text='Uptime Statistics', icon_url=client.user.avatar_url)
-	embed.add_field(name='Boot Time', value=bot.boottime)
+	embed.add_field(name='Boot Time', value=wrapper.boottime)
 	try:
 		now = config.get_s('timeformat', message.guild.id)
 	except AttributeError:
 		now = config.get_s('timeformat')
 	embed.add_field(name='Current Time', value=time.strftime(now))
-	embed.add_field(name='Bot Uptime', value=utils.reltime(bot.boottimeunix, True))
+	embed.add_field(name='Bot Uptime', value=utils.reltime(wrapper.boottimeunix, True))
 	embed.add_field(name='Host Uptime', value=hostuptime.decode('utf-8'))
 	await bot.reply(message, emb=embed)
 
@@ -1415,7 +1417,7 @@ async def version(client, message, **kwargs):
 	embed.set_thumbnail(url=client.user.avatar_url)
 	embed.set_footer(text='Version Information', icon_url=client.user.avatar_url)
 	embed.set_thumbnail(url=client.user.avatar_url)
-	embed.add_field(name='\\[\\\\\\]', value='{}, last updated {}'.format(bot.version, bot.modificationtimecache))
+	embed.add_field(name='\\[\\\\\\]', value='{}, last updated {}'.format(bot.version, wrapper.modificationtimecache))
 	embed.add_field(name='discord.py', value='{} {}'.format(discord.version_info.releaselevel, discord.__version__))
 	embed.add_field(name='Python', value=sys.version)
 	embed.add_field(name='PIL', value=__import__("PIL").VERSION)
@@ -1681,7 +1683,7 @@ async def b(client, message, **kwargs):
 	except discord.NotFound:
 		pass
 	else:
-		bot.messages_deleted_by_bot.append(message)
+		wrapper.messages_deleted_by_bot.append(message)
 
 	ban_log_channel = config.get_s('tntgb', message.guild.id)['ban_log_channel']
 	ban_log_channel = message.guild.get_channel(ban_log_channel)
@@ -1775,8 +1777,8 @@ async def b(client, message, **kwargs):
 					currentexpiry[0],
 					message.guild.id,
 					currentexpiry[0],
-					message.guild.id in events.rolexpires,
-					currentexpiry[0] in events.rolexpires
+					message.guild.id in wrapper.rolexpires,
+					currentexpiry[0] in wrapper.rolexpires
 				))
 				await specialchannel.send(embed=em)
 			expiredmentions.append('<@!{}>'.format(currentexpiry[0]))
@@ -1855,7 +1857,7 @@ async def b(client, message, **kwargs):
 @shadow(tntgbguildonly=True)
 async def selfban(client, message, **kwargs):
 	await message.delete()
-	bot.messages_deleted_by_bot.append(message)
+	wrapper.messages_deleted_by_bot.append(message)
 
 	if checks.is_tntgb_banned(message.author):
 		# Wait, what?
@@ -1913,7 +1915,7 @@ async def selfban(client, message, **kwargs):
 @shadow(auth=checks.is_tntgb_mod, aliases=['b_left', 'b_offserver'], tntgbguildonly=True)
 async def b_id(client, message, **kwargs):
 	await message.delete()
-	bot.messages_deleted_by_bot.append(message)
+	wrapper.messages_deleted_by_bot.append(message)
 
 	# Who are we banning, and for what reason?
 	if kwargs['arguments'].find('\n') != -1:
@@ -1945,9 +1947,9 @@ async def b_id(client, message, **kwargs):
 			return
 
 		# Okay, removing their entry altogether was a bit drastic
-		events.memberroles[message.guild.id][request] = []
+		wrapper.memberroles[message.guild.id][request] = []
 		for role_id in config.get_s('restrictiveroles', message.guild.id):
-			events.memberroles[message.guild.id][request].append(role_id)
+			wrapper.memberroles[message.guild.id][request].append(role_id)
 
 		# Alright, just send a message about it now!
 		# The extra space is intentional, it's a 'hidden' indicator to
@@ -2008,8 +2010,8 @@ async def revertban(client, message, **kwargs):
 	await specialchannel.send(embed=embed)
 
 	# That member is also in the role cache. Right?
-	if message.guild.id not in events.rolexpires or \
-	targetmember.id not in events.rolexpires[message.guild.id]:
+	if message.guild.id not in wrapper.rolexpires or \
+	targetmember.id not in wrapper.rolexpires[message.guild.id]:
 		embed = emb.warning('Could not find {} in the role cache!'.format(
 				targetmember.mention
 			)
@@ -2018,7 +2020,7 @@ async def revertban(client, message, **kwargs):
 		return
 
 	# It's even longer this time
-	thisexpiry = events.rolexpires[message.guild.id][targetmember.id]
+	thisexpiry = wrapper.rolexpires[message.guild.id][targetmember.id]
 	if thisexpiry['msgedit_message'] != '0':
 		thisexpiry['msgedit_newcontent'] = ''
 		await utils.editexpirymessage(message.guild, thisexpiry)

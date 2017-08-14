@@ -20,15 +20,7 @@ import op_ids
 import utils
 import wrapper
 
-memberroles = {}
-rolexpires = {}
-rules = {}
-disabledrules = []
-
-latestroled = ''
-
 async def on_ready():
-	global memberroles, rules, disabledrules, rolexpires
 	logging.info('logged in as %s with id %s', wrapper.client.user.name, wrapper.client.user.id)
 	await wrapper.client.change_presence(game=discord.Game(name=config.get_s('gamestatus')))
 	embed = discord.Embed(
@@ -37,33 +29,33 @@ async def on_ready():
 			lambda s: s.id == op_ids.ids['opguild'], wrapper.client.guilds,
 		).me.colour,
 	)
-	embed.add_field(name='Startup Time', value=utils.reltime(bot.boottimeunix))
+	embed.add_field(name='Startup Time', value=utils.reltime(wrapper.boottimeunix))
 	await wrapper.client.get_channel(int(op_ids.ids['opguild_chans']['connections'])).send(
 		embed=embed,
 	)
 
 	try:
 		with open('memberroles.json', 'r') as infile:
-			memberroles = utils.convert_id_keys_to_int(json.load(infile))
+			wrapper.memberroles = utils.convert_id_keys_to_int(json.load(infile))
 
 		# Now look what I've woken up to.
-		for gld in memberroles:
+		for gld in wrapper.memberroles:
 			if config.get_s('rolecachemode', gld) == 0:
 				continue
 			rcwarnings = ''
 			for mem in wrapper.client.get_guild(gld).members:
-				if not mem.id in memberroles[gld]:
+				if not mem.id in wrapper.memberroles[gld]:
 					if len(mem.roles) >= 2:
 						rcwarnings += '\nUser {}#{} ({}) is not in the cache! (They’re suddenly in the server.) Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
 
 						# Possibly redundant list() tbh, just making sure
 						# since I can't test and I don't know python well
 						# enough to know whether it's redundant
-						memberroles[gld][mem.id] = \
+						wrapper.memberroles[gld][mem.id] = \
 						list(utils.rolelist(mem.roles))
 
 					continue
-				if set(memberroles[gld][mem.id]) != \
+				if set(wrapper.memberroles[gld][mem.id]) != \
 				set(utils.rolelist(mem.roles)):
 					rcwarnings += (
 						'\n'
@@ -72,7 +64,7 @@ async def on_ready():
 						'    **`Seen:`** {}'
 					).format(
 						mem.name, mem.discriminator, mem.id,
-						utils.listroles_id(memberroles[gld][mem.id]),
+						utils.listroles_id(wrapper.memberroles[gld][mem.id]),
 						utils.listroles(mem.roles),
 					)
 			if rcwarnings:
@@ -94,31 +86,31 @@ async def on_ready():
 		logging.info('memberroles file does not exist yet so creating it now')
 
 		with open('memberroles.json', 'w') as outfile:
-			json.dump(memberroles, outfile)
+			json.dump(wrapper.memberroles, outfile)
 	try:
 		with open('rules.json', 'r') as infile:
-			rules = utils.convert_id_keys_to_int(json.load(infile))
+			wrapper.rules = utils.convert_id_keys_to_int(json.load(infile))
 	except FileNotFoundError:
 		logging.info('rules file does not exist yet so creating it now')
 
 		with open('rules.json', 'w') as outfile:
-			json.dump(rules, outfile)
+			json.dump(wrapper.rules, outfile)
 	try:
 		with open('disabledrules.json', 'r') as infile:
-			disabledrules = [int(i) for i in json.load(infile)]
+			wrapper.disabledrules = [int(i) for i in json.load(infile)]
 	except FileNotFoundError:
 		logging.info('disabledrules file does not exist yet so creating it now')
 
 		with open('disabledrules.json', 'w') as outfile:
-			json.dump(disabledrules, outfile)
+			json.dump(wrapper.disabledrules, outfile)
 	try:
 		with open('rolexpires.json', 'r') as infile:
-			rolexpires = utils.convert_id_keys_to_int(json.load(infile))
+			wrapper.rolexpires = utils.convert_id_keys_to_int(json.load(infile))
 	except FileNotFoundError:
 		logging.info('rolexpires file does not exist yet so creating it now')
 
 		with open('rolexpires.json', 'w') as outfile:
-			json.dump(rolexpires, outfile)
+			json.dump(wrapper.rolexpires, outfile)
 
 	await utils.handleExpiryTimer()
 
@@ -137,10 +129,10 @@ async def on_ready():
 
 	# Now set up our own cache, that Discord.py won't remove messages from before telling us!
 	for m in wrapper.client._connection._messages:
-		bot.owncache.append(m.id)
+		wrapper.owncache.append(m.id)
 
 async def on_message(m):
-	bot.owncache.append(m.id)
+	wrapper.owncache.append(m.id)
 
 	if m.author == wrapper.client.user or m.author.bot:
 		return
@@ -232,12 +224,12 @@ async def on_message(m):
 	else:
 		invokesymbol = '$'
 	if hangmaninvokeractive:
-		if m.channel.id not in hangman.games:
+		if m.channel.id not in wrapper.hangman_games:
 			return
-		hm_inst = hangman.games[m.channel.id]
+		hm_inst = wrapper.hangman_games[m.channel.id]
 		if not hm_inst.active:
 			# We didn't clean up?
-			del hangman.games[m.channel.id]
+			del wrapper.hangman_games[m.channel.id]
 			return
 		if priv:
 			e = emb.error('Guesses are not accepted via PM.')
@@ -376,9 +368,9 @@ async def on_message(m):
 
 	if is_join_channel:
 		await m.delete()
-		bot.messages_deleted_by_bot.append(m)
+		wrapper.messages_deleted_by_bot.append(m)
 
-	prefixes = bot.prefixes
+	prefixes = config.get_s('prefixes')
 
 	if not priv and config.is_detached('prefixes', m.guild.id):
 		prefixes.extend(config.get_s('prefixes', m.guild.id))
@@ -501,7 +493,7 @@ async def on_message(m):
 		raise
 
 async def on_message_delete(msg):
-	bot.deleted_messages.append(msg)
+	wrapper.deleted_messages.append(msg)
 	if utils.isprivatemessage(msg.guild):
 		return
 	if msg.author == wrapper.client.user:
@@ -566,8 +558,8 @@ async def on_message_delete(msg):
 				' in the message attachments cache._'
 			).format(msg)
 			await schan.send(con)
-	if msg in bot.messages_deleted_by_bot:
-		bot.messages_deleted_by_bot.remove(msg)
+	if msg in wrapper.messages_deleted_by_bot:
+		wrapper.messages_deleted_by_bot.remove(msg)
 		return
 	dthreshold = datetime.timedelta(
 		seconds=config.get_s('deleted_message_resend_timer', msg.guild.id),
@@ -1293,15 +1285,15 @@ async def on_raw_message_delete(message_id, channel_id):
 	) != None:
 		# If the message lingers in deleted_messages, it doesn't really matter for now
 		return
-	if message_id in bot.owncache:
+	if message_id in wrapper.owncache:
 		# Already removed from the cache, but we still haven't run on_message_delete
 		# This happens all the time.
-		bot.owncache.remove(message_id)
+		wrapper.owncache.remove(message_id)
 		return
-	for m in bot.deleted_messages:
+	for m in wrapper.deleted_messages:
 		if m.id == message_id:
 			# on_message_delete was faster
-			bot.deleted_messages.remove(m)
+			wrapper.deleted_messages.remove(m)
 			return
 
 	schan = utils.getspecialchannel(mchan.guild)

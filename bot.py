@@ -15,6 +15,7 @@ import discord
 
 import checks
 import config
+import customcommands
 import emb
 import events
 import utils
@@ -41,28 +42,10 @@ embedcache = cachelocation + '/' + 'embed'
 for dir_path in (cachelocation, attachcache, embedcache):
 	pathlib.Path(dir_path).mkdir(parents=True, exist_ok=True)
 
-prefixes = config.get_s('prefixes')
-
 hangmaninvoker = '-'
 
 os.environ['TZ'] = 'UTC'
 time.tzset()
-
-boottime = time.strftime(config.get_s('timeformat'))
-boottimeunix = time.time()
-
-minutemessageedits = {}
-
-messages_deleted_by_bot = []
-deleted_messages = []
-
-# Holds IDs because that's the only thing that's needed here, saves a lot of memory
-# and has better performance, because the cache can get yuge
-owncache = []
-
-votemutes = {} # userid -> dict with `starttime`, `proponents`*, `opponents`*
-
-exptimer = None  # threading.Timer object
 
 t = {}
 cmds = []
@@ -83,11 +66,6 @@ def loadstrings():
 	help_info_string = strings['help_info_string']
 
 loadstrings()
-
-modificationtimes = [os.path.getmtime(x) for x in os.listdir() if x.endswith('.py')]
-modificationtimecache = time.strftime(config.get_s('timeformat'), time.gmtime(max(modificationtimes)))
-
-maineventloop = asyncio.get_event_loop()
 
 def calculate_msg_start(message):
 	# Removes the need for globalling msg_start every time

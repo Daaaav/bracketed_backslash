@@ -2,8 +2,6 @@
 
 alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
-games = {} # channel ID -> HangmanGame (one game per channel)
-
 def validletter(ltr):
 	if findletter(ltr) == -1:
 		return False
