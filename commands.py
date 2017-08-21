@@ -2359,12 +2359,16 @@ async def addcustomrolecommand(client, message, **kwargs):
 	if splitargs[4] == '[]':
 		giveroles = []
 	else:
-		giveroles = splitargs[4][1:-1].split(',')
+		giveroles = list(
+			map(int, splitargs[4][1:-1].split(','))
+		)
 
 	if splitargs[5] == '[]':
 		takeroles = []
 	else:
-		takeroles = splitargs[5][1:-1].split(',')
+		takeroles = list(
+			map(int, splitargs[5][1:-1].split(','))
+		)
 
 	if customcommands.exists(message.guild, splitargs[0]):
 		embed = emb.error('The custom command `{}` already exists!'.format(

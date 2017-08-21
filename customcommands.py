@@ -477,7 +477,7 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 	m = re.match('^c(aller)?\.([0-9]+)$', condstring)
 	if m is not None:
 		for role in caller.roles:
-			if role.id == m.group(2):
+			if role.id == int(m.group(2)):
 				return True
 		return False
 	m = re.match('^t(arget)?\.([0-9]+)$', condstring)
@@ -489,7 +489,7 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 				).format(condstring)
 			)
 		for role in target.roles:
-			if role.id == m.group(2):
+			if role.id == int(m.group(2)):
 				return True
 		return False
 
