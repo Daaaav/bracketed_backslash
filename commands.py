@@ -507,9 +507,7 @@ async def findu(client, message, **kwargs):
 	if kwargs['arguments'] is None:
 		targetmember = message.author
 	else:
-		targetmember = utils.match_input(
-			'member', kwargs['arguments'], guild=message.guild
-		)
+		targetmember = utils.match_input(message.guild.members, discord.Member, kwargs['arguments'])
 	if targetmember is None:
 		embed = emb.error('Unable to find that member. ' + bot.t['specify_user'])
 		await bot.reply(message, emb=embed)
@@ -663,7 +661,7 @@ async def findc(client, message, **kwargs):
 		await bot.reply(message, emb=em)
 		return
 
-	tgt = utils.match_input('channel', kwargs['arguments'], guild=message.guild)
+	tgt = utils.match_input(message.guild.channels, discord.abc.GuildChannel, kwargs['arguments'])
 	if not tgt:
 		em = emb.error('Unable to find that channel. ' + bot.t['specify_channel'])
 		await bot.reply(message, emb=em)
@@ -726,7 +724,7 @@ async def findc(client, message, **kwargs):
 
 @shadow(auth=checks.is_mod, aliases=['voiceunmute'])
 async def voicemute(client, message, **kwargs):
-	targetmember = utils.match_input('member', kwargs['arguments'], guild=message.guild)
+	targetmember = utils.match_input(message.guild.members, discord.Member, kwargs['arguments'])
 	content = None
 	try:
 		if targetmember.voice.voice_channel is None:
@@ -753,7 +751,7 @@ async def votevoicemute(client, message, **kwargs):
 		await bot.reply(message, emb=embed)
 		return
 
-	targetmember = utils.match_input('member', kwargs['arguments'], guild=message.guild)
+	targetmember = utils.match_input(message.guild.members, discord.Member, kwargs['arguments'])
 	try:
 		if message.author.voice.voice_channel is None:
 			embed = emb.error('You have to be in a voice channel to be able to start a vote.')
@@ -851,7 +849,7 @@ async def vy(client, message, **kwargs):
 		percopp = numopponents /voicechatters*100
 
 		if percpro >= config.get_s('votevmute_threshold', message.guild.id):
-			targetmember = utils.match_input('member', mutee, guild=message.guild)
+			targetmember = utils.match_input(message.guild.members, discord.Member, mutee)
 			await targetmember.edit(mute=True)
 			content += '\n{}% of the members have now voted in favor of muting, so <@{}> is now voice muted.'.format(round(percpro,1), mutee)
 			del wrapper.votemutes[mutee]
@@ -890,7 +888,7 @@ async def vc(client, message, **kwargs):
 
 @shadow(auth=checks.is_mod, guildonly=True)
 async def rolerst(client, message, **kwargs):
-	targetmember = utils.match_input('member', kwargs['arguments'], guild=message.guild)
+	targetmember = utils.match_input(message.guild.members, discord.Member, kwargs['arguments'])
 	if targetmember is None:
 		embed = emb.error(bot.t['specify_user'])
 		await bot.reply(message, emb=embed)
@@ -933,9 +931,7 @@ async def expires(client, message, **kwargs):
 		targetmemberid = events.latestroled
 	else:
 		try:
-			targetmember = utils.match_input(
-				'member', splitargs[1], guild=message.guild,
-			)
+			targetmember = utils.match_input(message.guild.members, discord.Member, splitargs[1])
 			targetmemberid = targetmember.id
 		except AttributeError:
 			embed = emb.error(bot.t['specify_user'])
@@ -961,9 +957,7 @@ async def expiryremove(client, message, **kwargs):
 		return
 
 	try:
-		targetmember = utils.match_input(
-			'member', kwargs['arguments'], guild=message.guild,
-		)
+		targetmember = utils.match_input(message.guild.members, discord.Member, kwargs['arguments'])
 		if bot.removeexpiryentry(message.guild.id, targetmember.id):
 			embed = emb.success(
 				'Roles for <@{}> will no longer automatically expire.'.format(
@@ -990,7 +984,7 @@ async def expirylist(client, message, **kwargs):
 			embed = emb.error('You should probably specify a server.')
 			await bot.reply(message, emb=embed)
 			return
-		guild = utils.match_input('guild', kwargs['arguments'], client=client)
+		guild = utils.match_input(client.guilds, discord.Guild, kwargs['arguments'])
 		if not guild or (message.author not in guild.members and not kwargs['sudo']):
 			embed = emb.error(
 				(
@@ -1026,7 +1020,7 @@ async def rolecacherst(client, message, **kwargs):
 		embed = emb.error('Please give an ID.')
 		await bot.reply(message, emb=embed)
 		return
-	elif utils.match_input('member', kwargs['arguments'], guild=message.guild) is not None:
+	elif utils.match_input(message.guild.members, discord.Member, kwargs['arguments']) is not None:
 		embed = emb.error('That member is apparently still on this server! Not removing from the cache.')
 		await bot.reply(message, emb=embed)
 		return
@@ -1051,7 +1045,7 @@ async def rolecacheadd(client, message, **kwargs):
 		return
 
 	splitargs = kwargs['arguments'].split()
-	if utils.match_input('member', splitargs[0], guild=message.guild) is not None:
+	if utils.match_input(message.guild.members, discord.Member, splitargs[0]) is not None:
 		embed = emb.error('That member is apparently still on this server! Not doing anything.')
 		await bot.reply(message, emb=embed)
 		return
@@ -1344,7 +1338,7 @@ async def rulemaint(client, message, **kwargs):
 
 @shadow()
 async def info(client, message, **kwargs):
-	persontocheck = utils.match_input('member', kwargs['arguments'], guild=message.guild)
+	persontocheck = utils.match_input(message.guild.members, discord.Member, kwargs['arguments'])
 	if persontocheck is None:
 		embed = emb.error(bot.t['specify_user'])
 		await bot.reply(message, emb=embed)
@@ -1603,7 +1597,7 @@ async def _eval(client, message, **kwargs):
 
 @shadow(aliases=['serverban', 'unserverban'])
 async def kick(client, message, **kwargs):
-	targetmember = utils.match_input('member', kwargs['arguments'], guild=message.guild)
+	targetmember = utils.match_input(message.guild.members, discord.Member, kwargs['arguments'])
 	try:
 		if kwargs['command'] == 'kick':
 			if not message.author.guild_permissions.kick_members and not kwargs['sudo']:
@@ -1699,7 +1693,7 @@ async def b(client, message, **kwargs):
 	banningnonmod = True
 	announcemsg = ''
 	specialchannel = utils.getspecialchannel(message.channel.guild)
-	targetmember = utils.match_input('member', splitargs[0], guild=message.guild)
+	targetmember = utils.match_input(message.guild.members, discord.Member, splitargs[0])
 	if targetmember is None:
 		embed = emb.error(bot.t['specify_user'])
 		await specialchannel.send(embed=embed)
@@ -1992,9 +1986,7 @@ async def b_id(client, message, **kwargs):
 async def revertban(client, message, **kwargs):
 	specialchannel = utils.getspecialchannel(message.guild)
 
-	targetmember = utils.match_input(
-		'member', kwargs['arguments'], guild=message.guild,
-	)
+	targetmember = utils.match_input(message.guild.members, discord.Member, kwargs['arguments'])
 
 	if targetmember is None:
 		embed = emb.error(bot.t['specify_user'])
@@ -2161,7 +2153,7 @@ async def uploadfile(client, message, **kwargs):
 
 @shadow(auth=checks.is_mod, aliases=['blackunlist'], guildonly=True)
 async def blacklist(client, message, **kwargs):
-	tgtmem = utils.match_input('member', kwargs['arguments'], guild=message.guild)
+	tgtmem = utils.match_input(message.guild.members, discord.Member, kwargs['arguments'])
 	if tgtmem is None:
 		embed = emb.error('Unable to find that member. ' + bot.t['specify_user'])
 		await bot.reply(message, emb=embed)
@@ -2302,7 +2294,7 @@ async def testroleconditional(client, message, **kwargs):
 	try:
 		splitargs = kwargs['arguments'].split(' ')
 
-		tgtmem = utils.match_input('member', splitargs[0], guild=message.guild)
+		tgtmem = utils.match_input(message.guild.members, discord.Member, splitargs[0])
 		if tgtmem is None:
 			tgtmem = message.author
 		embed = emb.success('Result: {}'.format(
@@ -2533,7 +2525,7 @@ async def archive(client, message, **kwargs):
 
 	splitargs = kwargs['arguments'].split(' ')
 
-	tgt = utils.match_input('channel', splitargs[0], guild=message.guild)
+	tgt = utils.match_input(message.guild.channels, discord.abc.GuildChannel, splitargs[0])
 	if tgt is None:
 		em = emb.error('Unable to find that channel. ' + bot.t['specify_channel'])
 		await bot.reply(message, emb=em)
@@ -2730,18 +2722,14 @@ async def tntgb(client, message, **kwargs):
 						except TypeError:
 							return False
 					elif number in range(2, 5):
-						value = utils.match_input(
-							'role', value, guild=message.guild,
-						)
+						value = utils.match_input(message.guild.roles, discord.Role, value)
 
 						if value is None:
 							return False
 						else:
 							parsed.append(value)
 					elif number in range(5, 7):
-						value = utils.match_input(
-							'channel', value, guild=message.guild,
-						)
+						value = utils.match_input(message.guild.channels, discord.abc.GuildChannel, value)
 
 						if value is None:
 							return False
@@ -2852,13 +2840,13 @@ async def tntgb(client, message, **kwargs):
 			except ValueError:
 				errors += 'That is not a valid number.\n'
 		elif category is discord.Role:
-			indice = utils.match_input('role', indice, guild=message.guild)
+			indice = utils.match_input(message.guild.roles, discord.Role, indice)
 
 			if indice is None:
 				errors += 'That role doesn’t appear to exist.\n'
 
 		elif category is discord.TextChannel:
-			indice = utils.match_input('channel', indice, guild=message.guild)
+			indice = utils.match_input(message.guild.channels, discord.abc.GuildChannel, indice)
 
 			if indice is None:
 				errors += 'That channel doesn’t appear to exist.\n'

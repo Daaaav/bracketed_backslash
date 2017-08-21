@@ -6,6 +6,8 @@ import json
 import logging
 import re
 
+import discord
+
 import checks
 import events
 import bot
@@ -230,7 +232,7 @@ async def run(
 
 		if com['target'] == 'input':
 			try:
-				targetmember = utils.match_input('member', memberarg, guild=guild)
+				targetmember = utils.match_input(guild.members, discord.Member, memberarg)
 
 				# Very quick fix
 				if targetmember is None:
