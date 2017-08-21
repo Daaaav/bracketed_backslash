@@ -1,5 +1,6 @@
 # encoding=utf-8
 
+import asyncio
 import datetime
 import logging
 import json
@@ -944,16 +945,61 @@ async def on_guild_role_update(before, after):
 		):
 			msg = '**`>`**`role` **``{}``** `({}) is no longer mentionable`'.format(utils.wrapbackticks(after.name), after.id)
 			await specialchannel.send(msg)
+
 	# If the role has been moved up or down in the hierarchy
 	if before.position != after.position and not utils.logdisabled('role_hierarchy', before.guild):
-		# The role has been moved down
-		if before.position > after.position:
-			msg = '**`>`**`role` **``{}``** `({}) has been moved down by {} roles ({} to {})`'.format(utils.wrapbackticks(after.name), after.id, before.position - after.position, before.position, after.position)
+		# Discord is terrible with role update events and sends multiple of them
+		#
+		# We need a lock, so we don't have multiple calls of this function sending multiple
+		# messages and spamming log channels
+
+		# Initialization of the lock
+		if after.guild.id not in wrapper.pos_ev_locks:
+			wrapper.pos_ev_locks[after.guild.id] = False
+
+		# Initialization of the diff
+		if after.guild.id not in wrapper.pos_ev_diffs:
+			wrapper.pos_ev_diffs[after.guild.id] = []
+
+		# Anyways, we've received an event: collect it
+		wrapper.pos_ev_diffs[after.guild.id].append((before, after))
+
+		# See if we're locked
+		if not wrapper.pos_ev_locks[after.guild.id]:
+			# We're not locked, so let's lock it
+			wrapper.pos_ev_locks[after.guild.id] = True
+
+			# Let's wait for all the events to be collected
+			await asyncio.sleep(0.25)
+
+			# Unlock
+			wrapper.pos_ev_locks[after.guild.id] = False
+
+			# Make log message
+			msg = ''
+			for ev_before, ev_after in wrapper.pos_ev_diffs[after.guild.id]:
+				# The role has been moved down
+				if ev_before.position > ev_after.position:
+					msg += '**`>`**`role` **``{}``** `({}) has been moved down by {} roles ({} to {})`\n'.format(
+						utils.wrapbackticks(ev_after.name), ev_after.id,
+						ev_before.position - ev_after.position,
+						ev_before.position, ev_after.position
+					)
+
+				# The role has been moved up
+				if ev_before.position < ev_after.position:
+					msg += '**`>`**`role` **``{}``** `({}) has been moved up by {} roles ({} to {})`\n'.format(
+						utils.wrapbackticks(ev_after.name), ev_after.id,
+						ev_after.position - ev_before.position,
+						ev_before.position, ev_after.position,
+					)
+
+			# Cleanup
+			del wrapper.pos_ev_locks[after.guild.id]
+			del wrapper.pos_ev_diffs[after.guild.id]
+
 			await specialchannel.send(msg)
-		# The role has been moved up
-		if before.position < after.position:
-			msg = '**`>`**`role` **``{}``** `({}) has been moved up by {} roles ({} to {})`'.format(utils.wrapbackticks(after.name), after.id, after.position - before.position, before.position, after.position)
-			await specialchannel.send(msg)
+
 	# If the role color has changed
 	if before.colour != after.colour and not utils.logdisabled('role_color', before.guild):
 		embed = discord.Embed(title='ROLE COLOR CHANGE', description=utils.mdspecialchars(after.name), colour=after.colour)

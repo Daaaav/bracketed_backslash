@@ -41,3 +41,8 @@ rules = {}
 disabledrules = []
 
 latestroled = ''
+
+# on_guild_role_update() variables
+# 'pos_ev' -> 'position_event'
+pos_ev_diffs = {}
+pos_ev_locks = {}
