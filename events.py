@@ -506,19 +506,26 @@ async def on_message_delete(msg):
 			msg.content,
 		)
 		return
-	if (msg.content == '' and msg.attachments == []) \
-	or utils.logdisabled('message_delete', msg.guild):
+
+	if utils.logdisabled('message_delete', msg.guild):
 		return
 	schan = utils.getspecialchannel_reply(msg)
+
+	if msg.type is discord.MessageType.pins_add:
+		content = msg.author.mention + ' pinned a message to this channel.'
+	else:
+		content = msg.content
+
 	em = discord.Embed(
 		title=(
-			'\N{NO ENTRY SIGN}MESSAGE {withatch}DELETED (SENT {reltime} IN #{chan})'
+			'\N{NO ENTRY SIGN}{system}MESSAGE {withatch}DELETED (SENT {reltime} IN #{chan})'
 		).format(
+			system='SYSTEM ' if msg.type is not discord.MessageType.default else '',
 			withatch='WITH ATTACHMENT ' if msg.attachments != [] else '',
 			reltime=utils.reltime(time.mktime(msg.created_at.timetuple())),
 			chan=utils.mdspecialchars(msg.channel.name),
 		),
-		description=msg.content,
+		description=content,
 		colour=msg.author.colour,
 	)
 	em.set_author(
