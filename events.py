@@ -399,7 +399,6 @@ async def on_message(m):
 	not config.get_s('alloweverywhere', m.guild.id) and \
 	not m.channel.id in config.get_s('allowedchannels', m.guild.id) and \
 	not command in config.get_s('globalcommands', m.guild.id):
-		print('failed check 1')
 		return
 	if not priv and command in config.get_s('disabledcommands', m.guild.id):
 		e = emb.error('This command is currently disabled{onthisguild}.'.format(
@@ -997,7 +996,6 @@ async def on_guild_role_update(before, after):
 			generation_string = '**{name}** ({id}) {trailing_space}\n'
 
 			for ev_before, ev_after in zip(before_list, after_list):
-				print(ev_before.name, ev_after.name)
 				before_log += generation_string.format(
 					name=utils.mdspecialchars(ev_before.name),
 					id=ev_before.id,
