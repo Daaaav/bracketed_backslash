@@ -23,7 +23,7 @@ import wrapper
 
 def mdspecialchars(string, character='\\'):
 	"""Return a Markdown-escaped version of a given string, for use in message output."""
-	notspecialchars = ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+	notspecialchars = ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\n'
 	try:
 		newstring = ''
 		for i in string:
