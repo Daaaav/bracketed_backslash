@@ -2616,11 +2616,7 @@ async def reload(client, message, **kwargs):
 	__main__ = __import__('__main__')
 	if hasattr(__main__.recursive_reload, 'reloaded_modules'):
 		__main__.recursive_reload.reloaded_modules = []
-	try:
-		__main__.reload_bot()
-	except SyntaxError:
-		embed = emb.error('Be glad you didn’t outright restart the bot: there’s a SyntaxError.')
-		await bot.reply(message, emb=embed)
+	__main__.reload_bot()
 
 @shadow(auth=checks.is_admin, guildonly=True)
 async def tntgb(client, message, **kwargs):
