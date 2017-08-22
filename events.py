@@ -527,12 +527,21 @@ async def on_message_delete(msg):
 		),
 		description=content,
 		colour=msg.author.colour,
+		timestamp=datetime.datetime.now(),
 	)
+
 	em.set_author(
 		name=msg.author.display_name,
 		icon_url=msg.author.avatar_url,
 	)
-	em.set_footer(text=utils.id_summary(uid=msg.author.id, mid=msg.id, cid=msg.channel.id))
+
+	em.add_field(
+		name='\u200b',
+		value=utils.mdspecialchars(
+			utils.id_summary(uid=msg.author.id, mid=msg.id, cid=msg.channel.id),
+		)
+	)
+
 	await schan.send(embed=em)
 	if msg.attachments != []:
 		fp = (
