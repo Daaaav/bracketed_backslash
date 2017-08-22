@@ -24,13 +24,11 @@ import wrapper
 def mdspecialchars(string, character='\\'):
 	"""Return a Markdown-escaped version of a given string, for use in message output."""
 	notspecialchars = ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\n'
-	try:
-		newstring = ''
-		for i in string:
-			newstring += character + i if i not in notspecialchars else i
-		return newstring
-	except AttributeError:
-		return string
+	string = str(string)
+	newstring = ''
+	for i in string:
+		newstring += character + i if i not in notspecialchars else i
+	return newstring
 
 def id_summary(uid=None, mid=None, cid=None, rid=None, eid=None):
 	"""Return a oneline summary of IDs."""
