@@ -976,29 +976,97 @@ async def on_guild_role_update(before, after):
 			wrapper.pos_ev_locks[after.guild.id] = False
 
 			# Make log message
-			msg = ''
+
+			# These are set()s to remove any redundant elements that might happen
+			# because events are received in a weird order or something
+			before_list = set()
+			after_list = set()
+
 			for ev_before, ev_after in wrapper.pos_ev_diffs[after.guild.id]:
-				# The role has been moved down
-				if ev_before.position > ev_after.position:
-					msg += '**`>`**`role` **``{}``** `({}) has been moved down by {} roles ({} to {})`\n'.format(
-						utils.wrapbackticks(ev_after.name), ev_after.id,
-						ev_before.position - ev_after.position,
-						ev_before.position, ev_after.position
+				before_list.add(ev_before)
+				after_list.add(ev_after)
+
+			before_list = list(before_list)
+			after_list = list(after_list)
+
+			before_list.sort(key=lambda r: r.position, reverse=True)
+			after_list.sort(key=lambda r: r.position, reverse=True)
+
+			before_log = ''
+			after_log = ''
+			generation_string = '**{name}** ({id}) {trailing_space}\n'
+
+			for ev_before, ev_after in zip(before_list, after_list):
+				print(ev_before.name, ev_after.name)
+				before_log += generation_string.format(
+					name=utils.mdspecialchars(ev_before.name),
+					id=ev_before.id,
+					trailing_space = '\xa0' * 3,
+				)
+
+				tmp_delta = ''
+				tmp_before = discord.utils.find(
+					lambda r: r.id == ev_after.id,
+					before_list,
+				)
+				if tmp_before.position < ev_after.position:
+					# Role has been moved up
+					tmp_delta = '**\N{UPWARDS ARROW}{}**'.format(
+						str(ev_after.position - tmp_before.position)
+					)
+				if tmp_before.position > ev_after.position:
+					# Role has been moved down
+					tmp_delta = '**\N{DOWNWARDS ARROW}{}**'.format(
+						str(tmp_before.position - ev_after.position)
 					)
 
-				# The role has been moved up
-				if ev_before.position < ev_after.position:
-					msg += '**`>`**`role` **``{}``** `({}) has been moved up by {} roles ({} to {})`\n'.format(
-						utils.wrapbackticks(ev_after.name), ev_after.id,
-						ev_after.position - ev_before.position,
-						ev_before.position, ev_after.position,
-					)
+				after_log += generation_string.format(
+					name=utils.mdspecialchars(ev_after.name),
+					id=ev_after.id,
+					trailing_space=tmp_delta,
+				)
+
+			# Just for fun, let's generate the embed color by mixing all of the roles'
+			# colors together
+			colour = int(sum(role.colour.value for role in after_list) / len(after_list))
+
+			# Truncate indicators
+			roles = after.guild.roles
+			roles.sort(key=lambda r: r.position)
+			if roles[-1].position == after_list[0].position:
+				trun_indic_top = ''
+			else:
+				tmp_num = roles[-1].position - after_list[0].position
+				trun_indic_top = '_[{} more role{s} above]_\n'.format(
+					tmp_num, s='s' if tmp_num != 1 else '',
+				)
+			if after_list[-1].position <= 1 or before_list[-1].position <= 1:
+				trun_indic_bottom = ''
+			else:
+				tmp_num = after_list[-1].position - 1
+				trun_indic_bottom = '_[{} more role{s} below]_\n'.format(
+					tmp_num, s='s' if tmp_num != 1 else '',
+				)
+
+			embed = discord.Embed(
+				title='\N{KEY}\N{TWISTED RIGHTWARDS ARROWS} ROLE HIERARCHY UPDATED',
+				timestamp=datetime.datetime.now(),
+				colour=colour,
+			)
+			embed.add_field(
+				name='Older Hierarchy',
+				value='{}{}{}'.format(trun_indic_top, before_log, trun_indic_bottom),
+			)
+			embed.add_field(
+				name='Newer Hierarchy',
+				value='{}{}{}'.format(trun_indic_top, after_log, trun_indic_bottom),
+			)
 
 			# Cleanup
 			del wrapper.pos_ev_locks[after.guild.id]
 			del wrapper.pos_ev_diffs[after.guild.id]
 
-			await specialchannel.send(msg)
+			await specialchannel.send(embed=embed)
 
 	# If the role color has changed
 	if before.colour != after.colour and not utils.logdisabled('role_color', before.guild):
