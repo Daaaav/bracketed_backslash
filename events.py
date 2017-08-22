@@ -665,6 +665,7 @@ async def on_message_edit(old, new):
 				chan=utils.mdspecialchars(new.channel.name),
 			),
 			colour=new.author.colour,
+			timestamp=new.edited_at,
 		)
 		em.set_author(
 			name=new.author.display_name,
@@ -679,9 +680,10 @@ async def on_message_edit(old, new):
 		if len(new.content) > 1024:
 			em.add_field(name='[continued]', value=new.content[1024:], inline=False)
 
-		em.set_footer(
-			text=utils.id_summary(
-				uid=new.author.id, mid=new.id, cid=new.channel.id,
+		em.add_field(
+			name='\u200b',
+			value=utils.mdspecialchars(
+				utils.id_summary(uid=new.author.id, mid=new.id, cid=new.channel.id),
 			),
 		)
 		await schan.send(embed=em)
