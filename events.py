@@ -511,8 +511,8 @@ async def on_message_delete(msg):
 		return
 	schan = utils.getspecialchannel_reply(msg)
 
-	if msg.type is discord.MessageType.pins_add:
-		content = msg.author.mention + ' pinned a message to this channel.'
+	if msg.type is not discord.MessageType.default:
+		content = msg.system_content
 	else:
 		content = msg.content
 
