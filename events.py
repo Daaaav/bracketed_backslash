@@ -653,83 +653,38 @@ async def on_message_edit(old, new):
 		return
 
 	if not utils.logdisabled('message_edit', new.guild):
-		if len(new.content) > 1024 or len(new.content) > 1024:
-			em = discord.Embed(
-				title=(
-					'\N{MEMO}MESSAGE EDITED (SENT {reltime} IN #{chan}).'
-					' The older content is:'
-				).format(
-					reltime=utils.reltime(
-						time.mktime(
-							new.created_at.timetuple(),
-						),
+		em = discord.Embed(
+			title=(
+				'\N{MEMO}MESSAGE EDITED (SENT {reltime} IN #{chan})'
+			).format(
+				reltime=utils.reltime(
+					time.mktime(
+						new.created_at.timetuple(),
 					),
-					chan=utils.mdspecialchars(new.channel.name),
 				),
-				description=old.content,
-				colour=old.author.colour,
-			)
-			em.set_author(
-				name=new.author.display_name,
-				icon_url=new.author.avatar_url,
-			)
-			em.set_footer(
-				text=utils.id_summary(
-					uid=new.author.id, mid=new.id, cid=new.channel.id,
-				),
-			)
-			await schan.send(embed=em)
-			em = discord.Embed(
-				title=(
-					'MESSAGE EDITED (SENT {reltime} IN #{chan}).'
-					' The newer content is:'
-				).format(
-					reltime=utils.reltime(
-						time.mktime(
-							new.created_at.timetuple(),
-						),
-					),
-					chan=utils.mdspecialchars(new.channel.name),
-				),
-				description=new.content,
-				colour=new.author.colour,
-			)
-			em.set_author(
-				name=new.author.display_name,
-				icon_url=new.author.avatar_url,
-			)
-			em.set_footer(
-				text=utils.id_summary(
-					uid=new.author.id, mid=new.id, cid=new.channel.id,
-				),
-			)
-			await schan.send(embed=em)
-		else:
-			em = discord.Embed(
-				title=(
-					'\N{MEMO}MESSAGE EDITED (SENT {reltime} IN #{chan})'
-				).format(
-					reltime=utils.reltime(
-						time.mktime(
-							new.created_at.timetuple(),
-						),
-					),
-					chan=utils.mdspecialchars(new.channel.name),
-				),
-				colour=new.author.colour,
-			)
-			em.set_author(
-				name=new.author.display_name,
-				icon_url=new.author.avatar_url,
-			)
-			em.add_field(name='Older Content', value=old.content, inline=False)
-			em.add_field(name='Newer Content', value=new.content, inline=False)
-			em.set_footer(
-				text=utils.id_summary(
-					uid=new.author.id, mid=new.id, cid=new.channel.id,
-				),
-			)
-			await schan.send(embed=em)
+				chan=utils.mdspecialchars(new.channel.name),
+			),
+			colour=new.author.colour,
+		)
+		em.set_author(
+			name=new.author.display_name,
+			icon_url=new.author.avatar_url,
+		)
+
+		em.add_field(name='Older Content', value=old.content[:1024], inline=False)
+		if len(old.content) > 1024:
+			em.add_field(name='[continued]', value=old.content[1024:], inline=False)
+
+		em.add_field(name='Newer Content', value=new.content[:1024], inline=False)
+		if len(new.content) > 1024:
+			em.add_field(name='[continued]', value=new.content[1024:], inline=False)
+
+		em.set_footer(
+			text=utils.id_summary(
+				uid=new.author.id, mid=new.id, cid=new.channel.id,
+			),
+		)
+		await schan.send(embed=em)
 
 	# Turning off this logging also turns off the feature
 	if not utils.logdisabled('message_overedit', new.guild):
