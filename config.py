@@ -218,6 +218,28 @@ configs = {
 		'detachable': True,
 		'shown': False,
 	},
+	'edited_message_resend_timer': {
+		'default': 0,
+		'type': 'int',
+		'is_array': False,
+		'expl': (
+			'The time, in seconds, of how much to wait to not resend'
+			' the older and newer content of an edited message.'
+		),
+		'detachable': True,
+		'shown': False,
+	},
+	'edited_message_resend_threshold': {
+		'default': 10,
+		'type': 'int',
+		'is_array': False,
+		'expl': (
+			'The amount of changed characters between the older and newer content of'
+			' a message in order to resend both contents.'
+		),
+		'detachable': True,
+		'shown': False,
+	},
 }
 
 s = {}

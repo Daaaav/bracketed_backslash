@@ -693,6 +693,30 @@ async def on_message_edit(old, new):
 		# Delete a message if it has been edited more than 5 times in 30 seconds
 		await utils.handle_minute_message_edits(new, schan)
 
+	# Message edited too heavily?
+	delta_threshold = datetime.timedelta(
+		config.get_s('edited_message_resend_timer', new.guild.id)
+	)
+	if ((new.edited_at - new.created_at) < delta_threshold and
+	# Oh no, code cramming! This sum() calculates the amount of different characters
+	# between the two message contents
+	sum(old != new for old, new in zip(old.content, new.content)) <
+	config.get_s('edited_message_resend_threshold', new.guild.id)):
+		embed = discord.Embed(title='UNEDITED MESSAGE', colour=new.author.colour)
+
+		embed.add_field(name='Older Content', value=old.content[:1024], inline=False)
+		if len(old.content) > 1024:
+			embed.add_field(name='[continued]', value=old.content[1024:], inline=False)
+
+		embed.add_field(name='Newer Content', value=new.content[:1024], inline=False)
+		if len(new.content) > 1024:
+			embed.add_field(name='[continued]', value=new.content[1024:], inline=False)
+
+		embed.set_author(name=new.author.display_name, icon_url=new.author.avatar_url)
+		embed.set_footer(text='These contents were resent as this message was edited too heavily.')
+
+		await new.channel.send(embed=embed)
+
 async def on_member_update(before, after):
 	specialchannel = utils.getspecialchannel(after.guild)
 	if before.nick != after.nick and not utils.logdisabled('member_nickname', after.guild):
