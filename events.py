@@ -698,10 +698,7 @@ async def on_message_edit(old, new):
 		config.get_s('edited_message_resend_timer', new.guild.id)
 	)
 	if ((new.edited_at - new.created_at) < delta_threshold and
-	# Oh no, code cramming! This addition calculates the amount of different characters
-	# between the two message contents
-	(sum(old != new for old, new in zip(old.content, new.content))
-	+ abs(len(old.content) - len(new.content))) >
+	utils.diff(old.content, new.content) >
 	config.get_s('edited_message_resend_threshold', new.guild.id)):
 		embed = discord.Embed(title='UNEDITED MESSAGE', colour=new.author.colour)
 
