@@ -824,3 +824,19 @@ def convert_id_keys_to_int(dictionary):
 		result.update({key: value})
 
 	return result
+
+# Diff algorithm from: https://stackoverflow.com/a/35896137
+
+def diff(a, b):
+	delta = do_diff(a, b)
+	delta_rev = do_diff(a[::-1], b[::-1])
+	return min(delta, delta_rev)
+
+def do_diff(a, b):
+	delta = 0
+	i = 0
+	while i < len(a) and i < len(b):
+		delta += a[i] != b[i]
+		i += 1
+	delta += len(a[i:]) + len(b[i:])
+	return delta
