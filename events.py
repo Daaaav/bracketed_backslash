@@ -672,11 +672,17 @@ async def on_message_edit(old, new):
 			icon_url=new.author.avatar_url,
 		)
 
-		em.add_field(name='Older Content', value=old.content[:1024], inline=False)
+		if old.content:
+			em.add_field(name='Older Content', value=old.content[:1024], inline=False)
+		else:
+			em.add_field(name='No Older Content', value='_(none)_', inline=False)
 		if len(old.content) > 1024:
 			em.add_field(name='[continued]', value=old.content[1024:], inline=False)
 
-		em.add_field(name='Newer Content', value=new.content[:1024], inline=False)
+		if new.content:
+			em.add_field(name='Newer Content', value=new.content[:1024], inline=False)
+		else:
+			em.add_field(name='No Newer Content', value='_(none)_', inline=False)
 		if len(new.content) > 1024:
 			em.add_field(name='[continued]', value=new.content[1024:], inline=False)
 
