@@ -655,8 +655,9 @@ async def on_message_edit(old, new):
 	if not utils.logdisabled('message_edit', new.guild):
 		em = discord.Embed(
 			title=(
-				'\N{MEMO}MESSAGE EDITED (SENT {reltime} IN #{chan})'
+				'\N{MEMO}MESSAGE{withattach} EDITED (SENT {reltime} IN #{chan})'
 			).format(
+				withattach=' WITH ATTACHMENT' if new.attachments else '',
 				reltime=utils.reltime(
 					time.mktime(
 						new.created_at.timetuple(),
