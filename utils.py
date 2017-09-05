@@ -825,7 +825,7 @@ def convert_id_keys_to_int(dictionary):
 
 	return result
 
-# Diff algorithm from: https://stackoverflow.com/a/35896137
+# Diff algorithms of diff() and do_diff() from: https://stackoverflow.com/a/35896137
 
 def diff(a, b):
 	delta = do_diff(a, b)
@@ -839,4 +839,13 @@ def do_diff(a, b):
 		delta += a[i] != b[i]
 		i += 1
 	delta += len(a[i:]) + len(b[i:])
+	return delta
+
+def invite_diff(a, b):
+	delta = list(set(a).symmetric_difference(set(b)))
+
+	for invite_a, invite_b in zip(sorted(a, key=lambda i: i.code), sorted(b, key=lambda i: i.code)):
+		if invite_a.uses != invite_b.uses and invite_a not in delta and invite_b not in delta:
+			delta.append(invite_b)
+
 	return delta

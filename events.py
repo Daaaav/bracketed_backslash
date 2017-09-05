@@ -132,6 +132,12 @@ async def on_ready():
 	for m in wrapper.client._connection._messages:
 		wrapper.owncache.append(m.id)
 
+	for guild in wrapper.client.guilds:
+		try:
+			wrapper.inv_cache[guild.id] = await guild.invites()
+		except discord.Forbidden:
+			logging.info('Failed to retrieve invites for %s (%s).', guild.name, guild.id)
+
 async def on_message(m):
 	wrapper.owncache.append(m.id)
 
@@ -822,8 +828,33 @@ async def on_member_update(before, after):
 		await specialchannel.send(embed=embed)
 
 async def on_member_join(member):
+	try:
+		new_invites = await member.guild.invites()
+	except discord.Forbidden:
+		new_invites = None
+
 	specialchannel = utils.getspecialchannel(member.guild)
 	if not utils.logdisabled('member_join', member.guild):
+
+		# Figure out which invite the member joined with
+		if new_invites is not None:
+			invite_diff = utils.invite_diff(wrapper.inv_cache[member.guild.id], new_invites)
+
+			# Get the invite with a non-zero count to filter out the ones created after
+			# we previously asked Discord for the guild's invites
+			potential_invites = []
+			for potential_invite in invite_diff:
+				if potential_invite.uses > 0:
+					potential_invites.append(potential_invite)
+
+			if len(potential_invites) == 1:
+				invite = potential_invites[0]
+			else:
+				# Couldn't detect it
+				invite = None
+
+		wrapper.inv_cache[member.guild.id] = new_invites
+
 		embed = discord.Embed(
 			description='➡<@!{id}> ({id}) joined server'.format(id=member.id),
 			colour=member.guild.me.colour,
@@ -833,6 +864,15 @@ async def on_member_join(member):
 			name='This server now has',
 			value=str(member.guild.member_count) + ' members',
 		)
+
+		if new_invites is not None:
+			if invite is not None:
+				invite_status = '`{invite.code}` by {invite.inviter.mention}'.format(invite=invite)
+			else:
+				invite_status = 'Invite could not be detected'
+
+			embed.add_field(name='Joined with invite', value=invite_status)
+
 		embed.set_author(name=member.display_name)
 		embed.set_thumbnail(url=member.avatar_url)
 		await specialchannel.send(embed=embed)
@@ -897,6 +937,13 @@ async def on_guild_role_delete(r):
 	await schan.send(embed=embed)
 
 async def on_guild_role_update(before, after):
+	# We might have gotten MANAGE_GUILD
+	if after.guild.me.guild_permissions.manage_guild:
+		try:
+			wrapper.inv_cache[after.guild.id] = await after.guild.invites()
+		except discord.Forbidden:
+			pass
+
 	specialchannel = utils.getspecialchannel(before.guild)
 	# If the name changed
 	if before.name != after.name and not utils.logdisabled('role_rename', before.guild):

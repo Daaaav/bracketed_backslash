@@ -46,3 +46,6 @@ latestroled = ''
 # 'pos_ev' -> 'position_event'
 pos_ev_diffs = {}
 pos_ev_locks = {}
+
+# Invite caching
+inv_cache = {}
