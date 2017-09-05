@@ -136,7 +136,15 @@ async def on_ready():
 		try:
 			wrapper.inv_cache[guild.id] = await guild.invites()
 		except discord.Forbidden:
-			logging.info('Failed to retrieve invites for %s (%s).', guild.name, guild.id)
+			logging.info('Failed to retrieve guild invites for %s (%s).', guild.name, guild.id)
+		else:
+			audit_log_entries = guild.audit_logs(action=discord.AuditLogAction.invite_create)
+			try:
+				async for entry in audit_log_entries:
+					if entry.target not in wrapper.inv_cache[guild.id]:
+						wrapper.inv_cache[guild.id].append(entry.target)
+			except discord.Forbidden:
+				logging.info('Failed to retrieve audit log invites for %s (%s).', guild.name, guild.id)
 
 async def on_message(m):
 	wrapper.owncache.append(m.id)
@@ -965,10 +973,21 @@ async def on_guild_role_delete(r):
 	await schan.send(embed=embed)
 
 async def on_guild_role_update(before, after):
+	guild = after.guild
+
 	# We might have gotten MANAGE_GUILD
 	if after.guild.me.guild_permissions.manage_guild:
 		try:
 			wrapper.inv_cache[after.guild.id] = await after.guild.invites()
+		except discord.Forbidden:
+			pass
+	# Or VIEW_AUDIT_LOG
+	if after.guild.me.guild_permissions.view_audit_log:
+		audit_log_entries = guild.audit_logs(action=discord.AuditLogAction.invite_create)
+		try:
+			async for entry in audit_log_entries:
+				if entry.target not in wrapper.inv_cache[guild.id]:
+					wrapper.inv_cache[guild.id].append(entry.target)
 		except discord.Forbidden:
 			pass
 
