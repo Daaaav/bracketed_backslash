@@ -828,6 +828,11 @@ async def on_member_update(before, after):
 		await specialchannel.send(embed=embed)
 
 async def on_member_join(member):
+	new_invites = None
+	audit_log_entries = None
+	missing_invite = None
+	invite = None
+
 	try:
 		new_invites = await member.guild.invites()
 	except discord.Forbidden:
@@ -850,8 +855,25 @@ async def on_member_join(member):
 			if len(potential_invites) == 1:
 				invite = potential_invites[0]
 			else:
-				# Couldn't detect it
-				invite = None
+				# It might have been self-destructing, or some race condition where
+				# the bot grabbed the invites after a mod revoked the invite in
+				# question after someone joined with the invite
+				#
+				# Let's see if the audit log can help us
+				audit_log_entries = member.guild.audit_logs(action=discord.AuditLogAction.invite_create)
+				potential_invites = []
+				try:
+					async for entry in audit_log_entries:
+						if entry.target not in wrapper.inv_cache[member.guild.id]:
+							potential_invites.append(entry.target)
+					else:
+						invite = None
+				except discord.Forbidden:
+					audit_log_entries = None
+					invite = None
+				else:
+					if len(potential_invites) == 1:
+						invite = potential_invites[0]
 
 		wrapper.inv_cache[member.guild.id] = new_invites
 
@@ -868,6 +890,8 @@ async def on_member_join(member):
 		if new_invites is not None:
 			if invite is not None:
 				invite_status = '`{invite.code}` by {invite.inviter.mention}'.format(invite=invite)
+			elif audit_log_entries is None:
+				invite_status = 'Invite could not be detected, and I’m not allowed to search the audit log'
 			else:
 				invite_status = 'Invite could not be detected'
 
