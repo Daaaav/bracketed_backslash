@@ -878,7 +878,8 @@ async def on_member_join(member):
 				# We just got an invite(s), let's cache
 				new_invites.extend(potential_invites)
 
-		wrapper.inv_cache[member.guild.id] = new_invites
+		wrapper.inv_cache[member.guild.id].extend(new_invites)
+		wrapper.inv_cache[member.guild.id] = list(set(wrapper.inv_cache[member.guild.id]))
 
 		embed = discord.Embed(
 			description='➡<@!{id}> ({id}) joined server'.format(id=member.id),
