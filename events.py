@@ -875,6 +875,9 @@ async def on_member_join(member):
 					if len(potential_invites) == 1:
 						invite = potential_invites[0]
 
+				# We just got an invite(s), let's cache
+				new_invites.extend(potential_invites)
+
 		wrapper.inv_cache[member.guild.id] = new_invites
 
 		embed = discord.Embed(
