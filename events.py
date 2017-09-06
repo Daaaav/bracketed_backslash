@@ -890,7 +890,7 @@ async def on_member_join(member):
 		wrapper.inv_cache[member.guild.id] = list(set(wrapper.inv_cache[member.guild.id]))
 
 		embed = discord.Embed(
-			description='➡<@!{id}> ({id}) joined server'.format(id=member.id),
+			description='➡<@!{id}> ({id}){bot} joined server'.format(id=member.id, bot=' [BOT]' if member.bot else ''),
 			colour=member.guild.me.colour,
 			timestamp=datetime.datetime.now(),
 		)
@@ -899,7 +899,7 @@ async def on_member_join(member):
 			value=str(member.guild.member_count) + ' members',
 		)
 
-		if new_invites is not None:
+		if not member.bot and new_invites is not None:
 			if invite is not None:
 				invite_status = '`{invite.code}` by {invite.inviter.mention}'.format(invite=invite)
 			elif audit_log_entries is None:
