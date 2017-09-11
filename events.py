@@ -840,6 +840,7 @@ async def on_member_join(member):
 	audit_log_entries = None
 	missing_invite = None
 	invite = None
+	invite_len = 0
 
 	try:
 		new_invites = await member.guild.invites()
@@ -859,6 +860,8 @@ async def on_member_join(member):
 			for potential_invite in invite_diff:
 				if potential_invite.uses > 0:
 					potential_invites.append(potential_invite)
+
+			invite_len = len(potential_invites)
 
 			if len(potential_invites) == 1:
 				invite = potential_invites[0]
@@ -903,9 +906,13 @@ async def on_member_join(member):
 			if invite is not None:
 				invite_status = '`{invite.code}` by {invite.inviter.mention}'.format(invite=invite)
 			elif audit_log_entries is None:
-				invite_status = 'Invite could not be detected, and I’m not allowed to search the audit log'
+				invite_status = 'Invite could not be detected{invamount}, and I’m not allowed to search the audit log'.format(
+					invamount = ' ({} possible invites)'.format(invite_len),
+				)
 			else:
-				invite_status = 'Invite could not be detected'
+				invite_status = 'Invite could not be detected{invamount}'.format(
+					invamount = ' ({} possible invites)'.format(invite_len),
+				)
 
 			embed.add_field(name='Joined with invite', value=invite_status)
 
