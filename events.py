@@ -738,22 +738,41 @@ async def on_message_edit(old, new):
 
 async def on_member_update(before, after):
 	specialchannel = utils.getspecialchannel(after.guild)
+
 	if before.nick != after.nick and not utils.logdisabled('member_nickname', after.guild):
-		embed = discord.Embed(title='🇳📟CHANGED NICKNAME'.format(id=after.id), colour=after.colour)
-		embed.set_author(
-			name=after.display_name,
-			icon_url=after.avatar_url,
-			url=utils.infourl('userid=' + str(after.id)),
+		embed = discord.Embed(
+			title='\N{REGIONAL INDICATOR SYMBOL LETTER N}\N{PAGER}CHANGED NICKNAME',
+			colour=after.colour,
+			timestamp=datetime.datetime.now(),
 		)
+
+		embed.set_author(name=after.name, icon_url=after.avatar_url)
+
 		if before.nick is None:
-			embed.add_field(name='No Older Nickname', value='_No Older Nickname_')
+			embed.add_field(name='No Older Nickname', value='\u200b')
 		else:
-			embed.add_field(name='Older Nickname', value=utils.mdspecialchars(before.nick))
+			embed.add_field(
+				name='Older Nickname',
+				value=utils.mdspecialchars(before.nick),
+			)
+
 		embed.add_field(name='\u200b', value='\u200b')
+
 		if after.nick is None:
-			embed.add_field(name='No Newer Nickname', value='_No Newer Nickname_')
+			embed.add_field(name='No Newer Nickname', value='\u200b')
 		else:
-			embed.add_field(name='Newer Nickname', value=utils.mdspecialchars(after.nick))
+			embed.add_field(
+				name='Newer Nickname',
+				value=utils.mdspecialchars(after.nick),
+			)
+
+		embed.add_field(
+			name='\u200b',
+			value=utils.mdspecialchars(
+				utils.id_summary(uid=after.id),
+			),
+		)
+
 		await specialchannel.send(embed=embed)
 	if before.roles != after.roles:
 		if utils.logdisabled('member_roleadd', after.guild):
