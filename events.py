@@ -756,8 +756,6 @@ async def on_member_update(before, after):
 				value=utils.mdspecialchars(before.nick),
 			)
 
-		embed.add_field(name='\u200b', value='\u200b')
-
 		if after.nick is None:
 			embed.add_field(name='No Newer Nickname', value='\u200b')
 		else:
