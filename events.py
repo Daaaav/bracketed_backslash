@@ -769,6 +769,7 @@ async def on_member_update(before, after):
 			value=utils.mdspecialchars(
 				utils.id_summary(uid=after.id),
 			),
+			inline=False,
 		)
 
 		await specialchannel.send(embed=embed)
