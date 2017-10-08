@@ -29,7 +29,7 @@ def mdspecialchars(string, character='\\'):
 		newstring += character + i if i not in notspecialchars else i
 	return newstring
 
-def id_summary(*, uid=None, mid=None, cid=None, rid=None, eid=None):
+def id_summary(*, uid=None, mid=None, cid=None, rid=None, eid=None, character=' '):
 	"""Return a oneline summary of IDs."""
 
 	summary = []
@@ -45,7 +45,7 @@ def id_summary(*, uid=None, mid=None, cid=None, rid=None, eid=None):
 	if eid:
 		summary.append('\N{WHITE SMILING FACE}' + str(eid))
 
-	return ''.join(summary)
+	return character.join(summary)
 
 async def handle_minute_message_edits(msg, schan):
 	if msg.id not in wrapper.minutemessageedits:
