@@ -1228,12 +1228,16 @@ async def on_reaction_add(reaction, user):
 	is_custom_emoji = hasattr(reaction.emoji, 'name')
 
 	embed = discord.Embed(
-		title='REACTION ADDED TO MESSAGE (SENT {reltime} IN #{name})'.format(
+		title=(
+			'\N{WHITE SMILING FACE}\N{UPWARDS BLACK ARROW}'
+			'REACTION ADDED TO MESSAGE (SENT {reltime} IN #{name})'
+		).format(
 			reltime=utils.reltime(time.mktime(message.created_at.timetuple())),
 			name=utils.mdspecialchars(message.channel.name),
 		),
 		description=message.content,
 		colour=user.colour,
+		timestamp=datetime.datetime.now(),
 	)
 
 	embed.set_author(
@@ -1254,12 +1258,17 @@ async def on_reaction_add(reaction, user):
 			),
 		)
 
-	embed.set_footer(
-		text=utils.id_summary(
-			uid=user.id,
-			mid=message.id,
-			eid=reaction.emoji.id if is_custom_emoji else '',
+	embed.add_field(
+		name='\u200b',
+		value=utils.mdspecialchars(
+			utils.id_summary(
+				uid=user.id,
+				mid=message.id,
+				eid=reaction.emoji.id if is_custom_emoji else '',
+				character='\n' if is_custom_emoji else ' ',
+			),
 		),
+		inline=False,
 	)
 
 	await specialchannel.send(embed=embed)
