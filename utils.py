@@ -30,7 +30,7 @@ def mdspecialchars(string, character='\\'):
 		newstring += character + i if i not in notspecialchars else i
 	return newstring
 
-def id_summary(uid=None, mid=None, cid=None, rid=None, eid=None):
+def id_summary(*, uid=None, mid=None, cid=None, rid=None, eid=None):
 	"""Return a oneline summary of IDs."""
 	summary = ''
 	if uid:
