@@ -32,20 +32,21 @@ def mdspecialchars(string, character='\\'):
 
 def id_summary(*, uid=None, mid=None, cid=None, rid=None, eid=None):
 	"""Return a oneline summary of IDs."""
-	summary = ''
+
+	summary = []
+
 	if uid:
-		summary += ' \N{BUST IN SILHOUETTE}' + str(uid)
+		summary.append('\N{BUST IN SILHOUETTE}' + str(uid))
 	if mid:
-		summary += ' \N{SPEECH BALLOON}' + str(mid)
+		summary.append('\N{SPEECH BALLOON}' + str(mid))
 	if cid:
-		summary += ' \N{TELEVISION}' + str(cid)
+		summary.append('\N{TELEVISION}' + str(cid))
 	if rid:
-		summary += ' \N{KEY}' + str(rid)
+		summary.append('\N{KEY}' + str(rid))
 	if eid:
-		summary += ' \N{WHITE SMILING FACE}' + str(eid)
-	if summary.startswith(' '):
-		summary = summary[1:]
-	return summary
+		summary.append('\N{WHITE SMILING FACE}' + str(eid))
+
+	return ''.join(summary)
 
 async def handle_minute_message_edits(msg, schan):
 	if msg.id not in wrapper.minutemessageedits:
