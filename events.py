@@ -1285,12 +1285,16 @@ async def on_reaction_remove(reaction, user):
 	is_custom_emoji = hasattr(reaction.emoji, 'name')
 
 	embed = discord.Embed(
-		title='REACTION REMOVED FROM MESSAGE (SENT {reltime} IN #{name})'.format(
+		title=(
+			'\N{WHITE SMILING FACE}\N{NO ENTRY SIGN}'
+			'REACTION REMOVED FROM MESSAGE (SENT {reltime} IN #{name})'
+		).format(
 			reltime=utils.reltime(time.mktime(message.created_at.timetuple())),
 			name=utils.mdspecialchars(message.channel.name),
 		),
 		description=message.content,
 		colour=user.colour,
+		timestamp=datetime.datetime.now(),
 	)
 
 	embed.set_author(name=user.display_name, icon_url=user.avatar_url)
@@ -1308,12 +1312,15 @@ async def on_reaction_remove(reaction, user):
 			),
 		)
 
-	embed.set_footer(
-		text=utils.id_summary(
+	embed.add_field(
+		name='\u200b',
+		value=utils.mdspecialchars(utils.id_summary(
 			uid=user.id,
 			mid=message.id,
 			eid=reaction.emoji.id if is_custom_emoji else '',
-		),
+			character='\n' if is_custom_emoji else ' ',
+		)),
+		inline=False,
 	)
 
 	await specialchannel.send(embed=embed)
