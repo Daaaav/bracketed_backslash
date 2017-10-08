@@ -17,7 +17,6 @@ import bot
 import checks
 import config
 import customcommands
-import events
 import op_ids
 import wrapper
 
