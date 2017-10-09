@@ -23,7 +23,6 @@ import wrapper
 
 async def on_ready():
 	logging.info('logged in as %s with id %s', wrapper.client.user.name, wrapper.client.user.id)
-	await wrapper.client.change_presence(game=discord.Game(name=config.get_s('gamestatus')))
 	embed = discord.Embed(
 		title='🔌BOT CONNECTED',
 		colour=discord.utils.find(
