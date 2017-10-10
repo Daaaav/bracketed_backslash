@@ -824,21 +824,42 @@ async def on_member_update(before, after):
 		if config.get_s('rolecachemode', after.guild.id) != 0:
 			utils.updaterolecache(after)
 			utils.rolecachesave()
+
 	if before.name != after.name and not utils.logdisabled('member_username', after.guild):
-		description = '🇺📟CHANGED USERNAME'.format(id=after.id)
+		title = '\N{REGIONAL INDICATOR SYMBOL LETTER U}\N{PAGER}CHANGED USERNAME'
 		if before.discriminator != after.discriminator:
-			description += ' AND DISCRIMINATOR 🔸'
-		embed = discord.Embed(title=description, colour=after.colour)
+			title += ' AND DISCRIMINATOR \N{SMALL ORANGE DIAMOND}'
+
+		embed = discord.Embed(
+			title=title,
+			colour=after.colour,
+			timestamp=datetime.datetime.now(),
+		)
+
 		embed.set_author(
 			name=after.display_name,
 			icon_url=after.avatar_url,
-			url=utils.infourl('userid=' + str(after.id)),
 		)
+
 		embed.add_field(name='Older Username', value=utils.mdspecialchars(before.name))
 		embed.add_field(name='Newer Username', value=utils.mdspecialchars(after.name))
+
 		if before.discriminator != after.discriminator:
-			embed.add_field(name='Older Discriminator', value=before.discriminator, inline=False)
-			embed.add_field(name='Newer Discriminator', value=after.discriminator)
+			embed.add_field(name='\u200b', value='\u200b', inline=False)
+
+			embed.add_field(
+				name='Older Discriminator',
+				value='#' + before.discriminator,
+			)
+
+			embed.add_field(name='Newer Discriminator', value='#' + after.discriminator)
+
+		embed.add_field(
+			name='\u200b',
+			value=utils.mdspecialchars(utils.id_summary(uid=after.id)),
+			inline=False,
+		)
+
 		await specialchannel.send(embed=embed)
 	if before.avatar_url != after.avatar_url and \
 	(not utils.logdisabled('member_botavatar', after.guild) \
