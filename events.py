@@ -861,16 +861,54 @@ async def on_member_update(before, after):
 		)
 
 		await specialchannel.send(embed=embed)
-	if before.avatar_url != after.avatar_url and \
+
+	if before.avatar != after.avatar and \
 	(not utils.logdisabled('member_botavatar', after.guild) \
 	if checks.is_bot(after) \
 	else not utils.logdisabled('member_avatar', after.guild)):
-		embed = discord.Embed(description='👥<@!{id}> ({id}) changed avatar'.format(id=after.id), colour=after.colour, timestamp=datetime.datetime.now())
+		if not before.avatar and after.avatar:
+			title='\N{BUSTS IN SILHOUETTE}\N{UPWARDS BLACK ARROW}ADDED AVATAR'
+			desc=after.avatar
+		elif before.avatar and not after.avatar:
+			title='\N{BUSTS IN SILHOUETTE}\N{NO ENTRY SIGN}REMOVED AVATAR'
+			desc=before.avatar
+		else:
+			title=(
+				'\N{BUSTS IN SILHOUETTE}'
+				'\N{BLACK RIGHTWARDS ARROW}'
+				'\N{BUSTS IN SILHOUETTE}'
+				'CHANGED AVATAR'
+			)
+			desc=''
+
+		embed = discord.Embed(
+			title=title,
+			description=desc,
+			colour=after.colour,
+			timestamp=datetime.datetime.now(),
+		)
+
 		embed.set_author(name=after.display_name, icon_url=after.avatar_url)
-		embed.set_thumbnail(url=before.avatar_url)
-		embed.set_image(url=after.avatar_url)
-		embed.add_field(name='Older Avatar URL: None' if before.avatar_url == '' else 'Older Avatar URL (Thumbnail)', value='No Older Avatar URL' if before.avatar_url == '' else before.avatar_url)
-		embed.add_field(name='Newer Avatar URL: None' if after.avatar_url == '' else 'Newer Avatar URL (Inset Image)', value='No Newer Avatar URL' if after.avatar_url == '' else after.avatar_url, inline=False)
+
+		if not before.avatar and after.avatar:
+			embed.set_image(url=after.avatar_url)
+		elif before.avatar and not after.avatar:
+			embed.set_image(url=before.avatar_url)
+		else:
+			embed.add_field(name='Older Avatar Hash (Thumbnail)', value=before.avatar)
+			embed.add_field(
+				name='Newer Avatar Hash (Inset Image)',
+				value=after.avatar,
+				inline=False,
+			)
+
+			embed.set_thumbnail(url=before.avatar_url)
+			embed.set_image(url=after.avatar_url)
+
+		# This is not standard procedure, but only because we can't place the ID summary
+		# field after an inset image
+		embed.set_footer(text=utils.id_summary(uid=after.id))
+
 		await specialchannel.send(embed=embed)
 
 async def on_member_join(member):
