@@ -675,17 +675,17 @@ async def findc(client, message, **kwargs):
 	em.set_thumbnail(url=message.guild.icon_url)
 	em.add_field(name='Name', value=utils.mdspecialchars(tgt.name))
 	em.add_field(name='ID', value=tgt.id)
-	em.add_field(name='Type', value=str(tgt.type).title())
-	em.add_field(name='Default', value='Yes' if tgt.is_default() else 'No')
+	em.add_field(name='Type', value=type(tgt).__name__)
+	em.add_field(name='Default', value='No')
 	em.add_field(
 		name='Position',
 		value='{0} from the top of {1} list'.format(
-			str(tgt.position), str(tgt.type),
+			str(tgt.position), type(tgt).__name__,
 		),
 	)
 	em.add_field(
-		name='Topic' if tgt.topic else 'No Topic',
-		value=tgt.topic if tgt.topic else 'No Topic',
+		name='Topic' if hasattr(tgt, 'topic') and tgt.topic else 'No Topic',
+		value=tgt.topic if hasattr(tgt, 'topic') and tgt.topic else 'No Topic',
 	)
 	em.add_field(
 		name='Created At',
@@ -712,7 +712,7 @@ async def findc(client, message, **kwargs):
 			str(int(tgt.bitrate / 1000)) + ' kbps'
 		),
 	)
-	em.add_field(name='Specific Overwrites', value=str(len(tgt.overwrites) - 1))
+	em.add_field(name='Overwrites', value=str(len(tgt.overwrites)))
 	em.add_field(
 		name='Readable By',
 		value=(
