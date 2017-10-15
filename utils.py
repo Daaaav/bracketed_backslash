@@ -393,7 +393,7 @@ def helplist(cats, guild, onlycat=None):
 				returnage += '\n__`{}:`__'.format(cat['cat_name'])
 
 			first = True
-			if cat['cat_slug'] == 'guild':
+			if cat['cat_slug'] == 'server':
 				helpcommands = customcommands.list_commands_help(guild)
 			else:
 				helpcommands = cat['commands']
