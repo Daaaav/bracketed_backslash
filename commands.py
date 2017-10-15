@@ -2122,34 +2122,37 @@ async def tntgb_maint(client, message, **kwargs):
 
 @shadow(auth=checks.is_operator)
 async def uploadfile(client, message, **kwargs):
-	disalwfiles = ['bot_token.conf']
-	try:
-		if not os.path.abspath(kwargs['arguments']).startswith(os.getcwd()):
-			e = emb.error('Cannot access paths above working directory.')
-			await bot.reply(message, emb=e)
-			return
-		elif kwargs['arguments'] in disalwfiles:
-			e = emb.error('Cannot upload ``{file}``.'.format(
-				file=kwargs['arguments'],
-				)
-			)
-			await bot.reply(message, emb=e)
-			return
-		await message.channel.send(
-			events.msg_start,
-			file=discord.File(kwargs['arguments']),
-		)
+	if kwargs['arguments'] is None:
+		e = emb.error('You should probably enter in something.')
+		await bot.reply(message, emb=e)
 		return
+
+	disalwfiles = ['bot_token.conf']
+
+	if not os.path.abspath(kwargs['arguments']).startswith(os.getcwd()):
+		e = emb.error('Cannot access paths above working directory.')
+		await bot.reply(message, emb=e)
+		return
+
+	elif kwargs['arguments'] in disalwfiles:
+		e = emb.error('``{file}`` contains sensitive info and cannot be uploaded.'.format(
+			file=kwargs['arguments'],
+			)
+		)
+		await bot.reply(message, emb=e)
+		return
+
+	try:
+		await message.channel.send(
+			bot.calculate_msg_start(message), file=discord.File(kwargs['arguments']),
+		)
 	except FileNotFoundError:
 		e = emb.error('That file does not exist.')
+		await bot.reply(message, emb=e)
 	except IsADirectoryError:
 		e = emb.error('That file is a directory.')
-	except AttributeError:
-		e = emb.error('You should probably enter in something.')
-	except:
-		e = emb.error('`Something happened : Something happened :(`')
-		raise
-	await bot.reply(message, emb=e)
+		await bot.reply(message, emb=e)
+
 
 @shadow(auth=checks.is_mod, aliases=['blackunlist'], guildonly=True)
 async def blacklist(client, message, **kwargs):
