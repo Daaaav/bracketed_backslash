@@ -34,5 +34,5 @@ while true; do
 	fi
 	echo -e "${LIGHTBLUE}bot exited with exit code ${LIGHTCYAN}$?${LIGHTBLUE} also restarting${NOCOLOR}" >&2
 	notify-send "The bot exited with exit code $? and is now restarting."
-	sleep 1
+	sleep 5
 done
