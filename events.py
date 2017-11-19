@@ -1628,7 +1628,7 @@ async def on_raw_message_edit(message_id, data):
 		return
 
 	schan = utils.getspecialchannel(mchan.guild)
-	athr = mchan.guild.get_member(data['author']['id'])
+	athr = mchan.guild.get_member(int(data['author']['id']))
 	e = discord.Embed(
 		title=(
 			'UNCACHED MESSAGE UPDATED (SENT {rltm}'
