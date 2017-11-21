@@ -842,10 +842,16 @@ def do_diff(a, b):
 	return delta
 
 def invite_diff(a, b):
+	# The order in which you pass the args in matters
+	# a is "before" and b is "after"
+	a = list(filter(lambda a: a in b, a))
+
 	delta = list(set(a).symmetric_difference(set(b)))
 
-	for invite_a, invite_b in zip(sorted(a, key=lambda i: i.code), sorted(b, key=lambda i: i.code)):
-		if invite_a.uses != invite_b.uses and invite_a not in delta and invite_b not in delta:
-			delta.append(invite_b)
+	for invite in filter(lambda i: i not in delta, b):
+		other_invite = discord.utils.find(lambda x: x.code == invite.code, a)  # pylint: disable=cell-var-from-loop
+
+		if other_invite is not None and other_invite.uses != invite.uses:
+			delta.append(invite)
 
 	return delta

@@ -5,7 +5,7 @@ import datetime
 import logging
 import json
 import os
-import sys
+import threading
 import time
 
 import discord
@@ -15,6 +15,7 @@ import checks
 import config
 import commands
 import customcommands
+import dispatch
 import emb
 import hangman
 import op_ids
@@ -144,6 +145,13 @@ async def on_ready():
 						wrapper.inv_cache[guild.id].append(entry.target)
 			except discord.Forbidden:
 				logging.info('Failed to retrieve audit log invites for %s (%s).', guild.name, guild.id)
+
+	dispatch.repeat_async_forever(
+		wrapper.client,
+		bot.sync_invite_cache,
+		[wrapper.client, wrapper.inv_cache],
+		interval=30,
+	)
 
 async def on_message(m):
 	wrapper.owncache.append(m.id)
@@ -912,82 +920,66 @@ async def on_member_update(before, after):
 		await specialchannel.send(embed=embed)
 
 async def on_member_join(member):
-	new_invites = None
-	audit_log_entries = None
-	missing_invite = None
+	guild = member.guild
+
 	invite = None
-	invite_len = 0
 
 	try:
-		new_invites = await member.guild.invites()
+		guild_invites = await guild.invites()
 	except discord.Forbidden:
-		new_invites = None
+		guild_invites = []
+		has_guild_invites = False
+	else:
+		has_guild_invites = True
 
-	specialchannel = utils.getspecialchannel(member.guild)
-	if not utils.logdisabled('member_join', member.guild):
+	audit_entries = guild.audit_logs(action=discord.AuditLogAction.invite_create)
+	audit_invites = []
+	try:
+		async for entry in audit_entries:
+			audit_invites.append(entry.target)
+	except discord.Forbidden:
+		has_audit_invites = False
+	else:
+		has_audit_invites = True
+
+	all_invites = []
+	all_invites.extend(guild_invites)
+	# We filter() out any audit invites we already have, or it will mess up the number of uses
+	# because audit invites aren't real invites
+	all_invites.extend(filter(lambda i: i not in guild_invites, audit_invites))
+
+	specialchannel = utils.getspecialchannel(guild)
+	if not utils.logdisabled('member_join', guild):
 
 		# Figure out which invite the member joined with
-		if new_invites is not None:
-			invite_diff = utils.invite_diff(wrapper.inv_cache[member.guild.id], new_invites)
+		if has_guild_invites:
+			all_invites = utils.invite_diff(wrapper.inv_cache[guild.id], all_invites)
 
-			# Get the invite with a non-zero count to filter out the ones created after
-			# we previously asked Discord for the guild's invites
-			potential_invites = []
-			for potential_invite in invite_diff:
-				if potential_invite.uses > 0:
-					potential_invites.append(potential_invite)
-
-			invite_len = len(potential_invites)
-
-			if len(potential_invites) == 1:
-				invite = potential_invites[0]
+			if len(all_invites) == 1:
+				invite = all_invites[0]
 			else:
-				# It might have been self-destructing, or some race condition where
-				# the bot grabbed the invites after a mod revoked the invite in
-				# question after someone joined with the invite
-				#
-				# Let's see if the audit log can help us
-				audit_log_entries = member.guild.audit_logs(action=discord.AuditLogAction.invite_create)
-				potential_invites = []
-				try:
-					async for entry in audit_log_entries:
-						if entry.target not in wrapper.inv_cache[member.guild.id]:
-							potential_invites.append(entry.target)
-					else:
-						invite = None
-				except discord.Forbidden:
-					audit_log_entries = None
-					invite = None
-				else:
-					if len(potential_invites) == 1:
-						invite = potential_invites[0]
-
-				# We just got an invite(s), let's cache
-				new_invites.extend(potential_invites)
-
-		wrapper.inv_cache[member.guild.id].extend(new_invites)
-		wrapper.inv_cache[member.guild.id] = list(set(wrapper.inv_cache[member.guild.id]))
+				invite = None
 
 		embed = discord.Embed(
 			description='➡<@!{id}> ({id}){bot} joined server'.format(id=member.id, bot=' [BOT]' if member.bot else ''),
-			colour=member.guild.me.colour,
+			colour=guild.me.colour,
 			timestamp=datetime.datetime.now(),
 		)
 		embed.add_field(
 			name='This server now has',
-			value=str(member.guild.member_count) + ' members',
+			value=str(guild.member_count) + ' members',
 		)
 
-		if not member.bot and new_invites is not None:
+		if not member.bot and has_guild_invites:
 			if invite is not None:
 				invite_status = '`{invite.code}` by {invite.inviter.mention}'.format(invite=invite)
-			elif audit_log_entries is None:
+			elif not has_audit_invites:
 				invite_status = 'Invite could not be detected{invamount}, and I’m not allowed to search the audit log'.format(
-					invamount = ' ({} possible invites)'.format(invite_len),
+					invamount = ' ({} possible invites)'.format(len(guild_invites)),
 				)
 			else:
 				invite_status = 'Invite could not be detected{invamount}'.format(
-					invamount = ' ({} possible invites)'.format(invite_len),
+					invamount = ' ({} possible invites)'.format(len(all_invites)),
 				)
 
 			embed.add_field(name='Joined with invite', value=invite_status)
@@ -995,6 +987,19 @@ async def on_member_join(member):
 		embed.set_author(name=member.display_name)
 		embed.set_thumbnail(url=member.avatar_url)
 		await specialchannel.send(embed=embed)
+
+	if has_guild_invites:
+		# Let's cache the invites
+		# We can't simply use list.extend because it won't record the updated number of uses
+		# Stupid piece of shit
+		for invite in all_invites:
+			cached_invite = discord.utils.find(lambda i: i.code == invite.code, wrapper.inv_cache[guild.id])
+			if cached_invite is not None:
+				cached_invite.uses = invite.uses
+
+		# Remove duplicates
+		wrapper.inv_cache[guild.id] = list(set(wrapper.inv_cache[guild.id]))
+
 	await utils.newmemberroles(member, specialchannel, False)
 
 async def on_member_remove(member):

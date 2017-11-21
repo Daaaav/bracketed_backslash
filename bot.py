@@ -1,7 +1,7 @@
 #!/usr/bin/python3.5
 # encoding=utf-8
 
-import asyncio
+import datetime
 import importlib
 import inspect
 import json
@@ -15,8 +15,6 @@ import discord
 
 import checks
 import config
-import customcommands
-import emb
 import events
 import utils
 import wrapper
@@ -168,3 +166,48 @@ async def replyattach(messageobject, filetoattach, fname, message=''):
 		events.msg_start + message,
 		file=discord.File(filetoattach, fname),
 	)
+
+async def sync_invite_cache(client, cache):
+	logging.info('%s: Syncing invite cache', datetime.datetime.now())
+
+	for guild in client.guilds:
+		if guild.id not in cache:
+			cache[guild.id] = []
+
+		try:
+			guild_invites = await guild.invites()
+		except discord.Forbidden:
+			guild_invites = []
+
+		audit_entries = guild.audit_logs(action=discord.AuditLogAction.invite_create)
+		audit_invites = []
+		try:
+			async for entry in audit_entries:
+				audit_invites.append(entry.target)
+		except discord.Forbidden:
+			pass
+
+		all_invites = []
+		all_invites.extend(guild_invites)
+		# We filter() out any audit invites we already have, or it will mess up the number
+		# of uses because audit invites aren't real invites
+		all_invites.extend(
+			filter(
+				lambda i: i not in guild_invites,  # pylint: disable=cell-var-from-loop
+				audit_invites,
+			),
+		)
+
+		# Let's cache the invites
+		# We can't simply use list.extend because it won't record the updated number of uses
+		# Stupid piece of shit
+		for invite in all_invites:
+			cached_invite = discord.utils.find(
+				lambda i: i.code == invite.code,  # pylint: disable=cell-var-from-loop
+				cache[guild.id],
+			)
+			if cached_invite is not None:
+				cached_invite.uses = invite.uses
+
+		# Remove duplicates
+		cache[guild.id] = list(set(cache[guild.id]))
