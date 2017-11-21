@@ -318,7 +318,7 @@ def is_detached(skey, guildid):
 	return guildid in s[skey]
 
 def exists(skey):
-	return skey in s
+	return skey in configs and skey in s
 
 def is_array(skey):
 	return configs[skey]['is_array']
