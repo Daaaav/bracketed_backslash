@@ -1495,14 +1495,15 @@ async def countallpins(client, message, **kwargs):
 		for chan in message.guild.text_channels:
 			try:
 				pins = await chan.pins()
-				content += '{} – {} pins, {} remaining\n'.format(
+				content += '{} – {} pin{s}, {} remaining\n'.format(
 					chan.mention,
 					len(pins),
 					50 - len(pins),
+					s='s' if len(pins) != 1 else '',
 				)
 			except discord.errors.Forbidden:
-				content += chan.mention + '{} - Unable to get data\n'
-		await bot.reply(message, content)
+				content += chan.mention + ' - Unable to get data\n'
+	await bot.reply(message, content)
 
 @shadow()
 async def _math(client, message, **kwargs):
