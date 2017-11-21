@@ -961,18 +961,37 @@ async def on_member_join(member):
 				invite = None
 
 		embed = discord.Embed(
-			description='➡<@!{id}> ({id}){bot} joined server'.format(id=member.id, bot=' [BOT]' if member.bot else ''),
-			colour=guild.me.colour,
+			title=(
+				'\N{BLACK RIGHTWARDS ARROW}JOINED SERVER'
+				if not member.bot else
+				'\N{BLACK RIGHTWARDS ARROW}\N{ROBOT FACE}BOT ADDED TO SERVER'
+			),
+			color=utils.colorize(member),
 			timestamp=datetime.datetime.now(),
 		)
 		embed.add_field(
 			name='This server now has',
 			value=str(guild.member_count) + ' members',
 		)
+		embed.add_field(
+			name=(
+				'Member joined Discord'
+				if not member.bot else
+				'Bot created'
+			),
+			value=utils.reltime(time.mktime(member.created_at.timetuple())),
+		)
 
 		if not member.bot and has_guild_invites:
 			if invite is not None:
-				invite_status = '`{invite.code}` by {invite.inviter.mention}'.format(invite=invite)
+				invite_status = (
+					'`{invite.code}` by'
+					' **{name}**#{inviter.discriminator} ({inviter.id})'
+				).format(
+					invite=invite,
+					name=utils.mdspecialchars(invite.inviter.name),
+					inviter=invite.inviter,
+				)
 			elif not has_audit_invites:
 				invite_status = 'Invite could not be detected{invamount}, and I’m not allowed to search the audit log'.format(
 					invamount = ' ({} possible invites)'.format(len(guild_invites)),
@@ -984,7 +1003,13 @@ async def on_member_join(member):
 
 			embed.add_field(name='Joined with invite', value=invite_status)
 
-		embed.set_author(name=member.display_name)
+		embed.add_field(
+			name='\u200b',
+			value=utils.mdspecialchars(utils.id_summary(uid=member.id)),
+			inline=False,
+		)
+
+		embed.set_author(name=member.display_name, icon_url=member.avatar_url)
 		embed.set_thumbnail(url=member.avatar_url)
 		await specialchannel.send(embed=embed)
 
