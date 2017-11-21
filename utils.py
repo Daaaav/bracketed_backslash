@@ -169,22 +169,24 @@ def match_input(iterable, objtype, request):
 		raise ValueError('objtype has to be one of ' + str(acceptvals))
 
 	target = None
+	int_request = None
 
 	# Is this a mention, or an emoji? If so, extract the ID from it
 	if request.startswith('<') and request.endswith('>'):
 		if (objtype is discord.Member and request[1:3] == '@!') or \
 		(objtype is discord.Role and request[1:3] == '@&'):
-			request = int(request[3:-1])
+			int_request = int(request[3:-1])
 		elif (objtype is discord.Member and request[1] == '@') or \
 		(objtype is discord.abc.GuildChannel and request[1] == '#'):
-			request = int(request[2:-1])
+			int_request = int(request[2:-1])
 		elif objtype is discord.Emoji and request[1] == request[-20] == ':':
-			request = int(request[-19:-1])
+			int_request = int(request[-19:-1])
 	elif request.isdigit() and len(request) != 4:
-		request = int(request)
+		int_request = int(request)
 
 	# Now get the object from the ID (if we got any)
-	target = discord.utils.find(lambda x: x.id == request, iterable)
+	if int_request is not None:
+		target = discord.utils.find(lambda x: x.id == int_request, iterable)
 
 	if target is not None:
 		return target
