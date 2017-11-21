@@ -1461,16 +1461,16 @@ async def countpins(client, message, **kwargs):
 	else:
 		channelid = int(kwargs['arguments'][2:-1])
 		getchannel = client.get_channel(channelid)
-	try:
-		pins = await getchannel.pins()
-		content = '{} currently has {} pins, {} remaining.'.format(getchannel.mention, len(pins), 50-len(pins))
-		await bot.replyattach(message, images.progressbar(len(pins)*2), 'temp.png', content)
-	except AttributeError:
+	if getchannel is None:
 		embed = emb.error(
 			'The channel doesn’t exist, has been deleted,'
 			' or it’s not a channel at all.',
 		)
 		await bot.reply(message, emb=embed)
+		return
+	pins = await getchannel.pins()
+	content = '{} currently has {} pins, {} remaining.'.format(getchannel.mention, len(pins), 50-len(pins))
+	await bot.replyattach(message, images.progressbar(len(pins)*2), 'temp.png', content)
 
 @shadow(guildonly=True)
 async def countallpins(client, message, **kwargs):

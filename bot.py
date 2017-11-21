@@ -165,7 +165,7 @@ async def reply(messageobject, message=None, *, emb=None):
 async def replyattach(messageobject, filetoattach, fname, message=''):
 	# Don't bother with handling >2000 character messages just yet
 	await messageobject.channel.send(
-		events.msg_start + message,
+		calculate_msg_start(messageobject) + message,
 		file=discord.File(filetoattach, fname),
 	)
 
