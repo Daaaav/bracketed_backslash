@@ -855,3 +855,22 @@ def invite_diff(a, b):
 			delta.append(invite)
 
 	return delta
+
+def colorize(thing):
+	"""Converts an ID or an object's ID to a Discord color."""
+	try:
+		thing_id = thing.id
+	except AttributeError:
+		thing_id = thing
+
+	return discord.Color.from_rgb(
+		*discord.Color(
+			int(
+				time.mktime(
+					discord.utils.snowflake_time(
+						thing_id
+					).timetuple(),
+				),
+			),
+		).to_rgb(),
+	)
