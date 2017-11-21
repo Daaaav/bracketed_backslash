@@ -937,6 +937,7 @@ async def on_member_join(member):
 	try:
 		async for entry in audit_entries:
 			audit_invites.append(entry.target)
+			print(entry.target)
 	except discord.Forbidden:
 		has_audit_invites = False
 	else:
@@ -1021,6 +1022,9 @@ async def on_member_join(member):
 			cached_invite = discord.utils.find(lambda i: i.code == invite.code, wrapper.inv_cache[guild.id])
 			if cached_invite is not None:
 				cached_invite.uses = invite.uses
+			else:
+				# Holy shit we have a fresh new invite
+				wrapper.inv_cache[guild.id].append(invite)
 
 		# Remove duplicates
 		wrapper.inv_cache[guild.id] = list(set(wrapper.inv_cache[guild.id]))
