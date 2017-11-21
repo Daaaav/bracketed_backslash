@@ -1485,7 +1485,9 @@ async def countpins(client, message, **kwargs):
 		await bot.reply(message, emb=embed)
 		return
 
-	content = '{} currently has {} pins, {} remaining.'.format(getchannel.mention, len(pins), 50-len(pins))
+	content = '{} currently has {} pin{s}, {} remaining.'.format(
+		getchannel.mention, len(pins), 50 - len(pins), s='s' if len(pins) != 1 else '',
+	)
 	await bot.replyattach(message, images.progressbar(len(pins)*2), 'temp.png', content)
 
 @shadow(guildonly=True)
