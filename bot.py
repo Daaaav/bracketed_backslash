@@ -212,7 +212,7 @@ async def sync_invite_cache(client, cache):
 				cached_invite.uses = invite.uses
 			else:
 				# Holy shit we have a fresh new invite
-				cache.append(invite)
+				cache[guild.id].append(invite)
 
 		# Remove duplicates
 		cache[guild.id] = list(set(cache[guild.id]))
