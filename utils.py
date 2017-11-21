@@ -231,10 +231,30 @@ def match_member_attrs(iterable, request):
 	6) Case-insensitive name partial match: Info, tOL, own
 	7) Discriminator only (either with or without #): 3737
 	"""
+	# Let's be flexible
+	if not isinstance(iterable, list):
+		iterable = list(iterable)
+
 	# Let's create an object close to a discord.Guild, so we
 	# can use discord.Guild.get_member_named()
-	DuckTypedGuild = type('', (), {'members': []})  # Creates a somewhat bare class
+	class DuckTypedGuild:  # pylint: disable=too-few-public-methods
+		members = []
 	dt_guild = DuckTypedGuild()
+
+	# Let's create an object close to a discord.Member, so we
+	# can actually use discord.Guild.get_member_named()
+	# if we want to use User objects
+	# without pulling our fucking hair out
+	class DuckTypedMember: # pylint: disable=too-few-public-methods
+		def __init__(self, actual_member):
+			self.id = actual_member.id
+			self.nick = None
+			self.name = actual_member.name
+			self.discriminator = actual_member.discriminator
+
+	for idx, member in enumerate(iterable):
+		if not hasattr(member, 'nick'):
+			iterable[idx] = DuckTypedMember(member)
 
 	dt_guild.members = iterable
 
