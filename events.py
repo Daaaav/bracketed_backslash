@@ -937,7 +937,6 @@ async def on_member_join(member):
 	try:
 		async for entry in audit_entries:
 			audit_invites.append(entry.target)
-			print(entry.target)
 	except discord.Forbidden:
 		has_audit_invites = False
 	else:
