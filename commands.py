@@ -747,145 +747,317 @@ async def voicemute(client, message, **kwargs):
 
 @shadow()
 async def votevoicemute(client, message, **kwargs):
-	# TODO start supporting this. When voting, require (part of) name (or id/mention/disc/you know the drill) if more than one vote is running
-	if len(wrapper.votemutes) >= 1:
-		embed = emb.error('Multiple votes running at the same time is not yet supported.')
+	guild = message.guild
+	author = message.author
+
+	if kwargs['arguments'] is None:
+		embed = emb.error('You should probably specify a member.')
 		await bot.reply(message, emb=embed)
 		return
 
-	targetmember = utils.match_input(message.guild.members, discord.Member, kwargs['arguments'])
-	try:
-		if message.author.voice.voice_channel is None:
-			embed = emb.error('You have to be in a voice channel to be able to start a vote.')
-		elif targetmember.voice.voice_channel is None:
-			embed = emb.error('User is not in a voice channel.')
-		elif targetmember.id in bot.votemutes:
-			embed = emb.warning('There is already a vote running for this user. Type **`\\vy`** to vote yes.')
-		else:
-			# Count the amount of people in all the voice channels
-			voicechatters = 0
-			for chan in message.guild.voice_channels:
-				voicechatters += len(chan.members)
-
-			if voicechatters < config.get_s('votevmute_minmembers', message.guild.id):
-				embed = emb.warning('There are not enough members in voice channels to start a vote.')
-				await bot.reply(message, emb=embed)
-				return
-
-			bot.votemutes[targetmember.id] = {
-				'starttime': int(time.time()),
-				'proponents': [message.author.id],
-				'opponents': []
-			}
-			content = 'A vote has been started to voice mute <@{}>.\nTo vote in favor of muting, type **`\\vy`**.\nTo vote against muting, type **`\\vn`**.\nModerators can cancel the vote by typing **`\\vc`**.'.format(targetmember.id)
-			await bot.replyattach(
-				message,
-				images.votebar(
-					(1 / voicechatters) * 100,
-					0,
-					config.get_s('votevmute_threshold', message.guild.id),
-				),
-				'temp.png',
-				content,
-			)
-			return
-	except AttributeError:
+	target = utils.match_input(
+		set(filter(lambda m: m != author and m != guild.me, guild.members)),
+		discord.Member,
+		kwargs['arguments'],
+	)
+	if target is None:
 		embed = emb.error(bot.t['specify_user'])
-	await bot.reply(message, emb=embed)
+		await bot.reply(message, emb=embed)
+		return
+	if author.voice is None:
+		embed = emb.error('You have to be in a voice channel to be able to start a vote.')
+		await bot.reply(message, emb=embed)
+		return
+	if target.voice is None:
+		embed = emb.error(
+			'Targeted member {target.mention} is not in a voice channel.'.format(
+				target=target,
+			)
+		)
+		await bot.reply(message, emb=embed)
+		return
+	if guild.id in wrapper.votemutes and target.id in wrapper.votemutes[guild.id]:
+		embed = emb.warning(
+			(
+				'There is already a vote running for {target.mention}.'
+				' Type in the command **`vy`** to vote yes.'
+			).format(target=target),
+		)
+		await bot.reply(message, emb=embed)
+		return
+
+	voice_chatters = sum(1 for v in guild.voice_channels for m in v.members if not m.bot)
+
+	if voice_chatters < config.get_s('votevmute_minmembers', guild.id):
+		embed = emb.warning(
+			'There are not enough members in voice channels to start a vote.',
+		)
+		await bot.reply(message, emb=embed)
+		return
+
+	if guild.id not in wrapper.votemutes:
+		wrapper.votemutes[guild.id] = {}
+
+	threshold = config.get_s('votevmute_threshold', guild.id)
+
+	content = (
+		'A vote has been started to voice mute {target.mention}.\n'
+		'They will be muted if {percent}% of voice chat members vote in favor of it.\n'
+	).format(target=target, percent=threshold)
+
+	if 1 / voice_chatters * 100 > threshold:
+		content += (
+			'Since 1 member already exceeds the threshold, they will now be muted.'
+		)
+
+		try:
+			await target.edit(
+				mute=True,
+				reason='{}% of members in voice chat voted to mute'.format(
+					round(1 / voice_chatters * 100, 1),
+				),
+			)
+		except discord.Forbidden:
+			content += ' Just kidding, I don’t have permission to mute them.'
+	else:
+		wrapper.votemutes[guild.id][target.id] = {
+			'starttime': int(time.time()),
+			'proponents': [author.id],
+			'opponents': []
+		}
+
+		content += (
+			'To vote in favor of muting, type in the command **`vy`**.\n'
+			'To vote against muting, type in the command **`vn`**.\n'
+			'Moderators can cancel the vote by typing in the command **`vc`**.'
+		)
+
+	await bot.replyattach(
+		message,
+		images.votebar(1 / voice_chatters * 100, 0, threshold),
+		'temp.png',
+		content,
+	)
 
 @shadow(aliases=['vn'])
 async def vy(client, message, **kwargs):
-	if not wrapper.votemutes:
+	author = message.author
+	guild = message.guild
+
+	if guild.id not in wrapper.votemutes or not wrapper.votemutes[guild.id]:
 		embed = emb.error('There are currently no votes running.')
-	elif len(wrapper.votemutes) > 1:
-		embed = emb.error('Multiple votes running at the same time is not yet supported.')
-	else:
-		# First, who are we going to mute, again?
-		for m in wrapper.votemutes:
-			mutee = m
-			break
-
-		if message.author.voice.voice_channel is None:
-			embed = emb.error('You’re not in any voice channel.')
-			await bot.reply(message, emb=embed)
-			return
-
-		content = 'Voted {}.'
-		if kwargs['command'] == 'vy':
-			side = 'proponents'
-			oppositeside = 'opponents'
-			resulttext = 'in favor of muting'
-		else:
-			side = 'opponents'
-			oppositeside = 'proponents'
-			resulttext = 'against muting'
-
-		content = content.format(resulttext)
-
-		if message.author.id in wrapper.votemutes[mutee][side]:
-			embed = emb.warning('You have already voted that.')
-			await bot.reply(message, emb=embed)
-			return
-
-		wrapper.votemutes[mutee][side].append(message.author.id)
-
-		if message.author.id in wrapper.votemutes[mutee][oppositeside]:
-			# Changing your mind, huh?
-			content = 'Changed vote to be {}.'.format(resulttext)
-			wrapper.votemutes[mutee][oppositeside].remove(message.author.id)
-
-		# For the amount of people who voted, only count those who are still inside the channel!
-		voicechatters = 0
-		numproponents = 0
-		numopponents  = 0
-		for chan in message.guild.voice_channels:
-			voicechatters += len(chan.members)
-
-			for voicemember in chan.members:
-				if voicemember.id in wrapper.votemutes[mutee]['proponents']:
-					numproponents += 1
-				if voicemember.id in wrapper.votemutes[mutee]['opponents']:
-					numopponents  += 1
-
-		percpro = numproponents/voicechatters*100
-		percopp = numopponents /voicechatters*100
-
-		if percpro >= config.get_s('votevmute_threshold', message.guild.id):
-			targetmember = utils.match_input(message.guild.members, discord.Member, mutee)
-			await targetmember.edit(mute=True)
-			content += '\n{}% of the members have now voted in favor of muting, so <@{}> is now voice muted.'.format(round(percpro,1), mutee)
-			del wrapper.votemutes[mutee]
-		elif percopp > 100-config.get_s('votevmute_threshold', message.guild.id):
-			content += '\n{}% of the members have now voted against muting, so <@{}> is not getting voice muted.'.format(round(percopp,1), mutee)
-			del wrapper.votemutes[mutee]
-
-		await bot.replyattach(
-			message,
-			images.votebar(
-				percpro,
-				percopp,
-				config.get_s('votevmute_threshold', message.guild.id),
-			),
-			'temp.png',
-			content,
-		)
+		await bot.reply(message, emb=embed)
 		return
-	await bot.reply(message, emb=embed)
+
+	if len(wrapper.votemutes[guild.id]) > 1:
+		if kwargs['arguments'] is None:
+			embed = emb.error(
+				(
+					'There are multiple votes running at the same time.'
+					' You should probably specify a member from the following:'
+					'\n'
+					'\n'
+				) + ', '.join(
+					'<@{}>'.format(m) for m in wrapper.votemutes[guild.id],
+				)
+			)
+			await bot.reply(message, emb=embed)
+			return
+
+		targets = set()
+		for member_id in wrapper.votemutes[guild.id]:
+			potentially_none = guild.get_member(member_id)
+			if potentially_none is None:
+				try:
+					targets.add(await client.get_user_info(member_id))
+				except discord.NotFound:
+					pass
+			else:
+				targets.add(potentially_none)
+
+		mutee = utils.match_input(targets, discord.Member, kwargs['arguments'])
+
+		if mutee is None:
+			embed = emb.error(bot.t['specify_user'])
+			await bot.reply(message, emb=embed)
+			return
+
+		mutee_id = mutee.id
+	else:
+		# dicts don't support subscripting so we have to do this
+		# to get the only element of a dict
+		mutee_id = list(wrapper.votemutes[guild.id].keys())[0]
+
+		potentially_none = guild.get_member(mutee_id)
+		if potentially_none is None:
+			mutee = await client.get_user_info(mutee_id)
+		else:
+			mutee = potentially_none
+
+	poll = wrapper.votemutes[guild.id][mutee_id]
+
+	if author.voice is None:
+		embed = emb.error('You’re not in any voice channel.')
+		await bot.reply(message, emb=embed)
+		return
+
+	if time.mktime(author.joined_at.timetuple()) > poll['starttime']:
+		embed = emb.error('You have to be in the server before the vote starts.')
+		await bot.reply(message, emb=embed)
+		return
+
+	content = 'Voted {} **{name}**#{discrim}.'
+	if kwargs['command'] == 'vy':
+		side = 'proponents'
+		oppositeside = 'opponents'
+		resulttext = 'in favor of muting'
+	else:
+		side = 'opponents'
+		oppositeside = 'proponents'
+		resulttext = 'against muting'
+
+	content = content.format(
+		resulttext, name=utils.mdspecialchars(mutee.name), discrim=mutee.discriminator,
+	)
+
+	if author.id in poll[side]:
+		embed = emb.warning(
+			'You have already voted that for {mutee.mention}.'.format(mutee=mutee),
+		)
+		await bot.reply(message, emb=embed)
+		return
+
+	poll[side].append(author.id)
+
+	if author.id in poll[oppositeside]:
+		# Changing your mind, huh?
+		content = 'Changed vote to be {} **{name}**#{discrim}.'.format(
+			resulttext,
+			name=utils.mdspecialchars(mutee.name),
+			discrim=mutee.discriminator,
+		)
+		poll[oppositeside].remove(author.id)
+
+	# For the amount of people who voted, only count those who are still inside the channel!
+	voice_chatters = 0
+	num_proponents = 0
+	num_opponents  = 0
+	for channel in guild.voice_channels:
+
+		for voice_member in channel.members:
+			if time.mktime(voice_member.joined_at.timetuple()) > poll['starttime']:
+				continue
+
+			voice_chatters += 1
+			if voice_member.id in poll['proponents']:
+				num_proponents += 1
+			if voice_member.id in poll['opponents']:
+				num_opponents += 1
+
+	percent_pro = num_proponents / voice_chatters * 100
+	percent_opp = num_opponents / voice_chatters * 100
+
+	if percent_pro >= config.get_s('votevmute_threshold', guild.id):
+		if potentially_none is not None:
+			try:
+				await mutee.edit(
+					mute=True,
+					reason='{}% of members in voice chat voted to mute'.format(
+						round(percent_pro, 1),
+					),
+				)
+			except discord.Forbidden:
+				failed = True
+			else:
+				failed = False
+		else:
+			failed = False
+
+		content += (
+			'\n{}% of the members have now voted in favor of muting,'
+			' so {mutee.mention} is now voice muted.'
+		).format(round(percent_pro, 1), mutee=mutee)
+
+		if potentially_none is None:
+			content += ' Just kidding, they left the server. I can’t do anything.'
+		if failed:
+			content += ' Just kidding, I don’t have permission to mute them.'
+
+		del poll, wrapper.votemutes[guild.id][mutee.id]
+
+	elif percent_opp > 100 - config.get_s('votevmute_threshold', guild.id):
+		content += (
+			'\n{}% of the members have now voted against muting,'
+			' so {mutee.mention} is NOT getting voice muted.'
+		).format(round(percent_opp, 1), mutee=mutee)
+
+		if potentially_none is None:
+			content += (
+				' I mean they left the server either way, so I wouldn’t be able'
+				' to mute them.'
+			)
+
+		del poll, wrapper.votemutes[guild.id][mutee.id]
+
+	await bot.replyattach(
+		message,
+		images.votebar(
+			percent_pro,
+			percent_opp,
+			config.get_s('votevmute_threshold', guild.id),
+		),
+		'temp.png',
+		content,
+	)
 
 @shadow(auth=checks.is_mod)
 async def vc(client, message, **kwargs):
-	if not wrapper.votemutes:
-		embed = emb.error('There are currently no votes running.')
-	elif len(wrapper.votemutes) > 1:
-		embed = emb.error('Multiple votes running at the same time is not yet supported.')
-	else:
-		# We're going to cancel the vote on whom?
-		for m in wrapper.votemutes:
-			mutee = m
-			break
+	guild = message.guild
 
-		del wrapper.votemutes[mutee]
-		embed = emb.success('The vote on <@{}> has been vetoed.'.format(mutee))
+	if guild.id not in wrapper.votemutes or not wrapper.votemutes[guild.id]:
+		embed = emb.error('There are currently no votes running.')
+		await bot.reply(message, emb=embed)
+		return
+	elif len(wrapper.votemutes[guild.id]) > 1:
+		if kwargs['arguments'] is None:
+			embed = emb.error(
+				(
+					'There are multiple votes running at the same time.'
+					' You should probably specify a member from the following:'
+					'\n'
+					'\n'
+				) + ', '.join(
+					'<@{}>'.format(m) for m in wrapper.votemutes[guild.id],
+				)
+			)
+			await bot.reply(message, emb=embed)
+			return
+
+		targets = set()
+		for member_id in wrapper.votemutes[guild.id]:
+			potentially_none = guild.get_member(member_id)
+			if potentially_none is None:
+				try:
+					targets.add(await client.get_user_info(member_id))
+				except discord.NotFound:
+					pass
+			else:
+				targets.add(potentially_none)
+
+		mutee = utils.match_input(targets, discord.Member, kwargs['arguments'])
+
+		if mutee is None:
+			embed = emb.error(bot.t['specify_user'])
+			await bot.reply(message, emb=embed)
+			return
+
+		mutee_id = mutee.id
+	else:
+		mutee_id = list(wrapper.votemutes[guild.id].keys())[0]
+
+	del wrapper.votemutes[guild.id][mutee_id]
+
+	embed = emb.success('The vote on <@{}> has been vetoed.'.format(mutee_id))
 	await bot.reply(message, emb=embed)
 
 @shadow(auth=checks.is_mod, guildonly=True)
