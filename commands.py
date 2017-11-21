@@ -1456,11 +1456,16 @@ async def getrawmessagecontent(client, message, **kwargs):
 
 @shadow()
 async def countpins(client, message, **kwargs):
+	channel = message.channel
+	guild = message.guild
+
 	if kwargs['arguments'] is None:
-		getchannel = message.channel
+		getchannel = channel
 	else:
-		channelid = int(kwargs['arguments'][2:-1])
-		getchannel = client.get_channel(channelid)
+		getchannel = utils.match_input(
+			guild.text_channels, discord.abc.GuildChannel, kwargs['arguments'],
+		)
+
 	if getchannel is None:
 		embed = emb.error(
 			'The channel doesn’t exist, has been deleted,'
@@ -1468,7 +1473,18 @@ async def countpins(client, message, **kwargs):
 		)
 		await bot.reply(message, emb=embed)
 		return
-	pins = await getchannel.pins()
+
+	try:
+		pins = await getchannel.pins()
+	except discord.Forbidden:
+		embed = emb.error(
+			'I don’t have permission to look in {channel.mention}.'.format(
+				channel=getchannel,
+			),
+		)
+		await bot.reply(message, emb=embed)
+		return
+
 	content = '{} currently has {} pins, {} remaining.'.format(getchannel.mention, len(pins), 50-len(pins))
 	await bot.replyattach(message, images.progressbar(len(pins)*2), 'temp.png', content)
 
