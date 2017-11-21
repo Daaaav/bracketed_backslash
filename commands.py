@@ -173,6 +173,8 @@ async def _config(client, message, **kwargs):
 	elif kwargs['arguments'] == 'list' or kwargs['arguments'] == 'listhidden':
 		content = '```css'
 		for c in config.s:
+			if not config.exists(c):
+				continue
 			if (kwargs['arguments'] == 'list' and not config.get_shown(c)) or \
 			(kwargs['arguments'] == 'listhidden' and config.get_shown(c)):
 				continue
