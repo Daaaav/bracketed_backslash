@@ -1031,16 +1031,88 @@ async def on_member_join(member):
 	await utils.newmemberroles(member, specialchannel, False)
 
 async def on_member_remove(member):
-	if not utils.logdisabled('member_remove', member.guild):
-		specialchannel = utils.getspecialchannel(member.guild)
-		embed = discord.Embed(description='🚪<@!{id}> ({id}) removed from server'.format(id=member.id), colour=member.colour, timestamp=datetime.datetime.now())
-		embed.add_field(name='Originally joined server', value=utils.reltime(time.mktime(member.joined_at.timetuple())))
+	guild = member.guild
+	specialchannel = utils.getspecialchannel(guild)
+	moderator = None
+	action = None
+	reason = ''
+	if member.bot:
+		bot = '\N{ROBOT FACE}BOT '
+	else:
+		bot = ''
+
+	try:
+		async for entry in guild.audit_logs(
+			# Apparently this parameter is fucked on Discord's end currently
+			#after=datetime.datetime.now() - datetime.timedelta(seconds=2),
+			reverse=False,
+		).filter(
+			# Can't grab more than one type of action when making the request
+			# so we'll have to filter it ourselves
+			lambda e: e.action in (
+				discord.AuditLogAction.kick, # TODO: discord.AuditLogAction.ban
+			),
+		):
+			# Can't filter out entries AFTER a certain point in time
+			# because the endpoint is fucked
+			# so we'll have to, hurr durr, filter it ourselves
+			if discord.utils.snowflake_time(entry.id) > \
+			datetime.datetime.now() - datetime.timedelta(seconds=2) and \
+			entry.target.id == member.id:
+				moderator = entry.user
+				action = entry.action
+				reason = entry.reason
+				break
+	except discord.Forbidden:
+		pass
+
+	if not utils.logdisabled('member_remove', guild):
+		if action is discord.AuditLogAction.kick:
+			title = '\N{MANS SHOE}\N{DOOR}{bot}KICKED FROM SERVER'.format(bot=bot)
+		elif action is discord.AuditLogAction.ban:
+			# TODO: Implement, taking care of on_member_ban() in the process
+			pass
+		else:
+			title = '\N{DOOR}{bot}REMOVED FROM SERVER'.format(bot=bot)
+
+		embed = discord.Embed(
+			title=title,
+			color=utils.colorize(member),
+			timestamp=datetime.datetime.now(),
+		)
+
+		embed.add_field(
+			name='Originally joined server',
+			value=utils.reltime(time.mktime(member.joined_at.timetuple())),
+		)
+
 		embed.add_field(
 			name='This server now has',
 			value=str(member.guild.member_count) + ' members',
 		)
+
+		if moderator is not None:
+			embed.add_field(
+				name='Responsible moderator',
+				value='**{name}**#{moderator.discriminator} ({moderator.id})'.format(
+					name=utils.mdspecialchars(moderator.name),
+					moderator=moderator,
+				),
+			)
+			embed.add_field(
+				name='Reason' if reason else 'No reason given',
+				value=reason if reason else '\u200b',
+			)
+
+		embed.add_field(
+			name='\u200b',
+			value=utils.mdspecialchars(utils.id_summary(uid=member.id)),
+			inline=False,
+		)
+
 		embed.set_author(name=member.display_name, icon_url=member.avatar_url)
 		embed.set_thumbnail(url=member.avatar_url)
+
 		await specialchannel.send(embed=embed)
 
 async def on_member_ban(guild, user):
