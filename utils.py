@@ -921,17 +921,37 @@ def paginate(request, *, max_length):
 	count = 0
 	lines = request.split('\n')
 
-	for line in lines:
-		count += len(line + '\n')
+	for idx, line in enumerate(lines):
+		if idx != len(lines) - 1:
+			count += len(line + '\n')
+		else:
+			count += len(line)
 
 		if count > max_length:
-			count = len(line + '\n')
-			pages.append(page)
+			if idx != len(lines) - 1:
+				count = len(line + '\n')
+			else:
+				count = len(line)
+
+			if count > max_length:
+				# Only one pass and no recursion to keep things simple
+				# even if more error-prone
+				pages.append(line[:max_length])
+				pages.append(line[max_length:])
+				continue
+
+			if page:
+				pages.append(page)
+
 			page = ''
 
-		page += line + '\n'
+		if idx != len(lines) - 1:
+			page += line + '\n'
+		else:
+			page += line
 
-	pages.append(page)
+	if page:
+		pages.append(page)
 
 	return pages
 
