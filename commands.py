@@ -1799,11 +1799,10 @@ async def bans(client, message, **kwargs):
 		await bot.reply(message, emb=embed)
 		return
 	ulist = ''
-	for u in bans:
-		ulist += (
-			'**{0.name}**#{0.discriminator} ({0.id})\n'
-			.format(u)
-		)
+	for ban_entry in bans:
+		ulist += '**{user.name}**#{user.discriminator} ({user.id}) - {reason}\n'.format(
+			user=ban_entry.user, reason=ban_entry.reason)
+
 	if len(ulist) > 2048:
 		# TODO: actually split this into multiple strings
 		pass
