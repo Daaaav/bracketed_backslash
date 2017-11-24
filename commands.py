@@ -599,26 +599,8 @@ async def findc(client, message, **kwargs):
 		em = discord.Embed(colour=message.guild.me.colour)
 		em.set_thumbnail(url=message.guild.icon_url)
 
-		# Some guilds have a lot of channels that can't be fit in one embed field.
-		# So, go ahead and paginate that.
-		# TODO: Maybe abstract pagination to a function or something.
 		if len(tchans) > 1024:
-			tchanl = tchans.split('\n')
-			tpages = []
-			result = ''
-			count = 0
-			for i in tchanl:
-				count += len(i + '\n')
-
-				if count > 1024:
-					# We've overstepped the boundary
-
-					count = len(i + '\n')
-					tpages += [result]
-					result = ''
-				result += i + '\n'
-			tpages += [result]
-			for c, i in enumerate(tpages):
+			for c, i in enumerate(utils.paginate(tchans, max_length=1024)):
 				em.add_field(
 					name='Text Channels ({0})'.format(tchanc) \
 					if not c else '\u200b',
@@ -632,22 +614,7 @@ async def findc(client, message, **kwargs):
 				inline=False,
 			)
 		if len(vchans) > 1024:
-			vchanl = vchans.split('\n')
-			vpages = []
-			result = ''
-			count = 0
-			for i in vchanl:
-				count += len(i + '\n')
-
-				if count > 1024:
-					# We've overstepped the boundary
-
-					count = len(i + '\n')
-					vpages += [result]
-					result = ''
-				result += i + '\n'
-			vpages += [result]
-			for c, i in enumerate(vpages):
+			for c, i in enumerate(utils.paginate(vchans, max_length=1024)):
 				em.add_field(
 					name='Voice Channels ({0})'.format(vchanc) \
 					if not c else '\u200b',

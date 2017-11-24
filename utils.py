@@ -896,3 +896,23 @@ def colorize(thing):
 			),
 		).to_rgb(),
 	)
+
+def paginate(request, *, max_length):
+	pages = []
+	page = ''
+	count = 0
+	lines = request.split('\n')
+
+	for line in lines:
+		count += len(line + '\n')
+
+		if count > max_length:
+			count = len(line + '\n')
+			pages.append(page)
+			page = ''
+
+		page += line + '\n'
+
+	pages.append(page)
+
+	return pages
