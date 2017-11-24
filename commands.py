@@ -1803,15 +1803,21 @@ async def bans(client, message, **kwargs):
 		ulist += '**{user.name}**#{user.discriminator} ({user.id}) - {reason}\n'.format(
 			user=ban_entry.user, reason=ban_entry.reason)
 
-	if len(ulist) > 2048:
-		# TODO: actually split this into multiple strings
-		pass
 	embed = discord.Embed(
 		name='Bans',
 		description=ulist,
 		colour=col.r_success,
 	)
 	embed.set_thumbnail(url=message.guild.icon_url)
+
+	if len(ulist) > 2048:
+		for idx, page in enumerate(utils.paginate(ulist, max_length=2048)):
+			if idx == 0:
+				embed.description = page
+				continue
+
+			embed.add_field(name='\u200b', value=page)
+
 	await bot.reply(message, emb=embed)
 
 @shadow(auth=checks.is_operator)
