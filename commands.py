@@ -1800,8 +1800,11 @@ async def bans(client, message, **kwargs):
 		return
 	ulist = ''
 	for ban_entry in bans:
-		ulist += '**{user.name}**#{user.discriminator} ({user.id}) - {reason}\n'.format(
-			user=ban_entry.user, reason=ban_entry.reason)
+		ulist += '**{name}**#{user.discriminator} ({user.id}){reason}\n'.format(
+			name=utils.mdspecialchars(ban_entry.user.name),
+			user=ban_entry.user,
+			reason=' - ' + ban_entry.reason if ban_entry.reason is not None else '',
+		)
 
 	embed = discord.Embed(
 		name='Bans',
