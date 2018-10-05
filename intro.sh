@@ -27,8 +27,10 @@ else
 	NOCOLOR=''
 fi
 
+export PYTHONPATH=discord.py
+
 while true; do
-	python main.py
+	python3.6 main.py
 	if [ $? -eq 42 ]; then
 		exit 0
 	fi

@@ -43,6 +43,9 @@ async def on_ready():
 		for gld in wrapper.memberroles:
 			if config.get_s('rolecachemode', gld) == 0:
 				continue
+			if wrapper.client.get_guild(gld) is None:
+				logging.info('Guild {} seems to not be accessible anymore but is in role cache'.format(gld))
+				continue
 			rcwarnings = ''
 			for mem in wrapper.client.get_guild(gld).members:
 				if not mem.id in wrapper.memberroles[gld]:
@@ -1253,7 +1256,7 @@ async def on_guild_role_update(before, after):
 			wrapper.pos_ev_locks[after.guild.id] = True
 
 			# Let's wait for all the events to be collected
-			await asyncio.sleep(0.25)
+			await asyncio.sleep(1)
 
 			# Unlock
 			wrapper.pos_ev_locks[after.guild.id] = False
