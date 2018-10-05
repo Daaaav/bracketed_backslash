@@ -524,7 +524,7 @@ async def findu(client, message, **kwargs):
 		await bot.reply(message, emb=embed)
 		return
 	displaymatch = '<@{}>'.format(targetmember.id)
-	if targetmember.game is None:
+	if targetmember.activity is None:
 		memberhasgame = False
 		displaygamestatus = 'Not Playing'
 		displaygamename = 'Not Playing'
@@ -532,19 +532,25 @@ async def findu(client, message, **kwargs):
 		displaygameurl = 'No Stream Link'
 	else:
 		memberhasgame = True
+
 	if memberhasgame:
-		if targetmember.game.type == 0 or targetmember.game.type is None:
+		displaygamename = utils.mdspecialchars(targetmember.activity.name)
+
+		if targetmember.activity.type == discord.ActivityType.playing:
 			displaygamestatus = 'Playing'
-			displaygamename = utils.mdspecialchars(targetmember.game.name)
-		if targetmember.game.type == 1:
+		if targetmember.activity.type == discord.ActivityType.streaming:
 			displaygamestatus = 'Streaming'
-			displaygamename = utils.mdspecialchars(targetmember.game.name)
-		if targetmember.game.url is None:
+		if targetmember.activity.type == discord.ActivityType.listening:
+			displaygamestatus = 'Listening'
+		if targetmember.activity.type == discord.ActivityType.watching:
+			displaygamestatus = 'Watching'
+
+		if targetmember.activity.url is None:
 			displaygameurlstatus = 'No Stream Link'
 			displaygameurl = 'No Stream Link'
 		else:
 			displaygameurlstatus = 'Stream Link'
-			displaygameurl = utils.mdspecialchars(targetmember.game.url)
+			displaygameurl = utils.mdspecialchars(targetmember.activity.url)
 	embed = discord.Embed(description='Matched ' + displaymatch, colour=targetmember.colour)
 	embed.set_image(url=targetmember.avatar_url)
 	embed.add_field(name='Nickname' if targetmember.nick is not None else 'No Nickname', value=utils.mdspecialchars(targetmember.nick) if targetmember.nick is not None else 'No Nickname')
