@@ -514,6 +514,7 @@ async def on_message(m):
 	except Exception:
 		e = emb.error(bot.t['generic_error'])
 		await bot.reply(m, emb=e)
+		logging.info('\x1b[41mFault did occur in command {}\x1b[0m'.format(command))
 		raise
 
 async def on_message_delete(msg):
