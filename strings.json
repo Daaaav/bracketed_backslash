@@ -44,7 +44,8 @@
 		["use_voice_activation", "Use Voice Activity"],
 		["speak", "Speak"],
 		["connect", "Connect"],
-		["create_instant_invite", "Create Instant Invite"]
+		["create_instant_invite", "Create Instant Invite"],
+		["view_audit_log", "View Audit Log"]
 	],
 	"cmds": [
 		{
