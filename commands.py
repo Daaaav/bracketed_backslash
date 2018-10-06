@@ -2721,8 +2721,8 @@ async def archive(client, message, **kwargs):
 		await bot.reply(message, emb=em)
 		return
 
-	if not isinstance(tgt, discord.VoiceChannel):
-		em = emb.error('Matched a voice channel - text-to-speech is not implemented.')
+	if not isinstance(tgt, discord.abc.Messageable):
+		em = emb.error('Did not match a text channel - text-to-speech is not implemented.')
 		await bot.reply(message, emb=em)
 		return
 
