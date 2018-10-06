@@ -1499,8 +1499,8 @@ async def info(client, message, **kwargs):
 		embed = emb.error(bot.t['specify_user'])
 		await bot.reply(message, emb=embed)
 		return
-	yesperm = '☑'
-	noperm = '❎'
+	yesperm = '✅'
+	noperm = '⛔'
 	perms = message.channel.permissions_for(persontocheck)
 
 	leftover = []
