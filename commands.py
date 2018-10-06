@@ -2404,7 +2404,7 @@ async def sudo(client, message, **kwargs):
 	kwargs['command'] = command
 	try:
 		kwargs['arguments'] = kwargs['arguments'].split(' ', 1)[1]
-		kwargs['clean_arguments'] = kwargs['clean_command'].split(' ', 2)[2]
+		kwargs['clean_arguments'] = kwargs['clean_command_with_args'].split(' ', 2)[2]
 	except IndexError:
 		kwargs['arguments'] = None
 		kwargs['clean_arguments'] = None

@@ -403,19 +403,19 @@ async def on_message(m):
 	for prefix in prefixes:
 		if m.content.startswith(prefix):
 			command = m.content.split(prefix, 1)[1]
-			clean_command = m.clean_content.split(prefix, 1)[1]
+			clean_command_with_args = m.clean_content.split(prefix, 1)[1]
 			break
 	else:
 		return
 
 	try:
 		arguments = command.split(' ', 1)[1]
-		clean_arguments = clean_command.split(' ', 1)[1]
+		clean_arguments = clean_command_with_args.split(' ', 1)[1]
 	except IndexError:
 		arguments = None
 		clean_arguments = None
 	command = command.split(' ', 1)[0]
-	clean_command = clean_command.split(' ', 1)[0]
+	clean_command = clean_command_with_args.split(' ', 1)[0]
 
 	# Prevent access to those who aren't supposed to send messages
 	if not priv and \
@@ -502,6 +502,7 @@ async def on_message(m):
 		'command': command,
 		'arguments': arguments,
 		'clean_arguments': clean_arguments,
+		'clean_command_with_args': clean_command_with_args,
 		'invokesymbol': invokesymbol,
 		'sudo': False,
 	}
