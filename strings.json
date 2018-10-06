@@ -236,6 +236,11 @@
 					"extra": ""
 				},
 				{
+					"name": "bans",
+					"short": "List all server bans on this server.",
+					"extra": ""
+				},
+				{
 					"name": "voicemute",
 					"short": "Mutes a member in a voice channel.",
 					"extra": ""
