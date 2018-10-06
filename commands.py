@@ -1821,6 +1821,10 @@ async def bans(client, message, **kwargs):
 			reason=' - ' + ban_entry.reason if ban_entry.reason is not None else '',
 		)
 
+	if not ulist:
+		# Apparently there are no bans, so don't just display a server avatar
+		ulist = '_(No server bans are currently active)_'
+
 	embed = discord.Embed(
 		name='Bans',
 		description=ulist,
