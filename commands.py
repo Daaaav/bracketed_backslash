@@ -1788,7 +1788,7 @@ async def kick(client, message, **kwargs):
 				await bot.reply(message, emb=embed)
 				return
 			await targetmember.ban(delete_message_days=0)
-		elif kwargs['command'] == 'serverunban':
+		elif kwargs['command'] == 'unserverban':
 			if not message.author.guild_permissions.ban_members and not kwargs['sudo']:
 				bot.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 				embed = emb.error(bot.t['you_no_permission'])
