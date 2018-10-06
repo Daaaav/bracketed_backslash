@@ -171,6 +171,10 @@ def match_input(iterable, objtype, request):
 	target = None
 	int_request = None
 
+	# If nothing was specified, then we're done quickly.
+	if request is None:
+		return None
+
 	# Is this a mention, or an emoji? If so, extract the ID from it
 	if request.startswith('<') and request.endswith('>'):
 		if (objtype is discord.Member and request[1:3] == '@!') or \
