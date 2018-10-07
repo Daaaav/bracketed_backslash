@@ -395,7 +395,7 @@ async def on_message(m):
 		await m.delete()
 		wrapper.messages_deleted_by_bot.append(m)
 
-	prefixes = config.get_s('prefixes')
+	prefixes = config.get_s('prefixes')[:]
 
 	if not priv and config.is_detached('prefixes', m.guild.id):
 		prefixes.extend(config.get_s('prefixes', m.guild.id))
