@@ -3081,3 +3081,86 @@ async def tntgb(client, message, **kwargs):
 		return
 	embed = emb.error('Invalid action given.')
 	await bot.reply(message, emb=embed)
+
+@shadow(auth=checks.is_mod)
+async def move(client, message, **kwargs):
+	if kwargs['arguments'] is None:
+		em = emb.error('Please supply at least a channel mention.')
+		await bot.reply(message, emb=em)
+		return
+
+	splitargs = kwargs['arguments'].split(' ', 1)
+
+	tgt = utils.match_input(message.guild.channels, discord.abc.GuildChannel, splitargs[0])
+	if tgt is None:
+		em = emb.error('Unable to find that channel. ' + bot.t['specify_channel'])
+		await bot.reply(message, emb=em)
+		return
+
+	if not isinstance(tgt, discord.abc.Messageable):
+		em = emb.error('You can only move discussions to messageable channels.')
+		await bot.reply(message, emb=em)
+		return
+
+	# So was the conversation about anything?
+	if len(splitargs) <= 1:
+		convo_desc = 'current conversation'
+	else:
+		convo_desc = 'conversation about {}'.format(splitargs[1])
+
+	# People can fill in the same channel, of course.
+	if tgt == message.channel:
+		em = discord.Embed(
+			title=(
+				'<:green_light:498244101561516053> '
+				'Conversation kept in this channel'
+			),
+			description=(
+				'Apparently {} _is_ the right channel for the {}. '
+				'Keep it up, I guess!'
+			).format(tgt.mention, convo_desc)
+		)
+		await bot.reply(message, emb=em)
+		return
+
+	msg_start = bot.calculate_msg_start(message) + '<:red_light:498244101729419275><:green_light:498244101561516053>'
+
+	em_source = discord.Embed(
+		title='Conversation moved to another channel',
+		description=(
+			'<:red_light:498244101729419275> '
+			'Please continue the {} in {}.'
+		).format(convo_desc, tgt.mention),
+		colour=0x0000FF
+	)
+	sentmessage_source = await message.channel.send(msg_start, embed=em_source)
+
+	# TODO in the future we can just do Message.jump_url
+	url_source = 'https://discordapp.com/channels/{}/{}/{}'.format(
+		sentmessage_source.guild.id,
+		sentmessage_source.channel.id,
+		sentmessage_source.id
+	)
+
+	em_target = discord.Embed(
+		title='Conversation moved here',
+		description=(
+			'<:green_light:498244101561516053> '
+			'Please continue the {} from {} in this channel.\n\n{}'
+		).format(
+			convo_desc, message.channel.mention, url_source
+		),
+		colour=0x0000FF
+	)
+	sentmessage_target = await tgt.send(msg_start, embed=em_target)
+
+	# TODO Message.jump_url when possible
+	url_target = 'https://discordapp.com/channels/{}/{}/{}'.format(
+		sentmessage_target.guild.id,
+		sentmessage_target.channel.id,
+		sentmessage_target.id
+	)
+
+	# Now edit the source message
+	em_source.description = em_source.description + '\n\n' + url_target
+	await sentmessage_source.edit(embed=em_source)
