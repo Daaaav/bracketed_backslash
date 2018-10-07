@@ -3161,18 +3161,25 @@ async def move(client, message, **kwargs):
 		),
 		colour=0x0000FF
 	)
-	sentmessage_target = await tgt.send(msg_start, embed=em_target)
+	try:
+		sentmessage_target = await tgt.send(msg_start, embed=em_target)
 
-	# TODO Message.jump_url when possible
-	url_target = 'https://discordapp.com/channels/{}/{}/{}'.format(
-		sentmessage_target.guild.id,
-		sentmessage_target.channel.id,
-		sentmessage_target.id
-	)
+		# TODO Message.jump_url when possible
+		url_target = 'https://discordapp.com/channels/{}/{}/{}'.format(
+			sentmessage_target.guild.id,
+			sentmessage_target.channel.id,
+			sentmessage_target.id
+		)
 
-	# Now edit the source message
-	em_source.description = (
-		em_source.description + '\n\n'
-		'**Link to next part**: ' + url_target
-	)
+		# Now edit the source message
+		em_source.description = (
+			em_source.description + '\n\n'
+			'**Link to next part**: ' + url_target
+		)
+	except discord.errors.Forbidden:
+		# Turns out we can't send a message in the target channel!
+		em_source.description = (
+			em_source.description + '\n\n'
+			'I don’t have permission to send a message in that channel myself, though.'
+		)
 	await sentmessage_source.edit(embed=em_source)
