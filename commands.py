@@ -3108,11 +3108,15 @@ async def move(client, message, **kwargs):
 	else:
 		convo_desc = 'conversation about {}'.format(splitargs[1])
 
+	emote_source = '🚦'
+	emote_target = '⤵'
+	emote_samech = '👍'
+
 	# People can fill in the same channel, of course.
 	if tgt == message.channel:
 		em = discord.Embed(
 			title=(
-				'<:green_light:498244101561516053> '
+				emote_samech + ' '
 				'Conversation kept in this channel'
 			),
 			description=(
@@ -3123,14 +3127,16 @@ async def move(client, message, **kwargs):
 		await bot.reply(message, emb=em)
 		return
 
-	msg_start = bot.calculate_msg_start(message) + '<:red_light:498244101729419275><:green_light:498244101561516053>'
+	msg_start = bot.calculate_msg_start(message)
 
 	em_source = discord.Embed(
-		title='Conversation moved to another channel',
-		description=(
-			'<:red_light:498244101729419275> '
-			'Please continue the {} in {}.'
-		).format(convo_desc, tgt.mention),
+		title=(
+			emote_source + ' '
+			'Conversation moved to another channel'
+		),
+		description='Please continue the {} in {}.'.format(
+			convo_desc, tgt.mention
+		),
 		colour=0x0000FF
 	)
 	sentmessage_source = await message.channel.send(msg_start, embed=em_source)
@@ -3143,11 +3149,11 @@ async def move(client, message, **kwargs):
 	)
 
 	em_target = discord.Embed(
-		title='Conversation moved here',
-		description=(
-			'<:green_light:498244101561516053> '
-			'Please continue the {} from {} in this channel.\n\n{}'
-		).format(
+		title=(
+			emote_target + ' '
+			'Conversation moved here'
+		),
+		description='Please continue the {} from {} in this channel.\n\n{}'.format(
 			convo_desc, message.channel.mention, url_source
 		),
 		colour=0x0000FF
