@@ -27,7 +27,7 @@ else
 	NOCOLOR=''
 fi
 
-export PYTHONPATH=discord.py
+export PYTHONPATH=discord.py:websockets/src
 
 while true; do
 	python3.6 main.py
