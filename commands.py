@@ -3106,10 +3106,10 @@ async def move(client, message, **kwargs):
 	if len(splitargs) <= 1:
 		convo_desc = 'current conversation'
 	else:
-		convo_desc = 'conversation about {}'.format(splitargs[1])
+		convo_desc = 'conversation about _{}_'.format(utils.mdspecialchars(splitargs[1]))
 
-	emote_source = '🚦'
-	emote_target = '⤵'
+	emote_source = '👆'
+	emote_target = '👇'
 	emote_samech = '👍'
 
 	# People can fill in the same channel, of course.
@@ -3132,8 +3132,8 @@ async def move(client, message, **kwargs):
 	em_source = discord.Embed(
 		title=(
 			emote_source + ' '
-			'Conversation moved to another channel'
-		),
+			'Conversation moving to #{}'
+		).format(utils.mdspecialchars(tgt.name)),
 		description='Please continue the {} in {}.'.format(
 			convo_desc, tgt.mention
 		),
@@ -3151,9 +3151,12 @@ async def move(client, message, **kwargs):
 	em_target = discord.Embed(
 		title=(
 			emote_target + ' '
-			'Conversation moved here'
-		),
-		description='Please continue the {} from {} in this channel.\n\n{}'.format(
+			'Conversation from #{} moving here'
+		).format(utils.mdspecialchars(message.channel.name)),
+		description=(
+			'Please continue the {} from {} in this channel.\n\n'
+			'**Link to previous part**: {}'
+		).format(
 			convo_desc, message.channel.mention, url_source
 		),
 		colour=0x0000FF
@@ -3168,5 +3171,8 @@ async def move(client, message, **kwargs):
 	)
 
 	# Now edit the source message
-	em_source.description = em_source.description + '\n\n' + url_target
+	em_source.description = (
+		em_source.description + '\n\n'
+		'**Link to next part**: ' + url_target
+	)
 	await sentmessage_source.edit(embed=em_source)
