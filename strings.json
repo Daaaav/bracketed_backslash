@@ -241,6 +241,11 @@
 					"extra": ""
 				},
 				{
+					"name": "move",
+					"short": "Redirect the current conversation to a different channel by sending messages in both channels and linking between them.",
+					"extra": "**Syntax**: `\\move <CHANNEL> [SUBJECT]`\n\n\t`<CHANNEL>`: You can supply a channel (mention, (part of) name, id, etc) to move the conversation to.\n\n\t`[SUBJECT]`: Optionally, you can also supply the subject of the conversation, so the messages will include something like \"the conversation about _code indentation styles_\"."
+				},
+				{
 					"name": "voicemute",
 					"short": "Mutes a member in a voice channel.",
 					"extra": ""
