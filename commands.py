@@ -1181,7 +1181,7 @@ async def rolecacherst(client, message, **kwargs):
 		await bot.reply(message, emb=embed)
 		return
 
-	if utils.removerolecache(kwargs['arguments'], message.guild.id):
+	if utils.removerolecache(int(kwargs['arguments']), message.guild.id):
 		embed = emb.success('Member {} successfully removed from role cache.'.format(kwargs['arguments']))
 		await bot.reply(message, emb=embed)
 		utils.rolecachesave()
