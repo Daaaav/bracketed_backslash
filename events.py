@@ -177,7 +177,7 @@ async def on_message(m):
 	schan = utils.getspecialchannel_reply(m)
 	priv = utils.isprivatemessage(m.guild)
 
-	if not priv and m.tts:
+	if not priv and m.tts and not utils.logdisabled('message_tts', m.guild):
 		e = discord.Embed(
 			title=(
 				':microphone2:Message {0.id} was sent with TTS'

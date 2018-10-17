@@ -5,6 +5,7 @@ message_edit
 message_overedit
 message_deleteuncached
 message_updateuncached
+message_tts
 
 member_nickname
 member_username
