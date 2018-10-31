@@ -1793,19 +1793,19 @@ async def on_raw_message_edit(payload):
 
 async def on_raw_reaction_add(payload):
 	# We must first know what channel it is
-	mchan = wrapper.client.get_channel(paypload.channel_id)
+	mchan = wrapper.client.get_channel(payload.channel_id)
 	if isinstance(mchan, discord.abc.PrivateChannel) or \
 	utils.logdisabled('reaction_adduncached', mchan.guild):
 		return
 
 	# Check if the message is in the cache and return if it is
 	if discord.utils.find(
-		lambda m: m.id == paypload.message_id, wrapper.client._connection._messages,
+		lambda m: m.id == payload.message_id, wrapper.client._connection._messages,
 	) != None:
 		return
 
 	schan = utils.getspecialchannel(mchan.guild)
-	athr = mchan.guild.get_member(paypload.user_id)
+	athr = mchan.guild.get_member(payload.user_id)
 	mdetails = athr.mention
 	if athr.status == discord.Status.offline:
 		mdetails += ' (Invisible)'
@@ -1825,7 +1825,7 @@ async def on_raw_reaction_add(payload):
 				'userid={uid}&messageid={mid}'
 			).format(
 				uid=athr.id,
-				mid=paypload.message_id,
+				mid=payload.message_id,
 			),
 		)
 	)
@@ -1838,9 +1838,9 @@ async def on_raw_reaction_add(payload):
 		value=(
 			'<:{name}:{id}>'
 		).format(
-			name=paypload.emoji.name,
-			id=paypload.emoji.id,
-		) if paypload.emoji.id is not None else paypload.emoji.name,
+			name=payload.emoji.name,
+			id=payload.emoji.id,
+		) if payload.emoji.id is not None else payload.emoji.name,
 	)
 	await schan.send(embed=e)
 
