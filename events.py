@@ -197,7 +197,7 @@ async def on_message(m):
 		)
 		await schan.send(embed=e)
 
-	if not priv and m.attachments:
+	if not priv and m.attachments and not utils.logdisabled('message_delete', m.guild):
 		a = await utils.fetch(m.attachments[0].url)
 		fn = (
 			'{atchcche}/{id}_{fn}'
