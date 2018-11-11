@@ -1692,38 +1692,38 @@ async def on_guild_channel_delete(c):
 async def on_raw_message_delete(payload):
 	# We must first know what channel it is
 	mchan = wrapper.client.get_channel(payload.channel_id)
-	if isinstance(mchan, discord.abc.PrivateChannel) or \
-	utils.logdisabled('message_deleteuncached', mchan.guild):
-			return
-	# Check if on_message_delete() was already called by this message
-	# If it was, then return
-	if discord.utils.find(
-		lambda m: m.id == payload.message_id, wrapper.client._connection._messages,
-	) != None:
-		# If the message lingers in deleted_messages, it doesn't really matter for now
-		return
-	if payload.message_id in wrapper.owncache:
-		# Already removed from the cache, but we still haven't run on_message_delete
-		# This happens all the time.
-		wrapper.owncache.remove(payload.message_id)
-		return
-	for m in wrapper.deleted_messages:
-		if m.id == payload.message_id:
-			# on_message_delete was faster
-			wrapper.deleted_messages.remove(m)
-			return
 
-	schan = utils.getspecialchannel(mchan.guild)
-	e = discord.Embed(
-		title='UNCACHED MESSAGE DELETED IN {0.mention}'.format(mchan),
-		url=utils.infourl('messageid=' + str(payload.message_id)),
-		description=(
-			'Since this message is uncached, I can’t give you'
-			' any more information than its ID and its channel.'
-		),
-		colour=mchan.guild.me.colour,
-	)
-	await schan.send(embed=e)
+	if not isinstance(mchan, discord.abc.PrivateChannel) and \
+	not utils.logdisabled('message_deleteuncached', mchan.guild):
+		# Check if on_message_delete() was already called by this message
+		# If it was, then return
+		if discord.utils.find(
+			lambda m: m.id == payload.message_id, wrapper.client._connection._messages,
+		) != None:
+			# If the message lingers in deleted_messages, it doesn't really matter for now
+			return
+		if payload.message_id in wrapper.owncache:
+			# Already removed from the cache, but we still haven't run on_message_delete
+			# This happens all the time.
+			wrapper.owncache.remove(payload.message_id)
+			return
+		for m in wrapper.deleted_messages:
+			if m.id == payload.message_id:
+				# on_message_delete was faster
+				wrapper.deleted_messages.remove(m)
+				return
+
+		schan = utils.getspecialchannel(mchan.guild)
+		e = discord.Embed(
+			title='UNCACHED MESSAGE DELETED IN {0.mention}'.format(mchan),
+			url=utils.infourl('messageid=' + str(payload.message_id)),
+			description=(
+				'Since this message is uncached, I can’t give you'
+				' any more information than its ID and its channel.'
+			),
+			colour=mchan.guild.me.colour,
+		)
+		await schan.send(embed=e)
 
 async def on_raw_message_edit(payload):
 	# We must first know what channel it is
@@ -1794,132 +1794,131 @@ async def on_raw_message_edit(payload):
 async def on_raw_reaction_add(payload):
 	# We must first know what channel it is
 	mchan = wrapper.client.get_channel(payload.channel_id)
-	if isinstance(mchan, discord.abc.PrivateChannel) or \
-	utils.logdisabled('reaction_adduncached', mchan.guild):
-		return
 
-	# Check if the message is in the cache and return if it is
-	if discord.utils.find(
-		lambda m: m.id == payload.message_id, wrapper.client._connection._messages,
-	) != None:
-		return
+	if not isinstance(mchan, discord.abc.PrivateChannel) and \
+	not utils.logdisabled('reaction_adduncached', mchan.guild):
+		# Check if the message is in the cache and return if it is
+		if discord.utils.find(
+			lambda m: m.id == payload.message_id, wrapper.client._connection._messages,
+		) != None:
+			return
 
-	schan = utils.getspecialchannel(mchan.guild)
-	athr = mchan.guild.get_member(payload.user_id)
-	mdetails = athr.mention
-	if athr.status == discord.Status.offline:
-		mdetails += ' (Invisible)'
-	e = discord.Embed(
-		title='REACTION ADDED TO UNCACHED MESSAGE IN {0.mention}'.format(mchan),
-		description=(
-			'Since this message is uncached, I can’t give you'
-			' any more information than its ID, author, and channel.'
-		),
-		colour=mchan.guild.me.colour,
-	)
-	e.set_author(
-		name=athr.display_name,
-		icon_url=athr.avatar_url,
-		url=utils.infourl(
-			(
-				'userid={uid}&messageid={mid}'
-			).format(
-				uid=athr.id,
-				mid=payload.message_id,
+		schan = utils.getspecialchannel(mchan.guild)
+		athr = mchan.guild.get_member(payload.user_id)
+		mdetails = athr.mention
+		if athr.status == discord.Status.offline:
+			mdetails += ' (Invisible)'
+		e = discord.Embed(
+			title='REACTION ADDED TO UNCACHED MESSAGE IN {0.mention}'.format(mchan),
+			description=(
+				'Since this message is uncached, I can’t give you'
+				' any more information than its ID, author, and channel.'
 			),
+			colour=mchan.guild.me.colour,
 		)
-	)
-	e.add_field(
-		name='Member of Reaction',
-		value=mdetails,
-	)
-	e.add_field(
-		name='Reaction',
-		value=(
-			'<:{name}:{id}>'
-		).format(
-			name=payload.emoji.name,
-			id=payload.emoji.id,
-		) if payload.emoji.id is not None else payload.emoji.name,
-	)
-	await schan.send(embed=e)
+		e.set_author(
+			name=athr.display_name,
+			icon_url=athr.avatar_url,
+			url=utils.infourl(
+				(
+					'userid={uid}&messageid={mid}'
+				).format(
+					uid=athr.id,
+					mid=payload.message_id,
+				),
+			)
+		)
+		e.add_field(
+			name='Member of Reaction',
+			value=mdetails,
+		)
+		e.add_field(
+			name='Reaction',
+			value=(
+				'<:{name}:{id}>'
+			).format(
+				name=payload.emoji.name,
+				id=payload.emoji.id,
+			) if payload.emoji.id is not None else payload.emoji.name,
+		)
+		await schan.send(embed=e)
 
 async def on_raw_reaction_remove(payload):
 	# We must first know what channel it is
 	mchan = wrapper.client.get_channel(payload.channel_id)
-	if isinstance(mchan, discord.abc.PrivateChannel) or \
-	utils.logdisabled('reaction_removeuncached', mchan.guild):
-		return
-	# Check if the message is in the cache and return if it is
-	if discord.utils.find(
-		lambda m: m.id == payload.message_id, wrapper.client._connection._messages,
-	) != None:
-		return
 
-	schan = utils.getspecialchannel(mchan.guild)
-	athr = mchan.guild.get_member(payload.user_id)
-	mdetails = athr.mention
-	e = discord.Embed(
-		title='REACTION REMOVED FROM UNCACHED MESSAGE IN {0.mention}'.format(mchan),
-		description=(
-			'Since this message is uncached, I can’t give you'
-			' any more information than its ID, author, and channel.'
-		),
-		colour=mchan.guild.me.colour,
-	)
-	e.set_author(
-		name=athr.display_name,
-		icon_url=athr.avatar_url,
-		url=utils.infourl(
-			(
-				'userid={uid}&messageid={mid}'
-			).format(
-				uid=athr.id,
-				mid=payload.message_id,
+	if not isinstance(mchan, discord.abc.PrivateChannel) and \
+	not utils.logdisabled('reaction_removeuncached', mchan.guild):
+		# Check if the message is in the cache and return if it is
+		if discord.utils.find(
+			lambda m: m.id == payload.message_id, wrapper.client._connection._messages,
+		) != None:
+			return
+
+		schan = utils.getspecialchannel(mchan.guild)
+		athr = mchan.guild.get_member(payload.user_id)
+		mdetails = athr.mention
+		e = discord.Embed(
+			title='REACTION REMOVED FROM UNCACHED MESSAGE IN {0.mention}'.format(mchan),
+			description=(
+				'Since this message is uncached, I can’t give you'
+				' any more information than its ID, author, and channel.'
 			),
+			colour=mchan.guild.me.colour,
 		)
-	)
-	e.add_field(
-		name='Member of Reaction',
-		value=mdetails,
-	)
-	e.add_field(
-		name='Reaction',
-		value=(
-			'<:{name}:{id}>'
-		).format(
-			name=payload.emoji.name,
-			id=payload.emoji.id,
-		) if payload.emoji.id is not None else payload.emoji.name,
-	)
-	await schan.send(embed=e)
+		e.set_author(
+			name=athr.display_name,
+			icon_url=athr.avatar_url,
+			url=utils.infourl(
+				(
+					'userid={uid}&messageid={mid}'
+				).format(
+					uid=athr.id,
+					mid=payload.message_id,
+				),
+			)
+		)
+		e.add_field(
+			name='Member of Reaction',
+			value=mdetails,
+		)
+		e.add_field(
+			name='Reaction',
+			value=(
+				'<:{name}:{id}>'
+			).format(
+				name=payload.emoji.name,
+				id=payload.emoji.id,
+			) if payload.emoji.id is not None else payload.emoji.name,
+		)
+		await schan.send(embed=e)
 
 async def on_raw_reaction_clear(payload):
 	# We must first know what channel it is
 	mchan = wrapper.client.get_channel(payload.channel_id)
-	if isinstance(mchan, discord.abc.PrivateChannel) or \
-	utils.logdisabled('reaction_clearuncached', mchan.guild):
-		return
-	# Check if the message is in the cache and return if it is
-	if discord.utils.find(
-		lambda m: m.id == payload.message_id, wrapper.client._connection._messages,
-	) != None:
-		return
 
-	schan = utils.getspecialchannel(mchan.guild)
-	e = discord.Embed(
-		title=(
-			'REACTIONS CLEARED FROM UNCACHED MESSAGE'
-			' IN {0.mention}'
-		).format(mchan),
-		url=utils.infourl('messageid=' + str(payload.message_id)),
-		description=(
-			'Since this message is uncached, I can’t give you'
-			' any more information than its ID and its channel.'
-		),
-		colour=mchan.guild.me.colour,
-	)
-	await schan.send(embed=e)
+	if not isinstance(mchan, discord.abc.PrivateChannel) and \
+	not utils.logdisabled('reaction_clearuncached', mchan.guild):
+		# Check if the message is in the cache and return if it is
+		if discord.utils.find(
+			lambda m: m.id == payload.message_id, wrapper.client._connection._messages,
+		) != None:
+			return
+
+		schan = utils.getspecialchannel(mchan.guild)
+		e = discord.Embed(
+			title=(
+				'REACTIONS CLEARED FROM UNCACHED MESSAGE'
+				' IN {0.mention}'
+			).format(mchan),
+			url=utils.infourl('messageid=' + str(payload.message_id)),
+			description=(
+				'Since this message is uncached, I can’t give you'
+				' any more information than its ID and its channel.'
+			),
+			colour=mchan.guild.me.colour,
+		)
+		await schan.send(embed=e)
 
 async def on_guild_channel_update(b, a):
 	if utils.logdisabled('channel_rename', a.guild):
