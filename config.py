@@ -88,7 +88,7 @@ configs = {
 		'shown': True,
 	},
 	'joinchannel': {
-		'default': '0',
+		'default': 0,
 		'type': 'cid',
 		'is_array': False,
 		'expl': 'The channel in which new members have to send a \join message before being given the default role(s).',
@@ -96,7 +96,7 @@ configs = {
 		'shown': True,
 	},
 	'specialchannel': {
-		'default': '0',
+		'default': 0,
 		'type': 'cid',
 		'is_array': False,
 		'expl': 'Log channel',

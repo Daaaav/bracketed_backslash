@@ -496,8 +496,8 @@ def listroles_id(lijst):
 	return returnage
 
 def getspecialchannel(guild):
-	theconfig = config.get_s('specialchannel', guild.id)
-	if theconfig != '0':
+	theconfig = int(config.get_s('specialchannel', guild.id))
+	if theconfig != 0:
 		return wrapper.client.get_channel(id=theconfig)
 
 def getspecialchannel_reply(message):
