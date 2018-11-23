@@ -2,5 +2,5 @@
 
 for i in $( ls *.py ); do
 	printf "Running ${i} through pyflakes...\n"
-	pyflakes "$i"
+	pyflakes3 "$i"
 done
