@@ -8,12 +8,15 @@ import logging
 # bln: boolean
 # int: integer
 # str: string
+# rti: relative time (number of seconds, but input by user as [Xd][Xh][Xm][Xs] string like 7d12h or 1h)
 # did: generic Discord ID
 # uid: user/member Discord ID (members can be searched)
 # rid: role ID
 # cid: channel ID (channels can be mentioned)
 # gid: guild ID
 # dic: dictionary
+# not added/ideas:
+# ati: absolute time (unix timestamp)
 configs = {
 	'gamestatus': {
 		'default': '​',
@@ -240,6 +243,70 @@ configs = {
 		'detachable': True,
 		'shown': False,
 	},
+	'starboard_active': {
+		'default': False,
+		'type': 'bln',
+		'is_array': False,
+		'expl': 'Whether the starboard feature is active on this server.', # "For more info, see gitgud wiki article?"
+		'detachable': True,
+		'shown': True,
+	},
+	'starboard_channel': {
+		'default': 0,
+		'type': 'cid',
+		'is_array': False,
+		'expl': 'The starboard channel, only used if the feature is active.',
+		'detachable': True,
+		'shown': True,
+	},
+	'starboard_threshold': {
+		'default': 5,
+		'type': 'int',
+		'is_array': False,
+		'expl': 'The minimum number of stars before a message will be on the starboard. Note that changing the threshold will not change existing starred messages, unless their number of stars changes.',
+		'detachable': True,
+		'shown': True,
+	},
+	'starboard_star': {
+		'default': '⭐',
+		'type': 'str',
+		'is_array': False,
+		'expl': 'The emote that is used as star for the starboard.',
+		'detachable': True,
+		'shown': True,
+	},
+	'starboard_nostar': {
+		'default': '❌',
+		'type': 'str',
+		'is_array': False,
+		'expl': 'The emote that is used as nostar for the starboard.',
+		'detachable': True,
+		'shown': True,
+	},
+	'starboard_nostar_barrier': {
+		'default': 2,
+		'type': 'int',
+		'is_array': False,
+		'expl': 'The amount of nostars that will have no effect, and are needed as a \'staircase\' or buffer before nostars will subtract from the amount of stars. For example, if this value is 2, then a message having 5 stars and 3 nostars will total to having 4 stars. Set to -1 to disable nostars altogether.',
+		'detachable': True,
+		'shown': True,
+	},
+	'starboard_timelimit': {
+		'default': '172800',
+		'type': 'rti',
+		'is_array': False,
+		'expl': 'The maximum age of a message before starring or unstarring it no longer has effect. Deleting a starred message older than this will also no longer remove it from the starboard.',
+		'detachable': True,
+		'shown': True,
+	},
+	'starboard_ignoredchannels': {
+		'default': [],
+		'type': 'cid',
+		'is_array': True,
+		'expl': 'List of channels from which messages will never end up on the starboard. Be sure to think of NSFW channels, for example. Including the starboard channel is not necessary, as the starboard will be ignored automatically.',
+		'detachable': True,
+		'shown': True,
+	},
 }
 
 s = {}
@@ -344,9 +411,14 @@ def get_shown(skey):
 	return configs[skey]['shown']
 
 def input_to_type_key(request, skey):
-	return input_to_type(request, get_type(skey))
+	output = input_to_type(request, get_type(skey))
+	if output is None:
+		return get_default(skey)
+	return output
 
 def input_to_type(request, category):
+	import utils
+
 	if category == 'int' or \
 	(category.endswith('id') and category[0] in ('d', 'u', 'r', 'c', 's')):
 		return int(request)
@@ -358,6 +430,12 @@ def input_to_type(request, category):
 			return True
 		else:
 			return False
+	elif category == 'rti':
+		# Relative timestamp, so parse a relative time!
+		# This might be None, but in that case it'll be set to default.
+		# Maybe raise an error and catch that everywhere idk
+		return utils.parsereltime(request, True)
+
 	return request
 
 def saveconfig():
