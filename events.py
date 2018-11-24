@@ -1798,7 +1798,7 @@ async def on_raw_reaction_add(payload):
 	# We must first know what channel it is
 	mchan = wrapper.client.get_channel(payload.channel_id)
 
-	await starboard.check_message(payload, mchan)
+	await starboard.check_message(payload, mchan, True)
 
 	if not isinstance(mchan, discord.abc.PrivateChannel) and \
 	not utils.logdisabled('reaction_adduncached', mchan.guild):
@@ -1852,7 +1852,7 @@ async def on_raw_reaction_remove(payload):
 	# We must first know what channel it is
 	mchan = wrapper.client.get_channel(payload.channel_id)
 
-	await starboard.check_message(payload, mchan)
+	await starboard.check_message(payload, mchan, False)
 
 	if not isinstance(mchan, discord.abc.PrivateChannel) and \
 	not utils.logdisabled('reaction_removeuncached', mchan.guild):

@@ -57,7 +57,7 @@ def config_insert_guild(guild):
 	save_config()
 
 
-async def check_message(payload, channel):
+async def check_message(payload, channel, adding):
 	# This isn't a DM, the starboard _is_ enabled, the starboard channel is not 0... right?
 	if not hasattr(payload, 'guild_id'):
 		return
@@ -67,62 +67,170 @@ async def check_message(payload, channel):
 	if starboard_chan_id == 0:
 		return
 
-	# Ignore the starboard itself.
-	if payload.channel_id == starboard_chan_id:
-		return
-
-	# Also ignore the ignored channels.
-	if payload.channel_id in config.get_s('starboard_ignoredchannels', payload.guild_id):
-		return
-
 	# If everything's in order, only stars or nostars should affect this message
 	emote_star = config.get_s('starboard_star', payload.guild_id)
 	emote_nostar = config.get_s('starboard_nostar', payload.guild_id)
 
-	# TODO: check if payload.emoji is a star or nostar for optimization!
+	# Let's look at what this new reaction is for a second.
+	is_star = False
+	is_nostar = False
 
+	# payload.emoji is always a PartialEmoji, not str
+	if payload.emoji.is_custom_emoji():
+		# We can't check whether the emote is from this server yet, but we'll find out.
+		if str(payload.emoji.id) == emote_star:
+			is_star = True
+		if str(payload.emoji.id) == emote_nostar:
+			is_nostar = True
+	elif payload.emoji.is_unicode_emoji():
+		# This should be a unicode emote, but don't forget about skintone and gender
+		# modifiers and such. Thumbs up can be set as star, for example.
+		if payload.emoji.name.startswith(emote_star):
+			is_star = True
+		if payload.emoji.name.startswith(emote_nostar):
+			is_nostar = True
+
+	# If this is not a star nor a nostar, then we can jump off without missing anything.
+	if not is_star and not is_nostar:
+		return
+
+	# Maybe nostars are even disabled!
+	if not is_star and config.get_s('starboard_nostar_barrier', payload.guild_id) == -1:
+		return
+
+	# Ignore the ignored channels
+	if payload.channel_id in config.get_s('starboard_ignoredchannels', payload.guild_id):
+		return
+
+	# We need the message, maybe it's in the cache, otherwise we can always fetch it.
 	orig_message = discord.utils.find(
 		lambda m: m.id == payload.message_id, wrapper.client._connection._messages
 	)
-	TEMP_FROM_CACHE = True
 	if orig_message is None:
-		TEMP_FROM_CACHE = False
 		orig_message = await channel.get_message(payload.message_id)
+
+	# We only really need the User, not Member.
+	reaction_user = wrapper.client.get_user(payload.user_id)
+
+	# Ignore messages on the starboard itself.
+	if payload.channel_id == starboard_chan_id:
+		# Lots of reasons not to support starring messages via the starboard:
+		# - R.Danny doesn't add permalinks so the original message is harder to get to,
+		#   [\] does add permalinks so it's really easy to just star the original message
+		# - Not many people do it anyway
+		# - More complex to program
+		# - It's more misleading when looking at the number of reactions on the message
+		# - What happens if a message goes under the limit despite having extra stars on
+		#   the starboard? "Whoops, 1 star too few, make that 3 too few now"
+		if adding:
+			try:
+				await orig_message.remove_reaction(payload.emoji, reaction_user)
+			except discord.errors.Forbidden:
+				pass
+		return
 
 	# Make sure the message isn't too old.
 	if (datetime.datetime.now() - orig_message.created_at) > datetime.timedelta(
 		seconds=config.get_s('starboard_timelimit', payload.guild_id)
 	):
-		logging.info('Potential starrable message is too old, namely {}'.format(datetime.datetime.now() - orig_message.created_at))
 		return
 
-	logging.info('Potential starrable message is new enough, namely {}'.format(datetime.datetime.now() - orig_message.created_at))
+	# People can't star their own messages, and maybe can't nostar them, if configured like so.
+	author_permitted = not is_star
+	if is_nostar and config.get_s('starboard_author_nostar_mode', payload.guild_id) == 2:
+		author_permitted = False
 
-	# Okay, so which reactions exist?
-	starrers = set()
-	nostarrers = set()
+	# So you're not starring your own message, right? smh
+	if not author_permitted and orig_message.author.id == payload.user_id:
+		if adding:
+			try:
+				await orig_message.remove_reaction(payload.emoji, reaction_user)
+			except discord.errors.Forbidden:
+				pass
+		return
 
-	# TODO continue, but this is a test for now.
+	# Why should bots have a right to vote?
+	if reaction_user.bot:
+		if adding:
+			try:
+				await orig_message.remove_reaction(payload.emoji, reaction_user)
+			except discord.errors.Forbidden:
+				pass
+		return
+
+	# Okay, so now actually count which reactions exist!
+	starrers = []
+	nostarrers = []
+
 	for reaction in orig_message.reactions:
-		logging.info(
-			(
-				'MAYBE potential star candidate in guild "{}", msg w contents "{}" and emote:\n'
-				'reaction.emoji type: {}\n'
-				'so is it a custom emote: {}\n'
-				'reaction.emoji as str: {}\n'
-				'reaction.emoji.id IF type is Emoji: {}\n'
-				'also guild it belongs to then: {}, this guild is {}\n'
-				'{}'
-			).format(
-				channel.guild.name, orig_message.content,
-				type(reaction.emoji),
-				isinstance(reaction.emoji, discord.emoji.Emoji),
-				str(reaction.emoji),
-				reaction.emoji.id if isinstance(reaction.emoji, discord.emoji.Emoji) else 'but it isn\'t',
-				reaction.emoji.guild.id if isinstance(reaction.emoji, discord.emoji.Emoji) else 'but it isn\'t', payload.guild_id,
-				'Message was from cache yay' if TEMP_FROM_CACHE else 'Grumble I had to fetch the message from Discord'
-			)
+		# Is this a star? A nostar? Yeah, we can re-use these variables now.
+		is_star = False
+		is_nostar = False
+
+		if isinstance(reaction.emoji, discord.emoji.Emoji):
+			# This is a custom emote, but it has to be from this server; don't be
+			# unfair. Plus, the bot has to be able to use it in the announcement.
+			if reaction.emoji.guild.id != payload.guild_id:
+				continue
+
+			if str(reaction.emoji.id) == emote_star:
+				is_star = True
+			if str(reaction.emoji.id) == emote_nostar:
+				is_nostar = True
+		else:
+			# Again, account for skintone and gender modifiers.
+			if reaction.emoji.startswith(emote_star):
+				is_star = True
+			if reaction.emoji.startswith(emote_nostar):
+				is_nostar = True
+
+		if not is_star and not is_nostar:
+			# Nothing to do here!
+			continue
+
+		# Nostars can be disabled
+		if not is_star and config.get_s('starboard_nostar_barrier', payload.guild_id) == -1:
+			continue
+
+		# So who has used this reaction?
+		if is_star:
+			starrers.extend(await reaction.users().flatten())
+		if is_nostar:
+			nostarrers.extend(await reaction.users().flatten())
+
+	# We now have lists of starrers and nostarrers, but they may not be unique! (Modifiers...)
+	starrers = list(set(starrers))
+	nostarrers = list(set(nostarrers))
+
+	# What if bots, selfstarrers, etc snuck through the code above? Don't count them anyway...
+	nostar_mode = config.get_s('starboard_author_nostar_mode', payload.guild_id)
+	starrers = list(filter(lambda u: not u.bot and u != orig_message.author, starrers))
+	if nostar_mode == 2:
+		# In mode 2, nostarring your own message is forbidden
+		nostarrers = list(filter(lambda u: not u.bot and u != orig_message.author, nostarrers))
+	else:
+		# In mode 0 and 1, it is allowed.
+		nostarrers = list(filter(lambda u: not u.bot, nostarrers))
+
+	# Alright, let's make up the balance.
+	score = len(starrers) - max(0,
+		len(nostarrers) - max(0,config.get_s('starboard_nostar_barrier', payload.guild_id))
+	)
+
+	# Enough for the starboard?
+	starworthy = score >= config.get_s('starboard_threshold', payload.guild_id)
+
+	# Except maybe the original sender has veto power!
+	if nostar_mode == 0 and orig_message.author in nostarrers:
+		starworthy = False
+
+	# Now that we know whether the message should be on the starboard or not, is it already?
+	#if .
+	logging.info('Should message be on the starboard? {} valid stars, {} valid nostars, so total is {}, answer is {}'.format(
+			len(starrers), len(nostarrers), score, starworthy
 		)
+	)
+
 
 async def remove_message(payload, channel):
 	# TODO
