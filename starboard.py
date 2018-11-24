@@ -149,8 +149,10 @@ async def check_message(payload, channel, adding):
 				pass
 		return
 
-	# Why should bots have a right to vote?
-	if reaction_user.bot:
+	# Why should bots have a right to vote? Same with starboard-banned users.
+	if reaction_user.bot or (
+		adding and payload.user_id in config.get_s('starboard_bans', payload.guild_id)
+	):
 		if adding:
 			try:
 				await orig_message.remove_reaction(payload.emoji, reaction_user)
@@ -204,21 +206,30 @@ async def check_message(payload, channel, adding):
 
 	# What if bots, selfstarrers, etc snuck through the code above? Don't count them anyway...
 	nostar_mode = config.get_s('starboard_author_nostar_mode', payload.guild_id)
-	starrers = list(filter(lambda u: not u.bot and u != orig_message.author, starrers))
+	bans = config.get_s('starboard_bans', payload.guild_id)
+	starrers = list(filter(
+			lambda u: not u.bot and u != orig_message.author and u.id not in bans,
+			starrers
+		)
+	)
 	if nostar_mode == 2:
 		# In mode 2, nostarring your own message is forbidden
-		nostarrers = list(filter(lambda u: not u.bot and u != orig_message.author, nostarrers))
+		nostarrers = list(filter(
+				lambda u: not u.bot and u != orig_message.author and u.id not in bans,
+				nostarrers
+			)
+		)
 	else:
 		# In mode 0 and 1, it is allowed.
-		nostarrers = list(filter(lambda u: not u.bot, nostarrers))
+		nostarrers = list(filter(lambda u: not u.bot and u.id not in bans, nostarrers))
 
 	# Alright, let's make up the balance.
 	score = len(starrers) - max(0,
-		len(nostarrers) - max(0,config.get_s('starboard_nostar_barrier', payload.guild_id))
+		len(nostarrers) - max(0, config.get_s('starboard_nostar_barrier', payload.guild_id))
 	)
 
 	# Enough for the starboard?
-	starworthy = score >= config.get_s('starboard_threshold', payload.guild_id)
+	starworthy = score >= max(1, config.get_s('starboard_threshold', payload.guild_id))
 
 	# Except maybe the original sender has veto power!
 	if nostar_mode == 0 and orig_message.author in nostarrers:

@@ -315,6 +315,14 @@ configs = {
 		'detachable': True,
 		'shown': True,
 	},
+	'starboard_bans': {
+		'default': [],
+		'type': 'uid',
+		'is_array': True,
+		'expl': 'A list of users that will not be able to star/nostar messages, to be used in case of shitstarring. Their star reactions will be removed if possible, too.',
+		'detachable': True,
+		'shown': True,
+	},
 }
 
 s = {}
