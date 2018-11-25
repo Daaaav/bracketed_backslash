@@ -41,6 +41,7 @@ def reload_bot():
 	bot.config.load()
 	bot.load_events()
 	bot.customcommands.commands = bot.customcommands.load()
+	bot.starboard.db_load()
 
 def recursive_reload(module, *, include=None):
 	if not hasattr(recursive_reload, 'reloaded_modules'):

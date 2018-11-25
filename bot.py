@@ -18,10 +18,13 @@ import discord
 import checks
 import config
 import events
+import starboard
 import utils
 import wrapper
 
 config.load()
+
+starboard.db_load()
 
 version = '1.0'
 

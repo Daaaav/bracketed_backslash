@@ -4,6 +4,7 @@ import datetime
 import json
 import logging
 import time
+import sqlite3
 
 import discord
 
@@ -12,52 +13,38 @@ import utils
 import wrapper
 
 
-# The starboard is major enough to warrant its own data file.
-# That has ['guilds'], which has guild IDs as keys, and each guild is a dict which has a ['stars'],
-# which is a dict of starboarded messages.
-# These ['stars'] dicts have message IDs of each starboarded message as keys, and info about that
-# starred message:
-# ['a']: announcement ID, so the ID of the repost on the starboard
-# Example: starboard_data['guilds']['1111']['stars']['2222']['a'] is the announcement ID of starred
-# message 2222 in guild 1111
-starboard_data = {}
+### D A T A B A S E   M A N A G E M E N T ###
+
+connection = None
+cursor = None
+
+def db_load():
+	global connection, cursor
+
+	connection = sqlite3.connect('db/starboard.sqlite')
+	cursor = connection.cursor()
+
+	cursor.execute("""
+			CREATE TABLE IF NOT EXISTS 'starboard_messages' (
+				'orig_message_id' INTEGER PRIMARY KEY NOT NULL,
+				'guild_id' INTEGER NOT NULL,
+				'channel_id' INTEGER NOT NULL,
+				'star_message_id' INTEGER NOT NULL
+			)
+		"""
+	)
+
+def db_commit():
+	global connection
+
+	connection.commit()
 
 
-def save_config():
-	global starboard_data
-
-	with open('starboard_data.json', 'w') as outfile:
-		json.dump(starboard_data, outfile)
-
-def load_blank_config():
-	global starboard_data
-
-	starboard_data = {
-		'guilds': {},
-	}
-	save_config()
-
-def load_config():
-	global starboard_data
-
-	try:
-		with open('starboard_data.json', 'r') as infile:
-			starboard_data = json.load(infile)
-	except FileNotFoundError:
-		logging.info('Did not find a starboard config file so making a new one')
-		load_blank_config()
-
-
-def config_insert_guild(guild):
-	global starboard_data
-
-	starboard_data['guilds'][guild.id] = {
-		'stars': {}
-	}
-	save_config()
-
+### E V E N T   H A N D L I N G ###
 
 async def check_message(payload, channel, adding):
+	# This is called whenever a reaction is added or removed.
+
 	# This isn't a DM, the starboard _is_ enabled, the starboard channel is not 0... right?
 	if not hasattr(payload, 'guild_id'):
 		return
@@ -242,7 +229,37 @@ async def check_message(payload, channel, adding):
 		)
 	)
 
-
 async def remove_message(payload, channel):
+	# This is called when we know that a message is either being deleted or all its reactions
+	# are being removed. In other words, this message should be removed from the starboard if
+	# it is on it, as long as it's not past the time limit!
+
+	# This isn't a DM, the starboard _is_ enabled, the starboard channel is not 0... right?
+	if not hasattr(payload, 'guild_id'):
+		return
+	if not config.get_s('starboard_active', payload.guild_id):
+		return
+	starboard_chan_id = config.get_s('starboard_channel', payload.guild_id)
+	if starboard_chan_id == 0:
+		return
+
+	# Ignore the ignored channels
+	if payload.channel_id in config.get_s('starboard_ignoredchannels', payload.guild_id):
+		return
+
+	# Ignore messages on the starboard itself.
+	if payload.channel_id == starboard_chan_id:
+		return
+
+	# Make sure the message isn't too old. It might be getting deleted and thus the timestamp
+	# might be potentially gone, but there's always the snowflake!
+	if (datetime.datetime.now() - datetime.datetime.utcfromtimestamp(
+			((payload.message_id >> 22) + 1420070400000)/1000
+		)
+	) > datetime.timedelta(
+		seconds=config.get_s('starboard_timelimit', payload.guild_id)
+	):
+		return
+
+	# Is it on the starboard?
 	# TODO
-	pass
