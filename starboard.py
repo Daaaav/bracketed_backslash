@@ -43,7 +43,7 @@ def db_commit():
 ### E V E N T   H A N D L I N G ###
 
 async def check_message(payload, channel, adding):
-	# This is called whenever a reaction is added or removed.
+	"""This is called whenever a reaction is added or removed."""
 
 	# This isn't a DM, the starboard _is_ enabled, the starboard channel is not 0... right?
 	if not hasattr(payload, 'guild_id'):
@@ -191,24 +191,26 @@ async def check_message(payload, channel, adding):
 	starrers = list(set(starrers))
 	nostarrers = list(set(nostarrers))
 
-	# What if bots, selfstarrers, etc snuck through the code above? Don't count them anyway...
+	# What if bots and selfstarrers snuck through the code above? Don't count them anyway...
+	# Do not account for starboard bans here! Imagine adding a star and then the message goes
+	# OFF the starboard because two people got starboard banned...
+	# Not much reason to go through old messages to remove stars either.
 	nostar_mode = config.get_s('starboard_author_nostar_mode', payload.guild_id)
-	bans = config.get_s('starboard_bans', payload.guild_id)
 	starrers = list(filter(
-			lambda u: not u.bot and u != orig_message.author and u.id not in bans,
+			lambda u: not u.bot and u != orig_message.author,
 			starrers
 		)
 	)
 	if nostar_mode == 2:
 		# In mode 2, nostarring your own message is forbidden
 		nostarrers = list(filter(
-				lambda u: not u.bot and u != orig_message.author and u.id not in bans,
+				lambda u: not u.bot and u != orig_message.author,
 				nostarrers
 			)
 		)
 	else:
 		# In mode 0 and 1, it is allowed.
-		nostarrers = list(filter(lambda u: not u.bot and u.id not in bans, nostarrers))
+		nostarrers = list(filter(lambda u: not u.bot, nostarrers))
 
 	# Alright, let's make up the balance.
 	score = len(starrers) - max(0,
@@ -222,17 +224,18 @@ async def check_message(payload, channel, adding):
 	if nostar_mode == 0 and orig_message.author in nostarrers:
 		starworthy = False
 
-	# Now that we know whether the message should be on the starboard or not, is it already?
-	#if .
-	logging.info('Should message be on the starboard? {} valid stars, {} valid nostars, so total is {}, answer is {}'.format(
-			len(starrers), len(nostarrers), score, starworthy
-		)
-	)
+	# Now that we know whether the message should be on the starboard or not, let's ensure
+	# that's applied!
+	if starworthy:
+		starboard_message()
+	else:
+		unstarboard_message()
 
 async def remove_message(payload, channel):
-	# This is called when we know that a message is either being deleted or all its reactions
-	# are being removed. In other words, this message should be removed from the starboard if
-	# it is on it, as long as it's not past the time limit!
+	"""This is called when we know that a message is either being deleted or all its reactions
+	are being removed. In other words, this message should be removed from the starboard if
+	it is on it, as long as it's not past the time limit!
+	"""
 
 	# This isn't a DM, the starboard _is_ enabled, the starboard channel is not 0... right?
 	if not hasattr(payload, 'guild_id'):
@@ -261,5 +264,61 @@ async def remove_message(payload, channel):
 	):
 		return
 
-	# Is it on the starboard?
-	# TODO
+	# Now make sure we won't see it on the starboard anymore.
+	unstarboard_message()
+
+
+### M A I N   F U N C T I O N S ###
+
+async def starboard_message(message):
+	"""The goal of this function is to ensure the message is on the starboard with the correct
+	tally, whether it's already on the starboard, or still has to be posted.
+	"""
+	global cursor
+
+	# Is it on the starboard already?
+	cursor.execute("""
+			SELECT star_message_id
+			FROM starboard_messages
+			WHERE orig_message_id=?
+			LIMIT 1
+		""",
+		(message.id,)
+	)
+
+	# Might be None, might be a 1-tuple
+	result = cursor.fetchone()
+
+	if result is None:
+		# Okay, not yet on the starboard, let's change that!
+		pass
+	else:
+		# It's already on the starboard, we might need to change the tallies.
+		# We got here, after all!
+		pass
+
+async def unstarboard_message(message):
+	"""The goal of this function is to ensure the message is not on the starboard, whether it
+	was in fact on the starboard, or never even was.
+	"""
+	global cursor
+
+	# Is it actually on the starboard?
+	cursor.execute("""
+			SELECT star_message_id
+			FROM starboard_messages
+			WHERE orig_message_id=?
+			LIMIT 1
+		""",
+		(message.id,)
+	)
+
+	# Might be None, might be a 1-tuple
+	result = cursor.fetchone()
+
+	if result is None:
+		# Okay, cool, nothing to do!
+		return
+
+	# Now remove the message
+	pass
