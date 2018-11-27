@@ -319,7 +319,7 @@ configs = {
 		'default': [],
 		'type': 'uid',
 		'is_array': True,
-		'expl': 'A list of users that will not be able to star/nostar messages, to be used in case of shitstarring. Their star reactions will be removed if possible, too.',
+		'expl': 'A list of users that will not be able to star/nostar messages, to be used in case of shitstarring. Their existing star reactions will still count.',
 		'detachable': True,
 		'shown': True,
 	},

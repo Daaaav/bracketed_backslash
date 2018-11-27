@@ -1,5 +1,6 @@
 # encoding=utf-8
 
+import asyncio
 import datetime
 import json
 import logging
@@ -11,6 +12,9 @@ import discord
 import config
 import utils
 import wrapper
+
+
+banned_adders = [] # This contains (msgid, userid, is_star) tuples to prevent a race condition
 
 
 ### D A T A B A S E   M A N A G E M E N T ###
@@ -89,6 +93,12 @@ async def check_message(payload, channel, adding):
 	if payload.channel_id in config.get_s('starboard_ignoredchannels', payload.guild_id):
 		return
 
+	# Maybe the user is starboard-banned, trying to sneak through when someone else's reaction
+	# is being counted and theirs not yet removed, so try to prevent a race condition there.
+	banned_adder = adding and payload.user_id in config.get_s('starboard_bans',payload.guild_id)
+	if banned_adder:
+		banned_adders.append((payload.message_id, payload.user_id, is_star))
+
 	# We need the message, maybe it's in the cache, otherwise we can always fetch it.
 	orig_message = discord.utils.find(
 		lambda m: m.id == payload.message_id, wrapper.client._connection._messages
@@ -137,14 +147,22 @@ async def check_message(payload, channel, adding):
 		return
 
 	# Why should bots have a right to vote? Same with starboard-banned users.
-	if reaction_user.bot or (
-		adding and payload.user_id in config.get_s('starboard_bans', payload.guild_id)
-	):
+	if reaction_user.bot or banned_adder:
 		if adding:
 			try:
 				await orig_message.remove_reaction(payload.emoji, reaction_user)
 			except discord.errors.Forbidden:
 				pass
+
+		if banned_adder:
+			# We can probably clean up 10 seconds later.
+			# In theory this causes the race condition again (time your reaction to be
+			# precisely 10 seconds before someone JUST happens to star the message as
+			# well if and only if that's the second-to-last star and then star again
+			# simultaneously) but chances of pulling that off are so slim you'd
+			# deserve it
+			await asyncio.sleep(10)
+			banned_adders.remove((payload.message_id, payload.user_id, is_star))
 		return
 
 	# Okay, so now actually count which reactions exist!
@@ -192,25 +210,32 @@ async def check_message(payload, channel, adding):
 	nostarrers = list(set(nostarrers))
 
 	# What if bots and selfstarrers snuck through the code above? Don't count them anyway...
-	# Do not account for starboard bans here! Imagine adding a star and then the message goes
-	# OFF the starboard because two people got starboard banned...
+	# Do not account for old starboard bans here! Imagine adding a star and then the message
+	# goes OFF the starboard because two people got starboard banned...
 	# Not much reason to go through old messages to remove stars either.
 	nostar_mode = config.get_s('starboard_author_nostar_mode', payload.guild_id)
 	starrers = list(filter(
-			lambda u: not u.bot and u != orig_message.author,
+			lambda u: not u.bot and u != orig_message.author \
+			and (payload.message_id, u.id, True) not in banned_adders,
 			starrers
 		)
 	)
 	if nostar_mode == 2:
 		# In mode 2, nostarring your own message is forbidden
 		nostarrers = list(filter(
-				lambda u: not u.bot and u != orig_message.author,
+				lambda u: not u.bot and u != orig_message.author \
+				and (payload.message_id, u.id, False) not in banned_adders,
 				nostarrers
 			)
 		)
 	else:
 		# In mode 0 and 1, it is allowed.
-		nostarrers = list(filter(lambda u: not u.bot, nostarrers))
+		nostarrers = list(filter(
+				lambda u: not u.bot \
+				and (payload.message_id, u.id, False) not in banned_adders,
+				nostarrers
+			)
+		)
 
 	# Alright, let's make up the balance.
 	score = len(starrers) - max(0,
