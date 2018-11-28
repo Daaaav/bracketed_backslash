@@ -14,6 +14,7 @@ import utils
 import wrapper
 
 
+starboarding_messages = set() # This contains messages that are being starboarded
 banned_adders = [] # This contains (msgid, userid, is_star) tuples to prevent a race condition
 
 
@@ -156,11 +157,6 @@ async def check_message(payload, channel, adding):
 
 		if banned_adder:
 			# We can probably clean up 10 seconds later.
-			# In theory this causes the race condition again (time your reaction to be
-			# precisely 10 seconds before someone JUST happens to star the message as
-			# well if and only if that's the second-to-last star and then star again
-			# simultaneously) but chances of pulling that off are so slim you'd
-			# deserve it
 			await asyncio.sleep(10)
 			banned_adders.remove((payload.message_id, payload.user_id, is_star))
 		return
@@ -295,6 +291,16 @@ async def remove_message(payload, channel):
 
 ### M A I N   F U N C T I O N S ###
 
+def request_starboard(message):
+	"""A message can only be starboarded by one event at a time.
+	This function is called in starboard_message to "request" if it can starboard the message,
+	and this will return True if granted, False if already requested earlier.
+	"""
+	if message in starboarding_messages:
+		return False
+	starboarding_messages.add(message)
+	return True
+
 async def starboard_message(message):
 	"""The goal of this function is to ensure the message is on the starboard with the correct
 	tally, whether it's already on the starboard, or still has to be posted.
@@ -315,12 +321,15 @@ async def starboard_message(message):
 	result = cursor.fetchone()
 
 	if result is None:
-		# Okay, not yet on the starboard, let's change that!
-		pass
+		# Maybe we're not the only one with this exact idea!
+		if not request_starboard(message):
+			return
+
+		# TODO
 	else:
 		# It's already on the starboard, we might need to change the tallies.
 		# We got here, after all!
-		pass
+		pass # TODO
 
 async def unstarboard_message(message):
 	"""The goal of this function is to ensure the message is not on the starboard, whether it
@@ -345,5 +354,9 @@ async def unstarboard_message(message):
 		# Okay, cool, nothing to do!
 		return
 
+	# Maybe we starboarded this before? Sorry I didn't tidy up. Give it another chance later.
+	if message in starboarding_messages:
+		starboarding_messages.remove(message)
+
 	# Now remove the message
-	pass
+	# TODO
