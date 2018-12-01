@@ -34,6 +34,7 @@ def db_load():
 				'orig_message_id' INTEGER PRIMARY KEY NOT NULL,
 				'guild_id' INTEGER NOT NULL,
 				'channel_id' INTEGER NOT NULL,
+				'author_id' INTEGER NOT NULL,
 				'star_message_id' INTEGER NOT NULL
 			)
 		"""
@@ -49,6 +50,7 @@ def db_commit():
 
 async def check_message(payload, channel, adding):
 	"""This is called whenever a reaction is added or removed."""
+	global banned_adders
 
 	# This isn't a DM, the starboard _is_ enabled, the starboard channel is not 0... right?
 	if not hasattr(payload, 'guild_id'):
@@ -248,9 +250,9 @@ async def check_message(payload, channel, adding):
 	# Now that we know whether the message should be on the starboard or not, let's ensure
 	# that's applied!
 	if starworthy:
-		starboard_message()
+		ensure_message_on_starboard(orig_message, score, len(starrers), len(nostarrers))
 	else:
-		unstarboard_message()
+		ensure_message_not_on_starboard(orig_message)
 
 async def remove_message(payload, channel):
 	"""This is called when we know that a message is either being deleted or all its reactions
@@ -286,22 +288,32 @@ async def remove_message(payload, channel):
 		return
 
 	# Now make sure we won't see it on the starboard anymore.
-	unstarboard_message()
+	ensure_message_not_on_starboard(id=payload.message_id)
 
 
 ### M A I N   F U N C T I O N S ###
 
-def request_starboard(message):
+def acquire_starboard_message_lock(message):
 	"""A message can only be starboarded by one event at a time.
-	This function is called in starboard_message to "request" if it can starboard the message,
-	and this will return True if granted, False if already requested earlier.
+	This function is called in ensure_message_on_starboard to "request" if it can starboard the
+	message, and this will return True if granted, False if already requested earlier.
 	"""
+	global starboarding_messages
+
 	if message in starboarding_messages:
+		logging.warning(
+			(
+				'acquire_starboard_message_lock prevented message {} on guild {} '
+				'from being posted on starboard twice!'
+			).format(
+				message.id, message.guild.name
+			)
+		)
 		return False
 	starboarding_messages.add(message)
 	return True
 
-async def starboard_message(message):
+async def ensure_message_on_starboard(message, score, num_stars, num_nostars):
 	"""The goal of this function is to ensure the message is on the starboard with the correct
 	tally, whether it's already on the starboard, or still has to be posted.
 	"""
@@ -322,20 +334,25 @@ async def starboard_message(message):
 
 	if result is None:
 		# Maybe we're not the only one with this exact idea!
-		if not request_starboard(message):
+		if not acquire_starboard_message_lock(message):
 			return
 
-		# TODO
+		await post_starboard_message(message, score, num_stars, num_nostars)
 	else:
 		# It's already on the starboard, we might need to change the tallies.
 		# We got here, after all!
-		pass # TODO
+		await edit_starboard_message(message, score, num_stars, num_nostars, result[0])
 
-async def unstarboard_message(message):
+async def ensure_message_not_on_starboard(message=None, id=None):
 	"""The goal of this function is to ensure the message is not on the starboard, whether it
 	was in fact on the starboard, or never even was.
 	"""
-	global cursor
+	global cursor, starboarding_messages
+
+	# We might not have the full message, since it MIGHT've gotten deleted. We MUST have at
+	# least an ID in that case though.
+	if id is None:
+		id = message.id
 
 	# Is it actually on the starboard?
 	cursor.execute("""
@@ -344,7 +361,7 @@ async def unstarboard_message(message):
 			WHERE orig_message_id=?
 			LIMIT 1
 		""",
-		(message.id,)
+		(id,)
 	)
 
 	# Might be None, might be a 1-tuple
@@ -355,8 +372,19 @@ async def unstarboard_message(message):
 		return
 
 	# Maybe we starboarded this before? Sorry I didn't tidy up. Give it another chance later.
-	if message in starboarding_messages:
-		starboarding_messages.remove(message)
+	starboarding_messages = set(filter(lambda m: m.id != id, starboarding_messages))
 
 	# Now remove the message
+	await remove_starboard_message(id, result[0])
+
+async def post_starboard_message(message, score, num_stars, num_nostars):
 	# TODO
+	pass
+
+async def edit_starboard_message(message, score, num_stars, num_nostars, starboard_message_id):
+	# TODO
+	pass
+
+async def remove_starboard_message(message_id, starboard_message_id):
+	# TODO
+	pass
