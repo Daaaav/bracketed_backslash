@@ -292,7 +292,7 @@ configs = {
 		'shown': True,
 	},
 	'starboard_timelimit': {
-		'default': '172800',
+		'default': 345600,
 		'type': 'rti',
 		'is_array': False,
 		'expl': 'The maximum age of a message before starring or unstarring it no longer has effect. Deleting a starred message older than this will also no longer remove it from the starboard.',

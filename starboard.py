@@ -14,8 +14,15 @@ import utils
 import wrapper
 
 
-starboarding_messages = set() # This contains messages that are being starboarded
-banned_adders = [] # This contains (msgid, userid, is_star) tuples to prevent a race condition
+# This serves as a lock, contains messages that are being starboarded at the moment
+starboarding_messages = set()
+
+# Key is message id (of announcement in starboard), value is datetime when the message can be
+# deleted. This is for the anti-star/unstar/star spam prevention
+unstarboard_message_at = {}
+
+# This contains (msgid, userid, is_star) tuples to prevent a race condition
+banned_adders = []
 
 
 ### D A T A B A S E   M A N A G E M E N T ###
@@ -149,8 +156,9 @@ async def check_message(payload, channel, adding):
 				pass
 		return
 
-	# Why should bots have a right to vote? Same with starboard-banned users.
-	if reaction_user.bot or banned_adder:
+	# Why should other bots have a right to vote? Same with starboard-banned users.
+	# I have a right to vote, but that's for administrative reasons.
+	if (reaction_user.bot and reaction_user != wrapper.client.user) or banned_adder:
 		if adding:
 			try:
 				await orig_message.remove_reaction(payload.emoji, reaction_user)
@@ -203,6 +211,9 @@ async def check_message(payload, channel, adding):
 		if is_nostar:
 			nostarrers.extend(await reaction.users().flatten())
 
+			# Also keep the nostar emote object handy in case we need to confirm a veto
+			nostar_emote = reaction.emoji
+
 	# We now have lists of starrers and nostarrers, but they may not be unique! (Modifiers...)
 	starrers = list(set(starrers))
 	nostarrers = list(set(nostarrers))
@@ -221,7 +232,8 @@ async def check_message(payload, channel, adding):
 	if nostar_mode == 2:
 		# In mode 2, nostarring your own message is forbidden
 		nostarrers = list(filter(
-				lambda u: not u.bot and u != orig_message.author \
+				lambda u: (not u.bot or u == wrapper.client.user) \
+				and u != orig_message.author \
 				and (payload.message_id, u.id, False) not in banned_adders,
 				nostarrers
 			)
@@ -229,7 +241,7 @@ async def check_message(payload, channel, adding):
 	else:
 		# In mode 0 and 1, it is allowed.
 		nostarrers = list(filter(
-				lambda u: not u.bot \
+				lambda u: (not u.bot or u == wrapper.client.user) \
 				and (payload.message_id, u.id, False) not in banned_adders,
 				nostarrers
 			)
@@ -243,16 +255,34 @@ async def check_message(payload, channel, adding):
 	# Enough for the starboard?
 	starworthy = score >= max(1, config.get_s('starboard_threshold', payload.guild_id))
 
+	# If we find the message should be removed, and this is True, then wait for 10 secs.
+	remove_slowly = True
+
 	# Except maybe the original sender has veto power!
 	if nostar_mode == 0 and orig_message.author in nostarrers:
 		starworthy = False
+		remove_slowly = False
+
+		# I'll confirm this veto, no backsies.
+		if wrapper.client.user not in nostarrers:
+			try:
+				await orig_message.add_reaction(nostar_emote)
+			except discord.errors.Forbidden:
+				pass
+
+	# Have I confirmed it before?
+	if wrapper.client.user in nostarrers:
+		starworthy = False
+		remove_slowly = False
 
 	# Now that we know whether the message should be on the starboard or not, let's ensure
 	# that's applied!
 	if starworthy:
-		ensure_message_on_starboard(orig_message, score, len(starrers), len(nostarrers))
+		await ensure_message_on_starboard(
+			orig_message, score, len(starrers), len(nostarrers)
+		)
 	else:
-		ensure_message_not_on_starboard(orig_message)
+		await ensure_message_not_on_starboard(orig_message, remove_slowly=remove_slowly)
 
 async def remove_message(payload, channel):
 	"""This is called when we know that a message is either being deleted or all its reactions
@@ -288,7 +318,7 @@ async def remove_message(payload, channel):
 		return
 
 	# Now make sure we won't see it on the starboard anymore.
-	ensure_message_not_on_starboard(id=payload.message_id)
+	await ensure_message_not_on_starboard(id=payload.message_id)
 
 
 ### M A I N   F U N C T I O N S ###
@@ -343,7 +373,7 @@ async def ensure_message_on_starboard(message, score, num_stars, num_nostars):
 		# We got here, after all!
 		await edit_starboard_message(message, score, num_stars, num_nostars, result[0])
 
-async def ensure_message_not_on_starboard(message=None, id=None):
+async def ensure_message_not_on_starboard(message=None, id=None, remove_slowly=False):
 	"""The goal of this function is to ensure the message is not on the starboard, whether it
 	was in fact on the starboard, or never even was.
 	"""
@@ -375,16 +405,212 @@ async def ensure_message_not_on_starboard(message=None, id=None):
 	starboarding_messages = set(filter(lambda m: m.id != id, starboarding_messages))
 
 	# Now remove the message
-	await remove_starboard_message(id, result[0])
+	await remove_starboard_message(id, result[0], remove_slowly)
 
 async def post_starboard_message(message, score, num_stars, num_nostars):
-	# TODO
-	pass
+	global cursor
+
+	# What's this guild's starboard channel? There must be one.
+	starboard_chan = message.guild.get_channel(
+		config.get_s('starboard_channel', message.guild.id)
+	)
+
+	starboard_message = await starboard_chan.send(
+		star_message_contents(message, score, num_stars, num_nostars),
+		embed=star_message_embed(message, score)
+	)
+
+	cursor.execute("""
+			INSERT INTO starboard_messages
+			(orig_message_id, guild_id, channel_id, author_id, star_message_id)
+			VALUES
+			(?, ?, ?, ?, ?)
+		""",
+		(
+			message.id, message.guild.id, message.channel.id, message.author.id,
+			starboard_message.id
+		)
+	)
+	db_commit()
 
 async def edit_starboard_message(message, score, num_stars, num_nostars, starboard_message_id):
-	# TODO
-	pass
+	# Before we look up the message, were we going to delete the message before?
+	if starboard_message_id in unstarboard_message_at:
+		# Then don't, the last required star came back in time.
+		del unstarboard_message_at[starboard_message_id]
 
-async def remove_starboard_message(message_id, starboard_message_id):
-	# TODO
-	pass
+	starboard_message = discord.utils.find(
+		lambda m: m.id == starboard_message_id, wrapper.client._connection._messages
+	)
+	if starboard_message is None:
+		# Hoped I could get the message from the cache, but alas. Now we need to get
+		# the starboard channel as well.
+		starboard_chan = message.guild.get_channel(
+			config.get_s('starboard_channel', message.guild.id)
+		)
+		starboard_message = await starboard_chan.get_message(starboard_message_id)
+
+		# If it doesn't exist, just give up. Someone must've deleted it.
+		if starboard_message is None:
+			return
+
+	if starboard_message.embeds:
+		# Not including `embed` leaves it unedited, but we want to change the color.
+		# We don't want message edits to randomly show up with a new star,
+		# just leave it how it got on the starboard.
+		embed = starboard_message.embeds[0]
+		embed.color = star_gradient_color(score)
+		await starboard_message.edit(
+			content=star_message_contents(message, score, num_stars, num_nostars),
+			embed=embed
+		)
+	else:
+		# Were we not allowed to add an embed? We'll have to deal with it.
+		await starboard_message.edit(
+			content=star_message_contents(message, score, num_stars, num_nostars)
+		)
+
+async def remove_starboard_message(message_id, starboard_message_id, remove_slowly):
+	starboard_message = discord.utils.find(
+		lambda m: m.id == starboard_message_id, wrapper.client._connection._messages
+	)
+	if starboard_message is None:
+		# Hoped I could get the message from the cache, but alas. Now we need to get
+		# the starboard channel as well.
+		starboard_chan = message.guild.get_channel(
+			config.get_s('starboard_channel', message.guild.id)
+		)
+		starboard_message = await starboard_chan.get_message(starboard_message_id)
+
+		# If it doesn't exist, just give up. Someone must've deleted it.
+		if starboard_message is None:
+			return
+
+	# Maybe we were already planning to remove the message in a few seconds!
+	if remove_slowly and starboard_message_id in unstarboard_message_at:
+		if unstarboard_message_at[starboard_message_id] < datetime.datetime.now():
+			# If it should be deleted now, maybe it's not getting done. Let's do it now.
+			remove_slowly = False
+		else:
+			# It's already planned, don't reschedule it for even later.
+			return
+
+	if remove_slowly:
+		# We can remove the message after 10 seconds; 9 for certainty.
+		unstarboard_message_at[starboard_message_id] = (
+			datetime.datetime.now() + datetime.timedelta(seconds=9)
+		)
+		await asyncio.sleep(10)
+
+		# Still not changed?
+		if starboard_message_id not in unstarboard_message_at \
+		or unstarboard_message_at[starboard_message_id] > datetime.datetime.now():
+			# Never mind!
+			return
+
+		del unstarboard_message_at[starboard_message_id]
+
+	cursor.execute("""
+			DELETE FROM starboard_messages
+			WHERE orig_message_id=?
+			LIMIT 1
+		""",
+		(message_id,)
+	)
+	db_commit()
+
+	await starboard_message.delete()
+
+def guild_starboard_emote(is_star, guild_id):
+	"""Returns a guild's star or nostar, as string that can be used in a message text"""
+
+	if is_star:
+		config_key = 'starboard_star'
+	else:
+		config_key = 'starboard_nostar'
+
+	guild_star = config.get_s(config_key, guild_id)
+	if guild_star.isdigit() and str(int(guild_star)) == guild_star:
+		# Custom emote.
+		emote = wrapper.client.get_emoji(int(guild_star))
+		if emote is None:
+			# Is this emote not on this server or what? Does it even exist?
+			return '<:INVALID:{}>'.format(guild_star)
+		return '<:{}:{}>'.format(emote.name, guild_star)
+	else:
+		# Unicode emoji. And if this is arbitrary, like a URL to be evil or so,
+		# how did this message get on the starboard in the first place?!
+		return guild_star
+
+def star_emote(score, guild_id):
+	"""Returns the emote that should be used at the start of a starboard message, as string
+	that can be used in a message text.
+	"""
+
+	guild_star = guild_starboard_emote(True, guild_id)
+	if guild_star != config.get_default('starboard_star'):
+		return guild_star
+
+	if score < 5:
+		return '⭐'
+	elif score < 10:
+		return '🌟'
+	elif score < 25:
+		return '💫'
+	else:
+		return '✨'
+
+def star_gradient_color(score):
+	p = min(score/13, 1.0)
+
+	red = 255
+	green = int((194 * p) + (253 * (1 - p)))
+	blue = int((12 * p) + (247 * (1 - p)))
+	return (red << 16) + (green << 8) + blue
+
+def star_message_contents(message, score, num_stars, num_nostars):
+	if config.get_s('starboard_nostar_barrier', message.guild.id) == -1:
+		return '{} **{}**     {}\n{}'.format(
+			star_emote(score, message.guild.id), score,
+			message.channel.mention,
+			message.jump_url
+		)
+
+	return '{} **{}**     ( {} {}  |  {} {} )     {}\n{}'.format(
+		star_emote(score, message.guild.id), score,
+		guild_starboard_emote(True, message.guild.id), num_stars,
+		guild_starboard_emote(False, message.guild.id), num_nostars,
+		message.channel.mention,
+		message.jump_url
+	)
+
+def star_message_embed(message, score):
+	embed = discord.Embed(
+		description=message.content,
+		color = star_gradient_color(score),
+		timestamp = message.created_at
+	).set_author(
+		name=message.author.display_name,
+		icon_url=message.author.avatar_url_as(format='png')
+	)
+
+	if message.embeds:
+		message_embed = message.embeds[0]
+		if message_embed.type == 'image':
+			embed.set_image(url=message_embed.url)
+	if message.attachments:
+		message_attach = message.attachments[0]
+		if message_attach.url.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
+			embed.set_image(url=message_attach.url)
+		else:
+			embed.add_field(name='📎', value='[{}]({})'.format(
+					message_attach.filename, message_attach.url
+				), inline=False
+			)
+
+	embed.set_footer(text='{} embed(s), {} attachment(s)'.format(
+			len(message.embeds), len(message.attachments)
+		)
+	)
+
+	return embed
