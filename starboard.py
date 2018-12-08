@@ -2,9 +2,7 @@
 
 import asyncio
 import datetime
-import json
 import logging
-import time
 import sqlite3
 
 import discord
@@ -318,7 +316,7 @@ async def remove_message(payload, channel):
 		return
 
 	# Now make sure we won't see it on the starboard anymore.
-	await ensure_message_not_on_starboard(id=payload.message_id)
+	await ensure_message_not_on_starboard(id=payload.message_id, guild_id=payload.guild_id)
 
 
 ### M A I N   F U N C T I O N S ###
@@ -373,7 +371,7 @@ async def ensure_message_on_starboard(message, score, num_stars, num_nostars):
 		# We got here, after all!
 		await edit_starboard_message(message, score, num_stars, num_nostars, result[0])
 
-async def ensure_message_not_on_starboard(message=None, id=None, remove_slowly=False):
+async def ensure_message_not_on_starboard(message=None, id=None, remove_slowly=False, guild_id=None):
 	"""The goal of this function is to ensure the message is not on the starboard, whether it
 	was in fact on the starboard, or never even was.
 	"""
@@ -383,6 +381,8 @@ async def ensure_message_not_on_starboard(message=None, id=None, remove_slowly=F
 	# least an ID in that case though.
 	if id is None:
 		id = message.id
+	if guild_id is None:
+		guild_id = message.guild.id
 
 	# Is it actually on the starboard?
 	cursor.execute("""
@@ -405,9 +405,10 @@ async def ensure_message_not_on_starboard(message=None, id=None, remove_slowly=F
 	starboarding_messages = set(filter(lambda m: m.id != id, starboarding_messages))
 
 	# Now remove the message
-	await remove_starboard_message(id, result[0], remove_slowly)
+	await remove_starboard_message(id, result[0], guild_id, remove_slowly)
 
 async def post_starboard_message(message, score, num_stars, num_nostars):
+	"""Post an announcement to the starboard for a not-yet-starboarded message"""
 	global cursor
 
 	# What's this guild's starboard channel? There must be one.
@@ -434,6 +435,8 @@ async def post_starboard_message(message, score, num_stars, num_nostars):
 	db_commit()
 
 async def edit_starboard_message(message, score, num_stars, num_nostars, starboard_message_id):
+	"""Edit a starboard announcement"""
+
 	# Before we look up the message, were we going to delete the message before?
 	if starboard_message_id in unstarboard_message_at:
 		# Then don't, the last required star came back in time.
@@ -470,15 +473,17 @@ async def edit_starboard_message(message, score, num_stars, num_nostars, starboa
 			content=star_message_contents(message, score, num_stars, num_nostars)
 		)
 
-async def remove_starboard_message(message_id, starboard_message_id, remove_slowly):
+async def remove_starboard_message(message_id, starboard_message_id, guild_id, remove_slowly):
+	"""Remove a starboard announcement"""
+
 	starboard_message = discord.utils.find(
 		lambda m: m.id == starboard_message_id, wrapper.client._connection._messages
 	)
 	if starboard_message is None:
 		# Hoped I could get the message from the cache, but alas. Now we need to get
 		# the starboard channel as well.
-		starboard_chan = message.guild.get_channel(
-			config.get_s('starboard_channel', message.guild.id)
+		starboard_chan = wrapper.client.get_channel(
+			config.get_s('starboard_channel', guild_id)
 		)
 		starboard_message = await starboard_chan.get_message(starboard_message_id)
 
@@ -522,7 +527,7 @@ async def remove_starboard_message(message_id, starboard_message_id, remove_slow
 	await starboard_message.delete()
 
 def guild_starboard_emote(is_star, guild_id):
-	"""Returns a guild's star or nostar, as string that can be used in a message text"""
+	"""Return a guild's star or nostar, as string that can be used in a message text"""
 
 	if is_star:
 		config_key = 'starboard_star'
@@ -543,7 +548,7 @@ def guild_starboard_emote(is_star, guild_id):
 		return guild_star
 
 def star_emote(score, guild_id):
-	"""Returns the emote that should be used at the start of a starboard message, as string
+	"""Return the emote that should be used at the start of a starboard message, as string
 	that can be used in a message text.
 	"""
 
@@ -561,6 +566,8 @@ def star_emote(score, guild_id):
 		return '✨'
 
 def star_gradient_color(score):
+	"""Return the color that the starboard announcement embed should have for a given score"""
+
 	p = min(score/13, 1.0)
 
 	red = 255
@@ -569,6 +576,10 @@ def star_gradient_color(score):
 	return (red << 16) + (green << 8) + blue
 
 def star_message_contents(message, score, num_stars, num_nostars):
+	"""Return the main message contents of a starboard announcement for a given score and
+	number of stars
+	"""
+
 	if config.get_s('starboard_nostar_barrier', message.guild.id) == -1:
 		return '{} **{}**     {}\n{}'.format(
 			star_emote(score, message.guild.id), score,
@@ -585,6 +596,7 @@ def star_message_contents(message, score, num_stars, num_nostars):
 	)
 
 def star_message_embed(message, score):
+	"""Return the starboard announcement embed for a given message and its score"""
 	embed = discord.Embed(
 		description=message.content,
 		color = star_gradient_color(score),
@@ -594,23 +606,59 @@ def star_message_embed(message, score):
 		icon_url=message.author.avatar_url_as(format='png')
 	)
 
-	if message.embeds:
-		message_embed = message.embeds[0]
-		if message_embed.type == 'image':
-			embed.set_image(url=message_embed.url)
-	if message.attachments:
-		message_attach = message.attachments[0]
-		if message_attach.url.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
-			embed.set_image(url=message_attach.url)
-		else:
-			embed.add_field(name='📎', value='[{}]({})'.format(
-					message_attach.filename, message_attach.url
-				), inline=False
-			)
+	# For attachments and embeds, we want the following:
+	# - If attachments exist, they are listed, except if only one image is attached.
+	# - If image attachments exist, the first image attachment is embedded.
+	# - That means, if an image attachment exists along with other attachments, all attachments
+	#   are listed including the embedded image
+	# - If the message has embeds of type 'rich', mention the count of that. Other embed types
+	#   really aren't mentionworthy, they just supplement posted links that will show up in the
+	#   message contents anyway
+	# - If 'image', 'gifv' or 'video' type embeds exist, and an image attachment did not
+	#   already set the embed image, then embed the first of these embeds.
+	# - If an embed should set the embed image, then embeds of type 'image' should use the url
+	#   attribute and embeds of type 'gifv' or 'video' should use thumbnail_url.
+	attachments_are_listed = False
+	attachment_list = []
+	embed_image_unset = True
+	number_rich_embeds = 0
 
-	embed.set_footer(text='{} embed(s), {} attachment(s)'.format(
-			len(message.embeds), len(message.attachments)
+	def is_image_url(url):
+		return url.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))
+
+	if message.attachments:
+		attachments_are_listed = (
+			len(message.attachments) > 1 or not is_image_url(message.attachments[0].url)
 		)
-	)
+		for message_attach in message.attachments:
+			if is_image_url(message_attach.url) and embed_image_unset:
+				embed.set_image(url=message_attach.url)
+				embed_image_unset = False
+			attachment_list.append('[{}]({})'.format(
+					message_attach.filename, message_attach.url
+				)
+			)
+	if message.embeds:
+		for message_embed in message.embeds:
+			if message_embed.type == 'rich':
+				number_rich_embeds += 1
+			elif message_embed.type == 'image':
+				if embed_image_unset \
+				and message_embed.url is not discord.Embed.Empty:
+					embed.set_image(url=message_embed.url)
+					embed_image_unset = False
+			elif message_embed.type in ('gifv', 'video'):
+				if embed_image_unset \
+				and message_embed.thumbnail.url is not discord.Embed.Empty:
+					embed.set_image(url=message_embed.thumbnail.url)
+					embed_image_unset = False
+
+	if attachments_are_listed:
+		embed.add_field(name='📎', value='\n'.join(attachment_list), inline=False)
+
+	if number_rich_embeds == 1:
+		embed.set_footer(text='📄 Message has a rich embed')
+	elif number_rich_embeds > 1:
+		embed.set_footer(text='📄 Message has {} rich embeds'.format(number_rich_embeds))
 
 	return embed
