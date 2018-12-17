@@ -428,8 +428,6 @@ def get_shown(skey):
 
 def input_to_type_key(request, skey):
 	output = input_to_type(request, get_type(skey))
-	if output is None:
-		return get_default(skey)
 	return output
 
 def input_to_type(request, category):
@@ -440,17 +438,21 @@ def input_to_type(request, category):
 		return int(request)
 	elif category == 'bln':
 		# This may look noobish and redundant, but it's actually needed here
-		if request == True or request == '1' or request.lower() in (
-			'true', 't', 'yes', 'y', 'on', 'enable', 'enabled'
+		if request == True or request == '1' or (
+			type(request) is str and request.lower() in (
+				'true', 't', 'yes', 'y', 'on', 'enable', 'enabled'
+			)
 		):
 			return True
 		else:
 			return False
 	elif category == 'rti':
 		# Relative timestamp, so parse a relative time!
-		# This might be None, but in that case it'll be set to default.
-		# Maybe raise an error and catch that everywhere idk
-		return utils.parsereltime(request, True)
+		# This might be None, in that case raise an error
+		rti = utils.parsereltime(request, True)
+		if rti is None:
+			raise ValueError('Invalid relative time')
+		return rti
 
 	return request
 

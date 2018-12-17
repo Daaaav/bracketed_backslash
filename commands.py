@@ -242,10 +242,17 @@ async def _config(client, message, **kwargs):
 			await bot.reply(message, emb=embed)
 			return
 		try:
-			config.set_s(splitargs[1], splitargs[2], message.guild.id)
-			editingmaster = not config.is_detached(splitargs[1], message.guild.id)
-		except AttributeError:
-			config.set_s(splitargs[1], splitargs[2])
+			try:
+				config.set_s(splitargs[1], splitargs[2], message.guild.id)
+				editingmaster = not config.is_detached(
+					splitargs[1], message.guild.id
+				)
+			except AttributeError:
+				config.set_s(splitargs[1], splitargs[2])
+		except ValueError:
+			embed = emb.error('Invalid value specified')
+			await bot.reply(message, emb=embed)
+			return
 		config.saveconfig()
 		utils.logcommand(kwargs['command'], kwargs['arguments'], message)
 		embed = emb.success('Set `{}` to `{}`{}'.format(
@@ -318,32 +325,37 @@ async def _config(client, message, **kwargs):
 			return
 		if splitargs[0] == 'insert':
 			try:
-				if config.is_dic(splitargs[1]):
-					config.insert_dic_s(
-						splitargs[1],
-						splitargs[2],
-						splitargs[3],
-						message.guild.id,
-					)
-				elif config.is_array(splitargs[1]):
-					config.insert_s(
-						splitargs[1],
-						splitargs[2],
-						message.guild.id,
-					)
-					editingmaster = not config.is_detached(
-						splitargs[1],
-						message.guild.id,
-					)
-			except AttributeError:
-				if config.is_dic(splitargs[1]):
-					config.insert_dic_s(
-						splitargs[1],
-						splitargs[2],
-						splitargs[3],
-					)
-				elif config.is_array(splitargs[1]):
-					config.insert_s(splitargs[1], splitargs[2])
+				try:
+					if config.is_dic(splitargs[1]):
+						config.insert_dic_s(
+							splitargs[1],
+							splitargs[2],
+							splitargs[3],
+							message.guild.id,
+						)
+					elif config.is_array(splitargs[1]):
+						config.insert_s(
+							splitargs[1],
+							splitargs[2],
+							message.guild.id,
+						)
+						editingmaster = not config.is_detached(
+							splitargs[1],
+							message.guild.id,
+						)
+				except AttributeError:
+					if config.is_dic(splitargs[1]):
+						config.insert_dic_s(
+							splitargs[1],
+							splitargs[2],
+							splitargs[3],
+						)
+					elif config.is_array(splitargs[1]):
+						config.insert_s(splitargs[1], splitargs[2])
+			except ValueError:
+				embed = emb.error('Invalid value specified')
+				await bot.reply(message, emb=embed)
+				return
 			embed = emb.success('Inserted `{0}` into {type} `{1}`{2}'.format(
 					utils.wrapbackticks(
 						config.input_to_type_key(splitargs[2], splitargs[1])
@@ -354,27 +366,32 @@ async def _config(client, message, **kwargs):
 			)
 		else:
 			try:
-				if config.is_dic(splitargs[1]):
-					config.remove_dic_s(
+				try:
+					if config.is_dic(splitargs[1]):
+						config.remove_dic_s(
+							splitargs[1],
+							splitargs[2],
+							message.guild.id,
+						)
+					elif config.is_array(splitargs[1]):
+						config.remove_s(
+							splitargs[1],
+							splitargs[2],
+							message.guild.id,
+						)
+					editingmaster = not config.is_detached(
 						splitargs[1],
-						splitargs[2],
 						message.guild.id,
 					)
-				elif config.is_array(splitargs[1]):
-					config.remove_s(
-						splitargs[1],
-						splitargs[2],
-						message.guild.id,
-					)
-				editingmaster = not config.is_detached(
-					splitargs[1],
-					message.guild.id,
-				)
-			except AttributeError:
-				if config.is_dic(splitargs[1]):
-					config.remove_dic_s(splitargs[1], splitargs[2])
-				elif config.is_array(splitargs[1]):
-					config.remove_s(splitargs[1], splitargs[2])
+				except AttributeError:
+					if config.is_dic(splitargs[1]):
+						config.remove_dic_s(splitargs[1], splitargs[2])
+					elif config.is_array(splitargs[1]):
+						config.remove_s(splitargs[1], splitargs[2])
+			except ValueError:
+				embed = emb.error('Invalid value specified')
+				await bot.reply(message, emb=embed)
+				return
 			embed = emb.success('Removed `{}` from {type} `{}`{}'.format(
 					utils.wrapbackticks(
 						config.input_to_type_key(splitargs[2], splitargs[1])
