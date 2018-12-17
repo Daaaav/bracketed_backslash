@@ -3587,6 +3587,12 @@ async def _starboard(client, message, **kwargs):
 				)
 				await bot.reply(message, emb=em)
 				return
+			if config.get_s('starboard_timelimit', message.guild.id) > 863999999:
+				# Do a maximum of 9999d23h59m59s
+				config.set_s(
+					'starboard_timelimit', '9999d23h59m59s', message.guild.id
+				)
+
 			em = emb.success('Time limit set to {}.'.format(
 					utils.reltime(
 						config.get_s('starboard_timelimit', message.guild.id),
@@ -3609,12 +3615,16 @@ async def _starboard(client, message, **kwargs):
 				await bot.reply(message, emb=em)
 				return
 			if setting == 'threshold':
+				value = max(1, min(99999, value))
 				success = (
 					'Messages will now go on the starboard after {} star{s}.'
 				).format(
 					value, s='s' if value != 1 else ''
 				)
+			elif setting == 'nostar_barrier' and value == -1:
+				success = 'Nostars disabled.'
 			elif setting == 'nostar_barrier':
+				value = max(0, min(99998, value))
 				success = 'Nostar barrier set to {} nostar{s}.'.format(
 					value, s='s' if value != 1 else ''
 				)
