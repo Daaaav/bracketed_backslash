@@ -669,12 +669,12 @@ def star_message_contents(message, score, num_stars, num_nostars):
 def star_message_embed(message, score):
 	"""Return the starboard announcement embed for a given message and its score"""
 	if config.get_s('starboard_permalink', message.guild.id) == 2:
-		maybe_permalink = '\n\n[→ Go to message]({})'.format(message.jump_url)
+		maybe_permalink = '[→ Go to message]({})\n'.format(message.jump_url)
 	else:
 		maybe_permalink = ''
 
 	embed = discord.Embed(
-		description=message.content + maybe_permalink,
+		description=maybe_permalink + message.content,
 		color = star_gradient_color(score),
 		timestamp = message.created_at
 	).set_author(
