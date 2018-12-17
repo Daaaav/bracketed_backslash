@@ -323,6 +323,14 @@ configs = {
 		'detachable': True,
 		'shown': True,
 	},
+	'starboard_permalink': {
+		'default': 2,
+		'type': 'int',
+		'is_array': False,
+		'expl': 'How the permalinks for starboarded messagese are displayed. `0` = Permalink is not displayed. Message ID is displayed in the message content instead. `1` = Permalink is displayed in full, in the message content, as second line. `2` = Permalink is added to the embed and masked with "Go to message".',
+		'detachable': True,
+		'shown': True,
+	},
 }
 
 s = {}

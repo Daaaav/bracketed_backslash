@@ -580,25 +580,38 @@ def star_message_contents(message, score, num_stars, num_nostars):
 	number of stars
 	"""
 
+	permalink_setting = config.get_s('starboard_permalink', message.guild.id)
+	if permalink_setting == 1:
+		maybe_permalink = '\n{}'.format(message.jump_url)
+	elif permalink_setting == 0:
+		maybe_permalink = '     ID: {}'.format(message.id)
+	else:
+		maybe_permalink = ''
+
 	if config.get_s('starboard_nostar_barrier', message.guild.id) == -1:
-		return '{} **{}**     {}\n{}'.format(
+		return '{} **{}**     {}{}'.format(
 			star_emote(score, message.guild.id), score,
 			message.channel.mention,
-			message.jump_url
+			maybe_permalink
 		)
 
-	return '{} **{}**     ( {} {}  |  {} {} )     {}\n{}'.format(
+	return '{} **{}**     ( {} {}  |  {} {} )     {}{}'.format(
 		star_emote(score, message.guild.id), score,
 		guild_starboard_emote(True, message.guild.id), num_stars,
 		guild_starboard_emote(False, message.guild.id), num_nostars,
 		message.channel.mention,
-		message.jump_url
+		maybe_permalink
 	)
 
 def star_message_embed(message, score):
 	"""Return the starboard announcement embed for a given message and its score"""
+	if config.get_s('starboard_permalink', message.guild.id) == 2:
+		maybe_permalink = '\n\n[→ Go to message]({})'.format(message.jump_url)
+	else:
+		maybe_permalink = ''
+
 	embed = discord.Embed(
-		description=message.content,
+		description=message.content + maybe_permalink,
 		color = star_gradient_color(score),
 		timestamp = message.created_at
 	).set_author(
