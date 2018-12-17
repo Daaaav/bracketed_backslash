@@ -3,6 +3,7 @@
 import asyncio
 import datetime
 import logging
+import re
 import sqlite3
 
 import discord
@@ -39,8 +40,8 @@ def db_load():
 				'orig_message_id' INTEGER PRIMARY KEY NOT NULL,
 				'guild_id' INTEGER NOT NULL,
 				'channel_id' INTEGER NOT NULL,
-				'author_id' INTEGER NOT NULL,
-				'star_message_id' INTEGER NOT NULL
+				'author_id' INTEGER,
+				'star_message_id' INTEGER
 			)
 		"""
 	)
@@ -367,6 +368,10 @@ async def ensure_message_on_starboard(message, score, num_stars, num_nostars):
 
 		await post_starboard_message(message, score, num_stars, num_nostars)
 	else:
+		# star_message_id itself might be None, in that case, ignore this entire message.
+		if result[0] is None:
+			return
+
 		# It's already on the starboard, we might need to change the tallies.
 		# We got here, after all!
 		await edit_starboard_message(message, score, num_stars, num_nostars, result[0])
@@ -397,7 +402,7 @@ async def ensure_message_not_on_starboard(message=None, id=None, remove_slowly=F
 	# Might be None, might be a 1-tuple
 	result = cursor.fetchone()
 
-	if result is None:
+	if result is None or result[0] is None:
 		# Okay, cool, nothing to do!
 		return
 
@@ -515,6 +520,8 @@ async def remove_starboard_message(message_id, starboard_message_id, guild_id, r
 
 		del unstarboard_message_at[starboard_message_id]
 
+	await starboard_message.delete()
+
 	cursor.execute("""
 			DELETE FROM starboard_messages
 			WHERE orig_message_id=?
@@ -524,7 +531,60 @@ async def remove_starboard_message(message_id, starboard_message_id, guild_id, r
 	)
 	db_commit()
 
-	await starboard_message.delete()
+def detach_all_starboard_messages(guild_id):
+	"""Remove all entries in the starboard_messages table for a particular guild, so that
+	existing announcements will cease being used, and will remain there as-is.
+	This should be used when switching to a different starboard channel or something;
+	Used by itself, messages will spontaneously appear another time on the starboard when
+	starred again.
+	"""
+	global cursor
+
+	cursor.execute("""
+			DELETE FROM starboard_messages
+			WHERE guild_id=?
+		""",
+		(guild_id,)
+	)
+	db_commit()
+
+def ignore_danny_stars(messages, rdanny_id):
+	"""Takes a list of Messages which are sent by R. Danny, or follow the format of R. Danny's
+	starboard messages.
+	IDs are read from these messages, and will be inserted in our database as having NULL
+	star_message_id values, so that our bot ignores those messages. This way, you can
+	transition from R. Danny's to [\]'s starboard very smoothly, without duplicate
+	announcements, starboard downtime or temporarily low time limits.
+	"""
+	global cursor
+
+	db_messages = []
+	count = 0
+	for message in messages:
+		if message.author.id != rdanny_id:
+			continue
+
+		m = re.search("\<#(?P<chan>[0-9]+)\> ID: (?P<msg>[0-9]+)", message.content)
+
+		if m.group('chan') is None or m.group('msg') is None:
+			continue
+
+		db_messages.append(
+			(int(m.group('msg')), message.guild.id, int(m.group('chan')), None, None)
+		)
+		count += 1
+
+	cursor.executemany("""
+			INSERT OR IGNORE INTO starboard_messages
+			(orig_message_id, guild_id, channel_id, author_id, star_message_id)
+			VALUES
+			(?, ?, ?, ?, ?)
+		""",
+		db_messages
+	)
+	db_commit()
+
+	return count
 
 def guild_starboard_emote(is_star, guild_id):
 	"""Return a guild's star or nostar, as string that can be used in a message text"""
