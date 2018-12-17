@@ -46,6 +46,7 @@ import events
 import hangman
 import images
 import op_ids
+import starboard
 import utils
 import wrapper
 
@@ -3200,3 +3201,549 @@ async def move(client, message, **kwargs):
 			'I don’t have permission to send a message in that channel myself, though.'
 		)
 	await sentmessage_source.edit(embed=em_source)
+
+@shadow(aliases=['star'], guildonly=True)
+async def _starboard(client, message, **kwargs):
+	if kwargs['arguments'] is None:
+		em = emb.error('Try `\help starboard` to know what arguments can be used.')
+		await bot.reply(message, emb=em)
+		return
+
+	splitargs = kwargs['arguments'].split(' ')
+	action = splitargs[0]
+
+	# We should have a starboard if you're doing anything other than making one.
+	if config.get_s('starboard_channel', message.guild.id) == 0 and action != 'init':
+		em = emb.error(
+			(
+				'There is currently no starboard channel set on this server. '
+				'Please use `\{} init #channel` to set one.'
+			).format(kwargs['command'])
+		)
+		await bot.reply(message, emb=em)
+		return
+
+	# First we have the commands that everyone can do (not many)
+	if action == 'summarize_config':
+		sa = config.get_s('starboard_active', message.guild.id)
+		sc = config.get_s('starboard_channel', message.guild.id)
+		sth = config.get_s('starboard_threshold', message.guild.id)
+		snb = config.get_s('starboard_nostar_barrier', message.guild.id)
+		stl = config.get_s('starboard_timelimit', message.guild.id)
+		sic = config.get_s('starboard_ignoredchannels', message.guild.id)
+		sanm = config.get_s('starboard_author_nostar_mode', message.guild.id)
+
+		text = '' if sa else 'NOTE: The starboard is currently not active.\n'
+
+		text += 'The starboard channel is <#{}>.'.format(sc)
+
+		if snb == -1:
+			text += ' The star emote is {}.'.format(
+				starboard.guild_starboard_emote(True, message.guild.id)
+			)
+		else:
+			text += ' The star emote is {}, the nostar emote is {}.'.format(
+				starboard.guild_starboard_emote(True, message.guild.id),
+				starboard.guild_starboard_emote(False, message.guild.id)
+			)
+
+		text += ' After {} star reaction{}, a message will be posted on the starboard.'.format(
+			sth, 's' if sth != 1 else ''
+		)
+
+		if snb == 0:
+			text += (
+				' But, nostars will be subtracted from the number of stars.'
+				' (so, {} star{} and 1 nostar will total to {} star{}).'
+			).format(
+				sth, 's' if sth != 1 else '',
+				(sth-1), 's' if sth != 2 else ''
+			)
+		elif snb != -1:
+			text += (
+				' But, after a buffer of {} nostar{}, nostars will be subtracted'
+				' from the number of stars.'
+				' (so, {} star{} and {} nostars will total to {} star{}).'
+			).format(
+				snb, 's' if snb != 1 else '',
+				sth, 's' if sth != 1 else '',
+				(snb+1), # <- cannot be 1 logically
+				(sth-1), 's' if sth != 2 else ''
+			)
+
+		text += ' Messages older than {} will be ignored.'.format(
+			utils.reltime(stl, True, True, True)
+		)
+
+		#if sic:
+		#	text += ' Note that messages cannot be starboarded in certain channels.'
+
+		if sanm == 1 or snb == -1:
+			text += ' Users cannot star their own messages.'
+		elif sanm == 0:
+			text += (
+				' Users cannot star their own messages. When a user nostars their'
+				' own message, it is counted as a veto and the message can no'
+				' longer appear on the starboard.'
+			)
+		elif sanm == 2:
+			text += ' Users cannot star or nostar their own messages.'
+
+		if len(splitargs) > 1 and splitargs[1] == 'raw':
+			await bot.reply(message, '```\n{}```'.format(text))
+		else:
+			await bot.reply(message, text)
+
+		return
+
+	# Now we check if the caller is at least a moderator, before we do the mod-only commands.
+	if not checks.is_mod(message.author) and not kwargs['sudo']:
+		em = emb.error('The action `{}` was not recognized or forbidden.'.format(
+				utils.mdspecialchars(action)
+			)
+		)
+		utils.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
+		await bot.reply(message, emb=em)
+		return
+
+	if action in ('ban', 'unban'):
+		if len(splitargs) == 1:
+			em = emb.error('Too few arguments.')
+			await bot.reply(message, emb=em)
+			return
+
+		tgtmem = utils.match_input(
+			message.guild.members, discord.Member, splitargs[1]
+		)
+		if tgtmem is None:
+			em = emb.error('Unable to find that member. ' + bot.t['specify_user'])
+			await bot.reply(message, emb=em)
+			return
+
+		config.detach('starboard_bans', message.guild.id)
+
+		if action == 'ban':
+			if tgtmem.id in config.get_s('starboard_bans', message.guild.id):
+				em = emb.warning(
+					(
+						'{} is already banned from '
+						'interacting with the starboard.'
+					).format(tgtmem.mention)
+				)
+				await bot.reply(message, emb=em)
+				return
+
+			config.insert_s('starboard_bans', tgtmem.id, message.guild.id)
+
+			em = emb.success(
+				(
+					'{} has been banned from '
+					'interacting with the starboard.'
+				).format(tgtmem.mention)
+			)
+		elif action == 'unban':
+			if tgtmem.id not in config.get_s('starboard_bans', message.guild.id):
+				em = emb.warning(
+					(
+						'{} is already not banned from '
+						'interacting with the starboard.'
+					).format(tgtmem.mention)
+				)
+				await bot.reply(message, emb=em)
+				return
+
+			config.remove_s('starboard_bans', tgtmem.id, message.guild.id)
+
+			em = emb.success(
+				(
+					'{} has been unbanned from '
+					'interacting with the starboard.'
+				).format(tgtmem.mention)
+			)
+
+		config.saveconfig()
+
+		await bot.reply(message, emb=em)
+		return
+
+	# Now come the admin-only commands.
+	if not checks.is_admin(message.author) and not kwargs['sudo']:
+		em = emb.error('The action `{}` was not recognized or forbidden.'.format(
+				utils.mdspecialchars(action)
+			)
+		)
+		utils.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
+		await bot.reply(message, emb=em)
+		return
+
+	if action == 'init':
+		# Set up a starboard
+		if len(splitargs) == 1:
+			em = emb.error('Too few arguments.')
+			await bot.reply(message, emb=em)
+			return
+
+		new_starboard = utils.match_input(
+			message.guild.channels, discord.abc.GuildChannel, splitargs[1]
+		)
+		if new_starboard is None:
+			em = emb.error(
+				'Unable to find that channel - it must already exist. '
+				+ bot.t['specify_channel']
+			)
+			await bot.reply(message, emb=em)
+			return
+
+		# Okay, so this is happening. But did we already have a starboard here?
+		existing_starboard_id = config.get_s('starboard_channel', message.guild.id)
+		if existing_starboard_id != 0 \
+		and config.get_s('starboard_active', message.guild.id):
+			# Not if they haven't suspended it first! Just in case.
+			em = emb.warning(
+				(
+					'You already have a starboard at <#{}>. '
+					'If you want to switch to a different channel, '
+					'you must suspend the starboard first.'
+				).format(existing_starboard_id)
+			)
+			await bot.reply(message, emb=em)
+			return
+
+		# Remove references to any existing starboard messages which might be left
+		starboard.detach_all_starboard_messages(message.guild.id)
+
+		# Detach all configuration, if already detached this won't have effect
+		config.detach('starboard_active', message.guild.id)
+		config.detach('starboard_channel', message.guild.id)
+		config.detach('starboard_threshold', message.guild.id)
+		config.detach('starboard_star', message.guild.id)
+		config.detach('starboard_nostar', message.guild.id)
+		config.detach('starboard_nostar_barrier', message.guild.id)
+		config.detach('starboard_timelimit', message.guild.id)
+		config.detach('starboard_ignoredchannels', message.guild.id)
+		config.detach('starboard_author_nostar_mode', message.guild.id)
+		config.detach('starboard_bans', message.guild.id)
+		config.detach('starboard_permalink', message.guild.id)
+
+		# Suspend it at first
+		config.set_s('starboard_active', False, message.guild.id)
+		config.set_s('starboard_channel', new_starboard.id, message.guild.id)
+
+		# Also I guess by default we should add NSFW channels to the ignored channels list
+		nsfw_added = False
+		nsfw_text = ''
+		if existing_starboard_id == 0 \
+		and not config.get_s('starboard_ignoredchannels', message.guild.id):
+			for chan in message.guild.channels:
+				try:
+					if chan.is_nsfw():
+						config.insert_s(
+							'starboard_ignoredchannels',
+							chan.id, message.guild.id
+						)
+						nsfw_added = True
+				except AttributeError:
+					# VoiceChannel or CategoryChannel
+					pass
+
+			if nsfw_added:
+				nsfw_text = (
+					' All NSFW channels have been ignored by default, but can '
+					'be unignored. (New NSFW channels will not be ignored '
+					'automatically upon their creation.)'
+				)
+
+		config.saveconfig()
+
+		em = emb.success(
+			(
+				'Starboard channel set to {}.\n'
+				'To see the configuration, use `\\{starcmd} summarize_config`.\n'
+				'To change the threshold, use `\\{starcmd} set threshold 5`.\n'
+				'To change the star/nostar emotes, use `\\{starcmd} set star` '
+				'or `\\{starcmd} set nostar`.\n'
+				'To change the nostar barrier, use `\\{starcmd} set '
+				'nostar_barrier 2`, or `\\{starcmd} set nostar_barrier -1` to '
+				'disable nostars.\n'
+				'Other settings can be changed as well, see '
+				'https://gitgud.io/infoteddy/bracketed_backslash/wikis/Starboard '
+				'for all details. That page also contains advice for a smooth '
+				'transition from another bot’s starboard.\n'
+				'To ignore a channel for the starboard, use `\\{starcmd} ignore '
+				'#channel`.{nsfw_text}\n'
+				'**The starboard is suspended by default.** Once you’re ready, use `\\{starcmd} unsuspend` to activate it.'
+			).format(
+				new_starboard.mention,
+				starcmd=kwargs['command'],
+				nsfw_text=nsfw_text
+			)
+		)
+		await bot.reply(message, emb=em)
+	elif action == 'set':
+		if len(splitargs) == 1 \
+		or splitargs[1] not in ('star', 'nostar') and len(splitargs) == 2:
+			em = emb.error('Too few arguments.')
+			await bot.reply(message, emb=em)
+			return
+		setting = splitargs[1]
+
+		if setting in ('star', 'nostar'):
+			if setting == 'star':
+				em = emb.info(
+					(
+						'**Please specify the star emote to use, by adding '
+						'it as a reaction to this message.** This can be '
+						'an emoji, or a custom emote from this server. ⭐ '
+						'is recommended. If you choose an emoji that can be '
+						'affected by skin tone modifiers, then choose the '
+						'yellow variant in order to support all skin tones.'
+					)
+				)
+				success = 'Star set to {}'
+			else:
+				em = emb.info(
+					(
+						'**Please specify the nostar emote to use, by '
+						'adding it as a reaction to this message.** If you '
+						'don\'t want to use the nostar feature, then react '
+						'with anything you like (but not a custom emote '
+						'from a different server), you can disable the '
+						'nostar feature.'
+					)
+				)
+				success = 'Nostar set to {}'
+			question_message = await message.channel.send(
+				bot.calculate_msg_start(message), embed=em
+			)
+			try:
+				reaction, user = await client.wait_for(
+					'reaction_add',
+					check=lambda r, u: u == message.author \
+					and r.message.id == question_message.id, # <- try w/o id?!!?
+					timeout=120
+				)
+			except asyncio.TimeoutError:
+				em = emb.error('Timed out.')
+				await bot.reply(message, emb=em)
+				return
+			# Now, is it some kind of homebrew emote, or a Unicode emoji?
+			if isinstance(reaction.emoji, discord.emoji.Emoji):
+				# Some kind of homebrew emote then. But it must be from here.
+				if reaction.emoji.guild != message.guild:
+					em = emb.error(
+						'You can not use custom emotes from other servers.'
+					)
+					await bot.reply(message, emb=em)
+					return
+				value = str(reaction.emoji.id)
+			else:
+				# Look kids, THIS is an emoji.
+				value = reaction.emoji
+
+			config.detach('starboard_' + setting, message.guild.id)
+			config.set_s('starboard_' + setting, value, message.guild.id)
+			config.saveconfig()
+
+			em = emb.success(success.format(reaction.emoji))
+			await bot.reply(message, emb=em)
+
+			return
+		if setting == 'timelimit':
+			# Also kind of a special case
+			config.detach('starboard_timelimit', message.guild.id)
+			try:
+				config.set_s('starboard_timelimit', splitargs[2], message.guild.id)
+			except ValueError:
+				em = emb.error(
+					(
+						'Invalid relative time. Please input a relative time '
+						'in the format `[#d][#h][#m][#s]`, for example: '
+						'`3d12h`, `1h`, `3d`, `48h`, `1d2h3m4s`, `1d20s` or '
+						'whatever combination you can think of. The units '
+						'have to be in the correct order, though.'
+					)
+				)
+				await bot.reply(message, emb=em)
+				return
+			em = emb.success('Time limit set to {}.'.format(
+					utils.reltime(
+						config.get_s('starboard_timelimit', message.guild.id),
+						True, True, True
+					)
+				)
+			)
+			await bot.reply(message, emb=em)
+			return
+
+		if setting in ('threshold', 'nostar_barrier'):
+			# Simple integers, let's do this the pythonic way
+			try:
+				value = int(splitargs[2])
+			except ValueError:
+				em = emb.error('`{}` is not a valid integer.'.format(
+						utils.mdspecialchars(splitargs[2])
+					)
+				)
+				await bot.reply(message, emb=em)
+				return
+			if setting == 'threshold':
+				success = (
+					'Messages will now go on the starboard after {} star{s}.'
+				).format(
+					value, s='s' if value != 1 else ''
+				)
+			elif setting == 'nostar_barrier':
+				success = 'Nostar barrier set to {} nostar{s}.'.format(
+					value, s='s' if value != 1 else ''
+				)
+		elif setting in ('author_nostar_mode', 'permalink'):
+			if splitargs[2] not in ('0', '1', '2'):
+				em = emb.error('Please enter a value of 0, 1 or 2.')
+				await bot.reply(message, emb=em)
+				return
+			value = int(splitargs[2])
+			if setting == 'author_nostar_mode':
+				if value == 0:
+					success = 'Author nostar mode set to 0 (veto)'
+				elif value == 1:
+					success = 'Author nostar mode set to 1 (like other people)'
+				elif value == 2:
+					success = 'Author nostar mode set to 2 (forbidden)'
+			elif setting == 'permalink':
+				if value == 0:
+					success = 'Permalinks set to hidden.'
+				elif value == 1:
+					success = 'Permalinks set to in message content.'
+				elif value == 2:
+					success = 'Permalinks set to in embed.'
+		else:
+			em = emb.error('`{}` is not a recognized config option.'.format(
+					utils.mdspecialchars(setting)
+				)
+			)
+			await bot.reply(message, emb=em)
+			return
+
+		# Ensure this option is detached, just to make sure.
+		config.detach('starboard_' + setting, message.guild.id)
+		config.set_s('starboard_' + setting, value, message.guild.id)
+		config.saveconfig()
+
+		em = emb.success(success)
+		await bot.reply(message, emb=em)
+	elif action == 'suspend':
+		config.detach('starboard_active', message.guild.id)
+		config.set_s('starboard_active', False, message.guild.id)
+		config.saveconfig()
+
+		em = emb.success('The starboard on this server has been suspended.')
+		await bot.reply(message, emb=em)
+	elif action == 'unsuspend':
+		config.detach('starboard_active', message.guild.id)
+		config.set_s('starboard_active', True, message.guild.id)
+		config.saveconfig()
+
+		em = emb.success('The starboard on this server has been unsuspended.')
+		await bot.reply(message, emb=em)
+	elif action in ('ignore', 'unignore'):
+		if len(splitargs) == 1:
+			em = emb.error('Too few arguments.')
+			await bot.reply(message, emb=em)
+			return
+
+		tgtchan = utils.match_input(
+			message.guild.channels, discord.abc.GuildChannel, splitargs[1]
+		)
+		if tgtchan is None:
+			em = emb.error('Unable to find that channel. ' + bot.t['specify_channel'])
+			await bot.reply(message, emb=em)
+			return
+
+		config.detach('starboard_ignoredchannels', message.guild.id)
+
+		if action == 'ignore':
+			if tgtchan.id in config.get_s(
+				'starboard_ignoredchannels', message.guild.id
+			):
+				em = emb.warning(
+					(
+						'{} is already ignored '
+						'for the starboard.'
+					).format(tgtchan.mention)
+				)
+				await bot.reply(message, emb=em)
+				return
+
+			config.insert_s('starboard_ignoredchannels', tgtchan.id, message.guild.id)
+
+			em = emb.success(
+				(
+					'Messages in {} can now no longer '
+					'appear on the starboard.'
+				).format(tgtchan.mention)
+			)
+		elif action == 'unignore':
+			if tgtchan.id not in config.get_s(
+				'starboard_ignoredchannels', message.guild.id
+			):
+				em = emb.warning(
+					(
+						'{} is already not ignored '
+						'for the starboard.'
+					).format(tgtchan.mention)
+				)
+				await bot.reply(message, emb=em)
+				return
+
+			config.remove_s('starboard_ignoredchannels', tgtchan.id, message.guild.id)
+
+			em = emb.success(
+				(
+					'Messages in {} can now appear '
+					'on the starboard again.'
+				).format(tgtchan.mention)
+			)
+
+		config.saveconfig()
+
+		await bot.reply(message, emb=em)
+	elif action == 'scan_danny':
+		# Scan a channel for messages by R. Danny to aid with a smooth transition
+		# First argument is channel to scan, second is the ID of R. Danny
+		if len(splitargs) < 3:
+			em = emb.error('Too few arguments.')
+			await bot.reply(message, emb=em)
+			return
+
+		scan_channel = utils.match_input(
+			message.guild.channels, discord.abc.GuildChannel, splitargs[1]
+		)
+		if scan_channel is None:
+			em = emb.error(
+				'Unable to find that channel - it must already exist. '
+				+ bot.t['specify_channel']
+			)
+			await bot.reply(message, emb=em)
+			return
+
+		# Just so we don't accidentally pollute the database with nonsense,
+		# only do this if the starboard is suspended.
+		if config.get_s('starboard_active', message.guild.id):
+			em = emb.warning('Please suspend the starboard first to take this action.')
+			await bot.reply(message, emb=em)
+			return
+
+		try:
+			count = starboard.ignore_danny_stars(
+				await scan_channel.history(limit=200).flatten(), int(splitargs[2])
+			)
+		except ValueError:
+			em = emb.error('Please enter a valid user ID.')
+			await bot.reply(message, emb=em)
+			return
+
+		em = emb.success('{} messages matched.'.format(count))
+		await bot.reply(message, emb=em)
+	else:
+		em = emb.error('`{}` was not recognized'.format(action))
+		await bot.reply(message, emb=em)

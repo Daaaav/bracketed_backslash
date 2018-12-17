@@ -505,9 +505,9 @@ def getspecialchannel_reply(message):
 		return message.channel
 	return getspecialchannel(message.guild)
 
-def reltime(timestamp, noago=False):
+def reltime(timestamp, noago=False, noinfuture=False, relative=False):
 	timestamp = int(timestamp)
-	now = int(time.time())
+	now = 0 if relative else int(time.time())
 	sdt = now - timestamp
 	dt = math.fabs(sdt)
 
@@ -533,6 +533,8 @@ def reltime(timestamp, noago=False):
 		if noago:
 			return solong
 		return '{} ago'.format(solong)
+	if noinfuture:
+		return solong
 	return '{} in the future'.format(solong)
 
 def parsereltime(inputstr, relative=False, now=None):
