@@ -3535,11 +3535,25 @@ async def _starboard(client, message, **kwargs):
 				await bot.reply(message, emb=em)
 				return
 			# Now, is it some kind of homebrew emote, or a Unicode emoji?
-			if isinstance(reaction.emoji, discord.emoji.Emoji):
+			if isinstance(reaction.emoji, discord.emoji.PartialEmoji):
+				# Okay, we can't see it, must be from somewhere else.
+				em = emb.error(
+					'You can not use custom emotes from other servers.'
+				)
+				await bot.reply(message, emb=em)
+				return
+			elif isinstance(reaction.emoji, discord.emoji.Emoji):
 				# Some kind of homebrew emote then. But it must be from here.
 				if reaction.emoji.guild != message.guild:
 					em = emb.error(
 						'You can not use custom emotes from other servers.'
+					)
+					await bot.reply(message, emb=em)
+					return
+				# Don't allow animated emotes, that's unfair plus requires an "a"
+				if reaction.animated:
+					em = emb.error(
+						'You can not use animated emotes.'
 					)
 					await bot.reply(message, emb=em)
 					return

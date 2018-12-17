@@ -179,10 +179,13 @@ async def check_message(payload, channel, adding):
 		is_star = False
 		is_nostar = False
 
-		if isinstance(reaction.emoji, discord.emoji.Emoji):
+		if isinstance(reaction.emoji, discord.emoji.PartialEmoji):
+			# It must be a discord.emoji.Emoji if it's from here
+			continue
+		elif isinstance(reaction.emoji, discord.emoji.Emoji):
 			# This is a custom emote, but it has to be from this server; don't be
 			# unfair. Plus, the bot has to be able to use it in the announcement.
-			if reaction.emoji.guild.id != payload.guild_id:
+			if reaction.emoji.guild.id != payload.guild_id or reaction.animated:
 				continue
 
 			if str(reaction.emoji.id) == emote_star:
