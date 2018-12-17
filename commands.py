@@ -3298,7 +3298,11 @@ async def _starboard(client, message, **kwargs):
 
 	# Now we check if the caller is at least a moderator, before we do the mod-only commands.
 	if not checks.is_mod(message.author) and not kwargs['sudo']:
-		em = emb.error('The action `{}` was not recognized or forbidden.'.format(
+		em = emb.error(
+			(
+				'The action `{}` was not recognized or forbidden. '
+				'Try `\help starboard` to know what arguments can be used.'
+			).format(
 				utils.mdspecialchars(action)
 			)
 		)
@@ -3368,7 +3372,11 @@ async def _starboard(client, message, **kwargs):
 
 	# Now come the admin-only commands.
 	if not checks.is_admin(message.author) and not kwargs['sudo']:
-		em = emb.error('The action `{}` was not recognized or forbidden.'.format(
+		em = emb.error(
+			(
+				'The action `{}` was not recognized or forbidden.'
+				'Try `\help starboard` to know what arguments can be used.'
+			).format(
 				utils.mdspecialchars(action)
 			)
 		)
@@ -3745,5 +3753,10 @@ async def _starboard(client, message, **kwargs):
 		em = emb.success('{} messages matched.'.format(count))
 		await bot.reply(message, emb=em)
 	else:
-		em = emb.error('`{}` was not recognized'.format(action))
+		em = emb.error(
+			(
+				'The action `{}` was not recognized. '
+				'Try `\help starboard` to know what arguments can be used.'
+			).format(action)
+		)
 		await bot.reply(message, emb=em)

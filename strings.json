@@ -138,6 +138,11 @@
 					"name": "archive",
 					"short": "Create a chat log of the latest messages in a given channel. Not available for non-admins (yet).",
 					"extra": "**Syntax**: `\\archive <channel> [limit=100]`\n\nThe maximum limit is determined by the `maxarchive` config setting, which is global for the bot."
+				},
+				{
+					"name": "starboard",
+					"short": "Manages the starboard.",
+					"extra": "You can use the following options:\n`\\starboard init <CHANNEL>` \u2013 Initialize the starboard settings (but suspend it first).\n`\\starboard set <KEY> [VALUE]` \u2013 Change a starboard config option. VALUE is needed for all options except `star` and `nostar`. See the output of `\\starboard init` or the wiki for more details on the settings that can be changed.\n`\\starboard summarize_config` \u2013 Summarize the configuration of all the starboard settings on the server in a paragraph of English text.\n`\\starboard suspend` \u2013 Suspend the starboard, effectively freezing it.\n`\\starboard unsuspend` \u2013 Unsuspend the starboard.\n`\\starboard ignore <CHANNEL>` \u2013 Make messages sent in CHANNEL not eligible for being posted on the starboard.\n`\\starboard unignore <CHANNEL>` \u2013 Lift an ignore on a channel.\n`\\starboard ban <MEMBER>` \u2013 Ban a member from interacting with the starboard.\n`\\starboard unban <MEMBER>` \u2013 Lift a starboard ban on a member.\n`\\scan_danny <CHANNEL> <USERID>` \u2013 Scan the last 200 messages in a channel for messages by a previous starboard bot, so that those messages can be ignored for a smooth transition. See the wiki for more details."
 				}
 			]
 		},
@@ -175,7 +180,7 @@
 				{
 					"name": "config",
 					"short": "Manages configurable settings in the bot.",
-					"extra": "You can use the following options:\n`\\config list` \u2013 Show all the settings and their values.\n`\\config listhidden` \u2013 Shows all hidden settings and their values.\n`\\config reload` \u2013 Reloads the configuration file.\n`\\config get <KEY>` \u2013 Show extended information about a specific setting and how it is configured, given its key.\n`\\config set <KEY> <VALUE>` \u2013 Update the value of a given non-array setting.\n`\\config insert <KEY> [INDICE] <VALUE>` \u2013 Insert a value into an array or dic setting. `[INDICE]` is required for dics.\n`\\config remove <KEY> <VALUE/INDICE>` \u2013 Remove a value from an array or dic setting.\n`\\config detach <KEY> \u2013 Make this setting no longer use the master value, and use a server-specific value instead.\n`\\config reattach <KEY> \u2013 Make this setting use the master value.\n`\\config default <KEY>` \u2013 Sets the setting back to default."
+					"extra": "You can use the following options:\n`\\config list` \u2013 Show all the settings and their values.\n`\\config listhidden` \u2013 Shows all hidden settings and their values.\n`\\config reload` \u2013 Reloads the configuration file.\n`\\config get <KEY>` \u2013 Show extended information about a specific setting and how it is configured, given its key.\n`\\config set <KEY> <VALUE>` \u2013 Update the value of a given non-array setting.\n`\\config insert <KEY> [INDICE] <VALUE>` \u2013 Insert a value into an array or dic setting. `[INDICE]` is required for dics.\n`\\config remove <KEY> <VALUE/INDICE>` \u2013 Remove a value from an array or dic setting.\n`\\config detach <KEY>` \u2013 Make this setting no longer use the master value, and use a server-specific value instead.\n`\\config reattach <KEY>` \u2013 Make this setting use the master value.\n`\\config default <KEY>` \u2013 Sets the setting back to default."
 				},
 				{
 					"name": "gamestatus",
