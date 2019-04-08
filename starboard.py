@@ -113,7 +113,7 @@ async def check_message(payload, channel, adding):
 		lambda m: m.id == payload.message_id, wrapper.client._connection._messages
 	)
 	if orig_message is None:
-		orig_message = await channel.get_message(payload.message_id)
+		orig_message = await channel.fetch_message(payload.message_id)
 
 	# We only really need the User, not Member.
 	reaction_user = wrapper.client.get_user(payload.user_id)
@@ -459,7 +459,7 @@ async def edit_starboard_message(message, score, num_stars, num_nostars, starboa
 		starboard_chan = message.guild.get_channel(
 			config.get_s('starboard_channel', message.guild.id)
 		)
-		starboard_message = await starboard_chan.get_message(starboard_message_id)
+		starboard_message = await starboard_chan.fetch_message(starboard_message_id)
 
 		# If it doesn't exist, just give up. Someone must've deleted it.
 		if starboard_message is None:
@@ -493,7 +493,7 @@ async def remove_starboard_message(message_id, starboard_message_id, guild_id, r
 		starboard_chan = wrapper.client.get_channel(
 			config.get_s('starboard_channel', guild_id)
 		)
-		starboard_message = await starboard_chan.get_message(starboard_message_id)
+		starboard_message = await starboard_chan.fetch_message(starboard_message_id)
 
 		# If it doesn't exist, just give up. Someone must've deleted it.
 		if starboard_message is None:

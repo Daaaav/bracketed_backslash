@@ -714,7 +714,7 @@ async def editexpirymessage(cguild, thisexpiry):
 	getmessage = await discord.utils.get(
 		cguild.channels,
 		id=thisexpiry['msgedit_channel']
-	).get_message(thisexpiry['msgedit_message'])
+	).fetch_message(thisexpiry['msgedit_message'])
 	if thisexpiry['msgedit_newcontent'] == '':
 		await getmessage.delete()
 	else:

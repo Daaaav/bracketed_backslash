@@ -869,7 +869,7 @@ async def vy(client, message, **kwargs):
 			potentially_none = guild.get_member(member_id)
 			if potentially_none is None:
 				try:
-					targets.add(await client.get_user_info(member_id))
+					targets.add(await client.fetch_user_info(member_id))
 				except discord.NotFound:
 					pass
 			else:
@@ -890,7 +890,7 @@ async def vy(client, message, **kwargs):
 
 		potentially_none = guild.get_member(mutee_id)
 		if potentially_none is None:
-			mutee = await client.get_user_info(mutee_id)
+			mutee = await client.fetch_user_info(mutee_id)
 		else:
 			mutee = potentially_none
 
@@ -1038,7 +1038,7 @@ async def vc(client, message, **kwargs):
 			potentially_none = guild.get_member(member_id)
 			if potentially_none is None:
 				try:
-					targets.add(await client.get_user_info(member_id))
+					targets.add(await client.fetch_user_info(member_id))
 				except discord.NotFound:
 					pass
 			else:
@@ -1600,7 +1600,7 @@ async def getrawmessagecontent(client, message, **kwargs):
 			getmessage = None
 			for channel in message.guild.text_channels:
 				try:
-					getmessage = await channel.get_message(argsplit[0])
+					getmessage = await channel.fetch_message(argsplit[0])
 					break
 				except discord.errors.HTTPException:
 					# If I can/may not view this message, or it's
@@ -1613,7 +1613,7 @@ async def getrawmessagecontent(client, message, **kwargs):
 			arg1 = argsplit[1]
 			channelid = int(arg0[2:-1])
 			getchannel = client.get_channel(channelid)
-			getmessage = await getchannel.get_message(arg1)
+			getmessage = await getchannel.fetch_message(arg1)
 		content = '``{}``'.format(utils.wrapbackticks(getmessage.content[:1900]))
 		await bot.reply(message, content)
 		if getmessage.embeds != []:
@@ -2255,7 +2255,7 @@ async def tntgb_maint(client, message, **kwargs):
 			splitargs[1] = message2.content
 		output = ''
 		if splitargs[0] == 'liftmsg':
-			getmessage = await ban_log_channel.get_message(splitargs[1])
+			getmessage = await ban_log_channel.fetch_message(splitargs[1])
 			content = getmessage.content
 			if content.find('⛔') == -1:
 				embed = emb.error('Cannot find the ⛔!')
@@ -2265,7 +2265,7 @@ async def tntgb_maint(client, message, **kwargs):
 			await getmessage.edit(content=content)
 			output = 'Edited successfully.'
 		elif splitargs[0] == 'addtimer':
-			getmessage = await ban_log_channel.get_message(splitargs[1])
+			getmessage = await ban_log_channel.fetch_message(splitargs[1])
 			content = getmessage.content
 			m = re.search('<@!?([0-9]+)>', content)
 			if m is None:
