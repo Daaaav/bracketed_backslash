@@ -1724,15 +1724,21 @@ async def on_raw_bulk_message_delete(payload):
 		if mid > newest_id:
 			newest_id = mid
 
+	oldest_time = ((oldest_id >> 22) + 1420070400000)/1000
+	newest_time = ((newest_id >> 22) + 1420070400000)/1000
+
 	schan = utils.getspecialchannel(mchan.guild)
 	embed = discord.Embed(
 		title='\N{RADIOACTIVE SIGN}{amount} MESSAGES PURGED IN #{chan.name}'.format(
 			amount=len(payload.message_ids), chan=mchan
 		),
 		description=(
-			'Oldest deleted message: {}\n'
-			'Newest deleted message: {}'
-		).format(oldest_id, newest_id),
+			'Oldest deleted message: {oi} (sent {ot})\n'
+			'Newest deleted message: {ni} (sent {nt})'
+		).format(
+			oi=oldest_id, ot=utils.reltime(oldest_time),
+			ni=newest_id, nt=utils.reltime(newest_time)
+		),
 		colour=0xFF0000,
 		timestamp=datetime.datetime.now(),
 	)
