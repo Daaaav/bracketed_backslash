@@ -10,7 +10,7 @@ import config
 
 config.load()
 
-client = discord.Client(max_messages=999999999, game=discord.Game(name=config.get_s('gamestatus'))) # defines all client.* commands
+client = discord.Client(max_messages=999999999, activity=discord.Game(name=config.get_s('gamestatus'))) # defines all client.* commands
 
 boottime = time.strftime(config.get_s('timeformat'))
 boottimeunix = time.time()

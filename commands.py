@@ -630,7 +630,10 @@ async def findc(client, message, **kwargs):
 		vchans = '_(none)_' if not vchans else vchans
 
 		em = discord.Embed(colour=message.guild.me.colour)
-		em.set_thumbnail(url=message.guild.icon_url)
+		try:
+			em.set_thumbnail(url=message.guild.icon_url)
+		except TypeError:
+			pass
 
 		if len(tchans) > 1024:
 			for c, i in enumerate(utils.paginate(tchans, max_length=1024)):
@@ -674,7 +677,10 @@ async def findc(client, message, **kwargs):
 		readbleby += 1 if tgt.permissions_for(i).read_messages else 0
 
 	em = discord.Embed(description='Matched ' + tgt.mention, colour=message.guild.me.colour)
-	em.set_thumbnail(url=message.guild.icon_url)
+	try:
+		em.set_thumbnail(url=message.guild.icon_url)
+	except TypeError:
+		pass
 	em.add_field(name='Name', value=utils.mdspecialchars(tgt.name))
 	em.add_field(name='ID', value=tgt.id)
 	em.add_field(name='Type', value=type(tgt).__name__)
@@ -869,7 +875,7 @@ async def vy(client, message, **kwargs):
 			potentially_none = guild.get_member(member_id)
 			if potentially_none is None:
 				try:
-					targets.add(await client.fetch_user_info(member_id))
+					targets.add(await client.fetch_user(member_id))
 				except discord.NotFound:
 					pass
 			else:
@@ -890,7 +896,7 @@ async def vy(client, message, **kwargs):
 
 		potentially_none = guild.get_member(mutee_id)
 		if potentially_none is None:
-			mutee = await client.fetch_user_info(mutee_id)
+			mutee = await client.fetch_user(mutee_id)
 		else:
 			mutee = potentially_none
 
@@ -1038,7 +1044,7 @@ async def vc(client, message, **kwargs):
 			potentially_none = guild.get_member(member_id)
 			if potentially_none is None:
 				try:
-					targets.add(await client.fetch_user_info(member_id))
+					targets.add(await client.fetch_user(member_id))
 				except discord.NotFound:
 					pass
 			else:
@@ -1736,7 +1742,11 @@ async def _math(client, message, **kwargs):
 
 @shadow(auth=checks.is_operator)
 async def gamestatus(client, message, **kwargs):
-	await client.change_presence(game=discord.Game(name=kwargs['arguments']))
+	if kwargs['arguments'] is None:
+		status = None
+	else:
+		status = discord.Game(name=kwargs['arguments'])
+	await client.change_presence(activity=status)
 	embed = emb.success('Set game status to: ``{}``'.format(utils.wrapbackticks(kwargs['arguments'])))
 	await bot.reply(message, emb=embed)
 
@@ -1848,7 +1858,10 @@ async def bans(client, message, **kwargs):
 		description=ulist,
 		colour=col.r_success,
 	)
-	embed.set_thumbnail(url=message.guild.icon_url)
+	try:
+		embed.set_thumbnail(url=message.guild.icon_url)
+	except TypeError:
+		pass
 
 	if len(ulist) > 2048:
 		for idx, page in enumerate(utils.paginate(ulist, max_length=2048)):
