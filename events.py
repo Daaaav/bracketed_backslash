@@ -1,6 +1,7 @@
 # encoding=utf-8
 
 import asyncio
+import copy
 import datetime
 import logging
 import json
@@ -1687,6 +1688,59 @@ async def on_guild_channel_delete(c):
 				'UNKNOWN TYPE'
 			),
 		),
+	)
+	await schan.send(embed=embed)
+
+async def on_raw_bulk_message_delete(payload):
+	# We must first know what channel it is
+	mchan = wrapper.client.get_channel(payload.channel_id)
+
+	unhandled_message_ids = copy.deepcopy(payload.message_ids)
+	# Can't we just handle this with normal message deletion events?
+	if len(payload.cached_messages) <= 10:
+		for m in payload.cached_messages:
+			# Technically on_raw_message_delete always fires in case of normal deletes,
+			# and the starboard may remove deleted messages based on that.
+			# But this is classified as a purge anyway, and deleting messages from the
+			# starboard is not that important.
+			await on_message_delete(m)
+			unhandled_message_ids.remove(m.id)
+
+	if not unhandled_message_ids:
+		# That wasn't much of a purge.
+		return
+
+	if not isinstance(mchan, discord.abc.PrivateChannel) and \
+	utils.logdisabled('message_delete', mchan.guild) and \
+	utils.logdisabled('message_deleteuncached', mchan.guild):
+		return
+
+	# Okay, we're not sending like 50 "deleted message" notifications.
+	oldest_id = next(iter(payload.message_ids))
+	newest_id = oldest_id
+	for mid in payload.message_ids:
+		if mid < oldest_id:
+			oldest_id = mid
+		if mid > newest_id:
+			newest_id = mid
+
+	schan = utils.getspecialchannel(mchan.guild)
+	embed = discord.Embed(
+		title='\N{RADIOACTIVE SIGN}{amount} MESSAGES PURGED IN #{chan.name}'.format(
+			amount=len(payload.message_ids), chan=mchan
+		),
+		description=(
+			'Oldest deleted message: {}\n'
+			'Newest deleted message: {}'
+		).format(oldest_id, newest_id),
+		colour=0xFF0000,
+		timestamp=datetime.datetime.now(),
+	)
+	embed.add_field(
+		name='\u200b',
+		value=utils.mdspecialchars(
+			utils.id_summary(cid=mchan.id),
+		)
 	)
 	await schan.send(embed=embed)
 
