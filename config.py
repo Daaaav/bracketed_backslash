@@ -122,6 +122,14 @@ configs = {
 		'detachable': True,
 		'shown': False,
 	},
+	'nologchannels': {
+		'default': [],
+		'type': 'cid',
+		'is_array': True,
+		'expl': 'Events (like edits, deletes and reactions) involving messages in these channels will never be logged in the mod log, and will never cause "Message was edited/deleted" messages.',
+		'detachable': True,
+		'shown': False,
+	},
 	'votevmute_minmembers': {
 		'default': 4,
 		'type': 'int',

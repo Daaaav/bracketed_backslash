@@ -179,7 +179,8 @@ async def on_message(m):
 	schan = utils.getspecialchannel_reply(m)
 	priv = utils.isprivatemessage(m.guild)
 
-	if not priv and m.tts and not utils.logdisabled('message_tts', m.guild):
+	if not priv and m.tts and not utils.logdisabled('message_tts', m.guild) and \
+	not utils.channelnotlogged(m.channel, m.guild):
 		e = discord.Embed(
 			title=(
 				':microphone2:Message {0.id} was sent with TTS'
@@ -199,7 +200,8 @@ async def on_message(m):
 		)
 		await schan.send(embed=e)
 
-	if not priv and m.attachments and not utils.logdisabled('message_delete', m.guild):
+	if not priv and m.attachments and not utils.logdisabled('message_delete', m.guild) and \
+	not utils.channelnotlogged(m.channel, m.guild):
 		a = await utils.fetch(m.attachments[0].url)
 		fn = (
 			'{atchcche}/{id}_{fn}'
@@ -537,6 +539,8 @@ async def on_message_delete(msg):
 
 	if utils.logdisabled('message_delete', msg.guild):
 		return
+	if utils.channelnotlogged(msg.channel, msg.guild):
+		return
 	schan = utils.getspecialchannel_reply(msg)
 
 	if msg.type is not discord.MessageType.default:
@@ -632,6 +636,8 @@ async def on_message_delete(msg):
 
 async def on_message_edit(old, new):
 	if utils.isprivatemessage(old.guild):
+		return
+	if utils.channelnotlogged(new.channel, new.guild):
 		return
 	schan = utils.getspecialchannel_reply(new)
 	if not old.pinned and new.pinned and not utils.logdisabled('message_pin', new.guild):
@@ -1390,7 +1396,8 @@ async def on_reaction_add(reaction, user):
 	message = reaction.message
 
 	if utils.isprivatemessage(message.guild) \
-	or utils.logdisabled('reaction_add', message.guild):
+	or utils.logdisabled('reaction_add', message.guild) \
+	or utils.channelnotlogged(message.channel, message.guild):
 		return
 
 	specialchannel = utils.getspecialchannel(message.guild)
@@ -1447,7 +1454,8 @@ async def on_reaction_remove(reaction, user):
 	message = reaction.message
 
 	if utils.isprivatemessage(message.guild) \
-	or utils.logdisabled('reaction_remove', message.guild):
+	or utils.logdisabled('reaction_remove', message.guild) \
+	or utils.channelnotlogged(message.channel, message.guild):
 		return
 
 	specialchannel = utils.getspecialchannel(message.guild)
@@ -1496,7 +1504,8 @@ async def on_reaction_remove(reaction, user):
 	await specialchannel.send(embed=embed)
 
 async def on_reaction_clear(m, rs):
-	if utils.isprivatemessage(m.guild) or utils.logdisabled('reaction_clear', m.guild):
+	if utils.isprivatemessage(m.guild) or utils.logdisabled('reaction_clear', m.guild) \
+	or utils.channelnotlogged(m.channel, m.guild):
 		return
 	schan = utils.getspecialchannel(m.guild)
 	rlist = ''
@@ -1710,8 +1719,10 @@ async def on_raw_bulk_message_delete(payload):
 		# That wasn't much of a purge.
 		return
 
-	if not isinstance(mchan, discord.abc.PrivateChannel) and \
-	utils.logdisabled('message_delete', mchan.guild) and \
+	if isinstance(mchan, discord.abc.PrivateChannel) \
+	or utils.channelnotlogged(mchan, mchan.guild):
+		return
+	if utils.logdisabled('message_delete', mchan.guild) and \
 	utils.logdisabled('message_deleteuncached', mchan.guild):
 		return
 
@@ -1757,7 +1768,8 @@ async def on_raw_message_delete(payload):
 	await starboard.remove_message(payload, mchan)
 
 	if not isinstance(mchan, discord.abc.PrivateChannel) and \
-	not utils.logdisabled('message_deleteuncached', mchan.guild):
+	not utils.logdisabled('message_deleteuncached', mchan.guild) and \
+	not utils.channelnotlogged(mchan, mchan.guild):
 		# Check if on_message_delete() was already called by this message
 		# If it was, then return
 		if discord.utils.find(
@@ -1791,8 +1803,10 @@ async def on_raw_message_delete(payload):
 async def on_raw_message_edit(payload):
 	# We must first know what channel it is
 	mchan = wrapper.client.get_channel(int(payload.data['channel_id']))
+
 	if isinstance(mchan, discord.abc.PrivateChannel) or \
-	utils.logdisabled('message_updateuncached', mchan.guild):
+	utils.logdisabled('message_updateuncached', mchan.guild) or \
+	utils.channelnotlogged(mchan, mchan.guild):
 		return
 	# Check if the message is in the cache and return if it is
 	if discord.utils.find(
@@ -1861,7 +1875,8 @@ async def on_raw_reaction_add(payload):
 	await starboard.check_message(payload, mchan, True)
 
 	if not isinstance(mchan, discord.abc.PrivateChannel) and \
-	not utils.logdisabled('reaction_adduncached', mchan.guild):
+	not utils.logdisabled('reaction_adduncached', mchan.guild) and \
+	not utils.channelnotlogged(mchan, mchan.guild):
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(
 			lambda m: m.id == payload.message_id, wrapper.client._connection._messages,
@@ -1915,7 +1930,8 @@ async def on_raw_reaction_remove(payload):
 	await starboard.check_message(payload, mchan, False)
 
 	if not isinstance(mchan, discord.abc.PrivateChannel) and \
-	not utils.logdisabled('reaction_removeuncached', mchan.guild):
+	not utils.logdisabled('reaction_removeuncached', mchan.guild) and \
+	not utils.channelnotlogged(mchan, mchan.guild):
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(
 			lambda m: m.id == payload.message_id, wrapper.client._connection._messages,
@@ -1967,7 +1983,8 @@ async def on_raw_reaction_clear(payload):
 	await starboard.remove_message(payload, mchan)
 
 	if not isinstance(mchan, discord.abc.PrivateChannel) and \
-	not utils.logdisabled('reaction_clearuncached', mchan.guild):
+	not utils.logdisabled('reaction_clearuncached', mchan.guild) and \
+	not utils.channelnotlogged(mchan, mchan.guild):
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(
 			lambda m: m.id == payload.message_id, wrapper.client._connection._messages,

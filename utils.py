@@ -798,6 +798,14 @@ def logdisabled(key, guild):
 		return False
 	return True
 
+def channelnotlogged(channel, guild):
+	# Accepts either a Channel or a channel ID.
+	try:
+		channelid = channel.id
+	except AttributeError:
+		channelid = channel
+	return channelid in config.get_s('nologchannels', guild.id)
+
 def respondtorule(rule):
 	if int(rule) == 37:
 		return 'Funny and original, nothing to see here.'
