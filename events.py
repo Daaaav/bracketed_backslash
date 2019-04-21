@@ -184,7 +184,7 @@ async def on_message(m):
 		e = discord.Embed(
 			title=(
 				':microphone2:Message {0.id} was sent with TTS'
-				' in {0.channel.mention}'
+				' in #{0.channel.name}'
 			).format(m),
 			description=m.content,
 			colour=m.author.colour,
