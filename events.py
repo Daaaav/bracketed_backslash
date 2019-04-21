@@ -1058,7 +1058,7 @@ async def on_member_remove(member):
 		async for entry in guild.audit_logs(
 			# Apparently this parameter is fucked on Discord's end currently
 			#after=datetime.datetime.now() - datetime.timedelta(seconds=2),
-			reverse=False,
+			oldest_first=False,
 		).filter(
 			# Can't grab more than one type of action when making the request
 			# so we'll have to filter it ourselves
