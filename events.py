@@ -1790,7 +1790,7 @@ async def on_raw_message_delete(payload):
 
 		schan = utils.getspecialchannel(mchan.guild)
 		e = discord.Embed(
-			title='UNCACHED MESSAGE DELETED IN {0.mention}'.format(mchan),
+			title='UNCACHED MESSAGE DELETED IN #{0.name}'.format(mchan),
 			url=utils.infourl('messageid=' + str(payload.message_id)),
 			description=(
 				'Since this message is uncached, I can’t give you'
@@ -1819,7 +1819,7 @@ async def on_raw_message_edit(payload):
 	e = discord.Embed(
 		title=(
 			'UNCACHED MESSAGE UPDATED (SENT {rltm}'
-			' IN {0.mention}).'
+			' IN #{0.name}).'
 			' NEWER CONTENT AND PROPERTIES:'
 		).format(
 			mchan,
@@ -1889,7 +1889,7 @@ async def on_raw_reaction_add(payload):
 		if athr.status == discord.Status.offline:
 			mdetails += ' (Invisible)'
 		e = discord.Embed(
-			title='REACTION ADDED TO UNCACHED MESSAGE IN {0.mention}'.format(mchan),
+			title='REACTION ADDED TO UNCACHED MESSAGE IN #{0.name}'.format(mchan),
 			description=(
 				'Since this message is uncached, I can’t give you'
 				' any more information than its ID, author, and channel.'
@@ -1942,7 +1942,7 @@ async def on_raw_reaction_remove(payload):
 		athr = mchan.guild.get_member(payload.user_id)
 		mdetails = athr.mention
 		e = discord.Embed(
-			title='REACTION REMOVED FROM UNCACHED MESSAGE IN {0.mention}'.format(mchan),
+			title='REACTION REMOVED FROM UNCACHED MESSAGE IN #{0.name}'.format(mchan),
 			description=(
 				'Since this message is uncached, I can’t give you'
 				' any more information than its ID, author, and channel.'
@@ -1995,7 +1995,7 @@ async def on_raw_reaction_clear(payload):
 		e = discord.Embed(
 			title=(
 				'REACTIONS CLEARED FROM UNCACHED MESSAGE'
-				' IN {0.mention}'
+				' IN #{0.name}'
 			).format(mchan),
 			url=utils.infourl('messageid=' + str(payload.message_id)),
 			description=(
