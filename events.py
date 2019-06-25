@@ -833,16 +833,50 @@ async def on_member_update(before, after):
 
 		await specialchannel.send(embed=embed)
 	if before.roles != after.roles:
+		addedroles = list(set(after.roles) - set(before.roles))
+		removedroles = list(set(before.roles) - set(after.roles))
+
+		nitroboosterid = config.get_s('nitrobooster', after.guild.id)
+		if nitroboosterid != 0:
+			boosteradd = any(r.id == nitroboosterid for r in addedroles)
+			boosterrem = any(r.id == nitroboosterid for r in removedroles)
+		else:
+			boosteradd = False
+			boosterrem = False
+
+		if boosteradd:
+			nitrobooster = next(r for r in addedroles if r.id == nitroboosterid)
+			if len(addedroles) == 1:
+				addedroles = []
+		if boosterrem:
+			nitrobooster = next(r for r in removedroles if r.id == nitroboosterid)
+			if len(removedroles) == 1:
+				removedroles = []
+
 		if utils.logdisabled('member_roleadd', after.guild):
 			addedroles = []
-		else:
-			addedroles   = list(set(after.roles) - set(before.roles))
-
 		if utils.logdisabled('member_roleremove', after.guild):
 			removedroles = []
-		else:
-			removedroles = list(set(before.roles) - set(after.roles))
 
+		if (boosteradd and not utils.logdisabled('member_boost', after.guild)) \
+		or (boosterrem and not utils.logdisabled('member_unboost', after.guild)):
+			embed = discord.Embed(
+				title=('BOOSTED SERVER' if boosteradd else 'UNBOOSTED SERVER'),
+				colour=nitrobooster.colour
+			)
+			embed.set_author(
+				name=after.display_name,
+				icon_url=after.avatar_url,
+				url=utils.infourl('userid=' + str(after.id)),
+			)
+			embed.add_field(
+				name=('Added role' if boosteradd else 'Removed role'),
+				value=utils.mdspecialchars('{} ({})'.format(
+						nitrobooster.name, nitrobooster.id
+					)
+				)
+			)
+			await specialchannel.send(embed=embed)
 		if addedroles or removedroles:
 			title = ''
 			if addedroles and removedroles:
@@ -1190,14 +1224,22 @@ async def on_member_unban(guild, user):
 	await specialchannel.send(msg)
 
 async def on_guild_role_create(r):
-	if utils.logdisabled('role_create', r.guild):
-		return
 	schan = utils.getspecialchannel(r.guild)
 	embed = discord.Embed(
 		title='ROLE ADD AT {time}'.format(time=str(r.created_at)),
 		description=utils.mdspecialchars(r.name),
 		colour=r.colour,
 	)
+
+	if r.name == 'Nitro Booster' and r.managed:
+		embed.set_footer(text='This is *the* booster role, right? Congrats!')
+		config.detach('nitrobooster', r.guild.id)
+		config.set_s('nitrobooster', r.id, r.guild.id)
+		config.saveconfig()
+
+	if utils.logdisabled('role_create', r.guild):
+		return
+
 	await schan.send(embed=embed)
 
 async def on_guild_role_delete(r):

@@ -339,6 +339,14 @@ configs = {
 		'detachable': True,
 		'shown': True,
 	},
+	'nitrobooster': {
+		'default': 0,
+		'type': 'rid',
+		'is_array': False,
+		'expl': 'The Nitro Booster role for this server. This will be set automatically upon creation of the role.',
+		'detachable': True,
+		'shown': True,
+	},
 }
 
 s = {}
