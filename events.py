@@ -686,6 +686,10 @@ async def on_message_edit(old, new):
 		# but this is just a refactor
 		return
 
+	edited_at = new.edited_at
+	if edited_at is None:
+		edited_at = datetime.datetime.now()
+
 	if not utils.logdisabled('message_edit', new.guild):
 		em = discord.Embed(
 			title=(
@@ -700,7 +704,7 @@ async def on_message_edit(old, new):
 				chan=utils.mdspecialchars(new.channel.name),
 			),
 			colour=new.author.colour,
-			timestamp=new.edited_at,
+			timestamp=edited_at,
 		)
 		em.set_author(
 			name=new.author.display_name,
@@ -738,7 +742,7 @@ async def on_message_edit(old, new):
 	delta_threshold = datetime.timedelta(
 		config.get_s('edited_message_resend_timer', new.guild.id)
 	)
-	if ((new.edited_at - new.created_at) < delta_threshold and
+	if ((edited_at - new.created_at) < delta_threshold and
 	utils.diff(old.content, new.content) >
 	config.get_s('edited_message_resend_threshold', new.guild.id)):
 		embed = discord.Embed(title='UNEDITED MESSAGE', colour=new.author.colour)
