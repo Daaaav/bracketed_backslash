@@ -639,6 +639,9 @@ async def on_message_edit(old, new):
 		return
 	if utils.channelnotlogged(new.channel, new.guild):
 		return
+	edited_at = new.edited_at
+	if edited_at is None:
+		edited_at = datetime.datetime.now()
 	schan = utils.getspecialchannel_reply(new)
 	if not old.pinned and new.pinned and not utils.logdisabled('message_pin', new.guild):
 		em = discord.Embed(
@@ -679,16 +682,48 @@ async def on_message_edit(old, new):
 		)
 		await schan.send(embed=em)
 
+	if not utils.logdisabled('message_deleteembed', new.guild) \
+	and len(old.embeds) > len(new.embeds) and old.content == new.content:
+		em = discord.Embed(
+			title=(
+				'\N{MEMO}EMBED REMOVED FROM MESSAGE (SENT {reltime} IN #{chan})'
+			).format(
+				reltime=utils.reltime(
+					time.mktime(
+						new.created_at.timetuple(),
+					),
+				),
+				chan=utils.mdspecialchars(new.channel.name),
+			),
+			colour=new.author.colour,
+			timestamp=edited_at,
+		)
+		em.set_author(
+			name=new.author.display_name,
+			icon_url=new.author.avatar_url,
+		)
+
+		if new.content:
+			em.add_field(name='Message Content', value=new.content[:1024], inline=False)
+		else:
+			em.add_field(name='No Message Content', value='_(none)_', inline=False)
+		if len(new.content) > 1024:
+			em.add_field(name='[continued]', value=new.content[1024:], inline=False)
+
+		em.add_field(
+			name='\u200b',
+			value=utils.mdspecialchars(
+				utils.id_summary(uid=new.author.id, mid=new.id, cid=new.channel.id),
+			),
+		)
+		await schan.send(embed=em)
+
 	# Preliminary checkings
 	if old.content == new.content:
 		# Must be the message being pinned and/or embed(s) displaying
 		# Actually, TTS and rich embeds could also have changed,
 		# but this is just a refactor
 		return
-
-	edited_at = new.edited_at
-	if edited_at is None:
-		edited_at = datetime.datetime.now()
 
 	if not utils.logdisabled('message_edit', new.guild):
 		em = discord.Embed(
