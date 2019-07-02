@@ -930,3 +930,14 @@ def paginate(request, *, max_length):
 	pages.append(page)
 
 	return pages
+
+def get_jump_link(message):
+	return '[→ Go to message]({})'.format(message.jump_url)
+
+def embed_add_jump_link(embed, message):
+	"""Add jump url for message to embed"""
+	embed.add_field(
+		name='\u200b',
+		value=get_jump_link(message),
+		inline=False
+	)

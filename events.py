@@ -661,6 +661,7 @@ async def on_message_edit(old, new):
 		em.set_footer(
 			text=utils.id_summary(uid=new.author.id, mid=new.id, cid=new.channel.id),
 		)
+		utils.embed_add_jump_link(em, new)
 		await schan.send(embed=em)
 	if old.pinned and not new.pinned and not utils.logdisabled('message_unpin', new.guild):
 		em = discord.Embed(
@@ -680,6 +681,7 @@ async def on_message_edit(old, new):
 		em.set_footer(
 			text=utils.id_summary(uid=new.author.id, mid=new.id, cid=new.channel.id),
 		)
+		utils.embed_add_jump_link(em, new)
 		await schan.send(embed=em)
 
 	if not utils.logdisabled('message_deleteembed', new.guild) \
@@ -712,7 +714,7 @@ async def on_message_edit(old, new):
 
 		em.add_field(
 			name='\u200b',
-			value=utils.mdspecialchars(
+			value=utils.get_jump_link(new) + '\n' + utils.mdspecialchars(
 				utils.id_summary(uid=new.author.id, mid=new.id, cid=new.channel.id),
 			),
 		)
@@ -762,7 +764,7 @@ async def on_message_edit(old, new):
 
 		em.add_field(
 			name='\u200b',
-			value=utils.mdspecialchars(
+			value=utils.get_jump_link(new) + '\n' + utils.mdspecialchars(
 				utils.id_summary(uid=new.author.id, mid=new.id, cid=new.channel.id),
 			),
 		)
@@ -1518,7 +1520,7 @@ async def on_reaction_add(reaction, user):
 
 	embed.add_field(
 		name='\u200b',
-		value=utils.mdspecialchars(
+		value=utils.get_jump_link(new) + '\n' + utils.mdspecialchars(
 			utils.id_summary(
 				uid=user.id,
 				mid=message.id,
@@ -1573,7 +1575,7 @@ async def on_reaction_remove(reaction, user):
 
 	embed.add_field(
 		name='\u200b',
-		value=utils.mdspecialchars(utils.id_summary(
+		value=utils.get_jump_link(new) + '\n' + utils.mdspecialchars(utils.id_summary(
 			uid=user.id,
 			mid=message.id,
 			eid=reaction.emoji.id if is_custom_emoji else '',
@@ -1615,6 +1617,7 @@ async def on_reaction_clear(m, rs):
 	)
 	embed.add_field(name='Message ID (temp)', value=m.id)
 	embed.add_field(name='Reactions', value=rlist)
+	utils.embed_add_jump_link(embed, m)
 	await schan.send(embed=embed)
 
 async def on_guild_update(before, after):
@@ -1947,6 +1950,9 @@ async def on_raw_message_edit(payload):
 			' I can’t give you its older properties.'
 		)
 	)
+	# We don't have a message, so we'll have to make the link ourselves. Easy, but TODO.
+	# Don't forget all the on_raw_reaction_ functions.
+	#utils.embed_add_jump_link(e, message)
 	await schan.send(embed=e)
 
 async def on_raw_reaction_add(payload):
