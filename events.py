@@ -1520,7 +1520,7 @@ async def on_reaction_add(reaction, user):
 
 	embed.add_field(
 		name='\u200b',
-		value=utils.get_jump_link(new) + '\n' + utils.mdspecialchars(
+		value=utils.get_jump_link(message) + '\n' + utils.mdspecialchars(
 			utils.id_summary(
 				uid=user.id,
 				mid=message.id,
@@ -1575,7 +1575,7 @@ async def on_reaction_remove(reaction, user):
 
 	embed.add_field(
 		name='\u200b',
-		value=utils.get_jump_link(new) + '\n' + utils.mdspecialchars(utils.id_summary(
+		value=utils.get_jump_link(message) + '\n' + utils.mdspecialchars(utils.id_summary(
 			uid=user.id,
 			mid=message.id,
 			eid=reaction.emoji.id if is_custom_emoji else '',
