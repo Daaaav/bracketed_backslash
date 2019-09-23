@@ -3564,7 +3564,7 @@ async def _starboard(client, message, **kwargs):
 					await bot.reply(message, emb=em)
 					return
 				# Don't allow animated emotes, that's unfair plus requires an "a"
-				if reaction.animated:
+				if reaction.emoji.animated:
 					em = emb.error(
 						'You can not use animated emotes.'
 					)
