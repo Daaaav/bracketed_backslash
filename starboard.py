@@ -392,6 +392,9 @@ async def ensure_message_not_on_starboard(message=None, id=None, remove_slowly=F
 	if guild_id is None:
 		guild_id = message.guild.id
 
+	# Maybe we starboarded this before? Sorry I didn't tidy up. Give it another chance later.
+	starboarding_messages = set(filter(lambda m: m.id != id, starboarding_messages))
+
 	# Is it actually on the starboard?
 	cursor.execute("""
 			SELECT star_message_id
@@ -409,9 +412,6 @@ async def ensure_message_not_on_starboard(message=None, id=None, remove_slowly=F
 		# Okay, cool, nothing to do!
 		return
 
-	# Maybe we starboarded this before? Sorry I didn't tidy up. Give it another chance later.
-	starboarding_messages = set(filter(lambda m: m.id != id, starboarding_messages))
-
 	# Now remove the message
 	await remove_starboard_message(id, result[0], guild_id, remove_slowly)
 
@@ -424,23 +424,32 @@ async def post_starboard_message(message, score, num_stars, num_nostars):
 		config.get_s('starboard_channel', message.guild.id)
 	)
 
-	starboard_message = await starboard_chan.send(
-		star_message_contents(message, score, num_stars, num_nostars),
-		embed=star_message_embed(message, score)
-	)
-
-	cursor.execute("""
-			INSERT INTO starboard_messages
-			(orig_message_id, guild_id, channel_id, author_id, star_message_id)
-			VALUES
-			(?, ?, ?, ?, ?)
-		""",
-		(
-			message.id, message.guild.id, message.channel.id, message.author.id,
-			starboard_message.id
+	try:
+		starboard_message = await starboard_chan.send(
+			star_message_contents(message, score, num_stars, num_nostars),
+			embed=star_message_embed(message, score)
 		)
-	)
-	db_commit()
+
+		cursor.execute("""
+				INSERT INTO starboard_messages
+				(orig_message_id, guild_id, channel_id, author_id, star_message_id)
+				VALUES
+				(?, ?, ?, ?, ?)
+			""",
+			(
+				message.id, message.guild.id, message.channel.id, message.author.id,
+				starboard_message.id
+			)
+		)
+		db_commit()
+	except discord.errors.Forbidden:
+		logging.warning(
+			(
+				'Bot has no permission to send message to starboard on guild {}. '
+				'Will send a 🔑 reaction on the original message.'
+			).format(message.guild.name)
+		)
+		await message.add_reaction('🔑')
 
 async def edit_starboard_message(message, score, num_stars, num_nostars, starboard_message_id):
 	"""Edit a starboard announcement"""
