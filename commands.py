@@ -2593,7 +2593,11 @@ async def addcustomrolecommand(client, message, **kwargs):
 		)
 
 	if customcommands.exists(message.guild, splitargs[0]):
-		embed = emb.error('The custom command `{}` already exists!'.format(
+		embed = emb.error(
+			(
+				'The custom command `{}` already exists! '
+				'You can remove it using `\\removecustomcommand`.'
+			).format(
 				utils.mdspecialchars(splitargs[0])
 			)
 		)
@@ -2646,7 +2650,11 @@ async def addcustomaliascommand(client, message, **kwargs):
 		return
 
 	if customcommands.exists(message.guild, splitargs[0]):
-		embed = emb.error('The custom command `{}` already exists!'.format(
+		embed = emb.error(
+			(
+				'The custom command `{}` already exists! '
+				'You can remove it using `\\removecustomcommand`.'
+			).format(
 				utils.mdspecialchars(splitargs[0])
 			)
 		)
