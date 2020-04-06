@@ -3227,7 +3227,7 @@ async def move(client, message, **kwargs):
 @shadow(aliases=['star'], guildonly=True)
 async def _starboard(client, message, **kwargs):
 	if kwargs['arguments'] is None:
-		em = emb.error('Try `\help starboard` to know what arguments can be used.')
+		em = emb.error('Try `\help starboard` to know what arguments can be used.\nTo see the current starboard configuration, try `\starboard summarize_config`.')
 		await bot.reply(message, emb=em)
 		return
 
@@ -3557,7 +3557,7 @@ async def _starboard(client, message, **kwargs):
 				await bot.reply(message, emb=em)
 				return
 			# Now, is it some kind of homebrew emote, or a Unicode emoji?
-			if isinstance(reaction.emoji, discord.emoji.PartialEmoji):
+			if isinstance(reaction.emoji, discord.PartialEmoji):
 				# Okay, we can't see it, must be from somewhere else.
 				em = emb.error(
 					'You can not use custom emotes from other servers.'

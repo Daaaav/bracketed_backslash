@@ -160,7 +160,7 @@ async def reply(messageobject, message=None, *, emb=None):
 			),
 			messageobject.channel,
 			messageobject.id,
-			events.msg_start + message,
+			msg_start + message,
 			dispemb,
 		)
 		raise

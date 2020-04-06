@@ -179,7 +179,7 @@ async def check_message(payload, channel, adding):
 		is_star = False
 		is_nostar = False
 
-		if isinstance(reaction.emoji, discord.emoji.PartialEmoji):
+		if isinstance(reaction.emoji, discord.PartialEmoji):
 			# It must be a discord.emoji.Emoji if it's from here
 			continue
 		elif isinstance(reaction.emoji, discord.emoji.Emoji):
