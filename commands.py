@@ -3392,8 +3392,9 @@ async def _starboard(client, message, **kwargs):
 		await bot.reply(message, emb=em)
 		return
 
-	# Now come the admin-only commands.
-	if not checks.is_admin(message.author) and not kwargs['sudo']:
+	# Now come the admin-only commands. If you can manage channels, you can add and delete
+	# entire channels, so you're trusted enough to configure a starboard as well.
+	if not checks.is_channel_manager(message.author) and not kwargs['sudo']:
 		em = emb.error(
 			(
 				'The action `{}` was not recognized or forbidden.'
