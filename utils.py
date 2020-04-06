@@ -420,7 +420,11 @@ def helplist(cats, guild, onlycat=None):
 
 			first = True
 			if cat['cat_slug'] == 'server':
-				helpcommands = customcommands.list_commands_help(guild)
+				if onlycat is None:
+					# This can be too large to send the message
+					helpcommands = []
+				else:
+					helpcommands = customcommands.list_commands_help(guild)
 			else:
 				helpcommands = cat['commands']
 			for cmd in helpcommands:
