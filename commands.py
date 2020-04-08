@@ -1554,6 +1554,152 @@ async def info(client, message, **kwargs):
 
 	await bot.reply(message, content)
 
+@shadow(auth=checks.is_role_manager)
+async def channelperms(client, message, **kwargs):
+	if kwargs['arguments'] is not None:
+		person = utils.match_input(message.guild.members, discord.Member, kwargs['arguments'])
+		if person is None:
+			embed = emb.error(
+				'You specified a member, but no matching member has been found.'
+			)
+			await bot.reply(message, emb=embed)
+			return
+	else:
+		person = None
+
+	chans = {} # channel -> permissions
+	times_targeted = {} # role/member -> amount of occurrences
+	for c in sorted(message.guild.channels, key=lambda c: c.position):
+		if person is None:
+			chans[c] = c.overwrites
+			for o in chans[c]:
+				if o in times_targeted:
+					times_targeted[o] += 1
+				else:
+					times_targeted[o] = 1
+		else:
+			chans[c] = {person: c.permissions_for(person)}
+
+	if person is not None:
+		times_targeted[person] = 1
+
+	ordered_overwrites = []
+	for o in times_targeted:
+		ordered_overwrites.append((o, times_targeted[o]))
+	ordered_overwrites.sort(key=lambda o: o[1], reverse=True)
+
+	# Occurrences are no longer necessary
+	for i in range(len(ordered_overwrites)):
+		ordered_overwrites[i] = ordered_overwrites[i][0]
+
+	import html
+	html_table = (
+		'\t<table border="1">\n'
+		'\t\t<tr>\n'
+		'\t\t\t<td></td>\n'
+	)
+	for o in ordered_overwrites:
+		name = o.name
+		if isinstance(o, discord.Member) or isinstance(o, discord.User):
+			name += '#{}'.format(o.discriminator)
+		html_table += '\t\t\t<td style="color: rgb({},{},{});">{}</td>\n'.format(
+			o.color.r, o.color.g, o.color.b, html.escape(name)
+		)
+
+	html_table += '\t\t</tr>\n'
+
+	for c in sorted(chans, key=lambda c: c.position):
+		if not isinstance(c, discord.TextChannel):
+			# Only show text channels for now
+			continue
+
+		html_table += '\t\t<tr>\n'
+
+		if isinstance(c, discord.TextChannel):
+			html_table += '\t\t\t<td>#{}</td>\n'.format(html.escape(c.name))
+		elif isinstance(c, discord.CategoryChannel):
+			html_table += '\t\t\t<td><strong>{}</strong></td>\n'.format(
+				html.escape(c.name)
+			)
+		else:
+			html_table += '\t\t\t<td>{}</td>\n'.format(html.escape(c.name))
+
+		for o in ordered_overwrites:
+			if o not in chans[c]:
+				html_table += '\t\t\t<td></td>\n'
+			else:
+				perm_info = ''
+				if isinstance(chans[c][o], discord.PermissionOverwrite):
+					# Permissions can also be None, for neutral
+					if chans[c][o].read_messages:
+						perm_info = '<span class="allow">+R</span> '
+					elif chans[c][o].read_messages == False:
+						perm_info = '<span class="deny">-R</span> '
+					if chans[c][o].send_messages:
+						perm_info += '<span class="allow">+W</span> '
+					elif chans[c][o].send_messages == False:
+						perm_info += '<span class="deny">-W</span> '
+				else:
+					# discord.Permissions: Only True and False
+					if chans[c][o].read_messages and chans[c][o].send_messages:
+						perm_info = '<span class="allow">Read/Write</span>';
+					elif chans[c][o].read_messages:
+						perm_info = '<span class="halfallow">Read-only</span>';
+					else:
+						perm_info = '<span class="deny">No access</span>';
+
+				html_table += '\t\t\t<td>{}</td>\n'.format(perm_info)
+		html_table += '\t\t</tr>\n'
+	html_table += '\t</table>\n'
+
+	if person is None:
+		title = 'Channel permissions in {}'.format(html.escape(message.guild.name))
+		result_info = (
+			'Just open this file in your browser '
+			'to see an overview of channel permissions:'
+		)
+	else:
+		title = 'Evaluated channel permissions for {}#{} in {}'.format(
+			html.escape(person.name), person.discriminator,
+			html.escape(message.guild.name)
+		)
+		result_info = (
+			'Just open this file in your browser '
+			'to see an overview of channel permissions '
+			'for this member: '
+		)
+
+	html_main = (
+		'<!DOCTYPE html>\n'
+		'<html>\n'
+		'<head>\n'
+		'\t<title>{title}</title>\n'
+		'\t<style>\n'
+		'\t\tbody {{ font-family: sans-serif; }}\n'
+		'\t\t.allow {{ color: green; }}\n'
+		'\t\t.deny {{ color: red; }}\n'
+		'\t\t.halfallow {{ color: orange; }}\n'
+		'\t</style>\n'
+		'</head>\n'
+		'<body>\n'
+		'\t<h1>{title}</h1>\n'
+		'{table}'
+		'\t<p>Generated at {time}</p>'
+		'</body>'
+	).format(
+		title=title, table=html_table, time=time.strftime(
+			config.get_s('timeformat', message.guild.id)
+		)
+	)
+
+	with tempfile.NamedTemporaryFile() as temp:
+		temp.write(html_main.encode())
+		temp.flush()
+		await message.channel.send(
+			bot.calculate_msg_start(message) + result_info,
+			file=discord.File(temp.name, 'channels.html')
+		)
+
 @shadow()
 async def botok(client, message, **kwargs):
 	embed = emb.success('Bot is okay.')
