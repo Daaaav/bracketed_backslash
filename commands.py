@@ -161,7 +161,7 @@ async def _config(client, message, **kwargs):
 	if kwargs['arguments'] is None:
 		content = (
 			'You can use the following options:\n'
-			'`\config list`\n'
+			'`\config list [CAT]`\n'
 			'`\config reload`\n'
 			'`\config get <key>`\n'
 			'`\config set <key> <value>` (not for arrays or dics)\n'
@@ -180,9 +180,39 @@ async def _config(client, message, **kwargs):
 		await bot.reply(message, emb=embed)
 		return
 	elif kwargs['arguments'] == 'list':
-		content = '```css'
+		content = 'All option categories:\n'
+		for cat in config.configcats:
+			content += '    `{}`: {}\n'.format(cat, config.configcats[cat]['name'])
+		content += 'Use `\config list <CAT>` to list all settings under a given category.'
+		await bot.reply(message, content)
+		return
+
+
+	splitargs = kwargs['arguments'].split(' ', 2)
+
+	editingmaster = True
+
+	if len(splitargs) == 1:
+		embed = emb.error('Too few arguments.')
+		await bot.reply(message, emb=embed)
+		return
+
+	if splitargs[0] == 'list':
+		if splitargs[1] not in config.configcats:
+			embed = emb.error(
+				(
+					'That category does not exist. '
+					'Try `\\config list` for a list of categories.'
+				)
+			)
+			await bot.reply(message, emb=embed)
+			return
+
+		content = '**{}** options:```css'.format(config.configcats[splitargs[1]]['name'])
 		for c in config.s:
 			if not config.exists(c):
+				continue
+			if config.get_cat(c) != splitargs[1]:
 				continue
 			try:
 				content += '\n{} [{}] = {}'.format(
@@ -212,16 +242,7 @@ async def _config(client, message, **kwargs):
 		await bot.reply(message, content)
 		return
 
-	splitargs = kwargs['arguments'].split(' ', 2)
-
-	editingmaster = True
-
-	if len(splitargs) == 1:
-		embed = emb.error('Too few arguments.')
-		await bot.reply(message, emb=embed)
-		return
-
-	if splitargs[0] == 'set':
+	elif splitargs[0] == 'set':
 		if not config.exists(splitargs[1]):
 			embed = emb.error('That setting does not exist')
 			await bot.reply(message, emb=embed)

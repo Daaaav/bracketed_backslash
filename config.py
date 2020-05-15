@@ -477,6 +477,9 @@ def get_expl(skey):
 		return None
 	return configs[skey]['expl']
 
+def get_cat(skey):
+	return configs[skey]['cat']
+
 def input_to_type_key(request, skey):
 	output = input_to_type(request, get_type(skey))
 	return output
