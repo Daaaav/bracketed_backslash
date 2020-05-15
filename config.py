@@ -4,6 +4,36 @@ import json
 import copy
 import logging
 
+configcats = {
+	'operation': {
+		'name': 'Bot operation',
+	},
+	'commands': {
+		'name': 'Command usage',
+	},
+	'datetime': {
+		'name': 'Date and time',
+	},
+	'logging': {
+		'name': 'Logging',
+	},
+	'resending': {
+		'name': 'Message resending',
+	},
+	'roles': {
+		'name': 'Roles and role cache',
+	},
+	'starboard': {
+		'name': 'Starboard',
+	},
+	'tntgb': {
+		'name': 'Try Not To Get Banned',
+	},
+	'voice': {
+		'name': 'Voice chat',
+	},
+}
+
 # types can be:
 # bln: boolean
 # int: integer
@@ -25,6 +55,7 @@ configs = {
 		'expl': 'Sets the game status for the bot.',
 		'detachable': False,
 		'shown': True,
+		'cat': 'operation',
 	},
 	'timeformat': {
 		'default': '%Y-%m-%d %H:%M:%S (%Z)',
@@ -33,6 +64,7 @@ configs = {
 		'expl': 'The date format used in messages.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'datetime',
 	},
 	'blacklist': {
 		'default': [],
@@ -41,6 +73,7 @@ configs = {
 		'expl': 'A list of users that will be ignored by the bot.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'commands',
 	},
 	'disabledcommands': {
 		'default': [],
@@ -49,6 +82,7 @@ configs = {
 		'expl': 'Commands that cannot be used.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'commands',
 	},
 	'globalcommands': {
 		'default': [],
@@ -57,6 +91,7 @@ configs = {
 		'expl': 'Commands that can be used by anyone in any channel, even if alloweverywhere is false and outside of allowedchannels.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'commands',
 	},
 	'rolecachemode': {
 		'default': 0,
@@ -65,6 +100,7 @@ configs = {
 		'expl': 'Sets the mode for the role cache. If enabled, any member who rejoins the server will be given back the roles they had before they left. Make sure to run `\\rolesync` after enabling this! `0` = disabled. `1` = enabled, and give default roles when new member hasn’t been seen on the server before. `2` = enabled, but if a new member hasn’t been seen on the server before, don’t give default roles.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'roles',
 	},
 	'defaultroles': {
 		'default': [],
@@ -73,6 +109,7 @@ configs = {
 		'expl': 'The default roles that members will get upon their first entry. If `rolecachemode` is set to 1, these roles will be given instantly - if that option is set to `2`, they will be given after sending a message in the join channel.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'roles',
 	},
 	'defaultbotroles': {
 		'default': [],
@@ -81,6 +118,7 @@ configs = {
 		'expl': 'The default roles that bots will get upon entry, if the rolecache is enabled.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'roles',
 	},
 	'restrictiveroles': {
 		'default': [],
@@ -89,6 +127,7 @@ configs = {
 		'expl': 'Roles that are considered to be restrictive roles that should be removed when resetting a member’s roles.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'roles',
 	},
 	'joinchannel': {
 		'default': 0,
@@ -97,6 +136,7 @@ configs = {
 		'expl': 'The channel in which new members have to send a \join message before being given the default role(s).',
 		'detachable': True,
 		'shown': True,
+		'cat': 'roles',
 	},
 	'specialchannel': {
 		'default': 0,
@@ -105,6 +145,7 @@ configs = {
 		'expl': 'Log channel',
 		'detachable': True,
 		'shown': False,
+		'cat': 'logging',
 	},
 	'enabledlogs': {
 		'default': [],
@@ -113,6 +154,7 @@ configs = {
 		'expl': 'Identifiers for log messages that will be shown. `disabledlogs` takes priority, though.',
 		'detachable': True,
 		'shown': False,
+		'cat': 'logging',
 	},
 	'disabledlogs': {
 		'default': [],
@@ -121,6 +163,7 @@ configs = {
 		'expl': 'Identifiers for log messages that will not be shown, no matter what, even if in `enabledlogs`.',
 		'detachable': True,
 		'shown': False,
+		'cat': 'logging',
 	},
 	'nologchannels': {
 		'default': [],
@@ -129,6 +172,7 @@ configs = {
 		'expl': 'Events (like edits, deletes and reactions) involving messages in these channels will never be logged in the mod log, and will never cause "Message was edited/deleted" messages.',
 		'detachable': True,
 		'shown': False,
+		'cat': 'logging',
 	},
 	'votevmute_minmembers': {
 		'default': 4,
@@ -137,6 +181,7 @@ configs = {
 		'expl': 'The minimum amount of users needed to be in any voice channel before a vote voice mute can be started.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'voice',
 	},
 	'votevmute_threshold': {
 		'default': 51,
@@ -145,6 +190,7 @@ configs = {
 		'expl': 'The percentage of users needing to vote in favor of muting before the mute is carried out.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'voice',
 	},
 	'deleted_message_resend_timer': {
 		'default': 0,
@@ -153,6 +199,7 @@ configs = {
 		'expl': 'The time, in seconds, of how much to wait to not resend a deleted message.',
 		'detachable': True,
 		'shown': False,
+		'cat': 'resending',
 	},
 	'deleted_message_resend_content': {
 		'default': False,
@@ -161,6 +208,7 @@ configs = {
 		'expl': 'Set to True to include the content of a deleted message when resending it before the `deleted_message_resend_timer` runs out, set to False to not include the original content.',
 		'detachable': True,
 		'shown': False,
+		'cat': 'resending',
 	},
 	'voicechat_channel_text': {
 		'default': [],
@@ -169,6 +217,7 @@ configs = {
 		'expl': 'The text channels that accompany the voice channels.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'voice',
 	},
 	'voicechat_channel_voice': {
 		'default': [],
@@ -177,6 +226,7 @@ configs = {
 		'expl': 'The voice channels to have text channels to accompany them.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'voice',
 	},
 	'notify_invalidcmd': {
 		'default': False,
@@ -188,6 +238,7 @@ configs = {
 		),
 		'detachable': True,
 		'shown': True,
+		'cat': 'commands',
 	},
 	'tntgb': {
 		'default': {},
@@ -196,6 +247,7 @@ configs = {
 		'expl': 'Config options for the TNTGB gamemode.',
 		'detachable': True,
 		'shown': False,
+		'cat': 'tntgb',
 	},
 	'allowedchannels': {
 		'default': [],
@@ -204,6 +256,7 @@ configs = {
 		'expl': 'The allowed channels non-staff members can use the bot in.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'commands',
 	},
 	'alloweverywhere': {
 		'default': True,
@@ -212,6 +265,7 @@ configs = {
 		'expl': 'Whether to take into account the allowedchannels option or not.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'commands',
 	},
 	'maxarchive': {
 		'default': 5000,
@@ -220,6 +274,7 @@ configs = {
 		'expl': 'The maximum amount of messages that may be requested via `\\archive` in any server.',
 		'detachable': False,
 		'shown': True,
+		'cat': 'operation',
 	},
 	'prefixes': {
 		'default': ['slash '],
@@ -228,6 +283,7 @@ configs = {
 		'expl': 'The prefixes of the bot.',
 		'detachable': True,
 		'shown': False,
+		'cat': 'commands',
 	},
 	'edited_message_resend_timer': {
 		'default': 0,
@@ -239,6 +295,7 @@ configs = {
 		),
 		'detachable': True,
 		'shown': False,
+		'cat': 'resending',
 	},
 	'edited_message_resend_threshold': {
 		'default': 10,
@@ -250,6 +307,7 @@ configs = {
 		),
 		'detachable': True,
 		'shown': False,
+		'cat': 'resending',
 	},
 	'starboard_active': {
 		'default': False,
@@ -258,6 +316,7 @@ configs = {
 		'expl': 'Whether the starboard feature is active on this server.', # "For more info, see gitgud wiki article?"
 		'detachable': True,
 		'shown': True,
+		'cat': 'starboard',
 	},
 	'starboard_channel': {
 		'default': 0,
@@ -266,6 +325,7 @@ configs = {
 		'expl': 'The starboard channel, only used if the feature is active.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'starboard',
 	},
 	'starboard_threshold': {
 		'default': 5,
@@ -274,6 +334,7 @@ configs = {
 		'expl': 'The minimum number of stars before a message will be on the starboard. Note that changing the threshold will not change existing starred messages, unless their number of stars changes.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'starboard',
 	},
 	'starboard_star': {
 		'default': '⭐',
@@ -282,6 +343,7 @@ configs = {
 		'expl': 'The emote that is used as star for the starboard. Can be a unicode emoji, or a custom emote ID (as string). You can not use custom emotes from other servers.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'starboard',
 	},
 	'starboard_nostar': {
 		'default': '❌',
@@ -290,6 +352,7 @@ configs = {
 		'expl': 'The emote that is used as nostar for the starboard. Can be a unicode emoji, or a custom emote ID (as string). You can not use custom emotes from other servers.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'starboard',
 	},
 	'starboard_nostar_barrier': {
 		'default': 2,
@@ -298,6 +361,7 @@ configs = {
 		'expl': 'The amount of nostars that will have no effect, and are needed as a \'staircase\' or buffer before nostars will subtract from the amount of stars. For example, if this value is 2, then a message having 5 stars and 3 nostars will total to having 4 stars. Set to -1 to disable nostars altogether.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'starboard',
 	},
 	'starboard_timelimit': {
 		'default': 345600,
@@ -306,6 +370,7 @@ configs = {
 		'expl': 'The maximum age of a message before starring or unstarring it no longer has effect. Deleting a starred message older than this will also no longer remove it from the starboard.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'starboard',
 	},
 	'starboard_ignoredchannels': {
 		'default': [],
@@ -314,6 +379,7 @@ configs = {
 		'expl': 'List of channels from which messages will never end up on the starboard. Be sure to think of NSFW channels, for example. Do not list the starboard channel, as the starboard will be ignored automatically.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'starboard',
 	},
 	'starboard_author_nostar_mode': {
 		'default': 0,
@@ -322,6 +388,7 @@ configs = {
 		'expl': 'The way nostars by a message author are treated. `0` = If a user nostars their own message, it cannot be starboarded at all (because maybe the author would rather delete the message altogether than have it be starboarded by others?). `1` = If a user nostars their own message, it\'s treated just like when other people nostar the message. `2` = A user nostarring their own message is \'forbidden\', and will not be counted.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'starboard',
 	},
 	'starboard_bans': {
 		'default': [],
@@ -330,6 +397,7 @@ configs = {
 		'expl': 'A list of users that will not be able to star/nostar messages, to be used in case of shitstarring. Their existing star reactions will still count.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'starboard',
 	},
 	'starboard_permalink': {
 		'default': 2,
@@ -338,6 +406,7 @@ configs = {
 		'expl': 'How the permalinks for starboarded messagese are displayed. `0` = Permalink is not displayed. Message ID is displayed in the message content instead. `1` = Permalink is displayed in full, in the message content, as second line. `2` = Permalink is added to the embed and masked with "Go to message".',
 		'detachable': True,
 		'shown': True,
+		'cat': 'starboard',
 	},
 	'nitrobooster': {
 		'default': 0,
@@ -346,6 +415,7 @@ configs = {
 		'expl': 'The Nitro Booster role for this server. This will be set automatically upon creation of the role.',
 		'detachable': True,
 		'shown': True,
+		'cat': 'logging',
 	},
 }
 
