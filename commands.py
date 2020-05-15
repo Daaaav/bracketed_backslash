@@ -162,7 +162,6 @@ async def _config(client, message, **kwargs):
 		content = (
 			'You can use the following options:\n'
 			'`\config list`\n'
-			'`\config listhidden`\n'
 			'`\config reload`\n'
 			'`\config get <key>`\n'
 			'`\config set <key> <value>` (not for arrays or dics)\n'
@@ -180,13 +179,10 @@ async def _config(client, message, **kwargs):
 		embed = emb.success('Reloaded config.')
 		await bot.reply(message, emb=embed)
 		return
-	elif kwargs['arguments'] == 'list' or kwargs['arguments'] == 'listhidden':
+	elif kwargs['arguments'] == 'list':
 		content = '```css'
 		for c in config.s:
 			if not config.exists(c):
-				continue
-			if (kwargs['arguments'] == 'list' and not config.get_shown(c)) or \
-			(kwargs['arguments'] == 'listhidden' and config.get_shown(c)):
 				continue
 			try:
 				content += '\n{} [{}] = {}'.format(
