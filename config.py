@@ -5,8 +5,8 @@ import copy
 import logging
 
 configcats = {
-	'operation': {
-		'name': 'Bot operation',
+	'sysop': {
+		'name': 'Global system operation',
 	},
 	'commands': {
 		'name': 'Command usage',
@@ -54,7 +54,7 @@ configs = {
 		'is_array': False,
 		'expl': 'Sets the game status for the bot.',
 		'detachable': False,
-		'cat': 'operation',
+		'cat': 'sysop',
 	},
 	'timeformat': {
 		'default': '%Y-%m-%d %H:%M:%S (%Z)',
@@ -249,7 +249,7 @@ configs = {
 		'is_array': False,
 		'expl': 'The maximum amount of messages that may be requested via `\\archive` in any server.',
 		'detachable': False,
-		'cat': 'operation',
+		'cat': 'sysop',
 	},
 	'prefixes': {
 		'default': ['slash '],
