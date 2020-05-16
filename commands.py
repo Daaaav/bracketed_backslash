@@ -132,15 +132,6 @@ async def restart(client, message, **kwargs):
 	os.execv(sys.executable, ['python'] + sys.argv)
 
 @shadow(auth=checks.is_host)
-async def kill2(client, message, **kwargs):
-	embed = emb.success('Killing the hopefully duplicate process.', True)
-	embed.add_field(name='Uptime', value=utils.reltime(wrapper.boottimeunix, True))
-	utils.logcommand(kwargs['command'], kwargs['arguments'], message)
-	await bot.reply(message, emb=embed)
-	await client.logout()
-	sys.exit(42)
-
-@shadow(auth=checks.is_host)
 async def kill(client, message, **kwargs):
 	embed = emb.success('Killing.', True)
 	embed.add_field(name='Uptime', value=utils.reltime(wrapper.boottimeunix, True))
