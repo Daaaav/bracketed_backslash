@@ -154,7 +154,7 @@ async def _config(client, message, **kwargs):
 	if message.guild and \
 	message.guild.id == op_ids.ids['opguild'] and \
 	not checks.is_host(message.author):
-		embed = emb.error(bot.t['no_permission'])
+		embed = emb.error(bot.t['you_no_permission'])
 		utils.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 		await bot.reply(message, emb=embed)
 		return
