@@ -562,6 +562,8 @@ async def findu(client, message, **kwargs):
 	if memberhasgame:
 		displaygamename = utils.mdspecialchars(targetmember.activity.name)
 
+		displaygamestatus = 'Activity'
+
 		if targetmember.activity.type == discord.ActivityType.playing:
 			displaygamestatus = 'Playing'
 		if targetmember.activity.type == discord.ActivityType.streaming:
@@ -571,7 +573,7 @@ async def findu(client, message, **kwargs):
 		if targetmember.activity.type == discord.ActivityType.watching:
 			displaygamestatus = 'Watching'
 
-		if targetmember.activity.url is None:
+		if not hasattr(targetmember.activity, 'url') or targetmember.activity.url is None:
 			displaygameurlstatus = 'No Stream Link'
 			displaygameurl = 'No Stream Link'
 		else:
