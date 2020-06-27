@@ -1248,7 +1248,7 @@ async def rolecacheadd(client, message, **kwargs):
 	if splitargs[0] not in wrapper.memberroles[message.guild.id]:
 		wrapper.memberroles[message.guild.id][splitargs[0]] = []
 
-	wrapper.memberroles[message.guild.id][splitargs[0]].append(splitargs[1])
+	wrapper.memberroles[message.guild.id][splitargs[0]].append(int(splitargs[1]))
 	utils.rolecachesave()
 
 	embed = emb.success('Successfully added role {} to member {} in the role cache.'.format(splitargs[1], splitargs[0]))
