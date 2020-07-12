@@ -35,22 +35,26 @@ configcats = {
 }
 
 # types can be:
-# bln: boolean
-# int: integer
-# str: string
-# rti: relative time (number of seconds, but input by user as [Xd][Xh][Xm][Xs] string like 7d12h or 1h)
-# did: generic Discord ID
-# uid: user/member Discord ID (members can be searched)
-# rid: role ID
-# cid: channel ID (channels can be mentioned)
-# gid: guild ID
-# dic: dictionary
+#   bln: boolean
+#   int: integer
+#   str: string
+#   rti: relative time (number of seconds, but input by user as [Xd][Xh][Xm][Xs] string like 7d12h or 1h)
+#   did: generic Discord ID
+#   uid: user/member Discord ID (members can be searched)
+#   rid: role ID
+#   cid: channel ID (channels can be mentioned)
+#   gid: guild ID
+#   dic: dictionary
 # -not added/ideas:
-# -ati: absolute time (unix timestamp)
+#   -ati: absolute time (unix timestamp)
 # access:
-# 2: editable by local admins
-# 1: read-only for local admins, editable for op
-# 0: invisible for local admins
+#   2: editable by local admins
+#   1: read-only for local admins, editable for op
+#   0: invisible for local admins
+# valid_user_value(newvalue, **kwargs) is used for \config
+# and returns a bool indicating a new value's validity.
+# This limit also applies to operators.
+# valid_user_value can also be True to always allow or False to always disallow changes via \config
 configs = {
 	'gamestatus': {
 		'default': '​',
@@ -60,6 +64,7 @@ configs = {
 		'detachable': False,
 		'cat': 'sysop',
 		'access': 0,
+		'valid_user_value': True,
 	},
 	'timeformat': {
 		'default': '%Y-%m-%d %H:%M:%S (%Z)',
@@ -69,6 +74,7 @@ configs = {
 		'detachable': True,
 		'cat': 'datetime',
 		'access': 2,
+		'valid_user_value': True,
 	},
 	'blacklist': {
 		'default': [],
@@ -78,6 +84,7 @@ configs = {
 		'detachable': True,
 		'cat': 'commands',
 		'access': 2,
+		'valid_user_value': True,
 	},
 	'disabledcommands': {
 		'default': [],
@@ -87,6 +94,9 @@ configs = {
 		'detachable': True,
 		'cat': 'commands',
 		'access': 2,
+		'valid_user_value': (
+			lambda newvalue, **kwargs: newvalue not in ('config')
+		),
 	},
 	'globalcommands': {
 		'default': [],
@@ -96,6 +106,7 @@ configs = {
 		'detachable': True,
 		'cat': 'commands',
 		'access': 2,
+		'valid_user_value': True,
 	},
 	'rolecachemode': {
 		'default': 0,
@@ -105,6 +116,9 @@ configs = {
 		'detachable': True,
 		'cat': 'roles',
 		'access': 2,
+		'valid_user_value': (
+			lambda newvalue, **kwargs: newvalue in (0,1,2)
+		),
 	},
 	'defaultroles': {
 		'default': [],
@@ -114,6 +128,7 @@ configs = {
 		'detachable': True,
 		'cat': 'roles',
 		'access': 2,
+		'valid_user_value': True,
 	},
 	'defaultbotroles': {
 		'default': [],
@@ -123,6 +138,7 @@ configs = {
 		'detachable': True,
 		'cat': 'roles',
 		'access': 2,
+		'valid_user_value': True,
 	},
 	'restrictiveroles': {
 		'default': [],
@@ -132,6 +148,7 @@ configs = {
 		'detachable': True,
 		'cat': 'roles',
 		'access': 2,
+		'valid_user_value': True,
 	},
 	'joinchannel': {
 		'default': 0,
@@ -141,6 +158,7 @@ configs = {
 		'detachable': True,
 		'cat': 'roles',
 		'access': 2,
+		'valid_user_value': True,
 	},
 	'specialchannel': {
 		'default': 0,
@@ -150,6 +168,7 @@ configs = {
 		'detachable': True,
 		'cat': 'logging',
 		'access': 2,
+		'valid_user_value': True,
 	},
 	'enabledlogs': {
 		'default': [],
@@ -159,6 +178,7 @@ configs = {
 		'detachable': True,
 		'cat': 'logging',
 		'access': 2,
+		'valid_user_value': True,
 	},
 	'disabledlogs': {
 		'default': [],
@@ -168,6 +188,7 @@ configs = {
 		'detachable': True,
 		'cat': 'logging',
 		'access': 2,
+		'valid_user_value': True,
 	},
 	'nologchannels': {
 		'default': [],
@@ -177,6 +198,7 @@ configs = {
 		'detachable': True,
 		'cat': 'logging',
 		'access': 2,
+		'valid_user_value': True,
 	},
 	'votevmute_minmembers': {
 		'default': 4,
@@ -186,6 +208,9 @@ configs = {
 		'detachable': True,
 		'cat': 'voice',
 		'access': 2,
+		'valid_user_value': (
+			lambda newvalue, **kwargs: newvalue >= 0
+		),
 	},
 	'votevmute_threshold': {
 		'default': 51,
@@ -195,6 +220,9 @@ configs = {
 		'detachable': True,
 		'cat': 'voice',
 		'access': 2,
+		'valid_user_value': (
+			lambda newvalue, **kwargs: newvalue >= 0 and newvalue <= 100
+		),
 	},
 	'deleted_message_resend_timer': {
 		'default': 0,
@@ -204,6 +232,9 @@ configs = {
 		'detachable': True,
 		'cat': 'resending',
 		'access': 2,
+		'valid_user_value': (
+			lambda newvalue, **kwargs: newvalue >= 0
+		),
 	},
 	'deleted_message_resend_content': {
 		'default': False,
@@ -213,6 +244,7 @@ configs = {
 		'detachable': True,
 		'cat': 'resending',
 		'access': 2,
+		'valid_user_value': True,
 	},
 	'voicechat_channel_text': {
 		'default': [],
@@ -222,6 +254,7 @@ configs = {
 		'detachable': True,
 		'cat': 'voice',
 		'access': 2,
+		'valid_user_value': True,
 	},
 	'voicechat_channel_voice': {
 		'default': [],
@@ -231,6 +264,7 @@ configs = {
 		'detachable': True,
 		'cat': 'voice',
 		'access': 2,
+		'valid_user_value': True,
 	},
 	'notify_invalidcmd': {
 		'default': False,
@@ -243,6 +277,7 @@ configs = {
 		'detachable': True,
 		'cat': 'commands',
 		'access': 2,
+		'valid_user_value': True,
 	},
 	'tntgb': {
 		'default': {},
@@ -252,6 +287,7 @@ configs = {
 		'detachable': True,
 		'cat': 'tntgb',
 		'access': 1,
+		'valid_user_value': False,
 	},
 	'allowedchannels': {
 		'default': [],
@@ -261,6 +297,7 @@ configs = {
 		'detachable': True,
 		'cat': 'commands',
 		'access': 2,
+		'valid_user_value': True,
 	},
 	'alloweverywhere': {
 		'default': True,
@@ -270,6 +307,7 @@ configs = {
 		'detachable': True,
 		'cat': 'commands',
 		'access': 2,
+		'valid_user_value': True,
 	},
 	'maxarchive': {
 		'default': 5000,
@@ -279,6 +317,7 @@ configs = {
 		'detachable': False,
 		'cat': 'sysop',
 		'access': 0,
+		'valid_user_value': True,
 	},
 	'prefixes': {
 		'default': ['slash '],
@@ -288,6 +327,7 @@ configs = {
 		'detachable': True,
 		'cat': 'commands',
 		'access': 2,
+		'valid_user_value': True,
 	},
 	'edited_message_resend_timer': {
 		'default': 0,
@@ -300,6 +340,9 @@ configs = {
 		'detachable': True,
 		'cat': 'resending',
 		'access': 2,
+		'valid_user_value': (
+			lambda newvalue, **kwargs: newvalue >= 0
+		),
 	},
 	'edited_message_resend_threshold': {
 		'default': 10,
@@ -312,6 +355,9 @@ configs = {
 		'detachable': True,
 		'cat': 'resending',
 		'access': 2,
+		'valid_user_value': (
+			lambda newvalue, **kwargs: newvalue >= 0
+		),
 	},
 	'starboard_active': {
 		'default': False,
@@ -321,6 +367,7 @@ configs = {
 		'detachable': True,
 		'cat': 'starboard',
 		'access': 1,
+		'valid_user_value': True,
 	},
 	'starboard_channel': {
 		'default': 0,
@@ -330,6 +377,7 @@ configs = {
 		'detachable': True,
 		'cat': 'starboard',
 		'access': 1,
+		'valid_user_value': True,
 	},
 	'starboard_threshold': {
 		'default': 5,
@@ -339,6 +387,9 @@ configs = {
 		'detachable': True,
 		'cat': 'starboard',
 		'access': 1,
+		'valid_user_value': (
+			lambda newvalue, **kwargs: newvalue >= 1 and newvalue <= 99999
+		),
 	},
 	'starboard_star': {
 		'default': '⭐',
@@ -348,6 +399,7 @@ configs = {
 		'detachable': True,
 		'cat': 'starboard',
 		'access': 1,
+		'valid_user_value': True,
 	},
 	'starboard_nostar': {
 		'default': '❌',
@@ -357,6 +409,7 @@ configs = {
 		'detachable': True,
 		'cat': 'starboard',
 		'access': 1,
+		'valid_user_value': True,
 	},
 	'starboard_nostar_barrier': {
 		'default': 2,
@@ -366,6 +419,9 @@ configs = {
 		'detachable': True,
 		'cat': 'starboard',
 		'access': 1,
+		'valid_user_value': (
+			lambda newvalue, **kwargs: newvalue >= -1 and newvalue <= 99998
+		),
 	},
 	'starboard_timelimit': {
 		'default': 345600,
@@ -375,6 +431,9 @@ configs = {
 		'detachable': True,
 		'cat': 'starboard',
 		'access': 1,
+		'valid_user_value': (
+			lambda newvalue, **kwargs: newvalue >= 0 and newvalue <= 863999999
+		),
 	},
 	'starboard_ignoredchannels': {
 		'default': [],
@@ -384,6 +443,7 @@ configs = {
 		'detachable': True,
 		'cat': 'starboard',
 		'access': 1,
+		'valid_user_value': True,
 	},
 	'starboard_author_nostar_mode': {
 		'default': 0,
@@ -393,6 +453,9 @@ configs = {
 		'detachable': True,
 		'cat': 'starboard',
 		'access': 1,
+		'valid_user_value': (
+			lambda newvalue, **kwargs: newvalue in (0,1,2)
+		),
 	},
 	'starboard_bans': {
 		'default': [],
@@ -402,6 +465,7 @@ configs = {
 		'detachable': True,
 		'cat': 'starboard',
 		'access': 2,
+		'valid_user_value': True,
 	},
 	'starboard_permalink': {
 		'default': 2,
@@ -411,6 +475,9 @@ configs = {
 		'detachable': True,
 		'cat': 'starboard',
 		'access': 1,
+		'valid_user_value': (
+			lambda newvalue, **kwargs: newvalue in (0,1,2)
+		),
 	},
 	'nitrobooster': {
 		'default': 0,
@@ -420,6 +487,7 @@ configs = {
 		'detachable': True,
 		'cat': 'logging',
 		'access': 2,
+		'valid_user_value': True,
 	},
 }
 
