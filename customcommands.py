@@ -5,6 +5,7 @@ import emb
 import json
 import logging
 import re
+import time
 
 import discord
 
@@ -345,9 +346,11 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 	"""Parses a role conditional expression and returns its result
 
 	condstring: An expression. Expressions work like this:
-	TERM = any | true | false | self | M.mod | M.admin | M.bot | M.<roleid> | ~TERM | TERM&TERM
-	.       | TERM|TERM | (TERM)
+	TERM = any | true | false | self | M.mod | M.admin | M.bot | M.<roleid>
+	.       | M.<AGE><AGEOP><reltime> | ~TERM | TERM&TERM | TERM|TERM | (TERM)
 	M = c | caller | t | target
+	AGE = aa | js
+	AGEOP = < | >
 
 	Terms (variations are not limited to this, some obvious things get omitted down the list):
 		any             true
@@ -364,6 +367,8 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 		target.bot      true if target is a bot (and yes, caller.bot also exists)
 		caller.12345    true if caller has role with ID 12345
 		target.12345    true if target has role with ID 12345
+		caller.aa>30d	true if caller's account age is at least 30 days
+		t.js<2d12h	true if target joined server less than 2 days and 12 hours ago
 		~TERM           inverts TERM: true if TERM evaluates to false
 		.               example: ~c.mod returns true if the caller is not a moderator
 		TERMA&TERMB     true if both TERMA and TERMB evaluate to true
@@ -493,6 +498,69 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 				return True
 		return False
 
+	# New in 2020: time since joining time and account age!
+	m = re.match(
+		'^(?P<a>c(aller)?|t(arget)?)\.(?P<check>aa|js)(?P<op><|>)(?P<reltime>[0-9a-z]+)$',
+		condstring
+	)
+	if m is not None:
+		if m.group('a') in ('c', 'caller'):
+			checkmember = caller
+		elif m.group('a') in ('t', 'target'):
+			if target is None:
+				raise InvalidExpression((
+						'There is no target member, '
+						'but `{}` references one.'
+					).format(condstring)
+				)
+			checkmember = target
+		else:
+			raise UnexpectedExprParserState((
+					'Internal error, member `{}` '
+					'unexpectedly passed regex'
+				).format(m.group('a'))
+			)
+
+		if m.group('check') == 'aa':
+			checktime = checkmember.created_at
+		elif m.group('check') == 'js':
+			# "In certain cases, this can be None." Okay! Whatever!
+			if checkmember.joined_at is None:
+				raise InvalidExpression('Server join date cannot be checked!')
+			checktime = checkmember.joined_at
+		else:
+			raise UnexpectedExprParserState((
+					'Internal error, member `{}` '
+					'unexpectedly passed regex'
+				).format(m.group('a'))
+			)
+
+		# Convert the time expression to a number of seconds
+		barrier_age = utils.parsereltime(m.group('reltime'), True)
+		if barrier_age is None:
+			raise InvalidExpression('Time expression {} is invalid!'.format(
+					m.group('reltime')
+				)
+			)
+
+		# Also get the actual number of seconds we want to check
+		# By the way, <datetime.datetime>.timestamp()
+		# is equal to time.mktime(<datetime.datetime>.timetuple())
+		candidate_age = time.time() - checktime.timestamp()
+
+		if m.group('op') == '<':
+			# Candidate age must be younger than barrier age
+			return candidate_age < barrier_age
+		elif m.group('op') == '>':
+			# Candidate age must be at least barrier age
+			return candidate_age >= barrier_age
+
+		raise UnexpectedExprParserState((
+				'Internal error, member `{}` '
+				'unexpectedly passed regex'
+			).format(m.group('a'))
+		)
+
 	# Only split the expression into terms and operators if we haven't already done so!
 	if recursivecall < 2:
 		# At this point, we probably have something more exciting, like ~, & or |
@@ -502,7 +570,7 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 
 		# That means we need to check whether this has the correct syntax.
 		# Are all characters valid? We're also not expecting any brackets anymore
-		m = re.match('.*?([^a-z0-9\.\~\|\&])', condstring)
+		m = re.match('.*?([^a-z0-9\.\~\|\&<>])', condstring)
 		if m is not None:
 			raise InvalidExpression('Syntax error, unrecognized `{}`'.format(
 				utils.mdspecialchars(m.group(1))
