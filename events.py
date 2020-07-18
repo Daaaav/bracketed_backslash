@@ -8,6 +8,7 @@ import json
 import os
 import threading
 import time
+import traceback
 
 import discord
 
@@ -25,100 +26,159 @@ import utils
 import wrapper
 
 async def on_ready():
-	logging.info('logged in as %s with id %s', wrapper.client.user.name, wrapper.client.user.id)
-	embed = discord.Embed(
-		title='🔌BOT CONNECTED',
-		colour=discord.utils.find(
-			lambda s: s.id == op_ids.ids['opguild'], wrapper.client.guilds,
-		).me.colour,
-	)
-	embed.add_field(name='Startup Time', value=utils.reltime(wrapper.boottimeunix))
-	await wrapper.client.get_channel(int(op_ids.ids['opguild_chans']['connections'])).send(
-		embed=embed,
-	)
+	for e in wrapper.startup_errors:
+		# Like all the warning lights in a car
+		wrapper.startup_errors[e] = True
 
 	try:
-		with open('memberroles.json', 'r') as infile:
-			wrapper.memberroles = utils.convert_id_keys_to_int(json.load(infile))
+		# Just send a connection message in the operating server
+		# If this fails, well, we won't know when the bot connects.
+		# But it might be a sign of op_ids being missing (or Discord just has an outage on that server)
+		logging.info('logged in as %s with id %s', wrapper.client.user.name, wrapper.client.user.id)
+		embed = discord.Embed(
+			title='🔌BOT CONNECTED',
+			colour=discord.utils.find(
+				lambda s: s.id == op_ids.ids['opguild'], wrapper.client.guilds,
+			).me.colour,
+		)
+		embed.add_field(name='Startup Time', value=utils.reltime(wrapper.boottimeunix))
+		await wrapper.client.get_channel(int(op_ids.ids['opguild_chans']['connections'])).send(
+			embed=embed,
+		)
+		wrapper.startup_errors['send_connect'] = False
+	except Exception as e:
+		logging.error('\x1b[41mStartup error when sending connect message\x1b[0m')
+		traceback.print_exc()
 
-		# Now look what I've woken up to.
-		for gld in wrapper.memberroles:
-			if config.get_s('rolecachemode', gld) == 0:
-				continue
-			if wrapper.client.get_guild(gld) is None:
-				logging.info('Guild {} seems to not be accessible anymore but is in role cache'.format(gld))
-				continue
-			rcwarnings = ''
-			for mem in wrapper.client.get_guild(gld).members:
-				if not mem.id in wrapper.memberroles[gld]:
-					if len(mem.roles) >= 2:
-						rcwarnings += '\nUser {}#{} ({}) is not in the cache! (They’re suddenly in the server.) Adding their roles to the cache now.'.format(mem.name, mem.discriminator, mem.id)
+	try:
+		# Load the role cache and check if we didn't miss changes to roles during downtime
+		# If this fails, we can't give users back their roles when they rejoin the server
+		try:
+			with open('memberroles.json', 'r') as infile:
+				wrapper.memberroles = utils.convert_id_keys_to_int(json.load(infile))
 
-						# Possibly redundant list() tbh, just making sure
-						# since I can't test and I don't know python well
-						# enough to know whether it's redundant
-						wrapper.memberroles[gld][mem.id] = \
-						list(utils.rolelist(mem.roles))
-
+			# Now look what I've woken up to.
+			for gld in wrapper.memberroles:
+				if config.get_s('rolecachemode', gld) == 0:
 					continue
-				if set(wrapper.memberroles[gld][mem.id]) != \
-				set(utils.rolelist(mem.roles)):
-					rcwarnings += (
-						'\n'
-						'User {}#{} ({}) has different roles than in the cache! Maybe you want to correct things.\n'
-						'    **`Cached:`** {}\n'
-						'    **`Seen:`** {}'
-					).format(
-						mem.name, mem.discriminator, mem.id,
-						utils.listroles_id(wrapper.memberroles[gld][mem.id]),
-						utils.listroles(mem.roles),
+				if wrapper.client.get_guild(gld) is None:
+					logging.info('Guild {} seems to not be accessible anymore but is in role cache'.format(gld))
+					continue
+				rcwarnings = ''
+				for mem in wrapper.client.get_guild(gld).members:
+					if not mem.id in wrapper.memberroles[gld]:
+						if len(mem.roles) >= 2:
+							rcwarnings += (
+								'\nUser {}#{} ({}) is not in the cache! '
+								'(They’re suddenly in the server.) '
+								'Adding their roles to the cache now.'
+							).format(mem.name, mem.discriminator, mem.id)
+
+							# Possibly redundant list() tbh, just making sure
+							# since I can't test and I don't know python well
+							# enough to know whether it's redundant
+							wrapper.memberroles[gld][mem.id] = \
+							list(utils.rolelist(mem.roles))
+
+						continue
+					if set(wrapper.memberroles[gld][mem.id]) != \
+					set(utils.rolelist(mem.roles)):
+						rcwarnings += (
+							'\n'
+							'User {}#{} ({}) has different roles than in the cache! Maybe you want to correct things.\n'
+							'    **`Cached:`** {}\n'
+							'    **`Seen:`** {}'
+						).format(
+							mem.name, mem.discriminator, mem.id,
+							utils.listroles_id(wrapper.memberroles[gld][mem.id]),
+							utils.listroles(mem.roles),
+						)
+				if rcwarnings:
+					logging.warning(
+						'Role cache warnings for server %s: %s',
+						gld,
+						rcwarnings,
 					)
-			if rcwarnings:
-				logging.warning(
-					'Role cache warnings for server %s: %s',
-					gld,
-					rcwarnings,
-				)
-				rcwarnings = (
-					'**User role cache warning.**\n'
-					'Full warning output has been sent to the terminal.\n'
-					+ rcwarnings
-				)
-				await utils.getspecialchannel(
-						discord.utils.get(wrapper.client.guilds, id=gld)
-				).send(rcwarnings[:1900])
+					rcwarnings = (
+						'**User role cache warning.**\n'
+						'Full warning output has been sent to the terminal.\n'
+						+ rcwarnings
+					)
+					await utils.getspecialchannel(
+							discord.utils.get(wrapper.client.guilds, id=gld)
+					).send(rcwarnings[:1900])
 
-	except FileNotFoundError:
-		logging.info('memberroles file does not exist yet so creating it now')
+		except FileNotFoundError:
+			logging.info('memberroles file does not exist yet so creating it now')
 
-		with open('memberroles.json', 'w') as outfile:
-			json.dump(wrapper.memberroles, outfile)
+			with open('memberroles.json', 'w') as outfile:
+				json.dump(wrapper.memberroles, outfile)
+
+		wrapper.startup_errors['memberroles'] = False
+	except Exception as e:
+		logging.error('\x1b[41mStartup error when loading role cache\x1b[0m')
+		traceback.print_exc()
+
 	try:
-		with open('rules.json', 'r') as infile:
-			wrapper.rules = utils.convert_id_keys_to_int(json.load(infile))
-	except FileNotFoundError:
-		logging.info('rules file does not exist yet so creating it now')
+		# Load rules.
+		# If this fails, the rules system doesn't work.
+		try:
+			with open('rules.json', 'r') as infile:
+				wrapper.rules = utils.convert_id_keys_to_int(json.load(infile))
+		except FileNotFoundError:
+			logging.info('rules file does not exist yet so creating it now')
 
-		with open('rules.json', 'w') as outfile:
-			json.dump(wrapper.rules, outfile)
+			with open('rules.json', 'w') as outfile:
+				json.dump(wrapper.rules, outfile)
+		try:
+			with open('disabledrules.json', 'r') as infile:
+				wrapper.disabledrules = [int(i) for i in json.load(infile)]
+		except FileNotFoundError:
+			logging.info('disabledrules file does not exist yet so creating it now')
+
+			with open('disabledrules.json', 'w') as outfile:
+				json.dump(wrapper.disabledrules, outfile)
+		wrapper.startup_errors['rules'] = False
+	except Exception as e:
+		logging.error('\x1b[41mStartup error when loading rules\x1b[0m')
+		traceback.print_exc()
+
 	try:
-		with open('disabledrules.json', 'r') as infile:
-			wrapper.disabledrules = [int(i) for i in json.load(infile)]
-	except FileNotFoundError:
-		logging.info('disabledrules file does not exist yet so creating it now')
+		# Load role expiry.
+		# If this fails, existing expiry times won't work until next boot and new roles will never expire
+		try:
+			with open('rolexpires.json', 'r') as infile:
+				wrapper.rolexpires = utils.convert_id_keys_to_int(json.load(infile))
+		except FileNotFoundError:
+			logging.info('rolexpires file does not exist yet so creating it now')
 
-		with open('disabledrules.json', 'w') as outfile:
-			json.dump(wrapper.disabledrules, outfile)
-	try:
-		with open('rolexpires.json', 'r') as infile:
-			wrapper.rolexpires = utils.convert_id_keys_to_int(json.load(infile))
-	except FileNotFoundError:
-		logging.info('rolexpires file does not exist yet so creating it now')
+			with open('rolexpires.json', 'w') as outfile:
+				json.dump(wrapper.rolexpires, outfile)
 
-		with open('rolexpires.json', 'w') as outfile:
-			json.dump(wrapper.rolexpires, outfile)
+		await utils.handleExpiryTimer()
 
-	await utils.handleExpiryTimer()
+		wrapper.startup_errors['rolexpires'] = False
+	except Exception as e:
+		logging.error('\x1b[41mStartup error when loading rolexpires\x1b[0m')
+		traceback.print_exc()
+
+	errcodes = []
+	for e in wrapper.startup_errors:
+		if wrapper.startup_errors[e]:
+			errcodes.append(wrapper.startup_error_codes[e])
+	if errcodes:
+		# None of these errors are currently really "slam on the brakes" serious
+		await wrapper.client.change_presence(
+			status=discord.Status.online,
+			activity=discord.Game(','.join(errcodes))
+		)
+	else:
+		await wrapper.client.change_presence(
+			status=discord.Status.online,
+			activity=discord.Game(name=config.get_s('gamestatus'))
+		)
+
+	# Essentials are out of the way now!
 
 	for chan in wrapper.client.get_all_channels():
 		if isinstance(chan, discord.TextChannel):

@@ -10,10 +10,25 @@ import config
 
 config.load()
 
-client = discord.Client(max_messages=999999999, activity=discord.Game(name=config.get_s('gamestatus'))) # defines all client.* commands
+client = discord.Client(
+	max_messages=999999999,
+	status=discord.Status.dnd,
+	activity=discord.Game('Starting...')
+) # defines all client.* commands
 
 boottime = time.strftime(config.get_s('timeformat'))
 boottimeunix = time.time()
+
+startup_error_codes = {
+	'send_connect': 'E01',
+	'memberroles': 'E02',
+	'rules': 'E03',
+	'rolexpires': 'E04',
+}
+
+startup_errors = {}
+for e in startup_error_codes:
+	startup_errors[e] = True
 
 minutemessageedits = {}
 
