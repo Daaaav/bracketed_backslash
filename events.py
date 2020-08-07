@@ -1141,12 +1141,12 @@ async def on_member_join(member):
 					inviter=invite.inviter,
 				)
 			elif not has_audit_invites:
-				invite_status = 'Invite could not be detected{invamount}, and I’m not allowed to search the audit log'.format(
-					invamount = ' ({} possible invites)'.format(len(guild_invites)),
+				invite_status = 'I’m not allowed to search the audit log, but here’s the possible invites: {}'.format(
+					', '.join('`{invite.code}`'.format(invite=invite) for invite in guild_invites)
 				)
 			else:
-				invite_status = 'Invite could not be detected{invamount}'.format(
-					invamount = ' ({} possible invites)'.format(len(all_invites)),
+				invite_status = 'Possible invites: {}'.format(
+					', '.join('`{invite.code}`'.format(invite=invite) for invite in all_invites)
 				)
 
 			embed.add_field(name='Joined with invite', value=invite_status)
