@@ -13,7 +13,12 @@ config.load()
 client = discord.Client(
 	max_messages=999999999,
 	status=discord.Status.dnd,
-	activity=discord.Game('Starting...')
+	activity=discord.Game('Starting...'),
+	allowed_mentions=discord.AllowedMentions(
+		everyone=False,
+		users=False,
+		roles=False
+	)
 ) # defines all client.* commands
 
 boottime = time.strftime(config.get_s('timeformat'))
