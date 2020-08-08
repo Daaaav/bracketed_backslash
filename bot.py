@@ -24,6 +24,9 @@ import wrapper
 
 config.load()
 
+if not os.path.exists('db'):
+	os.mkdir('db')
+
 starboard.db_load()
 
 version = '1.0'
