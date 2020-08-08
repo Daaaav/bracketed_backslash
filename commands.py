@@ -1318,10 +1318,6 @@ async def rules(client, message, **kwargs):
 			)
 			await bot.reply(message, content)
 			return
-		elif int(kwargs['arguments']) in bot.funnynumbers:
-			content = utils.respondtorule(kwargs['arguments'])
-			await bot.reply(message, content)
-			return
 	n = 1
 	content = 'Rules for server `{}`:{}'.format(
 		utils.wrapbackticks(message.guild.name),
@@ -1372,11 +1368,7 @@ async def ruleadd(client, message, **kwargs):
 	if not checks.is_mod(message.author):
 		# Okay, so they're not allowed to mess with the rules - but we want to respond to some particular things as well.
 		splitargs = kwargs['arguments'].split(' ', 1)
-		if splitargs[0].isdigit() and int(splitargs[0]) in bot.funnynumbers:
-			content = utils.respondtorule(splitargs[0])
-			await bot.reply(message, content)
-			return
-		elif splitargs[0].isdigit() and \
+		if splitargs[0].isdigit() and \
 		int(splitargs[0]) > len(wrapper.rules[message.guild.id]):
 			embed = emb.warning('Why are you mentioning the number if you want to add this as the last rule?')
 			await bot.reply(message, emb=embed)
