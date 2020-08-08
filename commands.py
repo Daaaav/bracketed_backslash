@@ -1728,7 +1728,7 @@ async def uptime(client, message, **kwargs):
 async def invite(client, message, **kwargs):
 	content = (
 		'Invite link for this bot:\n'
-		'<https://discordapp.com/oauth2/authorize?client_id=233731624192180226&scope=bot>\n\n'
+		'<https://discord.com/oauth2/authorize?client_id=233731624192180226&scope=bot>\n\n'
 		'Join the **[\\\\]** server at <https://discord.gg/nc7HUZ4>'
 	)
 	await bot.reply(message, content)
