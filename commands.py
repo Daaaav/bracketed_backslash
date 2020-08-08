@@ -3329,12 +3329,7 @@ async def move(client, message, **kwargs):
 	)
 	sentmessage_source = await message.channel.send(msg_start, embed=em_source)
 
-	# TODO in the future we can just do Message.jump_url
-	url_source = 'https://discordapp.com/channels/{}/{}/{}'.format(
-		sentmessage_source.guild.id,
-		sentmessage_source.channel.id,
-		sentmessage_source.id
-	)
+	url_source = sentmessage_source.jump_url
 
 	em_target = discord.Embed(
 		title=(
@@ -3352,12 +3347,7 @@ async def move(client, message, **kwargs):
 	try:
 		sentmessage_target = await tgt.send(msg_start, embed=em_target)
 
-		# TODO Message.jump_url when possible
-		url_target = 'https://discordapp.com/channels/{}/{}/{}'.format(
-			sentmessage_target.guild.id,
-			sentmessage_target.channel.id,
-			sentmessage_target.id
-		)
+		url_target = sentmessage_target.jump_url
 
 		# Now edit the source message
 		em_source.description = (
