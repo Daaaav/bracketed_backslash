@@ -1254,7 +1254,7 @@ async def rolecacheadd(client, message, **kwargs):
 	embed = emb.success('Successfully added role {} to member {} in the role cache.'.format(splitargs[1], splitargs[0]))
 	await bot.reply(message, emb=embed)
 
-@shadow()
+@shadow(aliases=['syncroles'])
 async def rolesync(client, message, **kwargs):
 	perms = message.channel.permissions_for(message.author)
 	if not perms.manage_roles:
