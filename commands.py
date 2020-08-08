@@ -874,7 +874,7 @@ async def vy(client, message, **kwargs):
 					'\n'
 					'\n'
 				) + ', '.join(
-					'<@{}>'.format(m) for m in wrapper.votemutes[guild.id],
+					('<@{}>'.format(m) for m in wrapper.votemutes[guild.id]),
 				)
 			)
 			await bot.reply(message, emb=embed)
@@ -1043,7 +1043,7 @@ async def vc(client, message, **kwargs):
 					'\n'
 					'\n'
 				) + ', '.join(
-					'<@{}>'.format(m) for m in wrapper.votemutes[guild.id],
+					('<@{}>'.format(m) for m in wrapper.votemutes[guild.id]),
 				)
 			)
 			await bot.reply(message, emb=embed)
