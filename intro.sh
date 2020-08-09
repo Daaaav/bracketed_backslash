@@ -31,10 +31,16 @@ fi
 
 while true; do
 	python3.6 main.py
-	if [ $? -eq 42 ]; then
+	if [ $? -eq 4 ]; then
+		echo -e "${LIGHTBLUE}Bot exited with exit code ${LIGHTCYAN}$?${LIGHTBLUE}: kill command used!${NOCOLOR}" >&2
+		notify-send "[\\] has been stopped"
 		exit 0
+	elif [ $? -eq 8 ]; then
+		echo -e "${LIGHTBLUE}Bot exited with exit code ${LIGHTCYAN}$?${LIGHTBLUE}: restart command used!${NOCOLOR}" >&2
+		notify-send "[\\] restarting now"
+	else
+		echo -e "${LIGHTBLUE}Bot exited with exit code ${LIGHTCYAN}$?${LIGHTBLUE}: unhandled, probably crashed, restarting in 10s${NOCOLOR}" >&2
+		notify-send "Bot exited with exit code $?, restarting in 10s."
+		sleep 10
 	fi
-	echo -e "${LIGHTBLUE}bot exited with exit code ${LIGHTCYAN}$?${LIGHTBLUE} also restarting${NOCOLOR}" >&2
-	notify-send "The bot exited with exit code $? and is now restarting."
-	sleep 5
 done

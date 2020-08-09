@@ -129,7 +129,8 @@ async def restart(client, message, **kwargs):
 	embed.add_field(name='Messages in Cache', value=str(len(client._connection._messages)))
 	utils.logcommand(kwargs['command'], kwargs['arguments'], message)
 	await bot.reply(message, emb=embed)
-	os.execv(sys.executable, ['python'] + sys.argv)
+	await client.logout()
+	sys.exit(8)
 
 @shadow(auth=checks.is_host)
 async def kill(client, message, **kwargs):
@@ -138,7 +139,7 @@ async def kill(client, message, **kwargs):
 	utils.logcommand(kwargs['command'], kwargs['arguments'], message)
 	await bot.reply(message, emb=embed)
 	await client.logout()
-	sys.exit(42)
+	sys.exit(4)
 
 @shadow(auth=checks.is_operator)
 async def _config(client, message, **kwargs):
