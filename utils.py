@@ -790,9 +790,6 @@ def logcommand(command, arguments, message):
 		message.created_at,
 	)
 
-def infourl(query):
-	return 'https://tolp2.nl/showdiscordinfo.php?' + query
-
 def logdisabled(key, guild):
 	checks = [key, key.split('_')[0] + '_*', '*']
 

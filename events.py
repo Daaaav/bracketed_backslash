@@ -929,15 +929,12 @@ async def on_member_update(before, after):
 			embed.set_author(
 				name=after.display_name,
 				icon_url=after.avatar_url,
-				url=utils.infourl('userid=' + str(after.id)),
 			)
 			embed.add_field(
 				name=('Added role' if boosteradd else 'Removed role'),
-				value=utils.mdspecialchars('{} ({})'.format(
-						nitrobooster.name, nitrobooster.id
-					)
-				)
+				value=utils.mdspecialchars(nitrobooster.name),
 			)
+			embed.set_footer(text=utils.id_summary(uid=after.id, rid=nitrobooster.id))
 			await specialchannel.send(embed=embed)
 		if addedroles or removedroles:
 			title = ''
@@ -957,8 +954,8 @@ async def on_member_update(before, after):
 			embed.set_author(
 				name=after.display_name,
 				icon_url=after.avatar_url,
-				url=utils.infourl('userid=' + str(after.id)),
 			)
+			embed.set_footer(text=utils.id_summary(uid=after.id))
 			for role in addedroles:
 				embed.add_field(
 					name='Added role',
@@ -1935,13 +1932,13 @@ async def on_raw_message_delete(payload):
 		schan = utils.getspecialchannel(mchan.guild)
 		e = discord.Embed(
 			title='UNCACHED MESSAGE DELETED IN #{0.name}'.format(mchan),
-			url=utils.infourl('messageid=' + str(payload.message_id)),
 			description=(
 				'Since this message is uncached, I can’t give you'
 				' any more information than its ID and its channel.'
 			),
 			colour=mchan.guild.me.colour,
 		)
+		e.set_footer(text=utils.id_summary(mid=payload.message_id, cid=mchan.id))
 		await schan.send(embed=e)
 
 async def on_raw_message_edit(payload):
@@ -1979,14 +1976,6 @@ async def on_raw_message_edit(payload):
 	e.set_author(
 		name=athr.display_name,
 		icon_url=athr.avatar_url,
-		url=utils.infourl(
-			(
-				'userid={uid}&messageid={mid}'
-			).format(
-				uid=athr.id,
-				mid=payload.data['id'],
-			),
-		)
 	)
 	e.add_field(
 		name='Pinned',
@@ -2004,12 +1993,14 @@ async def on_raw_message_edit(payload):
 			else '(none)'
 		),
 	)
-	e.set_footer(
-		text=(
+	e.add_field(
+		name='\u200b',
+		value=(
 			'Since this message is uncached,'
 			' I can’t give you its older properties.'
 		)
 	)
+	e.set_footer(text=utils.id_summary(uid=athr.id, mid=payload.data['id']))
 	# We don't have a message, so we'll have to make the link ourselves. Easy, but TODO.
 	# Don't forget all the on_raw_reaction_ functions.
 	#utils.embed_add_jump_link(e, message)
@@ -2046,14 +2037,6 @@ async def on_raw_reaction_add(payload):
 		e.set_author(
 			name=athr.display_name,
 			icon_url=athr.avatar_url,
-			url=utils.infourl(
-				(
-					'userid={uid}&messageid={mid}'
-				).format(
-					uid=athr.id,
-					mid=payload.message_id,
-				),
-			)
 		)
 		e.add_field(
 			name='Member of Reaction',
@@ -2068,6 +2051,7 @@ async def on_raw_reaction_add(payload):
 				id=payload.emoji.id,
 			) if payload.emoji.id is not None else payload.emoji.name,
 		)
+		e.set_footer(text=utils.id_summary(uid=athr.id, mid=payload.message_id))
 		await schan.send(embed=e)
 
 async def on_raw_reaction_remove(payload):
@@ -2099,14 +2083,6 @@ async def on_raw_reaction_remove(payload):
 		e.set_author(
 			name=athr.display_name,
 			icon_url=athr.avatar_url,
-			url=utils.infourl(
-				(
-					'userid={uid}&messageid={mid}'
-				).format(
-					uid=athr.id,
-					mid=payload.message_id,
-				),
-			)
 		)
 		e.add_field(
 			name='Member of Reaction',
@@ -2121,6 +2097,7 @@ async def on_raw_reaction_remove(payload):
 				id=payload.emoji.id,
 			) if payload.emoji.id is not None else payload.emoji.name,
 		)
+		e.set_footer(text=utils.id_summary(uid=athr.id, mid=payload.message_id))
 		await schan.send(embed=e)
 
 async def on_raw_reaction_clear(payload):
@@ -2144,13 +2121,13 @@ async def on_raw_reaction_clear(payload):
 				'REACTIONS CLEARED FROM UNCACHED MESSAGE'
 				' IN #{0.name}'
 			).format(mchan),
-			url=utils.infourl('messageid=' + str(payload.message_id)),
 			description=(
 				'Since this message is uncached, I can’t give you'
 				' any more information than its ID and its channel.'
 			),
 			colour=mchan.guild.me.colour,
 		)
+		e.set_footer(text=utils.id_summary(mid=payload.message_id))
 		await schan.send(embed=e)
 
 async def on_guild_channel_update(b, a):
