@@ -1741,9 +1741,13 @@ async def version(client, message, **kwargs):
 	embed.set_thumbnail(url=client.user.avatar_url)
 	embed.set_footer(text='Version Information', icon_url=client.user.avatar_url)
 	embed.set_thumbnail(url=client.user.avatar_url)
-	embed.add_field(name='\\[\\\\\\]', value='{}, commit {}'.format(bot.version, wrapper.current_commit))
+	embed.add_field(name='\\[\\\\\\]', value='{}, commit {}{}'.format(
+		bot.version,
+		wrapper.current_commit,
+		'\n(uncommitted changes)' if wrapper.current_dir_dirty else ''
+	), inline=False)
+	embed.add_field(name='Python', value=sys.version, inline=False)
 	embed.add_field(name='discord.py', value='{} {}'.format(discord.version_info.releaselevel, discord.__version__))
-	embed.add_field(name='Python', value=sys.version)
 	embed.add_field(name='PIL', value=__import__("PIL").VERSION)
 	await bot.reply(message, emb=embed)
 

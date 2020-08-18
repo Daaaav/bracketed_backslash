@@ -50,13 +50,21 @@ votemutes = {} # userid -> dict with `starttime`, `proponents`*, `opponents`*
 exptimer = None  # threading.Timer object
 
 current_commit = ''
+current_dir_dirty = False
 def set_current_commit():
-	global current_commit
+	global current_commit, current_dir_dirty
 	current_commit = subprocess.Popen(
 		['git', 'describe', '--always'],
 		stdout=subprocess.PIPE,
 		stderr=subprocess.PIPE
-	).communicate()[0].decode('utf-8')
+	).communicate()[0].decode('utf-8').strip()
+
+	status = subprocess.Popen(
+		['git', 'status', '--porcelain'],
+		stdout=subprocess.PIPE,
+		stderr=subprocess.PIPE
+	).communicate()[0].decode('utf-8').strip()
+	current_dir_dirty = status != ''
 set_current_commit()
 
 maineventloop = asyncio.get_event_loop()
