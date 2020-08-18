@@ -2,6 +2,7 @@
 
 import asyncio
 import os
+import subprocess
 import time
 
 import discord
@@ -48,8 +49,15 @@ votemutes = {} # userid -> dict with `starttime`, `proponents`*, `opponents`*
 
 exptimer = None  # threading.Timer object
 
-modificationtimes = [os.path.getmtime(x) for x in os.listdir() if x.endswith('.py')]
-modificationtimecache = time.strftime(config.get_s('timeformat'), time.gmtime(max(modificationtimes)))
+current_commit = ''
+def set_current_commit():
+	global current_commit
+	current_commit = subprocess.Popen(
+		['git', 'describe', '--always'],
+		stdout=subprocess.PIPE,
+		stderr=subprocess.PIPE
+	).communicate()[0].decode('utf-8')
+set_current_commit()
 
 maineventloop = asyncio.get_event_loop()
 

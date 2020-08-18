@@ -56,6 +56,8 @@ def recursive_reload(module, *, include=None):
 			setattr(module, name, importlib.reload(member))
 			recursive_reload(member, include=include)
 
+	wrapper.set_current_commit()
+
 logging.basicConfig(level=logging.INFO)
 
 with open('bot_token.conf', 'r') as f:
