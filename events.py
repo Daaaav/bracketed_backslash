@@ -69,10 +69,10 @@ async def on_ready():
 					if not mem.id in wrapper.memberroles[gld]:
 						if len(mem.roles) >= 2:
 							rcwarnings += (
-								'\nUser {}#{} ({}) is not in the cache! '
+								'\n{mem.mention} is not in the cache! '
 								'(They’re suddenly in the server.) '
 								'Adding their roles to the cache now.'
-							).format(mem.name, mem.discriminator, mem.id)
+							).format(mem=mem)
 
 							# Possibly redundant list() tbh, just making sure
 							# since I can't test and I don't know python well
@@ -85,11 +85,11 @@ async def on_ready():
 					set(utils.rolelist(mem.roles)):
 						rcwarnings += (
 							'\n'
-							'User {}#{} ({}) has different roles than in the cache! Maybe you want to correct things.\n'
+							'{} has different roles than in the cache! Maybe you want to correct things.\n'
 							'    **`Cached:`** {}\n'
 							'    **`Seen:`** {}'
 						).format(
-							mem.name, mem.discriminator, mem.id,
+							mem.mention,
 							utils.listroles_id(wrapper.memberroles[gld][mem.id]),
 							utils.listroles(mem.roles),
 						)
