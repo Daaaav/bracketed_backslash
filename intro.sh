@@ -30,7 +30,7 @@ fi
 #export PYTHONPATH=discord.py:websockets/src
 
 while true; do
-	python3.6 main.py
+	python3 main.py
 	if [ $? -eq 4 ]; then
 		echo -e "${LIGHTBLUE}Bot exited with exit code ${LIGHTCYAN}$?${LIGHTBLUE}: kill command used!${NOCOLOR}" >&2
 		notify-send "[\\] has been stopped"
