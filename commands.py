@@ -637,6 +637,8 @@ async def findc(client, message, **kwargs):
 				vchanc += 1
 
 		# Some guilds can have no voice channels. You can't have no text channels, though.
+		# Well, after a Discord update you now can, although then I'm not sure how we're receiving this command in the first place... whatever
+		tchans = '_(none)_' if not tchans else tchans
 		vchans = '_(none)_' if not vchans else vchans
 
 		em = discord.Embed(colour=message.guild.me.colour)
