@@ -1,7 +1,6 @@
 # \[\\\]
 This is a bot created by Info Teddy, and currently maintained by Info Teddy and
-Dav999, written in Python for use on the
-[tOLP Discord server](https://discord.gg/0r76El7PzkPMhSBF).
+Dav999, written in Python.
 
 This bot is in active development.
 # Installation Instructions
