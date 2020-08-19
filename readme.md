@@ -3,6 +3,11 @@ This is a bot created by Info Teddy, and currently maintained by Info Teddy and
 Dav999, written in Python.
 
 This bot is in active development.
+# License
+All code files in the entirety of this repository are licensed under GPLv3-only.
+You cannot automatically "upgrade" the license to a later version of the GPL,
+an upgrade has to be a relicensing that will be decided by the project
+maintainers.
 # Installation Instructions
 ## Requirements
 - Python ≥3.6 is required.
