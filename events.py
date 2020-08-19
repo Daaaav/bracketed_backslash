@@ -959,17 +959,15 @@ async def on_member_update(before, after):
 			for role in addedroles:
 				embed.add_field(
 					name='Added role',
-					value=utils.mdspecialchars('{} ({})'.format(
-							role.name, role.id
-						)
+					value='**{}** ({})'.format(
+						utils.mdspecialchars(role.name), role.id
 					)
 				)
 			for role in removedroles:
 				embed.add_field(
 					name='Removed role',
-					value=utils.mdspecialchars('{} ({})'.format(
-							role.name, role.id
-						)
+					value='**{}** ({})'.format(
+						utils.mdspecialchars(role.name), role.id
 					)
 				)
 			await specialchannel.send(embed=embed)
