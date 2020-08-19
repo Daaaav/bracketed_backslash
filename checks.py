@@ -2,7 +2,7 @@
 # encoding=utf-8
 
 """
-[\] bot, will be used for tolp server
+[\] bot
 Copyright (C) 2020  Info Teddy
 
 This program is free software: you can redistribute it and/or modify
