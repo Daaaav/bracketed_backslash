@@ -22,6 +22,8 @@ import starboard
 import utils
 import wrapper
 
+client = wrapper.client
+
 config.load()
 
 if not os.path.exists('db'):
@@ -220,3 +222,12 @@ async def sync_invite_cache(client, cache):
 
 		# Remove duplicates
 		cache[guild.id] = list(set(cache[guild.id]))
+
+async def bot_connected_message(channel, *, color, startup_time):
+	embed = discord.Embed(
+		title='\N{ELECTRIC PLUG}BOT CONNECTED',
+		color=color,
+		timestamp=datetime.datetime.now(),
+	)
+	embed.add_field(name='Startup Time', value=utils.reltime(startup_time))
+	await channel.send(embed=embed)

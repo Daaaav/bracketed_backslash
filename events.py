@@ -30,20 +30,30 @@ async def on_ready():
 		# Like all the warning lights in a car
 		wrapper.startup_errors[e] = True
 
+	client = wrapper.client
+	user = client.user
+
 	try:
 		# Just send a connection message in the operating server
 		# If this fails, well, we won't know when the bot connects.
 		# But it might be a sign of op_ids being missing (or Discord just has an outage on that server)
-		logging.info('logged in as %s with id %s', wrapper.client.user.name, wrapper.client.user.id)
-		embed = discord.Embed(
-			title='🔌BOT CONNECTED',
-			colour=discord.utils.find(
-				lambda s: s.id == op_ids.ids['opguild'], wrapper.client.guilds,
-			).me.colour,
+		logging.info(
+			'Logged in to Discord.\n'
+			'\tID: %s\n'
+			'\tUsername: %s\n'
+			'\tDiscriminator: %s\n'
+			'\tGuilds: %s\n',
+			user.id,
+			user.name,
+			user.discriminator,
+			len(client.guilds),
 		)
-		embed.add_field(name='Startup Time', value=utils.reltime(wrapper.boottimeunix))
-		await wrapper.client.get_channel(int(op_ids.ids['opguild_chans']['connections'])).send(
-			embed=embed,
+		await bot.bot_connected_message(
+			client.get_channel(int(op_ids.ids['opguild_chans']['connections'])),
+			color=discord.utils.find(
+				lambda s: s.id == op_ids.ids['opguild'], client.guilds,
+			).me.colour,
+			startup_time=wrapper.boottimeunix,
 		)
 		wrapper.startup_errors['send_connect'] = False
 	except Exception as e:
