@@ -943,6 +943,7 @@ async def on_member_update(before, after):
 			addedplural = len(addedroles) != 1
 			removedplural = len(removedroles) != 1
 			roleid = None
+			color = utils.colorize(after.id)
 
 			# To not copy-paste code
 			def rolelist(roles):
@@ -960,6 +961,7 @@ async def on_member_update(before, after):
 					title = 'ROLE ADDED TO USER'
 					desc = '**{}**'.format(utils.mdspecialchars(addedroles[0].name))
 					roleid = addedroles[0].id
+					color = addedroles[0].colour
 				title = '\N{INBOX TRAY}{}'.format(title)
 			elif removedroles:
 				if removedplural:
@@ -969,11 +971,12 @@ async def on_member_update(before, after):
 					title = 'ROLE REMOVED FROM USER'
 					desc = '**{}**'.format(utils.mdspecialchars(removedroles[0].name))
 					roleid = removedroles[0].id
+					color = removedroles[0].colour
 				title = '\N{OUTBOX TRAY}{}'.format(title)
 
 			title = '\N{KEY}{}'.format(title)
 
-			embed = discord.Embed(title=title, description=desc)
+			embed = discord.Embed(title=title, description=desc, colour=color)
 			utils.paginate_description(embed, max_length=2048)
 
 			embed.set_author(
