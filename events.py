@@ -2056,8 +2056,6 @@ async def on_raw_reaction_add(payload):
 		schan = utils.getspecialchannel(mchan.guild)
 		athr = mchan.guild.get_member(payload.user_id)
 		mdetails = athr.mention
-		if athr.status == discord.Status.offline:
-			mdetails += ' (Invisible)'
 		e = discord.Embed(
 			title='REACTION ADDED TO UNCACHED MESSAGE IN #{0.name}'.format(mchan),
 			description=(
