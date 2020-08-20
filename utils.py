@@ -971,8 +971,10 @@ def paginate_field(embed, *, name, value, inline=True, max_length):
 			inline=inline,
 		)
 
+jump_link = '[→ Go to message]({})'
+
 def get_jump_link(message):
-	return '[→ Go to message]({})'.format(message.jump_url)
+	return jump_link.format(message.jump_url)
 
 def embed_add_jump_link(embed, message):
 	"""Add jump url for message to embed"""
@@ -980,4 +982,19 @@ def embed_add_jump_link(embed, message):
 		name='\u200b',
 		value=get_jump_link(message),
 		inline=False
+	)
+
+def manual_jump_link(*, gid, cid, mid):
+	"""discord.Message.jump_url is, unfortunately, a property, so we have to make our own"""
+	return f'https://discord.com/channels/{gid}/{cid}/{mid}'
+
+def get_manual_jump_link(*, gid, cid, mid):
+	return jump_link.format(manual_jump_link(gid=gid, cid=cid, mid=mid))
+
+def embed_manual_jump_link(embed, *, gid, cid, mid):
+	"""Add manual jump URL for message to embed"""
+	embed.add_field(
+		name='\u200b',
+		value=get_manual_jump_link(gid=gid, cid=cid, mid=mid),
+		inline=False,
 	)
