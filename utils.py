@@ -1001,8 +1001,13 @@ def embed_manual_jump_link(embed, *, gid, cid, mid):
 
 def get_channel_type(channel: discord.abc.GuildChannel) -> str:
 	lookup = {
-		discord.ChannelType.text: 'Text',
-		discord.ChannelType.voice: 'Voice',
+		discord.ChannelType.text: 'Text Channel',
+		discord.ChannelType.voice: 'Voice Channel',
+		discord.ChannelType.private: 'Direct Messages',
+		discord.ChannelType.group: 'Group Chat',
+		discord.ChannelType.category: 'Category',
+		discord.ChannelType.news: 'News Channel',
+		discord.ChannelType.store: 'Store Page',
 	}
 
-	return lookup.get(channel.type, 'Unknown Type')
+	return lookup.get(channel.type, 'Unknown Type Channel')

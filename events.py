@@ -1856,7 +1856,7 @@ async def on_guild_channel_create(c):
 		return
 	schan = utils.getspecialchannel(c.guild)
 	embed = discord.Embed(
-		description='{type} CHANNEL ADD\n{0.name} ({0.id})'.format(
+		description='{type} ADD\n{0.name} ({0.id})'.format(
 			c,
 			type=utils.get_channel_type(c).upper(),
 		),
@@ -1868,7 +1868,7 @@ async def on_guild_channel_delete(c):
 		return
 	schan = utils.getspecialchannel(c.guild)
 	embed = discord.Embed(
-		description='{type} CHANNEL REMOVE\n{0.name} ({0.id})'.format(
+		description='{type} REMOVE\n{0.name} ({0.id})'.format(
 			c,
 			type=utils.get_channel_type(c).upper(),
 		),
@@ -2169,7 +2169,7 @@ async def on_guild_channel_update(b, a):
 	schan = utils.getspecialchannel(a.guild)
 	if b.name != a.name:
 		e = discord.Embed(
-			title='{type} CHANNEL UPDATE'.format(
+			title='{type} UPDATE'.format(
 				type=utils.get_channel_type(a).upper(),
 			),
 			description=(
