@@ -998,3 +998,11 @@ def embed_manual_jump_link(embed, *, gid, cid, mid):
 		value=get_manual_jump_link(gid=gid, cid=cid, mid=mid),
 		inline=False,
 	)
+
+def get_channel_type(channel: discord.abc.GuildChannel) -> str:
+	lookup = {
+		discord.ChannelType.text: 'Text',
+		discord.ChannelType.voice: 'Voice',
+	}
+
+	return lookup.get(channel.type, 'Unknown Type')

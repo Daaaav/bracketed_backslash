@@ -1858,11 +1858,7 @@ async def on_guild_channel_create(c):
 	embed = discord.Embed(
 		description='{type} CHANNEL ADD\n{0.name} ({0.id})'.format(
 			c,
-			type=(
-				'TEXT' if isinstance(c, discord.TextChannel) else
-				'VOICE' if isinstance(c, discord.VoiceChannel) else
-				'UNKNOWN TYPE'
-			),
+			type=utils.get_channel_type(c).upper(),
 		),
 	)
 	await schan.send(embed=embed)
@@ -1874,11 +1870,7 @@ async def on_guild_channel_delete(c):
 	embed = discord.Embed(
 		description='{type} CHANNEL REMOVE\n{0.name} ({0.id})'.format(
 			c,
-			type=(
-				'TEXT' if isinstance(c, discord.TextChannel) else
-				'VOICE' if isinstance(c, discord.VoiceChannel) else
-				'UNKNOWN TYPE'
-			),
+			type=utils.get_channel_type(c).upper(),
 		),
 	)
 	await schan.send(embed=embed)
@@ -2178,11 +2170,7 @@ async def on_guild_channel_update(b, a):
 	if b.name != a.name:
 		e = discord.Embed(
 			title='{type} CHANNEL UPDATE'.format(
-				type=(
-					'TEXT' if isinstance(a, discord.TextChannel) else
-					'VOICE' if isinstance(a, discord.VoiceChannel) else
-					'UNKNOWN TYPE'
-				),
+				type=utils.get_channel_type(a).upper(),
 			),
 			description=(
 				'**{name}** ({id})'
