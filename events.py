@@ -2043,9 +2043,7 @@ async def on_raw_message_edit(payload):
 		)
 	)
 	e.set_footer(text=utils.id_summary(uid=athr.id, mid=payload.data['id']))
-	# We don't have a message, so we'll have to make the link ourselves. Easy, but TODO.
-	# Don't forget all the on_raw_reaction_ functions.
-	#utils.embed_add_jump_link(e, message)
+	utils.embed_manual_jump_link(e, gid=mchan.guild.id, cid=mchan.id, mid=payload.data['id'])
 	await schan.send(embed=e)
 
 async def on_raw_reaction_add(payload):
@@ -2092,6 +2090,7 @@ async def on_raw_reaction_add(payload):
 			) if payload.emoji.id is not None else payload.emoji.name,
 		)
 		e.set_footer(text=utils.id_summary(uid=athr.id, cid=mchan.id, mid=payload.message_id))
+		utils.embed_manual_jump_link(e, gid=mchan.guild.id, cid=mchan.id, mid=payload.message_id)
 		await schan.send(embed=e)
 
 async def on_raw_reaction_remove(payload):
@@ -2138,6 +2137,7 @@ async def on_raw_reaction_remove(payload):
 			) if payload.emoji.id is not None else payload.emoji.name,
 		)
 		e.set_footer(text=utils.id_summary(uid=athr.id, cid=mchan.id, mid=payload.message_id))
+		utils.embed_manual_jump_link(e, gid=mchan.guild.id, cid=mchan.id, mid=payload.message_id)
 		await schan.send(embed=e)
 
 async def on_raw_reaction_clear(payload):
@@ -2168,6 +2168,7 @@ async def on_raw_reaction_clear(payload):
 			colour=mchan.guild.me.colour,
 		)
 		e.set_footer(text=utils.id_summary(cid=mchan.id, mid=payload.message_id))
+		utils.embed_manual_jump_link(e, gid=mchan.guild.id, cid=mchan.id, mid=payload.message_id)
 		await schan.send(embed=e)
 
 async def on_guild_channel_update(b, a):
