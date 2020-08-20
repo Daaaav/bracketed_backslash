@@ -2081,7 +2081,7 @@ async def on_raw_reaction_add(payload):
 				id=payload.emoji.id,
 			) if payload.emoji.id is not None else payload.emoji.name,
 		)
-		e.set_footer(text=utils.id_summary(uid=athr.id, mid=payload.message_id))
+		e.set_footer(text=utils.id_summary(uid=athr.id, cid=mchan.id, mid=payload.message_id))
 		await schan.send(embed=e)
 
 async def on_raw_reaction_remove(payload):
@@ -2127,7 +2127,7 @@ async def on_raw_reaction_remove(payload):
 				id=payload.emoji.id,
 			) if payload.emoji.id is not None else payload.emoji.name,
 		)
-		e.set_footer(text=utils.id_summary(uid=athr.id, mid=payload.message_id))
+		e.set_footer(text=utils.id_summary(uid=athr.id, cid=mchan.id, mid=payload.message_id))
 		await schan.send(embed=e)
 
 async def on_raw_reaction_clear(payload):
@@ -2157,7 +2157,7 @@ async def on_raw_reaction_clear(payload):
 			),
 			colour=mchan.guild.me.colour,
 		)
-		e.set_footer(text=utils.id_summary(mid=payload.message_id))
+		e.set_footer(text=utils.id_summary(cid=mchan.id, mid=payload.message_id))
 		await schan.send(embed=e)
 
 async def on_guild_channel_update(b, a):
