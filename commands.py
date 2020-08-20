@@ -2000,13 +2000,7 @@ async def bans(client, message, **kwargs):
 	except TypeError:
 		pass
 
-	if len(ulist) > 2048:
-		for idx, page in enumerate(utils.paginate(ulist, max_length=2048)):
-			if idx == 0:
-				embed.description = page
-				continue
-
-			embed.add_field(name='\u200b', value=page)
+	utils.paginate_description(embed=embed, max_length=2048)
 
 	await bot.reply(message, emb=embed)
 

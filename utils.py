@@ -947,6 +947,15 @@ def paginate(request, *, max_length):
 
 	return pages
 
+def paginate_description(embed, *, max_length):
+	if len(embed.description) > max_length:
+		for idx, page in enumerate(paginate(embed.description, max_length=max_length)):
+			if idx == 0:
+				embed.description = page
+				continue
+
+			embed.add_field(name='\u200b', value=page)
+
 def paginate_field(embed, *, name, value, inline=True, max_length):
 	if len(value) > max_length:
 		for idx, page in enumerate(paginate(value, max_length=max_length)):
