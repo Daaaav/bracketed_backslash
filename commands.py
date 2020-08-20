@@ -647,34 +647,16 @@ async def findc(client, message, **kwargs):
 		except TypeError:
 			pass
 
-		if len(tchans) > 1024:
-			for c, i in enumerate(utils.paginate(tchans, max_length=1024)):
-				em.add_field(
-					name='Text Channels ({0})'.format(tchanc) \
-					if not c else '\u200b',
-					value=i,
-					inline=False,
-				)
-		else:
-			em.add_field(
-				name='Text Channels ({0})'.format(tchanc),
-				value=tchans,
-				inline=False,
-			)
-		if len(vchans) > 1024:
-			for c, i in enumerate(utils.paginate(vchans, max_length=1024)):
-				em.add_field(
-					name='Voice Channels ({0})'.format(vchanc) \
-					if not c else '\u200b',
-					value=i,
-					inline=False,
-				)
-		else:
-			em.add_field(
-				name='Voice Channels ({0})'.format(vchanc),
-				value=vchans,
-				inline=False,
-			)
+		utils.paginate_field(em, max_length=1024,
+			name='Text Channels ({0})'.format(tchanc),
+			value=tchans,
+			inline=False,
+		)
+		utils.paginate_field(em, max_length=1024,
+			name='Voice Channels ({0})'.format(vchanc),
+			value=vchans,
+			inline=False,
+		)
 		await bot.reply(message, emb=em)
 		return
 

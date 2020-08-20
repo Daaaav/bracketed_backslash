@@ -947,6 +947,21 @@ def paginate(request, *, max_length):
 
 	return pages
 
+def paginate_field(embed, *, name, value, inline=True, max_length):
+	if len(value) > max_length:
+		for idx, page in enumerate(paginate(value, max_length=max_length)):
+			embed.add_field(
+				name=name if idx == 0 else '\u200b',
+				value=page,
+				inline=inline,
+			)
+	else:
+		embed.add_field(
+			name=name,
+			value=value,
+			inline=inline,
+		)
+
 def get_jump_link(message):
 	return '[→ Go to message]({})'.format(message.jump_url)
 
