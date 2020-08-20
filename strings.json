@@ -1,5 +1,5 @@
 {
-	"help_info_string": "`[\\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server, and TNTGB.\nTo get accepted into the developer team, you have to be accepted by eighty-percent of the current members of the team.\nSpecial thanks to Shiny for making the current icon for the bot.\nThe bot is normally hosted by Info Teddy, but currently it is temporarily hosted on one of Dav999\u2019s computers.",
+	"help_info_string": "`[\\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server, and TNTGB.\nTo get accepted into the developer team, you have to be accepted by eighty-percent of the current members of the team\nThe bot is normally hosted by Info Teddy, but currently it is temporarily hosted on one of Dav999\u2019s computers.",
 	"t": {
 		"owner_only": "Permission denied. This command can only be used by the owner.",
 		"op_only": "Permission denied. This command can only be used by an operator.",
