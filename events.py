@@ -938,40 +938,69 @@ async def on_member_update(before, after):
 			await specialchannel.send(embed=embed)
 		if addedroles or removedroles:
 			title = ''
-			if addedroles and removedroles:
-				title = 'ROLES CHANGED FOR USER'
-			elif len(addedroles) > 1:
-				title = 'ROLES ADDED TO USER'
-			elif len(addedroles) == 1:
-				title = 'ROLE ADDED TO USER'
-			elif len(removedroles) > 1:
-				title = 'ROLES REMOVED FROM USER'
-			elif len(removedroles) == 1:
-				title = 'ROLE REMOVED FROM USER'
+			desc = ''
+			mixed = addedroles and removedroles
+			addedplural = len(addedroles) != 1
+			removedplural = len(removedroles) != 1
+			roleid = None
+
+			# To not copy-paste code
+			def rolelist(roles):
+				return '\n'.join('**{}** ({})'.format(utils.mdspecialchars(role.name), role.id) for role in roles)
+			addedroles_list = rolelist(addedroles)
+			removedroles_list = rolelist(removedroles)
+
+			if mixed:
+				title = '\N{TWISTED RIGHTWARDS ARROWS}ROLES CHANGED FOR USER'
+			elif addedroles:
+				if addedplural:
+					title = 'ROLES ADDED TO USER'
+					desc = addedroles_list
+				else:
+					title = 'ROLE ADDED TO USER'
+					desc = '**{}**'.format(utils.mdspecialchars(addedroles[0].name))
+					roleid = addedroles[0].id
+				title = '\N{INBOX TRAY}{}'.format(title)
+			elif removedroles:
+				if removedplural:
+					title = 'ROLES REMOVED FROM USER'
+					desc = removedroles_list
+				else:
+					title = 'ROLE REMOVED FROM USER'
+					desc = '**{}**'.format(utils.mdspecialchars(removedroles[0].name))
+					roleid = removedroles[0].id
+				title = '\N{OUTBOX TRAY}{}'.format(title)
 
 			title = '\N{KEY}{}'.format(title)
 
-			embed = discord.Embed(title=title)
+			embed = discord.Embed(title=title, description=desc)
+			utils.paginate_description(embed, max_length=2048)
 
 			embed.set_author(
 				name=after.display_name,
 				icon_url=after.avatar_url,
 			)
-			embed.set_footer(text=utils.id_summary(uid=after.id))
-			for role in addedroles:
-				embed.add_field(
-					name='Added role',
-					value='**{}** ({})'.format(
-						utils.mdspecialchars(role.name), role.id
-					)
-				)
-			for role in removedroles:
-				embed.add_field(
-					name='Removed role',
-					value='**{}** ({})'.format(
-						utils.mdspecialchars(role.name), role.id
-					)
-				)
+			embed.set_footer(text=utils.id_summary(uid=after.id, rid=roleid))
+
+			if mixed:
+				# To not copy-paste code
+				def parse_plural(embed_, plural, text_singular, text_plural, roles_list):
+					if plural:
+						utils.paginate_field(embed_, max_length=1024,
+							name=text_plural,
+							value=roles_list,
+							inline=False,
+						)
+					else:
+						embed_.add_field(
+							name=text_singular,
+							value=addedroles_list,
+							inline=False,
+						)
+
+				parse_plural(embed, addedplural, 'Added role', 'Added roles', addedroles_list)
+				parse_plural(embed, removedplural, 'Removed role', 'Removed roles', removedroles_list)
+
 			await specialchannel.send(embed=embed)
 
 		if config.get_s('rolecachemode', after.guild.id) != 0:
