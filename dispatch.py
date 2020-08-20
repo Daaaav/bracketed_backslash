@@ -1,6 +1,6 @@
 """
 dispatch.py - handles dispatching individual tasks for each event
-Copyright (C) 2017  Info Teddy
+Copyright (C) 2020  Info Teddy
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
