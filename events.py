@@ -949,6 +949,8 @@ async def on_member_update(before, after):
 			elif len(removedroles) == 1:
 				title = 'ROLE REMOVED FROM USER'
 
+			title = '\N{KEY}{}'.format(title)
+
 			embed = discord.Embed(title=title)
 
 			embed.set_author(
