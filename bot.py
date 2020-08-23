@@ -1,4 +1,3 @@
-#!/usr/bin/python3.5
 # encoding=utf-8
 
 # Fun side effect: main.py has a reference to bot.customcommands

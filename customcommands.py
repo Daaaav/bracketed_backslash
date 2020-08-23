@@ -1,4 +1,3 @@
-#!/usr/bin/python3.5
 # encoding=utf-8
 
 import emb

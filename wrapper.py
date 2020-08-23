@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 import asyncio
 import os
 import subprocess
