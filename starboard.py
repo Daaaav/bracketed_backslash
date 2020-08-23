@@ -7,6 +7,7 @@ import sqlite3
 import discord
 
 import config
+import dispatch
 import utils
 import wrapper
 
@@ -265,10 +266,13 @@ async def check_message(payload, channel, adding):
 
 		# I'll confirm this veto, no backsies.
 		if wrapper.client.user not in nostarrers:
-			try:
-				await orig_message.add_reaction(nostar_emote)
-			except discord.errors.Forbidden:
-				pass
+			# While this is being done, we can finish the rest of the function
+			async def confirm(orig_message_, nostar_emote_):
+				try:
+					await orig_message_.add_reaction(nostar_emote_)
+				except discord.errors.Forbidden:
+					pass
+			dispatch.run(wrapper.client, confirm(orig_message, nostar_emote))
 
 	# Have I confirmed it before?
 	if wrapper.client.user in nostarrers:
