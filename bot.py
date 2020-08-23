@@ -15,6 +15,7 @@ import discord
 import checks
 import config
 import events
+import reaction_roles
 import starboard
 import utils
 import wrapper
@@ -27,6 +28,7 @@ if not os.path.exists('db'):
 	os.mkdir('db')
 
 starboard.db_load()
+reaction_roles.db_load()
 
 version = '1.0'
 

@@ -19,6 +19,7 @@ import dispatch
 import emb
 import hangman
 import op_ids
+import reaction_roles
 import starboard
 import utils
 import wrapper
@@ -2040,7 +2041,10 @@ async def on_raw_reaction_add(payload):
 	# We must first know what channel it is
 	mchan = wrapper.client.get_channel(payload.channel_id)
 
+	# FIXME: The starboard check blocks the rest of the function if it sends a message,
+	# then the reaction roles if it adds a role
 	await starboard.check_message(payload, mchan, True)
+	await reaction_roles.check_message(payload, mchan, True)
 
 	if not isinstance(mchan, discord.abc.PrivateChannel) and \
 	not utils.logdisabled('reaction_adduncached', mchan.guild) and \
@@ -2087,6 +2091,7 @@ async def on_raw_reaction_remove(payload):
 	# We must first know what channel it is
 	mchan = wrapper.client.get_channel(payload.channel_id)
 
+	# FIXME: Blocking function (see on_raw_reaction_add())
 	await starboard.check_message(payload, mchan, False)
 
 	if not isinstance(mchan, discord.abc.PrivateChannel) and \
@@ -2135,6 +2140,7 @@ async def on_raw_reaction_clear(payload):
 	mchan = wrapper.client.get_channel(payload.channel_id)
 
 	await starboard.remove_message(payload, mchan)
+	# TODO: Automatically remove message from reaction roles system?
 
 	if not isinstance(mchan, discord.abc.PrivateChannel) and \
 	not utils.logdisabled('reaction_clearuncached', mchan.guild) and \

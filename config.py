@@ -18,6 +18,9 @@ configcats = {
 	'resending': {
 		'name': 'Message resending',
 	},
+	'reactroles': {
+		'name': 'Reaction roles',
+	},
 	'roles': {
 		'name': 'Roles and role cache',
 	},
@@ -485,6 +488,16 @@ configs = {
 		'detachable': True,
 		'cat': 'logging',
 		'access': 2,
+		'valid_user_value': True,
+	},
+	'reaction_roles': {
+		'default': False,
+		'type': 'bln',
+		'is_array': False,
+		'expl': 'Whether reaction roles have been enabled.', # This is so we don't have to query the database every time a reaction gets added or removed to figure out if there is a reaction roles message or not
+		'detachable': True,
+		'cat': 'reactroles',
+		'access': 1,
 		'valid_user_value': True,
 	},
 }
