@@ -1,5 +1,3 @@
-# encoding=utf-8
-
 from PIL import Image
 
 barim = Image.open('img/bar.png')

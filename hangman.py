@@ -1,5 +1,3 @@
-# encoding=utf-8
-
 alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 def validletter(ltr):

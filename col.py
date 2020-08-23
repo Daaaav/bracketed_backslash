@@ -1,5 +1,3 @@
-# encoding=utf-8
-
 # Reply colors
 r_success = 0x11C11E
 r_warning = 0xFFB200

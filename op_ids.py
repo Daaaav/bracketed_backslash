@@ -1,5 +1,3 @@
-# encoding=utf-8
-
 """
 [\] bot
 Copyright (C) 2020  Info Teddy
