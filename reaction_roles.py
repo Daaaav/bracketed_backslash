@@ -57,6 +57,12 @@ async def check_message(payload, channel, adding):
 	or not config.get_s('reaction_roles', payload.guild_id)):
 		return
 
+	# And you're also not a bot, right?
+	member = guild.get_member(payload.user_id)
+	# member can be None but if we're here then surely it's not
+	if member.bot:
+		return
+
 	# I'm violating EAFP (Easier to Ask for Forgiveness than Permission) here in favor of
 	# LBYL (Look Before You Leap), because it'd be a real shame to do all this expensive
 	# database querying only for nothing to happen because we don't have permission
@@ -110,9 +116,6 @@ async def check_message(payload, channel, adding):
 
 	# We have the role ID, finally apply/remove it
 	# I assume the ID exists, or if it doesn't, that this will fail silently
-
-	member = guild.get_member(payload.user_id)
-	# member can be None but if we're here then surely it's not
 
 	# I assume there's no need to specify message ID in the reason... surely guilds won't have
 	# a MASSIVE channel with tons of reaction role messages in it that they can't easily know
