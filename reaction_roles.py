@@ -33,17 +33,18 @@ def db_load():
 	# if the guild has reaction roles enabled in the first place
 	cursor.execute("""
 			CREATE TABLE IF NOT EXISTS 'reactroles_messages' (
-				'channel_id' INTEGER PRIMARY KEY NOT NULL,
-				'message_id' INTEGER NOT NULL
+				'message_id' INTEGER PRIMARY KEY NOT NULL
+				'channel_id' INTEGER NOT NULL,
 			)
 		"""
 	)
 	cursor.execute("""
 			CREATE TABLE IF NOT EXISTS 'reactroles_roles' (
-				'message_id' INTEGER PRIMARY KEY NOT NULL,
+				'message_id' INTEGER NOT NULL,
 				'role_id' INTEGER NOT NULL,
 				'unicode_emoji' TEXT,
-				'custom_emoji_id' INTEGER
+				'custom_emoji_id' INTEGER,
+				PRIMARY KEY ('message_id', 'role_id')
 			)
 		"""
 	)
