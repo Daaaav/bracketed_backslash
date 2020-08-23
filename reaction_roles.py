@@ -6,6 +6,8 @@ import asyncio
 import datetime
 import sqlite3
 
+import discord
+
 import config
 import wrapper
 
@@ -20,7 +22,7 @@ remove_role_at = {}
 connection = None
 cursor = None
 
-def db_load():
+def db_load() -> None:
 	global connection, cursor
 
 	connection = sqlite3.connect('db/reaction_roles.sqlite')
@@ -49,7 +51,7 @@ def db_load():
 		"""
 	)
 
-def db_commit():
+def db_commit() -> None:
 	global connection
 
 	connection.commit()
@@ -57,7 +59,9 @@ def db_commit():
 
 # Event handling
 
-async def check_message(payload, channel, adding):
+async def check_message(
+	payload: discord.RawReactionActionEvent, channel: discord.abc.Messageable, adding: bool
+) -> None:
 	"""This is called whenever a reaction is added or removed."""
 	global cursor
 	guild = channel.guild
