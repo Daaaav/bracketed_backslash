@@ -2,10 +2,18 @@
 GPLv3-only :^)
 """
 
+import asyncio
+import datetime
 import sqlite3
 
 import config
 import wrapper
+
+
+# Key is tuple of (user ID, role ID), value is `datetime` when reaction roles will be processed
+# again. This is to prevent spamming role add/removes
+remove_role_at = {}
+
 
 # Database management
 
@@ -44,6 +52,7 @@ def db_commit():
 	global connection
 
 	connection.commit()
+
 
 # Event handling
 
@@ -121,11 +130,36 @@ async def check_message(payload, channel, adding):
 	# a MASSIVE channel with tons of reaction role messages in it that they can't easily know
 	# which message the user clicked on
 	if adding:
+		# Were we going to remove their role before?
+		if (member.id, role_id) in remove_role_at:
+			# Then don't
+			del remove_role_at[(member.id, role_id)]
+
 		await member.add_roles(
 			role_id,
 			reason=f'Member reacted to message with reaction roles in {channel.mention}',
 		)
 	else:
+		# Did we already plan to remove the role?
+		if ((member.id, role_id) in remove_role_at
+		# Think about this... it should be a greater-than sign if the time hasn't come yet
+		and remove_role_at[(member.id, role_id)] > datetime.datetime.now()):
+			return
+
+		# We can remove the role after 3 seconds; 2 for certainty.
+		remove_role_at[(member.id, role_id)] = (
+			datetime.datetime.now() + datetime.timedelta(seconds=2)
+		)
+		await asyncio.sleep(3)
+
+		# Still going to be removed?
+		if ((member.id, role_id) not in remove_role_at
+		or remove_role_at[(member.id, role_id)] > datetime.datetime.now()):
+			# Never mind!
+			return
+
+		del remove_role_at[(member.id, role_id)]
+
 		await member.remove_roles(
 			role_id,
 			reason=f'Member’s reaction to message with reaction roles was removed in {channel.mention}',
