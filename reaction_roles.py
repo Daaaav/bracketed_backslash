@@ -36,7 +36,7 @@ def db_load() -> None:
 	cursor.execute("""
 			CREATE TABLE IF NOT EXISTS 'reactroles_messages' (
 				'message_id' INTEGER PRIMARY KEY NOT NULL,
-				'channel_id' INTEGER NOT NULL,
+				'channel_id' INTEGER NOT NULL
 			)
 		"""
 	)
