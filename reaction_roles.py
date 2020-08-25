@@ -13,8 +13,8 @@ import config
 import wrapper
 
 
-# Key is tuple of (user ID, role ID), value is `datetime` when reaction roles will be processed
-# again. This is to prevent spamming role add/removes
+# Key is tuple of (user ID, role ID), value is `datetime` when the user's role will be removed.
+# This is to prevent spamming role add/removes
 remove_role_at = {}
 
 
