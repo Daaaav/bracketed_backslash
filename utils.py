@@ -1008,3 +1008,18 @@ def get_channel_type(channel: discord.abc.GuildChannel) -> str:
 	}
 
 	return lookup.get(channel.type, 'Unknown Type Channel')
+
+def get_channel_type_emoji(channel: discord.abc.GuildChannel) -> str:
+	lookup = {
+		discord.ChannelType.text: '\N{SPEECH BALLOON}',
+		discord.ChannelType.voice: '\N{STUDIO MICROPHONE}',
+		discord.ChannelType.private: '\N{ENVELOPE}',
+		discord.ChannelType.group: '\N{OPEN MAILBOX WITH RAISED FLAG}',
+		discord.ChannelType.category: '\N{FILE FOLDER}',
+		discord.ChannelType.news: '\N{CHEERING MEGAPHONE}',
+		discord.ChannelType.store: '\N{SHOPPING TROLLEY}',
+	}
+
+	emoji = lookup.get(channel.type, '\N{BLACK QUESTION MARK ORNAMENT}')
+
+	return '\N{TELEVISION}{}'.format(emoji)
