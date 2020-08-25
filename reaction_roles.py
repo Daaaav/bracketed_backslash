@@ -245,6 +245,7 @@ async def remove_reaction_role(message_id: int, role_id: int) -> None:
 			DELETE FROM reactroles_roles
 			WHERE role_id=?
 		""",
+		(role_id,),
 	)
 
 	db_commit()
