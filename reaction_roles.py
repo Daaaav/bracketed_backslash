@@ -5,6 +5,7 @@ GPLv3-only :^)
 import asyncio
 import datetime
 import sqlite3
+from typing import Union
 
 import discord
 
@@ -180,3 +181,74 @@ async def check_message(
 			role_id,
 			reason=f'Member’s reaction to message with reaction roles was removed in {channel.mention}',
 		)
+
+async def add_reaction_role(
+	*, channel_id: int, message_id: int, role_id: int, emoji: Union[str, int]
+) -> bool:
+	"""Add a reaction role to a message. `emoji` is either a string for Unicode, or an int of
+	the ID of the custom emoji. Returns True if it succeeded, returns False if the entry already
+	existed.
+	"""
+	global cursor
+	custom = isinstance(emoji, int)
+	unicode = isinstance(emoji, str)
+	assert (custom and not unicode) or (unicode and not custom)
+
+	# Check that the message ID doesn't already exist
+	result = db_get_messages(channel_id)
+	if message_id in result:
+		return False
+
+	# Add message ID
+	cursor.execute("""
+			INSERT INTO reactroles_messages
+			(message_id, channel_id)
+			VALUES
+			(?, ?)
+		""",
+		(message_id, channel_id),
+	)
+
+	# Check that this entry doesn't already exist
+	result = db_get_entries(message_id)
+	for _, this_role_id, _, _ in result:
+		if this_role_id == role_id:
+			return False
+
+	# Add this entry
+	if custom:
+		emoji_key = 'custom_emoji_id'
+	elif unicode:
+		emoji_key = 'unicode_emoji'
+
+	cursor.execute("""
+			INSERT INTO reactroles_roles
+			(message_id, role_id, {})
+			VALUES
+			(?, ?, ?)
+		""".format(emoji_key),
+		(message_id, role_id, emoji),
+	)
+
+	db_commit()
+
+	return True
+
+async def remove_reaction_role(message_id: int, role_id: int) -> None:
+	"""Remove a reaction role from a message."""
+	global cursor
+
+	cursor.execute("""
+			DELETE FROM reactroles_messages
+			WHERE message_id=?
+		""",
+		(message_id,),
+	)
+
+	cursor.execute("""
+			DELETE FROM reactroles_roles
+			WHERE role_id=?
+		""",
+	)
+
+	db_commit()
