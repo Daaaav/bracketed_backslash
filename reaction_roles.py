@@ -69,6 +69,19 @@ def db_get_messages(channel_id: int) -> list:
 
 	return cursor.fetchall()
 
+def db_get_entries(message_id: int) -> list:
+	global cursor
+
+	cursor.execute("""
+			SELECT *
+			FROM reactroles_roles
+			WHERE message_id=?
+		""",
+		(message_id,),
+	)
+
+	return cursor.fetchall()
+
 
 # Event handling
 
@@ -105,15 +118,7 @@ async def check_message(
 		return
 
 	# Make another query, to check the emoji (also checks message ID first)
-	cursor.execute("""
-			SELECT *
-			FROM reactroles_roles
-			WHERE message_id=?
-	""",
-	(payload.message_id,),
-	)
-
-	result = cursor.fetchall()
+	result = db_get_entries(payload.message_id)
 	if result is None or not result:
 		return
 
