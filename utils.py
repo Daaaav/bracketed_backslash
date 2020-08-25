@@ -1007,7 +1007,17 @@ def get_channel_type_name(channel: discord.abc.GuildChannel) -> str:
 		discord.ChannelType.store: 'Store Page',
 	}
 
-	return lookup.get(channel.type, 'Unknown Type Channel')
+	retval = lookup.get(channel.type, 'Unknown Type Channel')
+
+	try:
+		nsfw = channel.is_nsfw()
+	except AttributeError:
+		nsfw = False
+
+	if nsfw:
+		retval = 'NSFW {}'.format(retval)
+
+	return retval
 
 def get_channel_type_emoji(channel: discord.abc.GuildChannel) -> str:
 	lookup = {
@@ -1020,9 +1030,17 @@ def get_channel_type_emoji(channel: discord.abc.GuildChannel) -> str:
 		discord.ChannelType.store: '\N{SHOPPING TROLLEY}',
 	}
 
-	emoji = lookup.get(channel.type, '\N{BLACK QUESTION MARK ORNAMENT}')
+	retval = lookup.get(channel.type, '\N{BLACK QUESTION MARK ORNAMENT}')
 
-	return '\N{TELEVISION}{}'.format(emoji)
+	try:
+		nsfw = channel.is_nsfw()
+	except AttributeError:
+		nsfw = False
+
+	if nsfw:
+		retval = '{}\N{NO ONE UNDER EIGHTEEN SYMBOL}'.format(retval)
+
+	return retval
 
 def get_channel_type(channel: discord.abc.GuildChannel) -> str:
 	name = get_channel_type_name(channel)
