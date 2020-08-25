@@ -1040,6 +1040,8 @@ def get_channel_type_emoji(channel: discord.abc.GuildChannel) -> str:
 	if nsfw:
 		retval = '{}\N{NO ONE UNDER EIGHTEEN SYMBOL}'.format(retval)
 
+	retval = '\N{TELEVISION}{}'.format(retval)
+
 	return retval
 
 def get_channel_type(channel: discord.abc.GuildChannel) -> str:
