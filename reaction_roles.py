@@ -56,6 +56,19 @@ def db_commit() -> None:
 
 	connection.commit()
 
+def db_get_messages(channel_id: int) -> list:
+	global cursor
+
+	cursor.execute("""
+			SELECT message_id
+			FROM reactroles_messages
+			WHERE channel_id=?
+		""",
+		(channel_id,),
+	)
+
+	return cursor.fetchall()
+
 
 # Event handling
 
@@ -86,14 +99,7 @@ async def check_message(
 		return
 
 	# Query database, is this message one of the messages we're looking for?
-	cursor.execute("""
-			SELECT message_id
-			FROM reactroles_messages
-			WHERE channel_id=?
-		""",
-		(channel.id,),
-	)
-	result = cursor.fetchall()
+	result = db_get_messages(channel.id)
 
 	if payload.message_id not in result:
 		return
