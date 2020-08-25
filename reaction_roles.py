@@ -245,6 +245,8 @@ def remove_reaction_role(role_id: int) -> None:
 
 def remove_message(message_id: int) -> None:
 	"""Delete an entire message and its entries."""
+	global cursor
+
 	cursor.executescript("""
 			DELETE FROM reactroles_messages
 			WHERE message_id=?;
