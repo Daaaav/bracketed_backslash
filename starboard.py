@@ -573,7 +573,6 @@ def ignore_danny_stars(messages, rdanny_id):
 	global cursor
 
 	db_messages = []
-	count = 0
 	for message in messages:
 		if message.author.id != rdanny_id:
 			continue
@@ -586,7 +585,6 @@ def ignore_danny_stars(messages, rdanny_id):
 		db_messages.append(
 			(int(m.group('msg')), message.guild.id, int(m.group('chan')), None, None)
 		)
-		count += 1
 
 	cursor.executemany("""
 			INSERT OR IGNORE INTO starboard_messages
@@ -598,7 +596,7 @@ def ignore_danny_stars(messages, rdanny_id):
 	)
 	db_commit()
 
-	return count
+	return len(db_messages)
 
 def guild_starboard_emote(is_star, guild_id):
 	"""Return a guild's star or nostar, as string that can be used in a message text"""
