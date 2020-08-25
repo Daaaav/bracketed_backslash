@@ -996,7 +996,7 @@ def embed_manual_jump_link(embed, *, gid, cid, mid):
 		inline=False,
 	)
 
-def get_channel_type(channel: discord.abc.GuildChannel) -> str:
+def get_channel_type_name(channel: discord.abc.GuildChannel) -> str:
 	lookup = {
 		discord.ChannelType.text: 'Text Channel',
 		discord.ChannelType.voice: 'Voice Channel',
@@ -1023,3 +1023,9 @@ def get_channel_type_emoji(channel: discord.abc.GuildChannel) -> str:
 	emoji = lookup.get(channel.type, '\N{BLACK QUESTION MARK ORNAMENT}')
 
 	return '\N{TELEVISION}{}'.format(emoji)
+
+def get_channel_type(channel: discord.abc.GuildChannel) -> str:
+	name = get_channel_type_name(channel)
+	emoji = get_channel_type_emoji(channel)
+
+	return '{}{}'.format(emoji, name)
