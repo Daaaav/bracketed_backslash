@@ -178,7 +178,7 @@ async def check_message(
 			reason=f'Member’s reaction to message with reaction roles was removed in {channel.mention}',
 		)
 
-async def add_reaction_role(
+def add_reaction_role(
 	*, channel_id: int, message_id: int, role_id: int, emoji: Union[str, int]
 ) -> bool:
 	"""Add a reaction role to a message. `emoji` is either a string for Unicode, or an int of
@@ -230,7 +230,7 @@ async def add_reaction_role(
 
 	return True
 
-async def remove_reaction_role(message_id: int, role_id: int) -> None:
+def remove_reaction_role(message_id: int, role_id: int) -> None:
 	"""Remove a reaction role from a message."""
 	global cursor
 
