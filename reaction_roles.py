@@ -230,22 +230,28 @@ def add_reaction_role(
 
 	return True
 
-def remove_reaction_role(message_id: int, role_id: int) -> None:
-	"""Remove a reaction role from a message."""
+def remove_reaction_role(role_id: int) -> None:
+	"""Remove a reaction role entry."""
 	global cursor
-
-	cursor.execute("""
-			DELETE FROM reactroles_messages
-			WHERE message_id=?
-		""",
-		(message_id,),
-	)
 
 	cursor.execute("""
 			DELETE FROM reactroles_roles
 			WHERE role_id=?
 		""",
 		(role_id,),
+	)
+
+	db_commit()
+
+def remove_message(message_id: int) -> None:
+	"""Delete an entire message and its entries."""
+	cursor.executescript("""
+			DELETE FROM reactroles_messages
+			WHERE message_id=?;
+			DELETE FROM reactroles_roles
+			WHERE message_id=?;
+		"""
+		(message_id,),
 	)
 
 	db_commit()
