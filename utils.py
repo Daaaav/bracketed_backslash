@@ -1044,12 +1044,6 @@ def get_channel_type_emoji(channel: discord.abc.GuildChannel) -> str:
 
 	return retval
 
-def get_channel_type(channel: discord.abc.GuildChannel) -> str:
-	name = get_channel_type_name(channel)
-	emoji = get_channel_type_emoji(channel)
-
-	return '{}{}'.format(emoji, name)
-
 def get_kbps(bitrate: int) -> str:
 	"""Get kbps as string, given a bitrate that's just bps.
 

@@ -1857,7 +1857,10 @@ async def on_guild_channel_create(channel):
 	schan = utils.getspecialchannel(channel.guild)
 
 	embed = discord.Embed(
-		title='{type} CREATED'.format(type=utils.get_channel_type(channel).upper()),
+		title='{emoji}\N{BLACK RIGHTWARDS ARROW}{name} CREATED'.format(
+			emoji=utils.get_channel_type_emoji(channel),
+			name=utils.get_channel_type_name(channel).upper(),
+		),
 		description='**{name}**'.format(name=utils.mdspecialchars(channel.name)),
 		colour=utils.colorize(channel.id),
 		timestamp=channel.created_at,
