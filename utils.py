@@ -1049,3 +1049,17 @@ def get_channel_type(channel: discord.abc.GuildChannel) -> str:
 	emoji = get_channel_type_emoji(channel)
 
 	return '{}{}'.format(emoji, name)
+
+def get_kbps(bitrate: int) -> str:
+	"""Get kbps as string, given a bitrate that's just bps.
+
+	Python will add an annoying '.0' even if the kbps was an integer if you just naïvely do
+	`bitrate / 1000`. We could `int()` but we don't want to lose the decimal places if it
+	doesn't divide evenly."""
+
+	kbps = bitrate / 1000
+
+	if bitrate % 1000 == 0:
+		kbps = int(kbps)
+
+	return '{} kbps'.format(kbps)

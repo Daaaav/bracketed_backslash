@@ -1850,28 +1850,107 @@ async def on_voice_state_update(member, old, new):
 			await vtc.set_permissions(member, overwrite=None)
 			break
 
-async def on_guild_channel_create(c):
-	if utils.logdisabled('channel_add', c.guild):
+async def on_guild_channel_create(channel):
+	if utils.logdisabled('channel_add', channel.guild):
 		return
-	schan = utils.getspecialchannel(c.guild)
+
+	schan = utils.getspecialchannel(channel.guild)
+
 	embed = discord.Embed(
-		description='{type} ADD\n{0.name} ({0.id})'.format(
-			c,
-			type=utils.get_channel_type(c).upper(),
-		),
+		title='{type} CREATED'.format(type=utils.get_channel_type(channel).upper()),
+		description='**{name}**'.format(name=utils.mdspecialchars(channel.name)),
+		colour=utils.colorize(channel.id),
+		timestamp=channel.created_at,
 	)
+
+	if channel.type is not discord.ChannelType.category:
+		embed.add_field(
+			name='Uncategorized' if channel.category is None else 'Category',
+			value='\u200b' if channel.category is None
+			else '**{name}** ({id})'.format(
+				name=utils.mdspecialchars(channel.category.name),
+				id=channel.category.id,
+			),
+		)
+
+	# Text-specific properties
+
+	if hasattr(channel, 'slowmode_delay'):
+		embed.add_field(
+			name='No Slowmode' if channel.slowmode_delay == 0 else 'Slowmode',
+			value='_(none)_' if channel.slowmode_delay == 0 else '{} seconds'.format(
+				channel.slowmode_delay,
+			), # TODO: Account for hours/minutes/etc. Should be a utils.py function
+		)
+
+	if hasattr(channel, 'topic'):
+		embed.add_field(
+			name='No Topic' if channel.topic is None else 'Topic',
+			value='_(none)_' if channel.topic is None else channel.topic,
+			inline=False,
+		)
+
+	# Voice-specific properties
+
+	if hasattr(channel, 'bitrate'):
+		embed.add_field(
+			name='Bitrate',
+			value=utils.get_kbps(channel.bitrate),
+		)
+
+	if hasattr(channel, 'user_limit'):
+		embed.add_field(
+			name='No User Limit' if channel.user_limit == 0 else 'User Limit',
+			value='_(none)_' if channel.user_limit == 0 else '{} users'.format(
+				channel.user_limit,
+			),
+		)
+
+	embed.add_field(
+		name='\u200b',
+		value=utils.mdspecialchars(utils.id_summary(cid=channel.id)),
+		inline=False,
+	)
+
 	await schan.send(embed=embed)
 
-async def on_guild_channel_delete(c):
-	if utils.logdisabled('channel_remove', c.guild):
+async def on_guild_channel_delete(channel):
+	if utils.logdisabled('channel_remove', channel.guild):
 		return
-	schan = utils.getspecialchannel(c.guild)
+
+	schan = utils.getspecialchannel(channel.guild)
+
 	embed = discord.Embed(
-		description='{type} REMOVE\n{0.name} ({0.id})'.format(
-			c,
-			type=utils.get_channel_type(c).upper(),
+		title='{emoji}\N{NO ENTRY SIGN}{name} DELETED'.format(
+			emoji=utils.get_channel_type_emoji(channel),
+			name=utils.get_channel_type_name(channel).upper(),
 		),
+		description='**{name}**'.format(name=utils.mdspecialchars(channel.name)),
+		colour=utils.colorize(channel.id),
+		timestamp=datetime.datetime.now(),
 	)
+
+	if channel.type is not discord.ChannelType.category:
+		embed.add_field(
+			name='Uncategorized' if channel.category is None else 'Category',
+			value='\u200b' if channel.category is None
+			else '**{name}** ({id})'.format(
+				name=utils.mdspecialchars(channel.category.name),
+				id=channel.category.id,
+			),
+		)
+
+	embed.add_field(
+		name='Originally created',
+		value=utils.reltime(time.mktime(channel.created_at.timetuple())),
+	)
+
+	embed.add_field(
+		name='\u200b',
+		value=utils.mdspecialchars(utils.id_summary(cid=channel.id)),
+		inline=False,
+	)
+
 	await schan.send(embed=embed)
 
 async def on_raw_bulk_message_delete(payload):
