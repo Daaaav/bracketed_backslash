@@ -1165,7 +1165,7 @@ async def expirylist(client, message, **kwargs):
 			)
 			await bot.reply(message, emb=embed)
 			return
-		content = 'Expiry list for server **{0.name}** ({0.id}):\n'.format(guild)
+		content = 'Expiry list for **{0.name}** ({0.id}):\n'.format(guild)
 	else:
 		guild = message.guild
 		content = ''
