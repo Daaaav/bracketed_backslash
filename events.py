@@ -956,7 +956,7 @@ async def on_member_update(before, after):
 
 			# To not copy-paste code
 			def rolelist(roles):
-				return '\n'.join('**{}** ({})'.format(utils.mdspecialchars(role.name), role.id) for role in roles)
+				return '\n'.join(utils.obj_info(role) for role in roles)
 			addedroles_list = rolelist(addedroles)
 			removedroles_list = rolelist(removedroles)
 
@@ -1171,12 +1171,10 @@ async def on_member_join(member):
 		if not member.bot and has_guild_invites:
 			if invite is not None:
 				invite_status = (
-					'`{invite.code}` by'
-					' **{name}**#{inviter.discriminator} ({inviter.id})'
+					'`{invite.code}` by {inviter}'
 				).format(
 					invite=invite,
-					name=utils.mdspecialchars(invite.inviter.name),
-					inviter=invite.inviter,
+					inviter=utils.obj_info(invite.inviter),
 				)
 			elif not has_audit_invites:
 				invite_status = 'I’m not allowed to search the audit log, but here’s the possible invites: {}'.format(
@@ -1280,10 +1278,7 @@ async def on_member_remove(member):
 		if moderator is not None:
 			embed.add_field(
 				name='Responsible moderator',
-				value='**{name}**#{moderator.discriminator} ({moderator.id})'.format(
-					name=utils.mdspecialchars(moderator.name),
-					moderator=moderator,
-				),
+				value=utils.obj_info(moderator),
 			)
 			embed.add_field(
 				name='Reason' if reason else 'No reason given',
@@ -1471,12 +1466,11 @@ async def on_guild_role_update(before, after):
 
 			before_log = ''
 			after_log = ''
-			generation_string = '**{name}** ({id}) {trailing_space}\n'
+			generation_string = '{info} {trailing_space}\n'
 
 			for ev_before, ev_after in zip(before_list, after_list):
 				before_log += generation_string.format(
-					name=utils.mdspecialchars(ev_before.name),
-					id=ev_before.id,
+					info=utils.obj_info(ev_before),
 					trailing_space = '\xa0' * 3,
 				)
 
@@ -1557,9 +1551,7 @@ async def on_guild_role_update(before, after):
 		diff = list(set(before.permissions).symmetric_difference(set(after.permissions)))
 		e = discord.Embed(
 			title='ROLE PERMISSIONS CHANGE',
-			description='**{name}** ({0.id})'.format(
-				after, name=utils.mdspecialchars(after.name)
-			),
+			description=utils.obj_info(after),
 			colour=after.colour,
 		)
 		e.add_field(name='Permission Updated', value=diff[0][0])
@@ -1762,11 +1754,11 @@ async def on_guild_update(before, after):
 		embed.set_thumbnail(url=after.icon_url)
 		embed.add_field(
 			name='Older Channel: None' if before.afk_channel is None else 'Older Channel',
-			value='No Older Channel' if before.afk_channel is None else '{name} ({0.id})'.format(before.afk_channel, name=utils.mdspecialchars(before.afk_channel.name)),
+			value='No Older Channel' if before.afk_channel is None else utils.obj_info(before.afk_channel)),
 		)
 		embed.add_field(
 			name='Newer Channel: None' if after.afk_channel is None else 'Newer Channel',
-			value='No Newer Channel' if after.afk_channel is None else '{name} ({0.id})'.format(after.afk_channel, name=utils.mdspecialchars(after.afk_channel.name)),
+			value='No Newer Channel' if after.afk_channel is None else utils.obj_info(after.afk_channel)),
 		)
 		await specialchannel.send(embed=embed)
 	if before.verification_level != after.verification_level and not utils.logdisabled(
@@ -1798,7 +1790,7 @@ async def on_guild_emojis_update(guild, b, a):
 	diff = list(set(b).symmetric_difference(set(a)))
 	elist = ''
 	for e in diff:
-		elist += '{str} – {0.name} ({0.id})\n'.format(e, str=str(e))
+		elist += '{str} – {0}\n'.format(utils.obj_info(e), str=str(e))
 	if len(b) > len(a):
 		desc = 'EMOTE REMOVE'
 	elif len(b) < len(a):
@@ -1870,10 +1862,7 @@ async def on_guild_channel_create(channel):
 		embed.add_field(
 			name='Uncategorized' if channel.category is None else 'Category',
 			value='\u200b' if channel.category is None
-			else '**{name}** ({id})'.format(
-				name=utils.mdspecialchars(channel.category.name),
-				id=channel.category.id,
-			),
+			else utils.obj_info(channel.category),
 		)
 
 	# Text-specific properties
@@ -1937,10 +1926,7 @@ async def on_guild_channel_delete(channel):
 		embed.add_field(
 			name='Uncategorized' if channel.category is None else 'Category',
 			value='\u200b' if channel.category is None
-			else '**{name}** ({id})'.format(
-				name=utils.mdspecialchars(channel.category.name),
-				id=channel.category.id,
-			),
+			else utils.obj_info(channel.category),
 		)
 
 	embed.add_field(
@@ -2258,12 +2244,7 @@ async def on_guild_channel_update(b, a):
 			title='{type} UPDATE'.format(
 				type=utils.get_channel_type(a).upper(),
 			),
-			description=(
-				'**{name}** ({id})'
-			).format(
-				name=utils.mdspecialchars(a.name),
-				id=a.id,
-			),
+			description=utils.obj_info(a),
 			colour=a.guild.me.colour,
 		)
 		e.add_field(name='Older Name', value=utils.mdspecialchars(b.name))
@@ -2273,10 +2254,7 @@ async def on_guild_channel_update(b, a):
 async def on_guild_join(guild):
 	em = discord.Embed(
 		title='BOT ADDED TO SERVER',
-		description='**{name}** ({id})'.format(
-			name=utils.mdspecialchars(guild.name),
-			id=guild.id,
-		),
+		description=utils.obj_info(guild),
 		colour=wrapper.client.get_guild(op_ids.ids['opguild']).me.colour,
 	)
 	em.set_image(url=guild.icon_url)
@@ -2285,10 +2263,7 @@ async def on_guild_join(guild):
 async def on_guild_remove(guild):
 	em = discord.Embed(
 		title='BOT REMOVED FROM SERVER',
-		description='**{name}** ({id})'.format(
-			name=utils.mdspecialchars(guild.name),
-			id=guild.id,
-		),
+		description=utils.obj_info(guild),
 		colour=wrapper.client.get_guild(op_ids.ids['opguild']).me.colour,
 	)
 	em.set_image(url=guild.icon_url)

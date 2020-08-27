@@ -622,10 +622,7 @@ async def findc(client, message, **kwargs):
 
 		# Generation of the lists
 		for c in sorted(message.guild.channels, key=lambda c: c.position):
-			apnd = '**{name}** ({id})\n'.format(
-				name=utils.mdspecialchars(c.name),
-				id=c.id,
-			)
+			apnd = utils.obj_info(c)
 			if isinstance(c, discord.TextChannel):
 				tchans += apnd
 				tchanc += 1
@@ -1165,7 +1162,7 @@ async def expirylist(client, message, **kwargs):
 			)
 			await bot.reply(message, emb=embed)
 			return
-		content = 'Expiry list for **{0.name}** ({0.id}):\n'.format(guild)
+		content = 'Expiry list for {0}:\n'.format(utils.obj_info(guild))
 	else:
 		guild = message.guild
 		content = ''
@@ -1976,9 +1973,8 @@ async def bans(client, message, **kwargs):
 		return
 	ulist = ''
 	for ban_entry in bans:
-		ulist += '**{name}**#{user.discriminator} ({user.id}){reason}\n'.format(
-			name=utils.mdspecialchars(ban_entry.user.name),
-			user=ban_entry.user,
+		ulist += '{user}{reason}\n'.format(
+			user=utils.obj_info(ban_entry.user),
 			reason=' - ' + ban_entry.reason if ban_entry.reason is not None else '',
 		)
 
