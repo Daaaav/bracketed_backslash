@@ -903,7 +903,7 @@ async def vy(client, message, **kwargs):
 		await bot.reply(message, emb=embed)
 		return
 
-	content = 'Voted {} **{name}**#{discrim}.'
+	content = 'Voted {} {mutee.mention}.'
 	if kwargs['command'] == 'vy':
 		side = 'proponents'
 		oppositeside = 'opponents'
@@ -914,7 +914,7 @@ async def vy(client, message, **kwargs):
 		resulttext = 'against muting'
 
 	content = content.format(
-		resulttext, name=utils.mdspecialchars(mutee.name), discrim=mutee.discriminator,
+		resulttext, mutee=mutee,
 	)
 
 	if author.id in poll[side]:
@@ -928,10 +928,9 @@ async def vy(client, message, **kwargs):
 
 	if author.id in poll[oppositeside]:
 		# Changing your mind, huh?
-		content = 'Changed vote to be {} **{name}**#{discrim}.'.format(
+		content = 'Changed vote to be {} {mutee.mention}.'.format(
 			resulttext,
-			name=utils.mdspecialchars(mutee.name),
-			discrim=mutee.discriminator,
+			mutee=mutee,
 		)
 		poll[oppositeside].remove(author.id)
 
