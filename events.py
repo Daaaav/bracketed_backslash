@@ -1705,9 +1705,9 @@ async def on_reaction_clear(m, rs):
 		description=m.content,
 		colour=m.author.colour,
 	)
-	embed.add_field(name='Message ID (temp)', value=m.id)
 	embed.add_field(name='Reactions', value=rlist)
 	utils.embed_add_jump_link(embed, m)
+	embed.set_footer(text=utils.id_summary(cid=m.channel.id, mid=m.id))
 	await schan.send(embed=embed)
 
 async def on_guild_update(before, after):
