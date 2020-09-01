@@ -9,6 +9,7 @@ import math
 import os
 import pathlib
 import time
+from typing import List, Union
 
 import discord
 
@@ -105,8 +106,15 @@ def calculate_msg_start(message):
 
 	return msg_start
 
-async def reply(messageobject, message=None, *, emb=None):
-	# Removes the need for adding msg_start manually every time
+async def reply(
+	messageobject: discord.Message, message: str = None,
+	*,
+	emb: discord.Embed = None
+) -> Union[discord.Message, List[discord.Message]]:
+	"""Automatically prepends input display and sends a message, with pagination.
+	Returns the sent message object (if there was one), or a list of message objects (if it
+	had to be paginated.)
+	"""
 	msg_start = calculate_msg_start(messageobject)
 	if message is None:
 		message = ''
