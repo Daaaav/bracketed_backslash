@@ -115,17 +115,20 @@ async def reply(messageobject, message=None, *, emb=None):
 		content = msg_start + message
 		contentlines = content.split('\n')
 		cut = math.floor(len(contentlines)/2)
-		await messageobject.channel.send('\n'.join(contentlines[:cut]))
+		messages = []
+		message = await messageobject.channel.send('\n'.join(contentlines[:cut]))
+		messages.append(message)
 		if emb != None:
-			await messageobject.channel.send('\n'.join(contentlines[cut:]), embed=emb)
+			message = await messageobject.channel.send('\n'.join(contentlines[cut:]), embed=emb)
 		else:
-			await messageobject.channel.send('\n'.join(contentlines[cut:]))
-		return
+			message = await messageobject.channel.send('\n'.join(contentlines[cut:]))
+		messages.append(message)
+		return messages
 	try:
 		if emb != None:
-			await messageobject.channel.send(msg_start + message, embed=emb)
+			return await messageobject.channel.send(msg_start + message, embed=emb)
 		else:
-			await messageobject.channel.send(msg_start + message)
+			return await messageobject.channel.send(msg_start + message)
 	except(discord.errors.HTTPException, discord.errors.Forbidden) as e:
 		if isinstance(messageobject.channel, discord.abc.PrivateChannel):
 			guildinfo = '\t(direct message)\n'
