@@ -3043,7 +3043,7 @@ async def tntgb(client, message, **kwargs):
 				embed = emb.info(questions[question])
 				await bot.reply(message, emb=embed)
 				try:
-					response = await wrapper.client.wait_for(
+					response = await client.wait_for(
 						'message',
 						check=lambda m: m.author == message.author and \
 						m.channel == message.channel,
