@@ -3648,7 +3648,7 @@ async def _starboard(client, message, **kwargs):
 					(
 						'**Please specify the nostar emote to use, by '
 						'adding it as a reaction to this message.** If you '
-						'don\'t want to use the nostar feature, then react '
+						'don’t want to use the nostar feature, then react '
 						'with anything you like (but not a custom emote '
 						'from a different server), you can disable the '
 						'nostar feature.'
