@@ -1754,11 +1754,11 @@ async def on_guild_update(before, after):
 		embed.set_thumbnail(url=after.icon_url)
 		embed.add_field(
 			name='Older Channel: None' if before.afk_channel is None else 'Older Channel',
-			value='No Older Channel' if before.afk_channel is None else utils.obj_info(before.afk_channel)),
+			value='No Older Channel' if before.afk_channel is None else utils.obj_info(before.afk_channel),
 		)
 		embed.add_field(
 			name='Newer Channel: None' if after.afk_channel is None else 'Newer Channel',
-			value='No Newer Channel' if after.afk_channel is None else utils.obj_info(after.afk_channel)),
+			value='No Newer Channel' if after.afk_channel is None else utils.obj_info(after.afk_channel),
 		)
 		await specialchannel.send(embed=embed)
 	if before.verification_level != after.verification_level and not utils.logdisabled(
