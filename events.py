@@ -1698,7 +1698,7 @@ async def on_reaction_clear(m, rs):
 		else:
 			rlist += name + '\n'
 	embed = discord.Embed(
-		title='REACTIONS CLEARED FROM MESSAGE (SENT {rtime} IN {c.mention})'.format(
+		title='REACTIONS CLEARED FROM MESSAGE (SENT {rtime} IN #{c.name})'.format(
 			rtime=utils.reltime(time.mktime(m.created_at.timetuple())),
 			c=m.channel,
 		),
