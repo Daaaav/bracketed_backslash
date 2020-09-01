@@ -2241,8 +2241,9 @@ async def on_guild_channel_update(b, a):
 	schan = utils.getspecialchannel(a.guild)
 	if b.name != a.name:
 		e = discord.Embed(
-			title='{type} UPDATE'.format(
-				type=utils.get_channel_type(a).upper(),
+			title='{emoji}\N{TWISTED RIGHTWARDS ARROWS}{name} UPDATE'.format(
+				emoji=utils.get_channel_type_emoji(a),
+				name=utils.get_channel_type_name(a).upper(),
 			),
 			description=utils.obj_info(a),
 			colour=a.guild.me.colour,
