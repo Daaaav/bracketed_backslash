@@ -5,7 +5,7 @@ GPLv3-only :^)
 import asyncio
 import datetime
 import sqlite3
-from typing import Union
+from typing import Sequence, Tuple, Union
 
 import discord
 
@@ -230,6 +230,53 @@ def add_reaction_role(
 	db_commit()
 
 	return True
+
+def add_reaction_roles(batch: Sequence[
+		Tuple[int, int, int, Union[str, int]]
+	]
+) -> None:
+	"""Add a batch of reaction roles at once. `batch` is a sequence of tuples, each tuple
+	containing (in this order) the channel ID, message ID, role ID, and emoji. The emoji is
+	either a string for Unicode, or an int of the ID of the custom emoji. Entries that already
+	exist will be silently ignored.
+	"""
+	global cursor
+	register_messages = []
+	register_entries = []
+
+	for channel_id, message_id, role_id, emoji in batch:
+		# Duplicate entries will be ignored anyway, so don't bother checking them
+		register_messages.append(
+			(message_id, channel_id)
+		)
+		custom = isinstance(emoji, int)
+		unicode = isinstance(emoji, str)
+		assert utils.mutually_exclusive(custom, unicode)
+
+		insert_custom = emoji if custom else None
+		insert_unicode = emoji if unicode else None
+
+		register_entries.append(
+			(message_id, role_id, insert_unicode, insert_custom)
+		)
+
+	cursor.executemany("""
+			INSERT OR IGNORE INTO reactroles_messages
+			(message_id, channel_id)
+			VALUES
+			(?, ?)
+		""",
+		register_messages,
+	)
+	cursor.executemany("""
+			INSERT OR IGNORE INTO reactroles_roles
+			(message_id, role_id, unicode_emoji, custom_emoji_id)
+			VALUES
+			(?, ?, ?, ?)
+		""",
+		register_entries,
+	)
+	db_commit()
 
 def remove_reaction_role(*, message_id: int, role_id: int) -> None:
 	"""Remove a reaction role from a message."""
