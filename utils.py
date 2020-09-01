@@ -7,6 +7,7 @@ import math
 import re
 import time
 import threading
+from typing import Tuple
 
 import discord
 
@@ -1075,3 +1076,21 @@ def obj_info(obj: discord.Object) -> str:
 		return '{}{} {}'.format(name, discrim, id_)
 
 	return '{} {}'.format(name, id_)
+
+def mutually_exclusive(*args: Tuple[bool, ...]) -> bool:
+	"""Return True if one and only one of the provided items is truthy."""
+	assert len(args) > 1
+
+	if not any(args):
+		return False
+
+	already_true = False
+
+	for item in args:
+		if item:
+			if already_true:
+				return False
+
+			already_true = True
+
+	return True

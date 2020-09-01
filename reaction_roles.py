@@ -10,6 +10,7 @@ from typing import Union
 import discord
 
 import config
+import utils
 import wrapper
 
 
@@ -188,7 +189,7 @@ def add_reaction_role(
 	global cursor
 	custom = isinstance(emoji, int)
 	unicode = isinstance(emoji, str)
-	assert (custom and not unicode) or (unicode and not custom)
+	assert utils.mutually_exclusive(custom, unicode)
 
 	# Check that the message ID doesn't already exist
 	result = db_get_messages(channel_id)
