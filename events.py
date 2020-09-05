@@ -1297,14 +1297,71 @@ async def on_member_remove(member):
 		await specialchannel.send(embed=embed)
 
 async def on_member_ban(guild, user):
-	if utils.logdisabled('member_ban', guild):
-		return
-	specialchannel = utils.getspecialchannel(guild)
+	if not utils.logdisabled('member_ban', guild):
+		specialchannel = utils.getspecialchannel(guild)
 
-	msg = '**`>`**👞🚪⛔`user` **``{}``**`#{}` `({}) banned from server {} ({})`'.format(
-		utils.wrapbackticks(user.name), user.discriminator, user.id, guild.name, guild.id,
-	)
-	await specialchannel.send(msg)
+		msg = '**`>`**👞🚪⛔`user` **``{}``**`#{}` `({}) banned from server {} ({})`'.format(
+			utils.wrapbackticks(user.name), user.discriminator, user.id, guild.name, guild.id,
+		)
+		await specialchannel.send(msg)
+
+	if config.get_s('banlog_logchannel', guild.id) != 0 and \
+	config.get_s('banlog_modchannel', guild.id) != 0:
+		modchannel = discord.utils.find(
+			lambda c: c.id == config.get_s('banlog_modchannel', guild.id),
+			guild.channels
+		)
+
+		# Get the ban on this user
+		bans = await guild.bans()
+		reason = '(cannot be determined)'
+		for b in bans:
+			if b.user == user:
+				reason = b.reason
+				break
+
+		logmessage = (
+			'**Ban on user**: {}#{} ({})\n'
+			'**Reason**: {}\n'
+			#'Responsible moderator: {}'
+		).format(
+			user.name, user.discriminator, user.mention,
+			reason
+		)
+		emb = discord.Embed(title='Preview', description=logmessage + '(responsible moderator?)')
+		question_msg = await modchannel.send(
+			(
+				#'{} has just been banned. For the responsible moderator '
+				#'to publish a log message in <#{}>, please react to this message '
+				#'with 🙋. If this ban was placed after discussion and agreement '
+				#'between the moderators, please react to this message with 👍.'
+				'{} has just been banned. To publish a log message in <#{}>, please react '
+				'to this message with either:\n'
+				'🙋 if you placed this ban at your sole discretion\n'
+				'👍 if the ban was placed after discussion and agreement between the '
+				'moderators'
+			).format(
+				user.mention, config.get_s('banlog_logchannel', guild.id)
+			), embed=emb
+		)
+
+		def react_check(reaction, user):
+			if reaction.message.id != question_msg.id:
+				return False
+			e = str(reaction.emoji)
+			return e.startswith(('🙋', '👍'))
+
+		reaction, user = await wrapper.client.wait_for('reaction_add', check=react_check)
+
+		if str(reaction.emoji).startswith('🙋'):
+			logmessage += '**Responsible moderator**: {}'.format(user)
+		else:
+			logmessage += 'This ban was placed after discussion and agreement by moderators.'
+
+		await discord.utils.find(
+			lambda c: c.id == config.get_s('banlog_logchannel', guild.id),
+			guild.channels
+		).send(logmessage)
 
 async def on_member_unban(guild, user):
 	if utils.logdisabled('member_unban', guild):
