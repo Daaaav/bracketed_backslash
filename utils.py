@@ -1059,16 +1059,20 @@ def get_kbps(bitrate: int) -> str:
 
 	return '{} kbps'.format(kbps)
 
-def obj_info(obj: discord.Object) -> str:
-	r"""Return a 'NAME (ID)' string, or 'NAME#DISCRIM (ID)' string, with the name bolded.
-	Automatically handles mdspecialchars().
+def obj_info(obj: discord.Object, *, markdown: bool = True) -> str:
+	r"""Return a 'NAME (ID)' string, or 'NAME#DISCRIM (ID)' string, with the name bolded if
+	`markdown` is True (which it is by default). Also if `markdown` is True, it automatically
+	handles mdspecialchars().
 
 	Examples:
 		**\[\\\]** (328235381738962947)
 		**Info Teddy**#3737 (146814960574398464)
 	"""
 
-	name = '**{}**'.format(mdspecialchars(obj.name))
+	if markdown:
+		name = '**{}**'.format(mdspecialchars(obj.name))
+	else:
+		name = obj.name
 	id_ = '({})'.format(obj.id)
 
 	if hasattr(obj, 'discriminator'): # Only users have discriminators

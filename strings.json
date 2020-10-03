@@ -6,6 +6,7 @@
 		"mod_only": "Permission denied. This command can only be used by a moderator or administrator.",
 		"specify_user": "Please specify a user ID, a username, a username and discriminator, or a nickname.",
 		"specify_channel": "Please specify a channel ID, a name, or a mention.",
+		"specify_role": "Please specify a role ID, a name, or a mention.",
 		"you_no_permission": "You don\u2019t have permission to do this.",
 		"no_permission": "I did not obtain a right vital to doing this. Most probably, a guild administrator should grant that right to this bot, or your action is trying to go against sorting of groups.",
 		"accepts_user": "Accepts as an argument a user ID, nickname, username, discriminator, or username and discriminator.",
@@ -312,6 +313,16 @@
 				{
 					"name": "rolesync",
 					"short": "Resyncs the roles cache with the current roles every member has. Does not remove roles from members who have left the server.",
+					"extra": ""
+				},
+				{
+					"name": "add_role_all",
+					"short": "Adds a role to everyone.",
+					"extra": ""
+				},
+				{
+					"name": "remove_role_all",
+					"short": "Removes a role from everyone.",
 					"extra": ""
 				},
 				{

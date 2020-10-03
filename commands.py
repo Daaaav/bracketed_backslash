@@ -37,6 +37,7 @@ import checks
 import col
 import config
 import customcommands
+import dispatch
 import emb
 import events
 import hangman
@@ -1063,6 +1064,98 @@ async def rolerst(client, message, **kwargs):
 	await utils.removeRestrictiveRoles(targetmember, message.guild)
 	embed = emb.success('Reset roles for <@{}> back to normal.'.format(targetmember.id))
 	await bot.reply(message, emb=embed)
+
+@shadow(guildonly=True, aliases=['role_add_all', 'remove_role_all', 'role_remove_all'])
+async def add_role_all(client, message, **kwargs):
+	perms = message.channel.permissions_for(message.author)
+	if not perms.manage_roles:
+		embed = emb.error(bot.t['you_no_permission'])
+		utils.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
+		await bot.reply(message, emb=embed)
+		return
+
+	role = utils.match_input(message.guild.roles, discord.Role, kwargs['arguments'])
+
+	if role is None:
+		embed = emb.error(bot.t['specify_role'])
+		await bot.reply(message, emb=embed)
+		return
+
+	remove = kwargs['command'] in ('remove_role_all', 'role_remove_all')
+
+	# Do this in a separate task so it doesn't block the role adding
+	async def first_respond():
+		embed = emb.info(
+			'{doing} {role} {with_} every member on the server. This can take a while...'
+			'{addendum}'
+			.format(
+				doing='Removing' if remove else 'Adding',
+				role=utils.obj_info(role),
+				with_='from' if remove else 'to',
+				addendum='' if remove else
+				'\nIf you added the wrong role, you can use `\\remove_role_all`.',
+			),
+		)
+		await bot.reply(message, emb=embed)
+	dispatch.run(wrapper.client, first_respond())
+
+	# Lists of member IDs
+	failures = []
+	successes = []
+
+	action_func = 'remove_roles' if remove else 'add_roles'
+
+	for member in message.guild.members:
+		try:
+			await getattr(member, action_func)(
+				role,
+				reason='Mass role {act} called by {mod}'.format(
+					act='removal' if remove else 'addition',
+					mod=utils.obj_info(message.author, markdown=False),
+				),
+			)
+		except discord.errors.Forbidden:
+			# Well, why continue?
+			embed = emb.error(bot.t['no_permission'])
+			await bot.reply(message, emb=embed)
+			return
+		except discord.errors.HTTPException:
+			failures.append(member.id)
+		else:
+			successes.append(member.id)
+
+	if failures:
+		embed = emb.warning(
+			# I assume if a non-bot called this command, that there is more than
+			# 1 member in the server. Thus there is no plural-checking code.
+			'I have successfully {done} {role} {with_} {n1} members, '
+			'but have failed to do it for {n2} members.'
+			.format(
+				done='removed' if remove else 'added',
+				role=utils.obj_info(role),
+				with_='from' if remove else 'to',
+				n1=len(successes),
+				n2=len(failures),
+			)
+		)
+		await bot.reply(message, emb=embed)
+		return
+
+	if successes:
+		embed = emb.success(
+			# Again, no plural-checking code here, too.
+			'Successfully {did} {role} {with_} {n} members.'.format(
+				did='removed' if remove else 'added',
+				role=utils.obj_info(role),
+				with_='from' if remove else 'to',
+				n=len(successes),
+			)
+		)
+		await bot.reply(message, emb=embed)
+		return
+
+	# Why are we here? We shouldn't be here.
+	assert False
 
 @shadow(auth=checks.is_mod)
 async def expires(client, message, **kwargs):
