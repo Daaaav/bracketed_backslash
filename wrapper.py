@@ -9,6 +9,9 @@ import config
 
 config.load()
 
+intents = discord.Intents.all()
+intents.typing = False
+
 client = discord.Client(
 	max_messages=999999999,
 	status=discord.Status.dnd,
@@ -17,7 +20,8 @@ client = discord.Client(
 		everyone=False,
 		users=False,
 		roles=False
-	)
+	),
+	intents=intents
 ) # defines all client.* commands
 
 boottime = time.strftime(config.get_s('timeformat'))
