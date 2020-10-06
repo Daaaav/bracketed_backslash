@@ -201,6 +201,16 @@ configs = {
 		'access': 2,
 		'valid_user_value': True,
 	},
+	'nologusers': {
+		'default': [],
+		'type': 'uid',
+		'is_array': True,
+		'expl': 'Edit and delete events involving messages by these users will never be logged in the mod log, and will never cause "Message was edited/deleted" messages. This may be useful if, for example, you have a bot that regularly replies to commands with a "Processing..." message and then edits the result.',
+		'detachable': True,
+		'cat': 'logging',
+		'access': 2,
+		'valid_user_value': True,
+	},
 	'votevmute_minmembers': {
 		'default': 4,
 		'type': 'int',

@@ -805,6 +805,14 @@ def channelnotlogged(channel, guild):
 		channelid = channel
 	return channelid in config.get_s('nologchannels', guild.id)
 
+def usernotlogged(user, guild):
+	# Accepts either a User/Member or a user ID.
+	try:
+		userid = user.id
+	except AttributeError:
+		userid = user
+	return userid in config.get_s('nologusers', guild.id)
+
 async def newmemberroles(member, specialchannel, bypassjoinchannel):
 	if config.get_s('rolecachemode', member.guild.id) == 1 and checks.is_bot(member):
 		# Give them the bot roles!

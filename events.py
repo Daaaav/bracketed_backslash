@@ -270,7 +270,8 @@ async def on_message(m):
 		await schan.send(embed=e)
 
 	if not priv and m.attachments and not utils.logdisabled('message_delete', m.guild) and \
-	not utils.channelnotlogged(m.channel, m.guild):
+	not utils.channelnotlogged(m.channel, m.guild) and \
+	not utils.usernotlogged(m.author, m.guild):
 		a = await utils.fetch(m.attachments[0].url)
 		fn = (
 			'{atchcche}/{id}_{fn}'
@@ -610,6 +611,8 @@ async def on_message_delete(msg):
 		return
 	if utils.channelnotlogged(msg.channel, msg.guild):
 		return
+	if utils.usernotlogged(msg.author, msg.guild):
+		return
 	schan = utils.getspecialchannel_reply(msg)
 
 	if msg.type is not discord.MessageType.default:
@@ -707,6 +710,8 @@ async def on_message_edit(old, new):
 	if utils.isprivatemessage(old.guild):
 		return
 	if utils.channelnotlogged(new.channel, new.guild):
+		return
+	if utils.usernotlogged(new.author, new.guild):
 		return
 	edited_at = new.edited_at
 	if edited_at is None:
