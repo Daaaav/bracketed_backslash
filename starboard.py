@@ -13,7 +13,7 @@ import wrapper
 
 
 # This serves as a lock, contains messages that are being starboarded at the moment
-starboarding_messages = set()
+starboarding_messages = []
 
 # Key is message id (of announcement in starboard), value is datetime when the message can be
 # deleted. This is for the anti-star/unstar/star spam prevention
@@ -344,7 +344,7 @@ def acquire_starboard_message_lock(message):
 			)
 		)
 		return False
-	starboarding_messages.add(message)
+	starboarding_messages.append(message)
 	return True
 
 async def ensure_message_on_starboard(message, score, num_stars, num_nostars):
@@ -395,7 +395,7 @@ async def ensure_message_not_on_starboard(message=None, id=None, remove_slowly=F
 		guild_id = message.guild.id
 
 	# Maybe we starboarded this before? Sorry I didn't tidy up. Give it another chance later.
-	starboarding_messages = set(filter(lambda m: m.id != id, starboarding_messages))
+	starboarding_messages = list(filter(lambda m: m.id != id, starboarding_messages))
 
 	# Is it actually on the starboard?
 	cursor.execute("""
