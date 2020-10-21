@@ -123,7 +123,7 @@ async def _help(client, message, **kwargs):
 async def restart(client, message, **kwargs):
 	embed = emb.success('Restarting.', True)
 	embed.add_field(name='Uptime', value=utils.reltime(wrapper.boottimeunix, True))
-	embed.add_field(name='Messages in Cache', value=str(len(client._connection._messages)))
+	embed.add_field(name='Messages in Cache', value=str(len(client.cached_messages)))
 	utils.logcommand(kwargs['command'], kwargs['arguments'], message)
 	await bot.reply(message, emb=embed)
 	await client.logout()

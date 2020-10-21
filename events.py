@@ -203,7 +203,7 @@ async def on_ready():
 				)
 
 	# Now set up our own cache, that Discord.py won't remove messages from before telling us!
-	for m in wrapper.client._connection._messages:
+	for m in wrapper.client.cached_messages:
 		wrapper.owncache.append(m.id)
 
 	for guild in wrapper.client.guilds:
@@ -2077,7 +2077,7 @@ async def on_raw_message_delete(payload):
 		# Check if on_message_delete() was already called by this message
 		# If it was, then return
 		if discord.utils.find(
-			lambda m: m.id == payload.message_id, wrapper.client._connection._messages,
+			lambda m: m.id == payload.message_id, wrapper.client.cached_messages,
 		) != None:
 			# If the message lingers in deleted_messages, it doesn't really matter for now
 			return
@@ -2114,7 +2114,7 @@ async def on_raw_message_edit(payload):
 		return
 	# Check if the message is in the cache and return if it is
 	if discord.utils.find(
-		lambda m: m.id == payload.message_id, wrapper.client._connection._messages,
+		lambda m: m.id == payload.message_id, wrapper.client.cached_messages,
 	) != None:
 		return
 
@@ -2181,7 +2181,7 @@ async def on_raw_reaction_add(payload):
 	not utils.channelnotlogged(mchan, mchan.guild):
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(
-			lambda m: m.id == payload.message_id, wrapper.client._connection._messages,
+			lambda m: m.id == payload.message_id, wrapper.client.cached_messages,
 		) != None:
 			return
 
@@ -2229,7 +2229,7 @@ async def on_raw_reaction_remove(payload):
 	not utils.channelnotlogged(mchan, mchan.guild):
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(
-			lambda m: m.id == payload.message_id, wrapper.client._connection._messages,
+			lambda m: m.id == payload.message_id, wrapper.client.cached_messages,
 		) != None:
 			return
 
@@ -2277,7 +2277,7 @@ async def on_raw_reaction_clear(payload):
 	not utils.channelnotlogged(mchan, mchan.guild):
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(
-			lambda m: m.id == payload.message_id, wrapper.client._connection._messages,
+			lambda m: m.id == payload.message_id, wrapper.client.cached_messages,
 		) != None:
 			return
 

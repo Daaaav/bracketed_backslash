@@ -109,7 +109,7 @@ async def check_message(payload, channel, adding):
 
 	# We need the message, maybe it's in the cache, otherwise we can always fetch it.
 	orig_message = discord.utils.find(
-		lambda m: m.id == payload.message_id, wrapper.client._connection._messages
+		lambda m: m.id == payload.message_id, wrapper.client.cached_messages
 	)
 	if orig_message is None:
 		orig_message = await channel.fetch_message(payload.message_id)
@@ -462,7 +462,7 @@ async def edit_starboard_message(message, score, num_stars, num_nostars, starboa
 		del unstarboard_message_at[starboard_message_id]
 
 	starboard_message = discord.utils.find(
-		lambda m: m.id == starboard_message_id, wrapper.client._connection._messages
+		lambda m: m.id == starboard_message_id, wrapper.client.cached_messages
 	)
 	if starboard_message is None:
 		# Hoped I could get the message from the cache, but alas. Now we need to get
@@ -496,7 +496,7 @@ async def remove_starboard_message(message_id, starboard_message_id, guild_id, r
 	"""Remove a starboard announcement"""
 
 	starboard_message = discord.utils.find(
-		lambda m: m.id == starboard_message_id, wrapper.client._connection._messages
+		lambda m: m.id == starboard_message_id, wrapper.client.cached_messages
 	)
 	if starboard_message is None:
 		# Hoped I could get the message from the cache, but alas. Now we need to get
