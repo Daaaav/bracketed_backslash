@@ -151,7 +151,7 @@ async def check_message(
 
 		await member.add_roles(
 			role_id,
-			reason=f'Member reacted to message with reaction roles in {channel.mention}',
+			reason=f'Member reacted to message with reaction roles in #{channel.name}',
 		)
 	else:
 		# Did we already plan to remove the role?
@@ -176,7 +176,7 @@ async def check_message(
 
 		await member.remove_roles(
 			role_id,
-			reason=f'Member’s reaction to message with reaction roles was removed in {channel.mention}',
+			reason=f'Member’s reaction to message with reaction roles was removed in #{channel.name}',
 		)
 
 def add_reaction_role(
