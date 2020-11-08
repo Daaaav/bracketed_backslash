@@ -152,7 +152,7 @@ async def check_message(
 			del remove_role_at[(member.id, role_id)]
 
 		await member.add_roles(
-			role_id,
+			discord.Object(role_id),
 			reason=f'Member reacted to message with reaction roles in #{channel.name}',
 		)
 	else:
@@ -177,7 +177,7 @@ async def check_message(
 		del remove_role_at[(member.id, role_id)]
 
 		await member.remove_roles(
-			role_id,
+			discord.Object(role_id),
 			reason=f'Member’s reaction to message with reaction roles was removed in #{channel.name}',
 		)
 
