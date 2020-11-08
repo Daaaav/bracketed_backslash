@@ -65,7 +65,9 @@ def db_get_messages(channel_id: int) -> list:
 		(channel_id,),
 	)
 
-	return cursor.fetchall()
+	# cursor.fetchall() looks like [(id,), (id,), (id,)]
+	# We don't want that, so flatten it
+	return [tuple_[0] for tuple_ in cursor.fetchall()]
 
 def db_get_entries(message_id: int) -> list:
 	global cursor
