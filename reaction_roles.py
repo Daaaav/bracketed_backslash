@@ -104,7 +104,7 @@ async def check_message(
 	# I'm violating EAFP (Easier to Ask for Forgiveness than Permission) here in favor of
 	# LBYL (Look Before You Leap), because it'd be a real shame to do all this expensive
 	# database querying only for nothing to happen because we don't have permission
-	our_perms = channel.permissions_for(wrapper.client.user)
+	our_perms = channel.permissions_for(channel.guild.me)
 	if not our_perms.manage_roles:
 		# TODO: Maybe error message visible to guild administrators somewhere?
 		return
