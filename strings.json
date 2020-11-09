@@ -143,6 +143,11 @@
 					"name": "starboard",
 					"short": "Manages the starboard.",
 					"extra": "You can use the following options:\n`\\starboard init <CHANNEL>` \u2013 Initialize the starboard settings (but suspend it first).\n`\\starboard set <KEY> [VALUE]` \u2013 Change a starboard config option. VALUE is needed for all options except `star` and `nostar`. See the output of `\\starboard init` or the wiki for more details on the settings that can be changed.\n`\\starboard summarize_config` \u2013 Summarize the configuration of all the starboard settings on the server in a paragraph of English text.\n`\\starboard suspend` \u2013 Suspend the starboard, effectively freezing it.\n`\\starboard unsuspend` \u2013 Unsuspend the starboard.\n`\\starboard ignore <CHANNEL>` \u2013 Make messages sent in CHANNEL not eligible for being posted on the starboard.\n`\\starboard unignore <CHANNEL>` \u2013 Lift an ignore on a channel.\n`\\starboard ban <MEMBER>` \u2013 Ban a member from interacting with the starboard.\n`\\starboard unban <MEMBER>` \u2013 Lift a starboard ban on a member.\n`\\scan_danny <CHANNEL> <USERID>` \u2013 Scan the last 200 messages in a channel for messages by a previous starboard bot, so that those messages can be ignored for a smooth transition. See the wiki for more details.\n\nWiki: https://gitgud.io/infoteddy/bracketed_backslash/wikis/Starboard"
+				},
+				{
+					"name": "reactroles",
+					"short": "Manages reaction roles.",
+					"extra": "To add a message with reaction roles, you\u2019ll first need to create a set of reaction roles, then either associate it with an existing message, or make the bot send one.\n\nYou can use the following options:\n`\\reactroles create` \u2013 Opens a prompt to create a set of reaction roles.\n`\\reactroles refresh <MESSAGE ID>` (UNIMPLEMENTED) \u2013 Clear all reactions from a given reaction roles message and re-react with new ones. This will not remove anyone\u2019s roles."
 				}
 			]
 		},

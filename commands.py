@@ -43,6 +43,7 @@ import events
 import hangman
 import images
 import op_ids
+import reaction_roles
 import starboard
 import utils
 import wrapper
@@ -4012,3 +4013,243 @@ async def _starboard(client, message, **kwargs):
 			).format(action)
 		)
 		await bot.reply(message, emb=em)
+
+@shadow(aliases=['rr'], guildonly=True)
+async def reactroles(client, message, **kwargs):
+	if kwargs['arguments'] is None:
+		embed = emb.error('Try `\\help reactroles` to know what arguments can be used.')
+		await bot.reply(message, emb=embed)
+		return
+
+	splitargs = kwargs['arguments'].split(' ')
+	action = splitargs[0]
+
+	if action == 'create':
+		embed = emb.info(
+			'First, react to this message with the emojis you want to use. Only '
+			'reactions made by you will be processed. (This is just to check that '
+			'those are valid emojis and for Discord’s reaction limit. You’ll specify '
+			'the roles later.)\n'
+			'\n'
+			'Type `done` when you’re done, `cancel` to cancel. This prompt times out '
+			'in 5 minutes.'
+		)
+		prompt = await bot.reply(message, emb=embed)
+
+		try:
+			response = await client.wait_for(
+				'message',
+				check=lambda m: (m.author == message.author
+				and m.channel == message.channel),
+				timeout=300,
+			)
+		except asyncio.TimeoutError:
+			embed = emb.info('Timed out, closing prompt.')
+			await bot.reply(message, emb=embed)
+			return
+
+		# Actually anything other than 'done' will close the prompt
+		if response.content.lower() != 'done':
+			embed = emb.info('Closing prompt.')
+			await bot.reply(message, emb=embed)
+			return
+
+		# Let's take a look at what they reacted with. We DO need to re-fetch the message
+		try:
+			prompt = await message.channel.fetch_message(prompt.id)
+		except discord.errors.NotFound:
+			embed = emb.error('My message got deleted!')
+			await bot.reply(message, emb=embed)
+			return
+		except discord.errors.Forbidden:
+			embed = emb.error('I no longer have permission to view message history!')
+			await bot.reply(message, emb=embed)
+			return
+
+		emojis = []
+		for idx, reaction in enumerate(prompt.reactions):
+			# No one else can interfere with this prompt
+			# But, ugh, a network request for every reaction? C'mon Discord
+			# TODO: Rework this whole thing to be based on waiting for 'reaction_add'
+			# events to circumvent having to do this network request. But we'll have to
+			# be waiting for both a message and a reaction at the same time, and we'll
+			# quickly be plunged into async hell, bleh
+			users = await reaction.users().flatten()
+			user_ids = (user.id for user in users)
+
+			# After a million years waiting for the network request, we'll finally know
+			# if someone has been adding reactions as a prank
+			if message.author.id not in user_ids:
+				continue
+
+			# And now process it finally
+			if isinstance(reaction.emoji, discord.PartialEmoji):
+				# Custom emote, but we can't see it, and if we can't see it, it
+				# must not be from here. So I can't use it
+				embed = emb.error(
+					(
+						'Error with reaction #{}: '
+						'You can not use custom emotes from other servers.'
+					).format(idx + 1)
+				)
+				await bot.reply(message, emb=embed)
+				return
+
+			if isinstance(reaction.emoji, discord.emoji.Emoji):
+				# Custom emote
+				if reaction.emoji.guild != message.guild:
+					# But not from here. You expect me to be able to react with
+					# an emote I can't use?
+					embed = emb.error(
+						(
+							'Error with reaction #{}: '
+							'You can not use custom emotes from other servers.'
+						).format(idx + 1)
+					)
+					await bot.reply(message, emb=embed)
+					return
+				# Unlike starboard, animated emotes are allowed because bots
+				# basically have Nitro and can react with them
+			else:
+				# Unicode emoji
+				pass
+
+			emoji = reaction.emoji
+			emojis.append(emoji)
+
+		embed = emb.info(
+			'Next, type in the names of each role for each emoji, on each line, in one '
+			'message. IDs will work too. Example:\n'
+			'```\n'
+			'Role 1\n'
+			'Role 2\n'
+			'Role 3\n'
+			'```\n'
+			'\n'
+			'This prompt times out in 5 minutes.'
+		)
+		await bot.reply(message, emb=embed)
+
+		try:
+			response = await client.wait_for(
+				'message',
+				check=lambda m: (m.author == message.author
+				and m.channel == message.channel),
+				timeout=300,
+			)
+		except asyncio.TimeoutError:
+			embed = emb.info('Timed out, closing prompt.')
+			await bot.reply(message, emb=embed)
+			return
+
+		lines = response.content.split('\n')
+		if len(lines) != len(emojis):
+			embed = emb.error('You don’t have the same amount of lines as emojis!')
+			await bot.reply(message, emb=embed)
+			return
+
+		roles = []
+		for idx, line in enumerate(lines):
+			role = utils.match_input(message.guild.roles, discord.Role, line)
+			if role is None:
+				embed = emb.error(
+					'Unable to find role #{}!'.format(
+						idx + 1,
+					),
+				)
+				await bot.reply(message, emb=embed)
+				return
+
+			roles.append(role)
+
+		embed = emb.info(
+			'Please reply with the channel you want the reaction roles message in.\n'
+			'\n'
+			'This prompt times out in 5 minutes.'
+		)
+		await bot.reply(message, emb=embed)
+
+		try:
+			response = await client.wait_for(
+				'message',
+				check=lambda m: (m.author == message.author
+				and m.channel == message.channel),
+				timeout=300,
+			)
+		except asyncio.TimeoutError:
+			embed = emb.info('Timed out, closing prompt.')
+			await bot.reply(message, emb=embed)
+			return
+
+		channel = utils.match_input(
+			message.guild.text_channels,
+			discord.abc.GuildChannel,
+			response.content,
+		)
+		if channel is None:
+			embed = emb.error('Unable to find that channel!')
+			await bot.reply(message, emb=embed)
+			return
+
+		reaction_roles_list = []
+		for role, emoji in zip(roles, emojis):
+			reaction_roles_list.append(f'{emoji} {role.name}')
+
+		embed = discord.Embed(
+			description='\n'.join(reaction_roles_list),
+		)
+		try:
+			reaction_roles_message = await channel.send(embed=embed)
+		except discord.errors.Forbidden:
+			embed = emb.error(f'I don’t have permission to post in {channel.mention}!')
+			await bot.reply(message, emb=embed)
+			return
+
+		for emoji in emojis:
+			try:
+				await reaction_roles_message.add_reaction(emoji)
+			except discord.errors.Forbidden:
+				embed = emb.error(f'I don’t have permission to react in {channel.mention}!')
+				await bot.reply(message, emb=embed)
+				return
+			except discord.errors.NotFound:
+				embed = emb.error(f':{emoji.name}: got deleted!')
+				await bot.reply(message, emb=embed)
+				return
+			except discord.errors.HTTPException:
+				embed = emb.error('Somehow there are too many reactions on my reaction roles message?')
+				await bot.reply(message, emb=embed)
+				return
+
+		# Actually add the reaction roles now
+		batch = []
+		for role, emoji in zip(roles, emojis):
+			if hasattr(emoji, 'id'):
+				# Custom
+				emoji = emoji.id
+
+			batch.append(
+				(
+					reaction_roles_message.channel.id,
+					reaction_roles_message.id,
+					role.id,
+					emoji,
+				)
+			)
+
+		reaction_roles.add_reaction_roles(batch)
+
+		reaction_roles.db_commit()
+
+		# Also enable the 'reaction_roles' config for this guild, otherwise it won't work
+		config.detach('reaction_roles', message.guild.id)
+		config.set_s('reaction_roles', True, message.guild.id)
+
+		embed = emb.success(f'Successfully added reaction roles to {channel.mention}.')
+		await bot.reply(message, emb=embed)
+	else:
+		embed = emb.error(
+			f'The action `{action}` was not recognized. '
+			'Try `\\help reactroles` to know what arguments can be used.'
+		)
+		await bot.reply(message, emb=embed)
