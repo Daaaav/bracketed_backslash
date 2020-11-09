@@ -2223,6 +2223,7 @@ async def on_raw_reaction_remove(payload):
 
 	# FIXME: Blocking function (see on_raw_reaction_add())
 	await starboard.check_message(payload, mchan, False)
+	await reaction_roles.check_message(payload, mchan, False)
 
 	if not isinstance(mchan, discord.abc.PrivateChannel) and \
 	not utils.logdisabled('reaction_removeuncached', mchan.guild) and \
