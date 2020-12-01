@@ -221,6 +221,11 @@
 					"name": "uploadfile",
 					"short": "Uploads a file from the current working directory of the bot.",
 					"extra": "Made so Dav999 could stop asking me to upload so much files. Also, try not to upload a file that\u2019s too large, it\u2019ll basically slow down the entire bot."
+				},
+				{
+					"name": "errors",
+					"short": "Gives a basic list of the most recent unhandled exceptions.",
+					"extra": "**Syntax**: `\\errors [AMOUNT]`\n\n\t`[AMOUNT]`: The amount of errors to show, 10 by default"
 				}
 			]
 		},

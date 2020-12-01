@@ -4,6 +4,7 @@ import datetime
 import logging
 import json
 import os
+import sys
 import threading
 import time
 import traceback
@@ -2332,3 +2333,11 @@ async def on_guild_remove(guild):
 	)
 	em.set_image(url=guild.icon_url)
 	await wrapper.client.get_channel(op_ids.ids['opguild_chans']['bot_guilds']).send(embed=em)
+
+async def on_error(event_name, *args, **kwargs):
+	# See discord.py's client.py for the default implementation
+	now = datetime.datetime.now()
+	print('\x1b[41m[{}] Exception in event {}\x1b[0m'.format(now, event_name), file=sys.stderr)
+	traceback.print_exc()
+
+	wrapper.runtime_exceptions.append( (now, event_name, sys.exc_info()) )

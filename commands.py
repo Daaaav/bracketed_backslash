@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
 import contextlib
+import datetime
 import io
 import inspect
 import json
@@ -138,6 +139,39 @@ async def kill(client, message, **kwargs):
 	await bot.reply(message, emb=embed)
 	await client.logout()
 	sys.exit(4)
+
+@shadow(auth=checks.is_operator)
+async def errors(client, message, **kwargs):
+	n = 10
+	if kwargs['arguments'] is not None:
+		try:
+			n = int(kwargs['arguments'])
+		except ValueError:
+			embed = emb.error('Please specify a valid number.')
+			await bot.reply(message, emb=embed)
+			return
+
+	# wrapper.runtime_exceptions is list of (datetime, event_name, (exc_type, exception, traceback))
+	n_in_24h = 0
+	for i in range(len(wrapper.runtime_exceptions)-1, -1, -1):
+		if wrapper.runtime_exceptions[i][0] < (
+			datetime.datetime.now() - datetime.timedelta(hours=24)
+		):
+			break
+		n_in_24h += 1
+
+	content = '{} exception(s) in the past 24 hours. Last exceptions, max {}, going down: ```\n'.format(
+		n_in_24h, n
+	)
+
+	for exc in wrapper.runtime_exceptions[-n:]:
+		# Time, event and exception type
+		content += '[{}] {}: {}.{}\n'.format(
+			exc[0], exc[1], exc[2][0].__module__, exc[2][0].__qualname__
+		)
+
+	content += '\n```'
+	await bot.reply(message, content)
 
 @shadow(auth=checks.is_operator)
 async def _config(client, message, **kwargs):
