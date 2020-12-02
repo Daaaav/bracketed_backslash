@@ -4059,6 +4059,12 @@ async def reactroles(client, message, **kwargs):
 	action = splitargs[0]
 
 	if action == 'create':
+		if not checks.is_channel_manager(message.author) and not kwargs['sudo']:
+			embed = emb.error(bot.t['you_no_permission'])
+			utils.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
+			await bot.reply(message, emb=embed)
+			return
+
 		embed = emb.info(
 			'First, react to this message with the emojis you want to use. Only '
 			'reactions made by you will be processed. (This is just to check that '
