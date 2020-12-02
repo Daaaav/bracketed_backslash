@@ -1319,12 +1319,16 @@ async def on_member_ban(guild, user):
 		)
 
 		# Get the ban on this user
-		bans = await guild.bans()
 		reason = '(cannot be determined)'
-		for b in bans:
-			if b.user == user:
-				reason = b.reason
-				break
+		try:
+			bans = await guild.bans()
+		except discord.errors.Forbidden:
+			pass
+		else:
+			for b in bans:
+				if b.user == user:
+					reason = b.reason
+					break
 
 		logmessage = (
 			'**Ban on user**: {}#{} ({})\n'
