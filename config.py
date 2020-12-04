@@ -211,30 +211,6 @@ configs = {
 		'access': 2,
 		'valid_user_value': True,
 	},
-	'votevmute_minmembers': {
-		'default': 4,
-		'type': 'int',
-		'is_array': False,
-		'expl': 'The minimum amount of users needed to be in any voice channel before a vote voice mute can be started.',
-		'detachable': True,
-		'cat': 'voice',
-		'access': 2,
-		'valid_user_value': (
-			lambda newvalue, **kwargs: newvalue >= 0
-		),
-	},
-	'votevmute_threshold': {
-		'default': 51,
-		'type': 'int',
-		'is_array': False,
-		'expl': 'The percentage of users needing to vote in favor of muting before the mute is carried out.',
-		'detachable': True,
-		'cat': 'voice',
-		'access': 2,
-		'valid_user_value': (
-			lambda newvalue, **kwargs: newvalue >= 0 and newvalue <= 100
-		),
-	},
 	'deleted_message_resend_timer': {
 		'default': 0,
 		'type': 'int',

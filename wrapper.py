@@ -49,8 +49,6 @@ deleted_messages = []
 # and has better performance, because the cache can get yuge
 owncache = []
 
-votemutes = {} # userid -> dict with `starttime`, `proponents`*, `opponents`*
-
 exptimer = None  # threading.Timer object
 
 current_commit = ''

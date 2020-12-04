@@ -271,26 +271,6 @@
 					"extra": ""
 				},
 				{
-					"name": "votevoicemute",
-					"short": "Starts a vote on whether to mute a member in a voice channel.",
-					"extra": ""
-				},
-				{
-					"name": "vy",
-					"short": "Votes yes in a voice mute vote.",
-					"extra": ""
-				},
-				{
-					"name": "vn",
-					"short": "Votes no in a voice mute vote.",
-					"extra": ""
-				},
-				{
-					"name": "vc",
-					"short": "Cancels a voice mute vote.",
-					"extra": ""
-				},
-				{
 					"name": "rolerst",
 					"short": "Resets the roles for a member back to the normal state.",
 					"extra": "Removes all restrictive roles from a user, and gives back the `tOLPer` role if necessary if run again."
