@@ -15,7 +15,6 @@ import bot
 import checks
 import config
 import customcommands
-import op_ids
 import wrapper
 
 def mdspecialchars(string, character='\\'):
@@ -355,15 +354,11 @@ def safefilename(string):
 
 	return ''.join(safechar(c) for c in string).strip('_')
 
-async def id_lookup(uid):
-	"""Return a discord.Member/discord.User object with a given ID. If the ID is not a user ID
-	and doesn't exist on Discord, return None.
+async def id_lookup(uid: int) -> discord.User:
+	"""Return a discord.User object with a given ID. If the ID is not a
+	user ID and doesn't exist on Discord, return None.
 
-	Note that it is inconsistent whether or not the object returned is a discord.Member or a
-	discord.User.
-
-	Note that if a discord.Member object is returned guild-specific attributes will be
-	inconsistent. The only attributes that should be used are:
+	Since a discord.User object is returned, the only attributes that should be used are:
 	- name
 	- id
 	- discriminator
@@ -378,23 +373,8 @@ async def id_lookup(uid):
 	member = wrapper.client.get_user(uid)
 
 	if member is None:
-		# Look up the ID by banning it
-		opguild = wrapper.client.get_guild(op_ids.ids['opguild'])
-		try:
-			await opguild.ban(uid, delete_message_days=0)
-		except discord.errors.HTTPException:
-			pass
-		else:
-			bans = await opguild.bans()
-			for x in bans:
-				if x.id == uid:
-					member = x
-					break
-			if member is not None:
-				try:
-					await opguild.unban(member)
-				except discord.errors.HTTPException:
-					pass
+		# Fine, make the API call
+		member = await wrapper.client.fetch_user(uid)
 
 	return member
 
