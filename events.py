@@ -1172,7 +1172,7 @@ async def on_raw_message_delete(payload):
 		# If it was, then return
 		if discord.utils.find(
 			lambda m: m.id == payload.message_id, wrapper.client.cached_messages,
-		) != None:
+		) is not None:
 			# If the message lingers in deleted_messages, it doesn't really matter for now
 			return
 		if payload.message_id in wrapper.owncache:
@@ -1200,7 +1200,7 @@ async def on_raw_message_edit(payload):
 	# Check if the message is in the cache and return if it is
 	if discord.utils.find(
 		lambda m: m.id == payload.message_id, wrapper.client.cached_messages,
-	) != None:
+	) is not None:
 		return
 
 	schan = utils.getspecialchannel(mchan.guild)
@@ -1221,7 +1221,7 @@ async def on_raw_reaction_add(payload):
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(
 			lambda m: m.id == payload.message_id, wrapper.client.cached_messages,
-		) != None:
+		) is not None:
 			return
 
 		schan = utils.getspecialchannel(mchan.guild)
@@ -1241,7 +1241,7 @@ async def on_raw_reaction_remove(payload):
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(
 			lambda m: m.id == payload.message_id, wrapper.client.cached_messages,
-		) != None:
+		) is not None:
 			return
 
 		schan = utils.getspecialchannel(mchan.guild)
@@ -1260,7 +1260,7 @@ async def on_raw_reaction_clear(payload):
 		# Check if the message is in the cache and return if it is
 		if discord.utils.find(
 			lambda m: m.id == payload.message_id, wrapper.client.cached_messages,
-		) != None:
+		) is not None:
 			return
 
 		schan = utils.getspecialchannel(mchan.guild)

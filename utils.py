@@ -531,16 +531,16 @@ def parsereltime(inputstr, relative=False, now=None):
 		return None
 
 	ds = m.group('d')
-	if ds != None:
+	if ds is not None:
 		total += int(ds)*86400
 	hs = m.group('h')
-	if hs != None:
+	if hs is not None:
 		total += int(hs)*3600
 	ms = m.group('m')
-	if ms != None:
+	if ms is not None:
 		total += int(ms)*60
 	ss = m.group('s')
-	if ss != None:
+	if ss is not None:
 		total += int(ss)
 
 	if relative:
@@ -553,7 +553,7 @@ async def handleExpiryTimer():
 	Can be called on startup, when changing something, or at the end of autoExpiry
 	"""
 	# Cancel the existing timer, if it's running
-	if wrapper.exptimer != None:
+	if wrapper.exptimer is not None:
 		wrapper.exptimer.cancel()
 		wrapper.exptimer = None  # Because there's no Timer.isCanceled()
 

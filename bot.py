@@ -126,14 +126,14 @@ async def reply(
 		messages = []
 		message = await messageobject.channel.send('\n'.join(contentlines[:cut]))
 		messages.append(message)
-		if emb != None:
+		if emb is not None:
 			message = await messageobject.channel.send('\n'.join(contentlines[cut:]), embed=emb)
 		else:
 			message = await messageobject.channel.send('\n'.join(contentlines[cut:]))
 		messages.append(message)
 		return messages
 	try:
-		if emb != None:
+		if emb is not None:
 			return await messageobject.channel.send(msg_start + message, embed=emb)
 		else:
 			return await messageobject.channel.send(msg_start + message)
