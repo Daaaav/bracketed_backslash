@@ -19,11 +19,14 @@ import customcommands
 import dispatch
 import emb
 import hangman
+import logs
 import op_ids
 import reaction_roles
 import starboard
 import utils
 import wrapper
+
+# pylint: disable=missing-function-docstring
 
 async def on_ready():
 	for e in wrapper.startup_errors:
@@ -615,70 +618,8 @@ async def on_message_delete(msg):
 	if utils.usernotlogged(msg.author, msg.guild):
 		return
 	schan = utils.getspecialchannel_reply(msg)
+	await logs.log_deleted_message(schan, msg)
 
-	if msg.type is not discord.MessageType.default:
-		content = msg.system_content
-	else:
-		content = msg.content
-
-	em = discord.Embed(
-		title=(
-			'\N{NO ENTRY SIGN}{system}MESSAGE {withatch}DELETED (SENT {reltime} IN #{chan})'
-		).format(
-			system='SYSTEM ' if msg.type is not discord.MessageType.default else '',
-			withatch='WITH ATTACHMENT ' if msg.attachments != [] else '',
-			reltime=utils.reltime(time.mktime(msg.created_at.timetuple())),
-			chan=utils.mdspecialchars(msg.channel.name),
-		),
-		description=content,
-		colour=msg.author.colour,
-		timestamp=datetime.datetime.now(),
-	)
-
-	em.set_author(
-		name=msg.author.display_name,
-		icon_url=msg.author.avatar_url,
-	)
-
-	em.add_field(
-		name='\u200b',
-		value=utils.mdspecialchars(
-			utils.id_summary(uid=msg.author.id, mid=msg.id, cid=msg.channel.id),
-		)
-	)
-
-	await schan.send(embed=em)
-	if msg.attachments != []:
-		fp = (
-				'{atchcche}/{id}_{fn}'
-		).format(
-			atchcche=bot.attachcache,
-			id=msg.attachments[0].id,
-			fn=msg.attachments[0].filename,
-		)
-		if os.path.isfile(fp):
-			con = (
-				'_\N{PAPERCLIP}The attachment for message {0.id} is attached._'
-			).format(msg)
-			try:
-				await schan.send(
-					con,
-					file=discord.File(
-						fp,
-						filename=msg.attachments[0].filename,
-					),
-				)
-			except discord.HTTPException:
-				con = (
-					'_Failed to upload the attachment for message {0.id}._'
-				).format(msg)
-				await schan.send(con)
-		else:
-			con = (
-				'_The attachment for message {0.id} was not found'
-				' in the message attachments cache._'
-			).format(msg)
-			await schan.send(con)
 	if msg in wrapper.messages_deleted_by_bot:
 		wrapper.messages_deleted_by_bot.remove(msg)
 		return
@@ -719,81 +660,13 @@ async def on_message_edit(old, new):
 		edited_at = datetime.datetime.now()
 	schan = utils.getspecialchannel_reply(new)
 	if not old.pinned and new.pinned and not utils.logdisabled('message_pin', new.guild):
-		em = discord.Embed(
-			title=(
-				'\N{PUSHPIN}MESSAGE PINNED (SENT {reltime} IN #{chan})'
-			).format(
-				reltime=utils.reltime(time.mktime(new.created_at.timetuple())),
-				chan=utils.mdspecialchars(new.channel.name),
-			),
-			description=new.content,
-			colour=new.author.colour,
-		)
-		em.set_author(
-			name=new.author.display_name,
-			icon_url=new.author.avatar_url,
-		)
-		em.set_footer(
-			text=utils.id_summary(uid=new.author.id, mid=new.id, cid=new.channel.id),
-		)
-		utils.embed_add_jump_link(em, new)
-		await schan.send(embed=em)
+		await logs.log_pinned_message(schan, new)
 	if old.pinned and not new.pinned and not utils.logdisabled('message_unpin', new.guild):
-		em = discord.Embed(
-			title=(
-				'\N{PUSHPIN}MESSAGE UNPINNED (SENT {reltime} IN #{chan})'
-			).format(
-				reltime=utils.reltime(time.mktime(new.created_at.timetuple())),
-				chan=utils.mdspecialchars(new.channel.name),
-			),
-			description=new.content,
-			colour=new.author.colour,
-		)
-		em.set_author(
-			name=new.author.display_name,
-			icon_url=new.author.avatar_url,
-		)
-		em.set_footer(
-			text=utils.id_summary(uid=new.author.id, mid=new.id, cid=new.channel.id),
-		)
-		utils.embed_add_jump_link(em, new)
-		await schan.send(embed=em)
+		await logs.log_unpinned_message(schan, new)
 
 	if not utils.logdisabled('message_deleteembed', new.guild) \
 	and len(old.embeds) > len(new.embeds) and old.content == new.content:
-		em = discord.Embed(
-			title=(
-				'\N{MEMO}EMBED REMOVED FROM MESSAGE (SENT {reltime} IN #{chan})'
-			).format(
-				reltime=utils.reltime(
-					time.mktime(
-						new.created_at.timetuple(),
-					),
-				),
-				chan=utils.mdspecialchars(new.channel.name),
-			),
-			colour=new.author.colour,
-			timestamp=edited_at,
-		)
-		em.set_author(
-			name=new.author.display_name,
-			icon_url=new.author.avatar_url,
-		)
-
-		if new.content:
-			em.add_field(name='Message Content', value=new.content[:1024], inline=False)
-		else:
-			em.add_field(name='No Message Content', value='_(none)_', inline=False)
-		if len(new.content) > 1024:
-			em.add_field(name='[continued]', value=new.content[1024:], inline=False)
-
-		em.add_field(
-			name='\u200b',
-			value=utils.get_jump_link(new) + '\n' + utils.mdspecialchars(
-				utils.id_summary(uid=new.author.id, mid=new.id, cid=new.channel.id),
-			),
-		)
-		await schan.send(embed=em)
+		await logs.log_deleted_embed(schan, new, edited_at)
 
 	# Preliminary checkings
 	if old.content == new.content:
@@ -803,47 +676,7 @@ async def on_message_edit(old, new):
 		return
 
 	if not utils.logdisabled('message_edit', new.guild):
-		em = discord.Embed(
-			title=(
-				'\N{MEMO}MESSAGE{withattach} EDITED (SENT {reltime} IN #{chan})'
-			).format(
-				withattach=' WITH ATTACHMENT' if new.attachments else '',
-				reltime=utils.reltime(
-					time.mktime(
-						new.created_at.timetuple(),
-					),
-				),
-				chan=utils.mdspecialchars(new.channel.name),
-			),
-			colour=new.author.colour,
-			timestamp=edited_at,
-		)
-		em.set_author(
-			name=new.author.display_name,
-			icon_url=new.author.avatar_url,
-		)
-
-		if old.content:
-			em.add_field(name='Older Content', value=old.content[:1024], inline=False)
-		else:
-			em.add_field(name='No Older Content', value='_(none)_', inline=False)
-		if len(old.content) > 1024:
-			em.add_field(name='[continued]', value=old.content[1024:], inline=False)
-
-		if new.content:
-			em.add_field(name='Newer Content', value=new.content[:1024], inline=False)
-		else:
-			em.add_field(name='No Newer Content', value='_(none)_', inline=False)
-		if len(new.content) > 1024:
-			em.add_field(name='[continued]', value=new.content[1024:], inline=False)
-
-		em.add_field(
-			name='\u200b',
-			value=utils.get_jump_link(new) + '\n' + utils.mdspecialchars(
-				utils.id_summary(uid=new.author.id, mid=new.id, cid=new.channel.id),
-			),
-		)
-		await schan.send(embed=em)
+		await logs.log_edited_message(schan, old, new, edited_at)
 
 	# Turning off this logging also turns off the feature
 	if not utils.logdisabled('message_overedit', new.guild):
@@ -876,240 +709,25 @@ async def on_member_update(before, after):
 	specialchannel = utils.getspecialchannel(after.guild)
 
 	if before.nick != after.nick and not utils.logdisabled('member_nickname', after.guild):
-		embed = discord.Embed(
-			title='\N{REGIONAL INDICATOR SYMBOL LETTER N}\N{PAGER}CHANGED NICKNAME',
-			colour=after.colour,
-			timestamp=datetime.datetime.now(),
-		)
-
-		embed.set_author(name=after.name, icon_url=after.avatar_url)
-
-		if before.nick is None:
-			embed.add_field(name='No Older Nickname', value='\u200b')
-		else:
-			embed.add_field(
-				name='Older Nickname',
-				value=utils.mdspecialchars(before.nick),
-			)
-
-		if after.nick is None:
-			embed.add_field(name='No Newer Nickname', value='\u200b')
-		else:
-			embed.add_field(
-				name='Newer Nickname',
-				value=utils.mdspecialchars(after.nick),
-			)
-
-		embed.add_field(
-			name='\u200b',
-			value=utils.mdspecialchars(
-				utils.id_summary(uid=after.id),
-			),
-			inline=False,
-		)
-
-		await specialchannel.send(embed=embed)
+		await logs.log_changed_nickname(specialchannel, before, after)
 	if before.roles != after.roles:
-		addedroles = list(set(after.roles) - set(before.roles))
-		removedroles = list(set(before.roles) - set(after.roles))
-
-		nitroboosterid = config.get_s('nitrobooster', after.guild.id)
-		if nitroboosterid != 0:
-			boosteradd = any(r.id == nitroboosterid for r in addedroles)
-			boosterrem = any(r.id == nitroboosterid for r in removedroles)
-		else:
-			boosteradd = False
-			boosterrem = False
-
-		if boosteradd:
-			nitrobooster = next(r for r in addedroles if r.id == nitroboosterid)
-			if len(addedroles) == 1:
-				addedroles = []
-		if boosterrem:
-			nitrobooster = next(r for r in removedroles if r.id == nitroboosterid)
-			if len(removedroles) == 1:
-				removedroles = []
-
-		if utils.logdisabled('member_roleadd', after.guild):
-			addedroles = []
-		if utils.logdisabled('member_roleremove', after.guild):
-			removedroles = []
-
-		if (boosteradd and not utils.logdisabled('member_boost', after.guild)) \
-		or (boosterrem and not utils.logdisabled('member_unboost', after.guild)):
-			embed = discord.Embed(
-				title=('BOOSTED SERVER' if boosteradd else 'UNBOOSTED SERVER'),
-				colour=nitrobooster.colour
-			)
-			embed.set_author(
-				name=after.display_name,
-				icon_url=after.avatar_url,
-			)
-			embed.add_field(
-				name=('Added role' if boosteradd else 'Removed role'),
-				value=utils.mdspecialchars(nitrobooster.name),
-			)
-			embed.set_footer(text=utils.id_summary(uid=after.id, rid=nitrobooster.id))
-			await specialchannel.send(embed=embed)
-		if addedroles or removedroles:
-			title = ''
-			desc = ''
-			mixed = addedroles and removedroles
-			addedplural = len(addedroles) != 1
-			removedplural = len(removedroles) != 1
-			roleid = None
-			color = utils.colorize(after.id)
-
-			# To not copy-paste code
-			def rolelist(roles):
-				return '\n'.join(utils.obj_info(role) for role in roles)
-			addedroles_list = rolelist(addedroles)
-			removedroles_list = rolelist(removedroles)
-
-			if mixed:
-				title = '\N{TWISTED RIGHTWARDS ARROWS}ROLES CHANGED FOR USER'
-			elif addedroles:
-				if addedplural:
-					title = 'ROLES ADDED TO USER'
-					desc = addedroles_list
-				else:
-					title = 'ROLE ADDED TO USER'
-					desc = '**{}**'.format(utils.mdspecialchars(addedroles[0].name))
-					roleid = addedroles[0].id
-					color = addedroles[0].colour
-				title = '\N{INBOX TRAY}{}'.format(title)
-			elif removedroles:
-				if removedplural:
-					title = 'ROLES REMOVED FROM USER'
-					desc = removedroles_list
-				else:
-					title = 'ROLE REMOVED FROM USER'
-					desc = '**{}**'.format(utils.mdspecialchars(removedroles[0].name))
-					roleid = removedroles[0].id
-					color = removedroles[0].colour
-				title = '\N{OUTBOX TRAY}{}'.format(title)
-
-			title = '\N{KEY}{}'.format(title)
-
-			embed = discord.Embed(title=title, description=desc, colour=color)
-			utils.paginate_description(embed, max_length=2048)
-
-			embed.set_author(
-				name=after.display_name,
-				icon_url=after.avatar_url,
-			)
-			embed.set_footer(text=utils.id_summary(uid=after.id, rid=roleid))
-
-			if mixed:
-				# To not copy-paste code
-				def parse_plural(embed_, plural, text_singular, text_plural, roles_list):
-					if plural:
-						utils.paginate_field(embed_, max_length=1024,
-							name=text_plural,
-							value=roles_list,
-							inline=False,
-						)
-					else:
-						embed_.add_field(
-							name=text_singular,
-							value=addedroles_list,
-							inline=False,
-						)
-
-				parse_plural(embed, addedplural, 'Added role', 'Added roles', addedroles_list)
-				parse_plural(embed, removedplural, 'Removed role', 'Removed roles', removedroles_list)
-
-			await specialchannel.send(embed=embed)
+		await logs.log_updated_roles(specialchannel, before, after)
 
 		if config.get_s('rolecachemode', after.guild.id) != 0:
 			utils.updaterolecache(after)
 			utils.rolecachesave()
 
 	if before.name != after.name and not utils.logdisabled('member_username', after.guild):
-		title = '\N{REGIONAL INDICATOR SYMBOL LETTER U}\N{PAGER}CHANGED USERNAME'
-		if before.discriminator != after.discriminator:
-			title += ' AND DISCRIMINATOR \N{SMALL ORANGE DIAMOND}'
-
-		embed = discord.Embed(
-			title=title,
-			colour=after.colour,
-			timestamp=datetime.datetime.now(),
-		)
-
-		embed.set_author(
-			name=after.display_name,
-			icon_url=after.avatar_url,
-		)
-
-		embed.add_field(name='Older Username', value=utils.mdspecialchars(before.name))
-		embed.add_field(name='Newer Username', value=utils.mdspecialchars(after.name))
-
-		if before.discriminator != after.discriminator:
-			embed.add_field(name='\u200b', value='\u200b', inline=False)
-
-			embed.add_field(
-				name='Older Discriminator',
-				value='#' + before.discriminator,
-			)
-
-			embed.add_field(name='Newer Discriminator', value='#' + after.discriminator)
-
-		embed.add_field(
-			name='\u200b',
-			value=utils.mdspecialchars(utils.id_summary(uid=after.id)),
-			inline=False,
-		)
-
-		await specialchannel.send(embed=embed)
+		# FIXME: This doesn't log solo discrim changes, only name+discrim changes!
+		# FIXME: This hasn't fired since a certain Discord/discord.py refactor!
+		await logs.log_changed_tag(specialchannel, before, after)
 
 	if before.avatar != after.avatar and \
 	(not utils.logdisabled('member_botavatar', after.guild) \
 	if checks.is_bot(after) \
 	else not utils.logdisabled('member_avatar', after.guild)):
-		if not before.avatar and after.avatar:
-			title='\N{BUSTS IN SILHOUETTE}\N{UPWARDS BLACK ARROW}ADDED AVATAR'
-			desc=after.avatar
-		elif before.avatar and not after.avatar:
-			title='\N{BUSTS IN SILHOUETTE}\N{NO ENTRY SIGN}REMOVED AVATAR'
-			desc=before.avatar
-		else:
-			title=(
-				'\N{BUSTS IN SILHOUETTE}'
-				'\N{BLACK RIGHTWARDS ARROW}'
-				'\N{BUSTS IN SILHOUETTE}'
-				'CHANGED AVATAR'
-			)
-			desc=''
-
-		embed = discord.Embed(
-			title=title,
-			description=desc,
-			colour=after.colour,
-			timestamp=datetime.datetime.now(),
-		)
-
-		embed.set_author(name=after.display_name, icon_url=after.avatar_url)
-
-		if not before.avatar and after.avatar:
-			embed.set_image(url=after.avatar_url)
-		elif before.avatar and not after.avatar:
-			embed.set_image(url=before.avatar_url)
-		else:
-			embed.add_field(name='Older Avatar Hash (Thumbnail)', value=before.avatar)
-			embed.add_field(
-				name='Newer Avatar Hash (Inset Image)',
-				value=after.avatar,
-				inline=False,
-			)
-
-			embed.set_thumbnail(url=before.avatar_url)
-			embed.set_image(url=after.avatar_url)
-
-		# This is not standard procedure, but only because we can't place the ID summary
-		# field after an inset image
-		embed.set_footer(text=utils.id_summary(uid=after.id))
-
-		await specialchannel.send(embed=embed)
+		# FIXME: This hasn't fired since a certain Discord/discord.py refactor!
+		await logs.log_changed_avatar(specialchannel, before, after)
 
 async def on_member_join(member):
 	guild = member.guild
@@ -1143,65 +761,15 @@ async def on_member_join(member):
 	specialchannel = utils.getspecialchannel(guild)
 	if not utils.logdisabled('member_join', guild):
 
-		# Figure out which invite the member joined with
-		if has_guild_invites:
-			all_invites = utils.invite_diff(wrapper.inv_cache[guild.id], all_invites)
-
-			if len(all_invites) == 1:
-				invite = all_invites[0]
-			else:
-				invite = None
-
-		embed = discord.Embed(
-			title=(
-				'\N{BLACK RIGHTWARDS ARROW}JOINED SERVER'
-				if not member.bot else
-				'\N{BLACK RIGHTWARDS ARROW}\N{ROBOT FACE}BOT ADDED TO SERVER'
-			),
-			color=utils.colorize(member),
-			timestamp=datetime.datetime.now(),
+		await logs.log_joined_member(
+			specialchannel,
+			member,
+			guild,
+			has_guild_invites,
+			has_audit_invites,
+			guild_invites,
+			all_invites,
 		)
-		embed.add_field(
-			name='This server now has',
-			value=str(guild.member_count) + ' members',
-		)
-		embed.add_field(
-			name=(
-				'Member joined Discord'
-				if not member.bot else
-				'Bot created'
-			),
-			value=utils.reltime(time.mktime(member.created_at.timetuple())),
-		)
-
-		if not member.bot and has_guild_invites:
-			if invite is not None:
-				invite_status = (
-					'`{invite.code}` by {inviter}'
-				).format(
-					invite=invite,
-					inviter=utils.obj_info(invite.inviter),
-				)
-			elif not has_audit_invites:
-				invite_status = 'I’m not allowed to search the audit log, but here’s the possible invites: {}'.format(
-					', '.join('`{invite.code}`'.format(invite=invite) for invite in guild_invites)
-				)
-			else:
-				invite_status = 'Possible invites: {}'.format(
-					', '.join('`{invite.code}`'.format(invite=invite) for invite in all_invites)
-				)
-
-			embed.add_field(name='Joined with invite', value=invite_status)
-
-		embed.add_field(
-			name='\u200b',
-			value=utils.mdspecialchars(utils.id_summary(uid=member.id)),
-			inline=False,
-		)
-
-		embed.set_author(name=member.display_name, icon_url=member.avatar_url)
-		embed.set_thumbnail(url=member.avatar_url)
-		await specialchannel.send(embed=embed)
 
 	if has_guild_invites:
 		# Let's cache the invites
@@ -1226,10 +794,6 @@ async def on_member_remove(member):
 	moderator = None
 	action = None
 	reason = ''
-	if member.bot:
-		bot = '\N{ROBOT FACE}BOT '
-	else:
-		bot = ''
 
 	try:
 		async for entry in guild.audit_logs(
@@ -1257,59 +821,13 @@ async def on_member_remove(member):
 		pass
 
 	if not utils.logdisabled('member_remove', guild):
-		if action is discord.AuditLogAction.kick:
-			title = '\N{MANS SHOE}\N{DOOR}{bot}KICKED FROM SERVER'.format(bot=bot)
-		elif action is discord.AuditLogAction.ban:
-			# TODO: Implement, taking care of on_member_ban() in the process
-			pass
-		else:
-			title = '\N{DOOR}{bot}REMOVED FROM SERVER'.format(bot=bot)
-
-		embed = discord.Embed(
-			title=title,
-			color=utils.colorize(member),
-			timestamp=datetime.datetime.now(),
-		)
-
-		embed.add_field(
-			name='Originally joined server',
-			value=utils.reltime(time.mktime(member.joined_at.timetuple())),
-		)
-
-		embed.add_field(
-			name='This server now has',
-			value=str(member.guild.member_count) + ' members',
-		)
-
-		if moderator is not None:
-			embed.add_field(
-				name='Responsible moderator',
-				value=utils.obj_info(moderator),
-			)
-			embed.add_field(
-				name='Reason' if reason else 'No reason given',
-				value=reason if reason else '\u200b',
-			)
-
-		embed.add_field(
-			name='\u200b',
-			value=utils.mdspecialchars(utils.id_summary(uid=member.id)),
-			inline=False,
-		)
-
-		embed.set_author(name=member.display_name, icon_url=member.avatar_url)
-		embed.set_thumbnail(url=member.avatar_url)
-
-		await specialchannel.send(embed=embed)
+		await logs.log_removed_member(specialchannel, member, moderator, action, reason)
 
 async def on_member_ban(guild, user):
 	if not utils.logdisabled('member_ban', guild):
 		specialchannel = utils.getspecialchannel(guild)
 
-		msg = '**`>`**👞🚪⛔`user` **``{}``**`#{}` `({}) banned from server {} ({})`'.format(
-			utils.wrapbackticks(user.name), user.discriminator, user.id, guild.name, guild.id,
-		)
-		await specialchannel.send(msg)
+		await logs.log_banned_member(specialchannel, guild, user)
 
 	if config.get_s('banlog_logchannel', guild.id) != 0 and \
 	config.get_s('banlog_modchannel', guild.id) != 0:
@@ -1377,24 +895,13 @@ async def on_member_unban(guild, user):
 	if utils.logdisabled('member_unban', guild):
 		return
 	specialchannel = utils.getspecialchannel(guild)
-	msg = (
-		'**`>`**\N{BABY ANGEL}`user` **``{}``**`#{}` `({})'
-		' unbanned from server {} ({})`'
-	).format(
-		utils.wrapbackticks(user.name), user.discriminator, user.id, guild.name, guild.id,
-	)
-	await specialchannel.send(msg)
+	await logs.log_unbanned_member(specialchannel, guild, user)
 
 async def on_guild_role_create(r):
 	schan = utils.getspecialchannel(r.guild)
-	embed = discord.Embed(
-		title='ROLE ADD AT {time}'.format(time=str(r.created_at)),
-		description=utils.mdspecialchars(r.name),
-		colour=r.colour,
-	)
+	nitro_booster = r.name == 'Nitro Booster' and r.managed
 
-	if r.name == 'Nitro Booster' and r.managed:
-		embed.set_footer(text='This is *the* booster role, right? Congrats!')
+	if nitro_booster:
 		config.detach('nitrobooster', r.guild.id)
 		config.set_s('nitrobooster', r.id, r.guild.id)
 		config.saveconfig()
@@ -1402,19 +909,13 @@ async def on_guild_role_create(r):
 	if utils.logdisabled('role_create', r.guild):
 		return
 
-	await schan.send(embed=embed)
+	await logs.log_created_role(schan, r, nitro_booster)
 
 async def on_guild_role_delete(r):
 	if utils.logdisabled('role_delete', r.guild):
 		return
 	schan = utils.getspecialchannel(r.guild)
-	embed = discord.Embed(
-		title='ROLE REMOVE',
-		description=utils.mdspecialchars(r.name),
-		colour=r.colour,
-	)
-	embed.add_field(name='Original Creation Time', value=str(r.created_at))
-	await schan.send(embed=embed)
+	await logs.log_deleted_role(schan, r)
 
 async def on_guild_role_update(before, after):
 	guild = after.guild
@@ -1438,52 +939,31 @@ async def on_guild_role_update(before, after):
 	specialchannel = utils.getspecialchannel(before.guild)
 	# If the name changed
 	if before.name != after.name and not utils.logdisabled('role_rename', before.guild):
-		embed = discord.Embed(title='ROLE NAME CHANGE', description=utils.mdspecialchars(after.name), colour=after.colour)
-		embed.add_field(name='Older Name', value=utils.mdspecialchars(before.name))
-		embed.add_field(name='Newer Name', value=utils.mdspecialchars(after.name))
-		await specialchannel.send(embed=embed)
+		await logs.log_renamed_role(specialchannel, before, after)
 	# If "display online members separately" changed
 	if before.hoist != after.hoist:
 		# If the role has been hoisted
 		if before.hoist == 0 and after.hoist == 1 and not utils.logdisabled(
 			'role_hoist', before.guild
 		):
-			embed = discord.Embed(
-				title='ROLE HOIST',
-				description='{name}\nID: {id}'.format(
-					name=utils.mdspecialchars(after.name),
-					id=after.id,
-				),
-				colour=after.colour,
-			)
-			await specialchannel.send(embed=embed)
+			await logs.log_hoisted_role(specialchannel, after)
 		# If the role has been lowered
 		if before.hoist == 1 and after.hoist == 0 and not utils.logdisabled(
 			'role_unhoist', before.guild
 		):
-			embed = discord.Embed(
-				title='ROLE UNHOIST',
-				description='{name}\nID: {id}'.format(
-					name=utils.mdspecialchars(after.name),
-					id=after.id,
-				),
-				colour=after.colour,
-			)
-			await specialchannel.send(embed=embed)
+			await logs.log_unhoisted_role(specialchannel, after)
 	# If "allow everyone to mention this role" changed
 	if before.mentionable != after.mentionable:
 		# If the role is now mentionable
 		if before.mentionable == 0 and after.mentionable == 1 and not utils.logdisabled(
 			'role_mentionable', before.guild
 		):
-			msg = '**`>`**`role` **``{}``** `({}) is now mentionable`'.format(utils.wrapbackticks(after.name), after.id)
-			await specialchannel.send(msg)
+			await logs.log_mentionable_role(specialchannel, after)
 		# If the role is no longer mentionable
 		if before.mentionable == 1 and after.mentionable == 0 and not utils.logdisabled(
 			'role_unmentionable', before.guild
 		):
-			msg = '**`>`**`role` **``{}``** `({}) is no longer mentionable`'.format(utils.wrapbackticks(after.name), after.id)
-			await specialchannel.send(msg)
+			await logs.log_unmentionable_role(specialchannel, after)
 
 	# If the role has been moved up or down in the hierarchy
 	if before.position != after.position and not utils.logdisabled('role_hierarchy', before.guild):
@@ -1528,109 +1008,24 @@ async def on_guild_role_update(before, after):
 			before_list = list(before_list)
 			after_list = list(after_list)
 
-			before_list.sort(key=lambda r: r.position, reverse=True)
-			after_list.sort(key=lambda r: r.position, reverse=True)
-
-			before_log = ''
-			after_log = ''
-			generation_string = '{info} {trailing_space}\n'
-
-			for ev_before, ev_after in zip(before_list, after_list):
-				before_log += generation_string.format(
-					info=utils.obj_info(ev_before),
-					trailing_space = '\xa0' * 3,
-				)
-
-				tmp_delta = ''
-				tmp_before = discord.utils.find(
-					lambda r: r.id == ev_after.id,
-					before_list,
-				)
-				if tmp_before.position < ev_after.position:
-					# Role has been moved up
-					tmp_delta = '**\N{UPWARDS ARROW}{}**'.format(
-						str(ev_after.position - tmp_before.position)
-					)
-				if tmp_before.position > ev_after.position:
-					# Role has been moved down
-					tmp_delta = '**\N{DOWNWARDS ARROW}{}**'.format(
-						str(tmp_before.position - ev_after.position)
-					)
-
-				after_log += generation_string.format(
-					name=utils.mdspecialchars(ev_after.name),
-					id=ev_after.id,
-					trailing_space=tmp_delta,
-				)
-
-			# Just for fun, let's generate the embed color by mixing all of the roles'
-			# colors together
-			colour = int(sum(role.colour.value for role in after_list) / len(after_list))
-
-			# Truncate indicators
-			roles = after.guild.roles
-			roles.sort(key=lambda r: r.position)
-			if roles[-1].position == after_list[0].position:
-				trun_indic_top = ''
-			else:
-				tmp_num = roles[-1].position - after_list[0].position
-				trun_indic_top = '_[{} more role{s} above]_\n'.format(
-					tmp_num, s='s' if tmp_num != 1 else '',
-				)
-			if after_list[-1].position <= 1 or before_list[-1].position <= 1:
-				trun_indic_bottom = ''
-			else:
-				tmp_num = after_list[-1].position - 1
-				trun_indic_bottom = '_[{} more role{s} below]_\n'.format(
-					tmp_num, s='s' if tmp_num != 1 else '',
-				)
-
-			embed = discord.Embed(
-				title='\N{KEY}\N{TWISTED RIGHTWARDS ARROWS} ROLE HIERARCHY UPDATED',
-				timestamp=datetime.datetime.now(),
-				colour=colour,
-			)
-			embed.add_field(
-				name='Older Hierarchy',
-				value='{}{}{}'.format(trun_indic_top, before_log, trun_indic_bottom),
-			)
-			embed.add_field(
-				name='Newer Hierarchy',
-				value='{}{}{}'.format(trun_indic_top, after_log, trun_indic_bottom),
-			)
-
 			# Cleanup
 			del wrapper.pos_ev_locks[after.guild.id]
 			del wrapper.pos_ev_diffs[after.guild.id]
 
-			await specialchannel.send(embed=embed)
+			await logs.log_updated_role_hierarchy(
+				specialchannel,
+				before_list,
+				after_list,
+			)
 
 	# If the role color has changed
 	if before.colour != after.colour and not utils.logdisabled('role_color', before.guild):
-		embed = discord.Embed(title='ROLE COLOR CHANGE', description=utils.mdspecialchars(after.name), colour=after.colour)
-		embed.add_field(name='Older Color', value='(default)' if before.colour.value == 0 else str(before.colour).upper())
-		embed.add_field(name='Newer Color', value='(default)' if after.colour.value == 0 else str(after.colour).upper())
-		await specialchannel.send(embed=embed)
+		await logs.log_changed_role_color(specialchannel, before, after)
 	# If any of the permissions has changed
 	if before.permissions != after.permissions and not utils.logdisabled(
 		'role_permissions', before.guild
 	):
-		diff = list(set(before.permissions).symmetric_difference(set(after.permissions)))
-		e = discord.Embed(
-			title='ROLE PERMISSIONS CHANGE',
-			description=utils.obj_info(after),
-			colour=after.colour,
-		)
-		e.add_field(name='Permission Updated', value=diff[0][0])
-		e.add_field(
-			name='Older Permission',
-			value=str(dict(before.permissions)[diff[0][0]]),
-		)
-		e.add_field(
-			name='Newer Permission',
-			value=str(dict(after.permissions)[diff[0][0]]),
-		)
-		await specialchannel.send(embed=e)
+		await logs.log_changed_role_permissions(specialchannel, before, after)
 
 async def on_reaction_add(reaction, user):
 	message = reaction.message
@@ -1642,53 +1037,7 @@ async def on_reaction_add(reaction, user):
 
 	specialchannel = utils.getspecialchannel(message.guild)
 
-	is_custom_emoji = hasattr(reaction.emoji, 'name')
-
-	embed = discord.Embed(
-		title=(
-			'\N{WHITE SMILING FACE}\N{UPWARDS BLACK ARROW}'
-			'REACTION ADDED TO MESSAGE (SENT {reltime} IN #{name})'
-		).format(
-			reltime=utils.reltime(time.mktime(message.created_at.timetuple())),
-			name=utils.mdspecialchars(message.channel.name),
-		),
-		description=message.content,
-		colour=user.colour,
-		timestamp=datetime.datetime.now(),
-	)
-
-	embed.set_author(
-		name=user.display_name,
-		icon_url=user.avatar_url,
-	)
-
-	embed.add_field(
-		name='Reaction',
-		value=utils.mdspecialchars(':{}:'.format(reaction.emoji.name))
-		if is_custom_emoji else reaction.emoji,
-	)
-
-	if is_custom_emoji:
-		embed.set_thumbnail(
-			url=discord.Emoji.url.__get__( # pylint: disable=too-many-function-args
-				reaction.emoji,
-			),
-		)
-
-	embed.add_field(
-		name='\u200b',
-		value=utils.get_jump_link(message) + '\n' + utils.mdspecialchars(
-			utils.id_summary(
-				uid=user.id,
-				mid=message.id,
-				eid=reaction.emoji.id if is_custom_emoji else '',
-				character='\n' if is_custom_emoji else ' ',
-			),
-		),
-		inline=False,
-	)
-
-	await specialchannel.send(embed=embed)
+	await logs.log_added_reaction(specialchannel, reaction, user)
 
 async def on_reaction_remove(reaction, user):
 	message = reaction.message
@@ -1700,187 +1049,42 @@ async def on_reaction_remove(reaction, user):
 
 	specialchannel = utils.getspecialchannel(message.guild)
 
-	is_custom_emoji = hasattr(reaction.emoji, 'name')
-
-	embed = discord.Embed(
-		title=(
-			'\N{WHITE SMILING FACE}\N{NO ENTRY SIGN}'
-			'REACTION REMOVED FROM MESSAGE (SENT {reltime} IN #{name})'
-		).format(
-			reltime=utils.reltime(time.mktime(message.created_at.timetuple())),
-			name=utils.mdspecialchars(message.channel.name),
-		),
-		description=message.content,
-		colour=user.colour,
-		timestamp=datetime.datetime.now(),
-	)
-
-	embed.set_author(name=user.display_name, icon_url=user.avatar_url)
-
-	embed.add_field(
-		name='Reaction',
-		value=utils.mdspecialchars(':{}:'.format(reaction.emoji.name))
-		if is_custom_emoji else reaction.emoji,
-	)
-
-	if is_custom_emoji:
-		embed.set_thumbnail(
-			url=discord.Emoji.url.__get__( # pylint: disable=too-many-function-args
-				reaction.emoji,
-			),
-		)
-
-	embed.add_field(
-		name='\u200b',
-		value=utils.get_jump_link(message) + '\n' + utils.mdspecialchars(utils.id_summary(
-			uid=user.id,
-			mid=message.id,
-			eid=reaction.emoji.id if is_custom_emoji else '',
-			character='\n' if is_custom_emoji else ' ',
-		)),
-		inline=False,
-	)
-
-	await specialchannel.send(embed=embed)
+	await logs.log_removed_reaction(specialchannel, reaction, user)
 
 async def on_reaction_clear(m, rs):
 	if utils.isprivatemessage(m.guild) or utils.logdisabled('reaction_clear', m.guild) \
 	or utils.channelnotlogged(m.channel, m.guild):
 		return
 	schan = utils.getspecialchannel(m.guild)
-	rlist = ''
-	for r in rs:
-		try:
-			name = r.emoji.name
-			cemt = True
-		except AttributeError:
-			name = r.emoji
-			cemt = False
-		rlist += str(r.count) + ' '
-		if cemt:
-			rlist += '{name} ({id})\n'.format(
-					name=str(r.emoji),
-					id=r.emoji.id,
-				)
-		else:
-			rlist += name + '\n'
-	embed = discord.Embed(
-		title='REACTIONS CLEARED FROM MESSAGE (SENT {rtime} IN #{c.name})'.format(
-			rtime=utils.reltime(time.mktime(m.created_at.timetuple())),
-			c=m.channel,
-		),
-		description=m.content,
-		colour=m.author.colour,
-	)
-	embed.add_field(name='Reactions', value=rlist)
-	utils.embed_add_jump_link(embed, m)
-	embed.set_footer(text=utils.id_summary(cid=m.channel.id, mid=m.id))
-	await schan.send(embed=embed)
+	await logs.log_cleared_reactions(schan, m, rs)
 
 async def on_guild_update(before, after):
 	specialchannel = utils.getspecialchannel(after)
 	if before.icon != after.icon and not utils.logdisabled('guild_icon', after):
-		embed = discord.Embed(description='Server changed icon')
-		embed.set_thumbnail(url=before.icon_url)
-		embed.add_field(name='Older Icon URL: None' if before.icon_url == '' else 'Older Icon URL (Thumbnail)', value='No Older Icon URL' if before.icon_url == '' else before.icon_url)
-		embed.add_field(name='Newer Icon URL: None' if after.icon_url == '' else 'Newer Icon URL (Inset Image)', value='No Newer Icon URL' if after.icon_url == '' else after.icon_url)
-		embed.set_image(url=after.icon_url)
-		await specialchannel.send(embed=embed)
+		await logs.log_changed_guild_icon(specialchannel, before, after)
 	if before.name != after.name and not utils.logdisabled('guild_rename', after):
-		embed = discord.Embed(description='Server changed name')
-		embed.set_thumbnail(url=after.icon_url)
-		embed.add_field(name='Older Name', value=utils.mdspecialchars(before.name))
-		embed.add_field(name='Newer Name', value=utils.mdspecialchars(after.name))
-		await specialchannel.send(embed=embed)
+		await logs.log_renamed_guild(specialchannel, before, after)
 	if before.region != after.region and not utils.logdisabled('guild_region', after):
-		embed = discord.Embed(description='VOICE REGION CHANGE')
-		embed.set_thumbnail(url=after.icon_url)
-		embed.add_field(name='Older Region', value=str(before.region))
-		embed.add_field(name='Newer Region', value=str(after.region))
-		await specialchannel.send(embed=embed)
+		await logs.log_changed_guild_voice_region(specialchannel, before, after)
 	if before.afk_timeout != after.afk_timeout and \
 	not utils.logdisabled('guild_afktimeout', after):
-		b_m, b_s = divmod(before.afk_timeout, 60)
-		b_h, b_m = divmod(b_m, 60)
-		a_m, a_s = divmod(after.afk_timeout, 60)
-		a_h, a_s = divmod(a_m, 60)
-		embed = discord.Embed(description='AFK TIMEOUT CHANGE')
-		embed.set_thumbnail(url=after.icon_url)
-		embed.add_field(
-			name='Older Timeout',
-			value='{h}h {m}m {s}s'.format(h=b_h, m=b_m, s=b_s),
-		)
-		embed.add_field(
-			name='Newer Timeout',
-			value='{h}h {m}m {s}s'.format(h=a_h, m=a_m, s=a_s),
-		)
-		await specialchannel.send(embed=embed)
+		await logs.log_changed_guild_afk_timeout(specialchannel, before, after)
 	if before.afk_channel != after.afk_channel and \
 	not utils.logdisabled('guild_afkchannel', after):
-		embed = discord.Embed(description='AFK CHANNEL CHANGE')
-		embed.set_thumbnail(url=after.icon_url)
-		embed.add_field(
-			name='Older Channel: None' if before.afk_channel is None else 'Older Channel',
-			value='No Older Channel' if before.afk_channel is None else utils.obj_info(before.afk_channel),
-		)
-		embed.add_field(
-			name='Newer Channel: None' if after.afk_channel is None else 'Newer Channel',
-			value='No Newer Channel' if after.afk_channel is None else utils.obj_info(after.afk_channel),
-		)
-		await specialchannel.send(embed=embed)
+		await logs.log_changed_guild_afk_channel(specialchannel, before, after)
 	if before.verification_level != after.verification_level and not utils.logdisabled(
 		'guild_verificationlevel', after
 	):
-		embed = discord.Embed(description='VERIFICATION LEVEL CHANGE')
-		embed.set_thumbnail(url=after.icon_url)
-		embed.add_field(
-			name='Older Level',
-			value=str(before.verification_level).title(),
-		)
-		embed.add_field(
-			name='Newer Level',
-			value=str(after.verification_level).title(),
-		)
-		await specialchannel.send(embed=embed)
+		await logs.log_changed_guild_verification_level(specialchannel, before, after)
 	if before.mfa_level != after.mfa_level and not utils.logdisabled('guild_2fa', after):
-		if before.mfa_level == 0 and after.mfa_level == 1:
-			embed=discord.Embed(description='SERVER 2FA ENABLED')
-		elif before.mfa_level == 1 and after.mfa_level == 0:
-			embed=discord.Embed(description='SERVER 2FA DISABLED')
-		await specialchannel.send(embed=embed)
+		await logs.log_changed_guild_mfa_level(specialchannel, before, after)
 
 async def on_guild_emojis_update(guild, b, a):
 	if utils.logdisabled('guild_emotes', guild):
 		# We could split this into separate emotes_* log types
 		return
 	schan = utils.getspecialchannel(guild)
-	diff = list(set(b).symmetric_difference(set(a)))
-	elist = ''
-	for e in diff:
-		elist += '{str} – {0}\n'.format(utils.obj_info(e), str=str(e))
-	if len(b) > len(a):
-		desc = 'EMOTE REMOVE'
-	elif len(b) < len(a):
-		desc = 'EMOTE ADD'
-	else:
-		# Emote name change, get the emote in question
-		for befemo in b:
-			for aftemo in a:
-				if befemo.id == aftemo.id and befemo.name != aftemo.name:
-					embef = befemo
-					emaft = aftemo
-
-		embed = discord.Embed(
-			title='EMOTE NAME CHANGE',
-			description=str(emaft),
-		)
-		embed.add_field(name='Older Name', value=embef.name)
-		embed.add_field(name='Newer Name', value=emaft.name)
-		await schan.send(embed=embed)
-		return
-	embed = discord.Embed(description=desc)
-	embed.add_field(name='Emotes', value=elist)
-	await schan.send(embed=embed)
+	await logs.log_changed_guild_emotes(schan, b, a)
 
 async def on_voice_state_update(member, old, new):
 	if old.channel == new.channel:
@@ -1915,63 +1119,7 @@ async def on_guild_channel_create(channel):
 
 	schan = utils.getspecialchannel(channel.guild)
 
-	embed = discord.Embed(
-		title='{emoji}\N{BLACK RIGHTWARDS ARROW}{name} CREATED'.format(
-			emoji=utils.get_channel_type_emoji(channel),
-			name=utils.get_channel_type_name(channel).upper(),
-		),
-		description='**{name}**'.format(name=utils.mdspecialchars(channel.name)),
-		colour=utils.colorize(channel.id),
-		timestamp=channel.created_at,
-	)
-
-	if channel.type is not discord.ChannelType.category:
-		embed.add_field(
-			name='Uncategorized' if channel.category is None else 'Category',
-			value='\u200b' if channel.category is None
-			else utils.obj_info(channel.category),
-		)
-
-	# Text-specific properties
-
-	if hasattr(channel, 'slowmode_delay'):
-		embed.add_field(
-			name='No Slowmode' if channel.slowmode_delay == 0 else 'Slowmode',
-			value='_(none)_' if channel.slowmode_delay == 0 else '{} seconds'.format(
-				channel.slowmode_delay,
-			), # TODO: Account for hours/minutes/etc. Should be a utils.py function
-		)
-
-	if hasattr(channel, 'topic'):
-		embed.add_field(
-			name='No Topic' if channel.topic is None else 'Topic',
-			value='_(none)_' if channel.topic is None else channel.topic,
-			inline=False,
-		)
-
-	# Voice-specific properties
-
-	if hasattr(channel, 'bitrate'):
-		embed.add_field(
-			name='Bitrate',
-			value=utils.get_kbps(channel.bitrate),
-		)
-
-	if hasattr(channel, 'user_limit'):
-		embed.add_field(
-			name='No User Limit' if channel.user_limit == 0 else 'User Limit',
-			value='_(none)_' if channel.user_limit == 0 else '{} users'.format(
-				channel.user_limit,
-			),
-		)
-
-	embed.add_field(
-		name='\u200b',
-		value=utils.mdspecialchars(utils.id_summary(cid=channel.id)),
-		inline=False,
-	)
-
-	await schan.send(embed=embed)
+	await logs.log_created_guild_channel(schan, channel)
 
 async def on_guild_channel_delete(channel):
 	if utils.logdisabled('channel_remove', channel.guild):
@@ -1979,35 +1127,7 @@ async def on_guild_channel_delete(channel):
 
 	schan = utils.getspecialchannel(channel.guild)
 
-	embed = discord.Embed(
-		title='{emoji}\N{NO ENTRY SIGN}{name} DELETED'.format(
-			emoji=utils.get_channel_type_emoji(channel),
-			name=utils.get_channel_type_name(channel).upper(),
-		),
-		description='**{name}**'.format(name=utils.mdspecialchars(channel.name)),
-		colour=utils.colorize(channel.id),
-		timestamp=datetime.datetime.now(),
-	)
-
-	if channel.type is not discord.ChannelType.category:
-		embed.add_field(
-			name='Uncategorized' if channel.category is None else 'Category',
-			value='\u200b' if channel.category is None
-			else utils.obj_info(channel.category),
-		)
-
-	embed.add_field(
-		name='Originally created',
-		value=utils.reltime(time.mktime(channel.created_at.timetuple())),
-	)
-
-	embed.add_field(
-		name='\u200b',
-		value=utils.mdspecialchars(utils.id_summary(cid=channel.id)),
-		inline=False,
-	)
-
-	await schan.send(embed=embed)
+	await logs.log_deleted_guild_channel(schan, channel)
 
 async def on_raw_bulk_message_delete(payload):
 	# We must first know what channel it is
@@ -2036,39 +1156,8 @@ async def on_raw_bulk_message_delete(payload):
 		return
 
 	# Okay, we're not sending like 50 "deleted message" notifications.
-	oldest_id = next(iter(payload.message_ids))
-	newest_id = oldest_id
-	for mid in payload.message_ids:
-		if mid < oldest_id:
-			oldest_id = mid
-		if mid > newest_id:
-			newest_id = mid
-
-	oldest_time = ((oldest_id >> 22) + 1420070400000)/1000
-	newest_time = ((newest_id >> 22) + 1420070400000)/1000
-
 	schan = utils.getspecialchannel(mchan.guild)
-	embed = discord.Embed(
-		title='\N{RADIOACTIVE SIGN}{amount} MESSAGES PURGED IN #{chan.name}'.format(
-			amount=len(payload.message_ids), chan=mchan
-		),
-		description=(
-			'Oldest deleted message: {oi} (sent {ot})\n'
-			'Newest deleted message: {ni} (sent {nt})'
-		).format(
-			oi=oldest_id, ot=utils.reltime(oldest_time),
-			ni=newest_id, nt=utils.reltime(newest_time)
-		),
-		colour=0xFF0000,
-		timestamp=datetime.datetime.now(),
-	)
-	embed.add_field(
-		name='\u200b',
-		value=utils.mdspecialchars(
-			utils.id_summary(cid=mchan.id),
-		)
-	)
-	await schan.send(embed=embed)
+	await logs.log_bulk_deleted_messages(schan, mchan, payload)
 
 async def on_raw_message_delete(payload):
 	# We must first know what channel it is
@@ -2098,16 +1187,7 @@ async def on_raw_message_delete(payload):
 				return
 
 		schan = utils.getspecialchannel(mchan.guild)
-		e = discord.Embed(
-			title='UNCACHED MESSAGE DELETED IN #{0.name}'.format(mchan),
-			description=(
-				'Since this message is uncached, I can’t give you'
-				' any more information than its ID and its channel.'
-			),
-			colour=mchan.guild.me.colour,
-		)
-		e.set_footer(text=utils.id_summary(mid=payload.message_id, cid=mchan.id))
-		await schan.send(embed=e)
+		await logs.log_deleted_uncached_message(schan, mchan, payload)
 
 async def on_raw_message_edit(payload):
 	# We must first know what channel it is
@@ -2124,53 +1204,7 @@ async def on_raw_message_edit(payload):
 		return
 
 	schan = utils.getspecialchannel(mchan.guild)
-	athr = mchan.guild.get_member(int(payload.data['author']['id']))
-	e = discord.Embed(
-		title=(
-			'UNCACHED MESSAGE UPDATED (SENT {rltm}'
-			' IN #{0.name}).'
-			' NEWER CONTENT AND PROPERTIES:'
-		).format(
-			mchan,
-			rltm=utils.reltime(
-				time.mktime(
-					discord.utils.parse_time(payload.data['timestamp']).timetuple(),
-				)
-			),
-		),
-		description=payload.data['content'],
-		colour=athr.colour,
-	)
-	e.set_author(
-		name=athr.display_name,
-		icon_url=athr.avatar_url,
-	)
-	e.add_field(
-		name='Pinned',
-		value='Yes' if payload.data['pinned'] else 'No',
-	)
-	e.add_field(
-		name='TTS',
-		value='Yes' if payload.data['tts'] else 'No',
-	)
-	e.add_field(
-		name='Rich Embed',
-		value=(
-			'``{}``'.format(utils.wrapbackticks(str(payload.data['embeds']['rich'])))
-			if 'rich' in payload.data['embeds']
-			else '(none)'
-		),
-	)
-	e.add_field(
-		name='\u200b',
-		value=(
-			'Since this message is uncached,'
-			' I can’t give you its older properties.'
-		)
-	)
-	e.set_footer(text=utils.id_summary(uid=athr.id, mid=payload.data['id']))
-	utils.embed_manual_jump_link(e, gid=mchan.guild.id, cid=mchan.id, mid=payload.data['id'])
-	await schan.send(embed=e)
+	await logs.log_updated_uncached_message(schan, mchan, payload)
 
 async def on_raw_reaction_add(payload):
 	# We must first know what channel it is
@@ -2191,36 +1225,7 @@ async def on_raw_reaction_add(payload):
 			return
 
 		schan = utils.getspecialchannel(mchan.guild)
-		athr = mchan.guild.get_member(payload.user_id)
-		mdetails = athr.mention
-		e = discord.Embed(
-			title='REACTION ADDED TO UNCACHED MESSAGE IN #{0.name}'.format(mchan),
-			description=(
-				'Since this message is uncached, I can’t give you'
-				' any more information than its ID, author, and channel.'
-			),
-			colour=mchan.guild.me.colour,
-		)
-		e.set_author(
-			name=athr.display_name,
-			icon_url=athr.avatar_url,
-		)
-		e.add_field(
-			name='Member of Reaction',
-			value=mdetails,
-		)
-		e.add_field(
-			name='Reaction',
-			value=(
-				'<:{name}:{id}>'
-			).format(
-				name=payload.emoji.name,
-				id=payload.emoji.id,
-			) if payload.emoji.id is not None else payload.emoji.name,
-		)
-		e.set_footer(text=utils.id_summary(uid=athr.id, cid=mchan.id, mid=payload.message_id))
-		utils.embed_manual_jump_link(e, gid=mchan.guild.id, cid=mchan.id, mid=payload.message_id)
-		await schan.send(embed=e)
+		await logs.log_added_uncached_reaction(schan, mchan, payload)
 
 async def on_raw_reaction_remove(payload):
 	# We must first know what channel it is
@@ -2240,36 +1245,7 @@ async def on_raw_reaction_remove(payload):
 			return
 
 		schan = utils.getspecialchannel(mchan.guild)
-		athr = mchan.guild.get_member(payload.user_id)
-		mdetails = athr.mention
-		e = discord.Embed(
-			title='REACTION REMOVED FROM UNCACHED MESSAGE IN #{0.name}'.format(mchan),
-			description=(
-				'Since this message is uncached, I can’t give you'
-				' any more information than its ID, author, and channel.'
-			),
-			colour=mchan.guild.me.colour,
-		)
-		e.set_author(
-			name=athr.display_name,
-			icon_url=athr.avatar_url,
-		)
-		e.add_field(
-			name='Member of Reaction',
-			value=mdetails,
-		)
-		e.add_field(
-			name='Reaction',
-			value=(
-				'<:{name}:{id}>'
-			).format(
-				name=payload.emoji.name,
-				id=payload.emoji.id,
-			) if payload.emoji.id is not None else payload.emoji.name,
-		)
-		e.set_footer(text=utils.id_summary(uid=athr.id, cid=mchan.id, mid=payload.message_id))
-		utils.embed_manual_jump_link(e, gid=mchan.guild.id, cid=mchan.id, mid=payload.message_id)
-		await schan.send(embed=e)
+		await logs.log_removed_uncached_reaction(schan, mchan, payload)
 
 async def on_raw_reaction_clear(payload):
 	# We must first know what channel it is
@@ -2288,37 +1264,16 @@ async def on_raw_reaction_clear(payload):
 			return
 
 		schan = utils.getspecialchannel(mchan.guild)
-		e = discord.Embed(
-			title=(
-				'REACTIONS CLEARED FROM UNCACHED MESSAGE'
-				' IN #{0.name}'
-			).format(mchan),
-			description=(
-				'Since this message is uncached, I can’t give you'
-				' any more information than its ID and its channel.'
-			),
-			colour=mchan.guild.me.colour,
-		)
-		e.set_footer(text=utils.id_summary(cid=mchan.id, mid=payload.message_id))
-		utils.embed_manual_jump_link(e, gid=mchan.guild.id, cid=mchan.id, mid=payload.message_id)
-		await schan.send(embed=e)
+		await logs.log_cleared_uncached_reactions(schan, mchan, payload)
+
+# TODO: Implement on_reaction_clear_emoji() and on_raw_reaction_clear_emoji()
 
 async def on_guild_channel_update(b, a):
 	if utils.logdisabled('channel_rename', a.guild):
 		return
 	schan = utils.getspecialchannel(a.guild)
 	if b.name != a.name:
-		e = discord.Embed(
-			title='{emoji}\N{TWISTED RIGHTWARDS ARROWS}{name} UPDATE'.format(
-				emoji=utils.get_channel_type_emoji(a),
-				name=utils.get_channel_type_name(a).upper(),
-			),
-			description=utils.obj_info(a),
-			colour=a.guild.me.colour,
-		)
-		e.add_field(name='Older Name', value=utils.mdspecialchars(b.name))
-		e.add_field(name='Newer Name', value=utils.mdspecialchars(a.name))
-		await schan.send(embed=e)
+		await logs.log_renamed_guild_channel(schan, b, a)
 
 async def on_guild_join(guild):
 	em = discord.Embed(
