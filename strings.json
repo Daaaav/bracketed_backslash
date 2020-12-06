@@ -198,6 +198,11 @@
 					"extra": ""
 				},
 				{
+					"name": "evalfile",
+					"short": "Evalutes whatever is contained in `eval.txt`.",
+					"extra": ""
+				},
+				{
 					"name": "setvar",
 					"short": "Sets a global variable.",
 					"extra": "**Syntax**: `\\setvar <VARIABLE> <ASSIGNMENT>"
