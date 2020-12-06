@@ -198,16 +198,6 @@
 					"extra": ""
 				},
 				{
-					"name": "evalawait",
-					"short": "Evaluates your argument as code and precedes it with `await`.",
-					"extra": ""
-				},
-				{
-					"name": "evalawaitfile",
-					"short": "Evaluates `eval.txt` as code and precedes it with `await`.",
-					"extra": ""
-				},
-				{
 					"name": "setvar",
 					"short": "Sets a global variable.",
 					"extra": "**Syntax**: `\\setvar <VARIABLE> <ASSIGNMENT>"
