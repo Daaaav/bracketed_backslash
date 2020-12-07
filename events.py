@@ -899,7 +899,7 @@ async def on_member_unban(guild, user):
 
 async def on_guild_role_create(r):
 	schan = utils.getspecialchannel(r.guild)
-	nitro_booster = r.name == 'Nitro Booster' and r.managed
+	nitro_booster = r.name == 'Server Booster' and r.managed
 
 	if nitro_booster:
 		config.detach('nitrobooster', r.guild.id)
