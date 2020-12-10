@@ -1538,7 +1538,7 @@ async def version(client, message, **kwargs):
 	), inline=False)
 	embed.add_field(name='Python', value=sys.version, inline=False)
 	embed.add_field(name='discord.py', value='{} {}'.format(discord.version_info.releaselevel, discord.__version__))
-	embed.add_field(name='PIL', value=__import__("PIL").VERSION)
+	embed.add_field(name='Pillow', value=__import__("PIL").__version__)
 	await bot.reply(message, emb=embed)
 
 @shadow(auth=checks.is_mod)
