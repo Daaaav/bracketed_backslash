@@ -85,16 +85,6 @@
 					"extrafull": "Find a channel by all or part of the name case-insensitively, or mention, or ID. Displays various information about the matched channel. If no argument is given, will give a list of channels instead."
 				},
 				{
-					"name": "hangman",
-					"short": "Initiate a game of Hangman. Send via private message with a custom word. Use `\\stophangman` to stop.",
-					"extra": "Ported from DavBot."
-				},
-				{
-					"name": "stophangman",
-					"short": "Stop the current game of hangman.",
-					"extra": "Can only be done by the one who started the game or a moderator."
-				},
-				{
 					"name": "invite",
 					"short": "Links to servers \\[\\\\\\] can be used on.",
 					"extra": "The master instance of \\[\\\\\\] can only be used on those servers."

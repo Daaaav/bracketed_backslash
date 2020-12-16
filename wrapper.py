@@ -71,8 +71,6 @@ set_current_commit()
 
 maineventloop = asyncio.get_event_loop()
 
-hangman_games = {} # channel ID -> HangmanGame (one game per channel)
-
 memberroles = {}
 rolexpires = {}
 rules = {}

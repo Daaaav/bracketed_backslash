@@ -41,7 +41,6 @@ import customcommands
 import dispatch
 import emb
 import events
-import hangman
 import images
 import op_ids
 import reaction_roles
@@ -509,63 +508,6 @@ async def echo(client, message, **kwargs):
 		displayarguments = arguments[:2000-len(msg_start)]
 		replyargs = {'message': displayarguments}
 	await bot.reply(message, **replyargs)
-
-@shadow()
-async def _hangman(client, message, **kwargs):
-	if message.channel.id in wrapper.hangman_games and \
-	wrapper.hangman_games[message.channel.id].active:
-		embed = emb.error((
-				'Hangman is already running in this channel. It can be '
-				'aborted by the starter or by a mod with `\stophangman`.'
-			)
-		)
-		await bot.reply(message, emb=embed)
-		return
-	if kwargs['arguments'] is None:
-		embed = emb.error('Please specify a word. (Yeah, for a bit, you need to send the word in public, we’ll change that Soon™)')
-		await bot.reply(message, emb=embed)
-		return
-	if not kwargs['arguments'].isalpha():
-		embed = emb.error('Words can only consist of letters A-Z')
-		await bot.reply(message, emb=embed)
-		return
-	if len(kwargs['arguments']) > 50:
-		embed = emb.error('Sorry, but your word is too long. It can be 50 characters max.')
-		await bot.reply(message, emb=embed)
-		return
-
-	hm_inst = hangman.HangmanGame(kwargs['arguments'], message.author)
-	wrapper.hangman_games[message.channel.id] = hm_inst
-
-	content = (
-		'New game of hangman initiated by {starter} with a custom word. Guess letters '
-		'by chatting "{inv}" followed by the letter (for example {inv}a) or the word. '
-		'{attempts} attempts left.\n{worddisp}'
-	).format(
-		starter=hm_inst.starter.mention,
-		inv=bot.hangmaninvoker,
-		attempts=hm_inst.maxmistakes,
-		worddisp=hm_inst.worddisp()
-	)
-	await bot.reply(message, content)
-
-@shadow()
-async def stophangman(client, message, **kwargs):
-	if message.channel.id not in wrapper.hangman_games or \
-	not wrapper.hangman_games[message.channel.id].active:
-		embed = emb.error('Can’t abort hangman because it’s not running.')
-		await bot.reply(message, emb=embed)
-		return
-	hm_inst = wrapper.hangman_games[message.channel.id]
-	if not checks.is_mod(message.author) and not hm_inst.isstarter(message.author):
-		embed = emb.error('Can’t abort hangman because you haven’t started this game.')
-		await bot.reply(message, emb=embed)
-		return
-
-	hm_inst.stop()
-	content = 'Game of hangman aborted. The word was: **{}**'.format(hm_inst.word)
-	await bot.reply(message, content)
-	del wrapper.hangman_games[message.channel.id]
 
 @shadow()
 async def source(client, message, **kwargs):

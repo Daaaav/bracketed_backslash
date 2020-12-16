@@ -18,7 +18,6 @@ import commands
 import customcommands
 import dispatch
 import emb
-import hangman
 import logs
 import op_ids
 import reaction_roles
@@ -315,155 +314,12 @@ async def on_message(m):
 	if priv and m.author.id in config.get_s('blacklist'):
 		return
 
-	if m.content.startswith(bot.hangmaninvoker):
-		hangmaninvokeractive = True
-	else:
-		hangmaninvokeractive = False
-
 	if priv:
 		invokesymbol = '@'
 	elif checks.is_mod(m.author):
 		invokesymbol = '#'
 	else:
 		invokesymbol = '$'
-	if hangmaninvokeractive:
-		if m.channel.id not in wrapper.hangman_games:
-			return
-		hm_inst = wrapper.hangman_games[m.channel.id]
-		if not hm_inst.active:
-			# We didn't clean up?
-			del wrapper.hangman_games[m.channel.id]
-			return
-		if priv:
-			e = emb.error('Guesses are not accepted via PM.')
-			await bot.reply(m, emb=e)
-			return
-		hangmanguessed = m.content[1:]
-
-		if len(hangmanguessed) == 1:
-			# Have we already used that letter? And is it a valid letter?
-			if not hangman.validletter(hangmanguessed):
-				e = emb.error(
-					'The character ``{}`` is invalid.'
-					.format(utils.wrapbackticks(hangmanguessed.upper()))
-				)
-				await bot.reply(m, emb=e)
-				return
-			if hm_inst.alreadyguessed(hangmanguessed):
-				e = emb.error(
-					'The letter **{}** has already been used.'
-					.format(hangmanguessed.upper())
-				)
-				await bot.reply(m, emb=e)
-				return
-			# Ok, so does this letter occur in the word?
-			if hm_inst.guess(hangmanguessed):
-				# It does!
-				con = '**{ltr}** is correct!\n{worddisp}'.format(
-						ltr=hangmanguessed.upper(),
-						worddisp=hm_inst.worddisp()
-					)
-
-				if hm_inst.fullyguessed():
-					con += (
-						'\nYou guessed the word correctly!'
-						' You made {n} mistakes in total.'
-						.format(n=hm_inst.mistakes)
-					)
-					await bot.reply(m, con)
-					return
-
-				await bot.reply(m, con)
-			else:
-				# It doesn't.
-				if hm_inst.isgameover():
-					con = (
-						'**{ltr}** is incorrect! Game over.'
-						' The word was: **{word}**'
-					).format(
-						ltr=hangmanguessed.upper(),
-						word=hm_inst.word,
-					)
-					await bot.reply(m, con)
-					return
-				else:
-					attleft = hm_inst.attemptsleft()
-					if attleft != 1:
-						plural = 's'
-					else:
-						plural = ''
-					con = (
-						'**{ltr}** is incorrect!'
-						' {attempts} attempt{pl} left.\n'
-						'{worddisp}'
-					).format(
-						ltr=hangmanguessed.upper(),
-						attempts=attleft,
-						pl=plural,
-						worddisp=hm_inst.worddisp(),
-					)
-					await bot.reply(m, con)
-					return
-		else:
-			# We're guessing the entire word. Well, is it the word?
-			if not hm_inst.correctlength(hangmanguessed):
-				# We're not even trying. It's not the same length.
-
-				if not hangmanguessed:
-					# if before was "not even trying", this is -1 trying
-					e = emb.error('You should probably enter in a letter.')
-					await bot.reply(m, emb=e)
-					return
-				e = emb.error(
-					(
-						'**``{guess}``** isn’t even the same length'
-						' as the correct word. Please try again.'
-					).format(
-						guess=utils.wrapbackticks(hangmanguessed)
-					)
-				)
-				await bot.reply(m, emb=e)
-				return
-			elif hm_inst.fullwordguess(hangmanguessed):
-				con = (
-					'You guessed the word ({word}) correctly!'
-					' You made {n} mistakes in total.'
-				).format(
-					word=hm_inst.word,
-					n=hm_inst.mistakes,
-				)
-				await bot.reply(m, con)
-				return
-
-			if hm_inst.isgameover():
-				con = (
-					'**{guess}** is not the word! Game over.'
-					' The word was: **{word}**'
-				).format(
-					guess=hangmanguessed,
-					word=hm_inst.word,
-				)
-				await bot.reply(m, con)
-				return
-
-			attleft = hm_inst.attemptsleft()
-			if attleft != 1:
-				plural = 's'
-			else:
-				plural = ''
-			con = (
-				'**{guess}** is not the word!'
-				' {attempts} attempt{pl} left.\n{worddisp}'
-			).format(
-				guess=hangmanguessed,
-				attempts=attleft,
-				pl=plural,
-				worddisp=hm_inst.worddisp(),
-			)
-			await bot.reply(m, con)
-			return
-
-		return
 
 	is_join_channel = (not priv) and \
 	config.get_s('rolecachemode', m.guild.id) == 2 and \
