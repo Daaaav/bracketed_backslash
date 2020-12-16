@@ -86,7 +86,7 @@
 				},
 				{
 					"name": "invite",
-					"short": "Links to servers \\[\\\\\\] can be used on.",
+					"short": "Give the join link to add \\[\\\\\\] to your server and the invite link for the public \\[\\\\\\] server.",
 					"extra": "The master instance of \\[\\\\\\] can only be used on those servers."
 				},
 				{
