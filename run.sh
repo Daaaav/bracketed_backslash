@@ -16,16 +16,21 @@ fi
 
 while true; do
 	python main.py
-	if [ $? -eq 4 ]; then
-		echo -e "${LIGHTBLUE}Bot exited with exit code ${LIGHTCYAN}$?${LIGHTBLUE}: kill command used!${NOCOLOR}" >&2
+
+	# Copy $? to a separate variable. If we don't do this,
+	# it'll be overwritten by `echo` when we do the `notify-send`
+	EXITCODE=$?
+
+	if [ $EXITCODE -eq 4 ]; then
+		echo -e "${LIGHTBLUE}Bot exited with exit code ${LIGHTCYAN}${EXITCODE}${LIGHTBLUE}: kill command used!${NOCOLOR}" >&2
 		notify-send "[\\] has been stopped"
 		exit 0
-	elif [ $? -eq 8 ]; then
-		echo -e "${LIGHTBLUE}Bot exited with exit code ${LIGHTCYAN}$?${LIGHTBLUE}: restart command used!${NOCOLOR}" >&2
+	elif [ $EXITCODE -eq 8 ]; then
+		echo -e "${LIGHTBLUE}Bot exited with exit code ${LIGHTCYAN}${EXITCODE}${LIGHTBLUE}: restart command used!${NOCOLOR}" >&2
 		notify-send "[\\] restarting now"
 	else
-		echo -e "${LIGHTBLUE}Bot exited with exit code ${LIGHTCYAN}$?${LIGHTBLUE}: unhandled, probably crashed, restarting in 10s${NOCOLOR}" >&2
-		notify-send "Bot exited with exit code $?, restarting in 10s."
+		echo -e "${LIGHTBLUE}Bot exited with exit code ${LIGHTCYAN}${EXITCODE}${LIGHTBLUE}: unhandled, probably crashed, restarting in 10s${NOCOLOR}" >&2
+		notify-send "Bot exited with exit code ${EXITCODE}, restarting in 10s."
 		sleep 10
 	fi
 done
