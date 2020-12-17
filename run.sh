@@ -21,7 +21,11 @@ while true; do
 	# it'll be overwritten by `echo` when we do the `notify-send`
 	EXITCODE=$?
 
-	if [ $EXITCODE -eq 4 ]; then
+	if [ $EXITCODE -eq 0 ]; then
+		echo -e "${LIGHTBLUE}Bot exited with exit code ${LIGHTCYAN}${EXITCODE}${LIGHTBLUE}: Ctrl-C used!${NOCOLOR}" >&2
+		notify-send "[\\] has been stopped"
+		exit 0
+	elif [ $EXITCODE -eq 4 ]; then
 		echo -e "${LIGHTBLUE}Bot exited with exit code ${LIGHTCYAN}${EXITCODE}${LIGHTBLUE}: kill command used!${NOCOLOR}" >&2
 		notify-send "[\\] has been stopped"
 		exit 0
