@@ -8,9 +8,13 @@ import inspect
 import importlib
 import logging
 import pkgutil
+import sys
 
 import bot
 import wrapper
+
+# We expect other files to modify this via '__main__.exitcode = ...'
+exit_code = 0
 
 def reload_bot():
 	global bot
@@ -51,3 +55,4 @@ with open('bot_token.conf', 'r') as f:
 
 if __name__ == '__main__':
 	wrapper.client.run(token)
+	sys.exit(exit_code)

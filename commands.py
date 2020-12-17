@@ -115,7 +115,8 @@ async def restart(client, message, **kwargs):
 	utils.logcommand(kwargs['command'], kwargs['arguments'], message)
 	await bot.reply(message, emb=embed)
 	await client.logout()
-	sys.exit(8)
+	__main__ = __import__('__main__')
+	__main__.exit_code = 8
 
 @shadow(auth=checks.is_host)
 async def kill(client, message, **kwargs):
@@ -124,7 +125,8 @@ async def kill(client, message, **kwargs):
 	utils.logcommand(kwargs['command'], kwargs['arguments'], message)
 	await bot.reply(message, emb=embed)
 	await client.logout()
-	sys.exit(4)
+	__main__ = __import__('__main__')
+	__main__.exit_code = 4
 
 @shadow(auth=checks.is_operator)
 async def errors(client, message, **kwargs):
