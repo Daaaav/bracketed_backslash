@@ -759,12 +759,7 @@ async def on_member_unban(guild, user):
 
 async def on_guild_role_create(r):
 	schan = utils.getspecialchannel(r.guild)
-	nitro_booster = r.name == 'Server Booster' and r.managed
-
-	if nitro_booster:
-		config.detach('nitrobooster', r.guild.id)
-		config.set_s('nitrobooster', r.id, r.guild.id)
-		config.saveconfig()
+	nitro_booster = r.is_premium_subscriber()
 
 	if utils.logdisabled('role_create', r.guild):
 		return

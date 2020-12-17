@@ -470,16 +470,6 @@ configs = {
 			lambda newvalue, **kwargs: newvalue in (0,1,2)
 		),
 	},
-	'nitrobooster': {
-		'default': 0,
-		'type': 'rid',
-		'is_array': False,
-		'expl': 'The Nitro Booster role for this server. This will be set automatically upon creation of the role.',
-		'detachable': True,
-		'cat': 'logging',
-		'access': 2,
-		'valid_user_value': True,
-	},
 	'banlog_logchannel': {
 		'default': 0,
 		'type': 'cid',

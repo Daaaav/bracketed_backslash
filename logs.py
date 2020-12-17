@@ -268,22 +268,13 @@ async def log_updated_roles(
 	addedroles = list(set(new.roles) - set(old.roles))
 	removedroles = list(set(old.roles) - set(new.roles))
 
-	nitroboosterid = config.get_s('nitrobooster', new.guild.id)
-	if nitroboosterid != 0:
-		boosteradd = any(r.id == nitroboosterid for r in addedroles)
-		boosterrem = any(r.id == nitroboosterid for r in removedroles)
+	nitrobooster = new.guild.premium_subscriber_role
+	if nitrobooster is not None:
+		boosteradd = any(role == nitrobooster for role in addedroles)
+		boosterrem = any(role == nitrobooster for role in removedroles)
 	else:
 		boosteradd = False
 		boosterrem = False
-
-	if boosteradd:
-		nitrobooster = next(r for r in addedroles if r.id == nitroboosterid)
-		if len(addedroles) == 1:
-			addedroles = []
-	if boosterrem:
-		nitrobooster = next(r for r in removedroles if r.id == nitroboosterid)
-		if len(removedroles) == 1:
-			removedroles = []
 
 	if utils.logdisabled('member_roleadd', new.guild):
 		addedroles = []
@@ -640,7 +631,7 @@ async def log_created_role(
 	)
 
 	if nitro_booster:
-		embed.set_footer(text='This is *the* booster role, right? Congrats!')
+		embed.set_footer(text='Congrats!')
 
 	await log_channel.send(embed=embed)
 
