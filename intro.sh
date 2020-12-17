@@ -4,7 +4,6 @@
 # Copyright 2020, [\] Developers and Contributors
 # SPDX-License-Identifier: AGPL-3.0-only
 
-# colors xd
 if [[ -t 1 ]]; then
 	LIGHTBLUE='\033[1;34m'
 	LIGHTCYAN='\033[1;36m'
@@ -14,8 +13,6 @@ else
 	LIGHTCYAN=''
 	NOCOLOR=''
 fi
-
-#export PYTHONPATH=discord.py:websockets/src
 
 while true; do
 	python3 main.py
