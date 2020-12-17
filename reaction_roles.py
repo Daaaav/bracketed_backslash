@@ -1,6 +1,6 @@
-"""
-GPLv3-only :^)
-"""
+# [\] Discord bot
+# Copyright 2020, [\] Developers and Contributors
+# SPDX-License-Identifier: AGPL-3.0-only
 
 import asyncio
 import datetime

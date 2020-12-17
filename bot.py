@@ -1,3 +1,7 @@
+# [\] Discord bot
+# Copyright 2020, [\] Developers and Contributors
+# SPDX-License-Identifier: AGPL-3.0-only
+
 # Fun side effect: main.py has a reference to bot.customcommands
 import customcommands  # pylint: disable=unused-import
 import datetime

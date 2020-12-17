@@ -1,3 +1,7 @@
+# [\] Discord bot
+# Copyright 2020, [\] Developers and Contributors
+# SPDX-License-Identifier: AGPL-3.0-only
+
 from PIL import Image
 
 barim = Image.open('img/bar.png')
