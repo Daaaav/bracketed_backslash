@@ -15,7 +15,7 @@ else
 fi
 
 while true; do
-	python3 main.py
+	python main.py
 	if [ $? -eq 4 ]; then
 		echo -e "${LIGHTBLUE}Bot exited with exit code ${LIGHTCYAN}$?${LIGHTBLUE}: kill command used!${NOCOLOR}" >&2
 		notify-send "[\\] has been stopped"
