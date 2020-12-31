@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # [\] Discord bot
-# Copyright 2020, [\] Developers and Contributors
+# Copyright 2021, [\] Developers and Contributors
 # SPDX-License-Identifier: AGPL-3.0-only
 
 if [[ -t 1 ]]; then
