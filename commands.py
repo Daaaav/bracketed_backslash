@@ -3850,6 +3850,7 @@ async def reactroles(client, message, **kwargs):
 		# Also enable the 'reaction_roles' config for this guild, otherwise it won't work
 		config.detach('reaction_roles', message.guild.id)
 		config.set_s('reaction_roles', True, message.guild.id)
+		config.saveconfig()
 
 		embed = emb.success(f'Successfully added reaction roles to {channel.mention}.')
 		await bot.reply(message, emb=embed)
