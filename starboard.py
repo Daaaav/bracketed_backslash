@@ -423,7 +423,7 @@ async def ensure_message_not_on_starboard(message=None, id=None, remove_slowly=F
 
 async def post_starboard_message(message, score, num_stars, num_nostars):
 	"""Post an announcement to the starboard for a not-yet-starboarded message"""
-	global cursor
+	global cursor, starboarding_messages
 
 	# What's this guild's starboard channel? There must be one.
 	starboard_chan = message.guild.get_channel(
@@ -456,6 +456,9 @@ async def post_starboard_message(message, score, num_stars, num_nostars):
 			).format(message.guild.name)
 		)
 		await message.add_reaction('🔑')
+
+		# Don't block the message permanently
+		starboarding_messages = list(filter(lambda m: m.id != message.id, starboarding_messages))
 
 async def edit_starboard_message(message, score, num_stars, num_nostars, starboard_message_id):
 	"""Edit a starboard announcement"""
