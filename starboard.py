@@ -449,6 +449,9 @@ async def post_starboard_message(message, score, num_stars, num_nostars):
 		)
 		db_commit()
 	except discord.errors.Forbidden:
+		# Don't block the message permanently
+		starboarding_messages = list(filter(lambda m: m.id != message.id, starboarding_messages))
+
 		logging.warning(
 			(
 				'Bot has no permission to send message to starboard on guild {}. '
@@ -456,9 +459,6 @@ async def post_starboard_message(message, score, num_stars, num_nostars):
 			).format(message.guild.name)
 		)
 		await message.add_reaction('🔑')
-
-		# Don't block the message permanently
-		starboarding_messages = list(filter(lambda m: m.id != message.id, starboarding_messages))
 
 async def edit_starboard_message(message, score, num_stars, num_nostars, starboard_message_id):
 	"""Edit a starboard announcement"""
