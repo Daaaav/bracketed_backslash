@@ -303,7 +303,7 @@ def remove_message(message_id: int) -> None:
 			WHERE message_id=?;
 			DELETE FROM reactroles_roles
 			WHERE message_id=?;
-		"""
+		""",
 		(message_id,),
 	)
 
