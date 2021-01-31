@@ -661,7 +661,7 @@ async def removeRestrictiveRoles(member, guild):
 		config.get_s('restrictiveroles', guild.id),
 	)
 
-async def givetakeroles(member, guild, giveids, takeids):
+async def givetakeroles(member, guild, giveids, takeids, reason=None):
 	badroles = [] # All the roles that are potentially deleted
 	removingtheseroles = [] # Roles that the user has which will be deleted
 	addingtheseroles = [] # Roles that the user doesn't have which will be added
@@ -687,13 +687,13 @@ async def givetakeroles(member, guild, giveids, takeids):
 		return
 	if addingtheseroles and removingtheseroles:
 		# Replace - luckily the union of these is this simple!
-		await member.edit(roles=addingtheseroles + otherroles)
+		await member.edit(roles=addingtheseroles + otherroles, reason=reason)
 	elif addingtheseroles:
 		# Only adding
-		await member.add_roles(*addingtheseroles)
+		await member.add_roles(*addingtheseroles, reason=reason)
 	else:
 		# Only removing
-		await member.remove_roles(*removingtheseroles)
+		await member.remove_roles(*removingtheseroles, reason=reason)
 
 async def editexpirymessage(cguild, thisexpiry):
 	# We want to edit a message to reflect the ban!
