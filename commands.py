@@ -1621,7 +1621,7 @@ async def _eval(client, message, **kwargs):
 		return
 	await bot.reply(message, content)
 
-@shadow(aliases=['serverban', 'unserverban'])
+@shadow(aliases=['serverban', 'unserverban', 'ban', 'unban'])
 async def kick(client, message, **kwargs):
 	targetmember = utils.match_input(message.guild.members, discord.Member, kwargs['arguments'])
 	try:
@@ -1632,14 +1632,14 @@ async def kick(client, message, **kwargs):
 				await bot.reply(message, emb=embed)
 				return
 			await targetmember.kick()
-		elif kwargs['command'] == 'serverban':
+		elif kwargs['command'] in ('serverban', 'ban'):
 			if not message.author.guild_permissions.ban_members and not kwargs['sudo']:
 				bot.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 				embed = emb.error(bot.t['you_no_permission'])
 				await bot.reply(message, emb=embed)
 				return
 			await targetmember.ban(delete_message_days=0)
-		elif kwargs['command'] == 'unserverban':
+		elif kwargs['command'] in ('unserverban', 'unban'):
 			if not message.author.guild_permissions.ban_members and not kwargs['sudo']:
 				bot.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 				embed = emb.error(bot.t['you_no_permission'])
