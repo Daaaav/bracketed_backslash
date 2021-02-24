@@ -3769,6 +3769,36 @@ async def reactroles(client, message, **kwargs):
 			roles.append(role)
 
 		embed = emb.info(
+			'Tell me the maximum amount of roles from this group that users can have at a time. Type `0` for no limit.\n'
+			'\n'
+			'This prompt times out in 5 minutes.'
+		)
+		await bot.reply(message, emb=embed)
+
+		try:
+			response = await client.wait_for(
+				'message',
+				check = lambda m: (m.author == message.author
+				and m.channel == message.channel),
+				timeout=300,
+			)
+		except asyncio.TimeoutError:
+			embed = emb.info('Timed out, closing prompt.')
+			await bot.reply(message, emb=embed)
+			return
+
+		try:
+			max_count = int(response.content)
+		except ValueError:
+			embed = emb.error(
+				'``{}`` is not a valid integer!'.format(
+					utils.wrapbackticks(response.content[:100])
+				)
+			)
+			await bot.reply(message, emb=embed)
+			return
+
+		embed = emb.info(
 			'Please reply with the channel you want the reaction roles message in.\n'
 			'\n'
 			'This prompt times out in 5 minutes.'
@@ -3840,6 +3870,7 @@ async def reactroles(client, message, **kwargs):
 					reaction_roles_message.id,
 					role.id,
 					emoji,
+					max_count,
 				)
 			)
 
