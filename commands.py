@@ -3891,3 +3891,22 @@ async def reactroles(client, message, **kwargs):
 			'Try `\\help reactroles` to know what arguments can be used.'
 		)
 		await bot.reply(message, emb=embed)
+
+@shadow(aliases=['emojis'], guildonly=True)
+async def emotes(client, message, **kwargs):
+	emoji_list = []
+
+	for emoji in message.guild.emojis:
+		emoji_list.append(str(emoji))
+
+	emojis = '\n'.join(emoji_list)
+
+	embed = discord.Embed(
+		title='Server emotes',
+		description=emojis,
+		colour=message.guild.me.colour,
+	)
+
+	utils.paginate_description(embed, max_length=2048)
+
+	await bot.reply(message, emb=embed)

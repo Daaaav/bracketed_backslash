@@ -133,6 +133,11 @@
 					"name": "reactroles",
 					"short": "Manages reaction roles.",
 					"extra": "To add a message with reaction roles, you\u2019ll first need to create a set of reaction roles, then either associate it with an existing message, or make the bot send one.\n\nYou can use the following options:\n`\\reactroles create` \u2013 Opens a prompt to create a set of reaction roles.\n`\\reactroles refresh <MESSAGE ID>` (UNIMPLEMENTED) \u2013 Clear all reactions from a given reaction roles message and re-react with new ones. This will not remove anyone\u2019s roles."
+				},
+				{
+					"name": "emotes",
+					"short": "List all emotes in the server.",
+					"extra": "Useful if you want to export the list of emotes elsewhere."
 				}
 			]
 		},
