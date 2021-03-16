@@ -3623,14 +3623,7 @@ async def reactroles(client, message, **kwargs):
 	splitargs = kwargs['arguments'].split(' ')
 	action = splitargs[0]
 
-	if action == 'create':
-		if (not checks.is_channel_manager(message.author)
-		or not checks.is_role_manager(message.author)) and not kwargs['sudo']:
-			embed = emb.error(bot.t['you_no_permission'])
-			utils.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
-			await bot.reply(message, emb=embed)
-			return
-
+	async def interactive_make_message() -> (list[discord.Role], list[discord.Emoji]):
 		embed = emb.info(
 			'First, react to this message with the emojis you want to use. Only '
 			'reactions made by you will be processed. (This is just to check that '
@@ -3767,6 +3760,23 @@ async def reactroles(client, message, **kwargs):
 				return
 
 			roles.append(role)
+
+		return roles, emojis
+
+	if action == 'create':
+		if (not checks.is_channel_manager(message.author)
+		or not checks.is_role_manager(message.author)) and not kwargs['sudo']:
+			embed = emb.error(bot.t['you_no_permission'])
+			utils.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
+			await bot.reply(message, emb=embed)
+			return
+
+		result = await interactive_make_message()
+
+		if result is None:
+			return
+
+		roles, emojis = result
 
 		embed = emb.info(
 			'Tell me the maximum amount of roles from this group that users can have at a time. Type `0` for no limit.\n'
