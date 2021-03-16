@@ -17,6 +17,7 @@ import tempfile
 import textwrap
 import time
 import traceback
+from typing import Optional
 
 import discord
 
@@ -3763,6 +3764,41 @@ async def reactroles(client, message, **kwargs):
 
 		return roles, emojis
 
+	async def post_message(
+		roles: list[discord.Role], emojis: list[discord.Emoji],
+	) -> Optional[discord.Message]:
+		reaction_roles_list = []
+		for role, emoji in zip(roles, emojis):
+			reaction_roles_list.append(f'{emoji} {role.name}')
+
+		embed = discord.Embed(
+			description='\n'.join(reaction_roles_list),
+		)
+		try:
+			reaction_roles_message = await channel.send(embed=embed)
+		except discord.errors.Forbidden:
+			embed = emb.error(f'I don’t have permission to post in {channel.mention}!')
+			await bot.reply(message, emb=embed)
+			return
+
+		for emoji in emojis:
+			try:
+				await reaction_roles_message.add_reaction(emoji)
+			except discord.errors.Forbidden:
+				embed = emb.error(f'I don’t have permission to react in {channel.mention}!')
+				await bot.reply(message, emb=embed)
+				return
+			except discord.errors.NotFound:
+				embed = emb.error(f':{emoji.name}: got deleted!')
+				await bot.reply(message, emb=embed)
+				return
+			except discord.errors.HTTPException:
+				embed = emb.error('Somehow there are too many reactions on my reaction roles message?')
+				await bot.reply(message, emb=embed)
+				return
+
+		return reaction_roles_message
+
 	if action == 'create':
 		if (not checks.is_channel_manager(message.author)
 		or not checks.is_role_manager(message.author)) and not kwargs['sudo']:
@@ -3837,35 +3873,10 @@ async def reactroles(client, message, **kwargs):
 			await bot.reply(message, emb=embed)
 			return
 
-		reaction_roles_list = []
-		for role, emoji in zip(roles, emojis):
-			reaction_roles_list.append(f'{emoji} {role.name}')
+		success = await post_message(roles, emojis)
 
-		embed = discord.Embed(
-			description='\n'.join(reaction_roles_list),
-		)
-		try:
-			reaction_roles_message = await channel.send(embed=embed)
-		except discord.errors.Forbidden:
-			embed = emb.error(f'I don’t have permission to post in {channel.mention}!')
-			await bot.reply(message, emb=embed)
+		if not success:
 			return
-
-		for emoji in emojis:
-			try:
-				await reaction_roles_message.add_reaction(emoji)
-			except discord.errors.Forbidden:
-				embed = emb.error(f'I don’t have permission to react in {channel.mention}!')
-				await bot.reply(message, emb=embed)
-				return
-			except discord.errors.NotFound:
-				embed = emb.error(f':{emoji.name}: got deleted!')
-				await bot.reply(message, emb=embed)
-				return
-			except discord.errors.HTTPException:
-				embed = emb.error('Somehow there are too many reactions on my reaction roles message?')
-				await bot.reply(message, emb=embed)
-				return
 
 		# Actually add the reaction roles now
 		batch = []
