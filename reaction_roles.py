@@ -5,8 +5,9 @@
 import asyncio
 import dataclasses
 import datetime
+import random
 import sqlite3
-from typing import Sequence, Tuple, Union
+from typing import Union
 
 import discord
 
@@ -52,10 +53,14 @@ def db_load() -> None:
 	# guild_id isn't stored, if you're querying the database you should have already checked
 	# if the guild has reaction roles enabled in the first place
 	cursor.executescript("""
-			CREATE TABLE IF NOT EXISTS 'reactroles_messages' (
-				'message_id' INTEGER PRIMARY KEY NOT NULL,
+			CREATE TABLE IF NOT EXISTS 'reactroles_groups' (
+				'group_id' INTEGER PRIMARY KEY NOT NULL,
 				'channel_id' INTEGER NOT NULL,
 				'max_count' INTEGER NOT NULL
+			);
+			CREATE TABLE IF NOT EXISTS 'reactroles_messages' (
+				'message_id' INTEGER PRIMARY KEY NOT NULL,
+				'group_id' INTEGER NOT NULL
 			);
 			CREATE TABLE IF NOT EXISTS 'reactroles_roles' (
 				'message_id' INTEGER NOT NULL,
@@ -72,18 +77,37 @@ def db_commit() -> None:
 
 	connection.commit()
 
-def db_get_messages(channel_id: int) -> list:
+def db_get_groups(channel_id: int) -> list:
 	global cursor
 
 	cursor.execute("""
-			SELECT message_id, max_count
-			FROM reactroles_messages
+			SELECT group_id, max_count
+			FROM reactroles_groups
 			WHERE channel_id=?
 		""",
 		(channel_id,),
 	)
 
 	return cursor.fetchall()
+
+def db_get_messages(channel_id: int) -> list[int]:
+	global cursor
+
+	groups = db_get_groups(channel_id)
+
+	messages = []
+
+	for group_id, _ in groups:
+		cursor.execute("""
+				SELECT message_id
+				FROM reactroles_messages
+				WHERE group_id=?
+			""",
+			(group_id,),
+		)
+		messages += [tuple_[0] for tuple_ in cursor.fetchall()]
+
+	return messages
 
 def db_get_entries(message_id: int) -> list:
 	global cursor
@@ -97,6 +121,73 @@ def db_get_entries(message_id: int) -> list:
 	)
 
 	return cursor.fetchall()
+
+def db_get_group_id(message_id: int) -> int:
+	global cursor
+
+	cursor.execute("""
+			SELECT group_id
+			FROM reactroles_messages
+			WHERE message_id=?
+		""",
+		(message_id,),
+	)
+
+	result = [tuple_[0] for tuple_ in cursor.fetchall()]
+
+	assert len(result) == 1
+	assert isinstance(result[0], int)
+
+	return result[0]
+
+def db_get_max_count(group_id: int) -> int:
+	global cursor
+
+	cursor.execute("""
+			SELECT max_count
+			FROM reactroles_groups
+			WHERE group_id=?
+		""",
+		(group_id,),
+	)
+
+	result = [tuple_[0] for tuple_ in cursor.fetchall()]
+
+	assert len(result) == 1
+	assert isinstance(result[0], int)
+
+	return result[0]
+
+def db_get_group_entries(group_id: int) -> list:
+	global cursor
+
+	cursor.execute("""
+			SELECT message_id
+			FROM reactroles_messages
+			WHERE group_id=?
+		""",
+		(group_id,),
+	)
+
+	message_ids = [tuple_[0] for tuple_ in cursor.fetchall()]
+
+	retval = []
+
+	for message_id in message_ids:
+		cursor.execute("""
+				SELECT *
+				FROM reactroles_roles
+				WHERE message_id=?
+			""",
+			(message_id,),
+		)
+
+		entries = cursor.fetchall()
+
+		for entry in entries:
+			retval.append((message_id,) + entry)
+
+	return retval
 
 
 # Event handling
@@ -130,11 +221,13 @@ async def check_message(
 	# Query database, is this message one of the messages we're looking for?
 	result = db_get_messages(channel.id)
 
-	entry = discord.utils.find(lambda i: i[0] == payload.message_id, result)
+	entry = discord.utils.find(lambda i: i == payload.message_id, result)
 	if entry is None:
 		return
 
-	max_count = int(entry[1])
+	# Get max count, requires knowing the group ID
+	group_id = db_get_group_id(payload.message_id)
+	max_count = db_get_max_count(group_id)
 
 	# Make another query, to check the emoji (also checks message ID first)
 	entries = db_get_entries(payload.message_id)
@@ -202,7 +295,8 @@ async def check_message(
 	reason = f'Member’s reaction to message with reaction roles was removed in #{channel.name}'
 	if adding:
 		if max_count > 0:
-			role_ids = [this_role_id for _, this_role_id, _, _ in entries]
+			group_entries = db_get_group_entries(group_id)
+			role_ids = [this_role_id for _, _, this_role_id, _, _ in group_entries]
 
 			already_role_ids = set()
 
@@ -246,7 +340,7 @@ async def check_message(
 				except (discord.Forbidden, discord.NotFound):
 					pass
 
-			for _, this_role_id, unicode_emoji, custom_emoji_id in entries:
+			for this_message_id, _, this_role_id, unicode_emoji, custom_emoji_id in group_entries:
 				assert utils.mutually_exclusive(unicode_emoji, custom_emoji_id)
 				if this_role_id in remove_roles:
 					if unicode_emoji is not None:
@@ -257,7 +351,7 @@ async def check_message(
 						# We don't care about the name so we'll just give it this one
 						emoji = 'a:{}'.format(custom_emoji_id)
 
-					message = channel.get_partial_message(payload.message_id)
+					message = channel.get_partial_message(this_message_id)
 
 					dispatch.run(
 						wrapper.client,
@@ -357,6 +451,7 @@ async def check_message(
 	if member.id in cooldown and cooldown[member.id] < datetime.datetime.now():
 		del cooldown[member.id]
 
+# TODO: This function is unused, group IDs need to be added to it
 def add_reaction_role(
 	*, channel_id: int, message_id: int, role_id: int, emoji: Union[str, int], max_count: int
 ) -> bool:
@@ -410,23 +505,30 @@ def add_reaction_role(
 
 	return True
 
-def add_reaction_roles(batch: Sequence[
-		Tuple[int, int, int, Union[str, int], int]
-	]
+def add_reaction_group(
+	batch: list[
+		tuple[int, int, Union[str, int]]
+	],
+	*,
+	channel_id: int,
+	max_count: int,
 ) -> None:
 	"""Add a batch of reaction roles at once. `batch` is a sequence of tuples, each tuple
-	containing (in this order) the channel ID, message ID, role ID, and emoji. The emoji is
-	either a string for Unicode, or an int of the ID of the custom emoji. Entries that already
-	exist will be silently ignored.
+	containing (in this order) the message ID, role ID, and emoji. The emoji is either a
+	string for Unicode, or an int of the ID of the custom emoji. Entries that already exist
+	will be silently ignored.
 	"""
 	global cursor
 	register_messages = []
 	register_entries = []
 
-	for channel_id, message_id, role_id, emoji, max_count in batch:
+	# Just take the ID of the first message
+	group_id = batch[0][0]
+
+	for message_id, role_id, emoji in batch:
 		# Duplicate entries will be ignored anyway, so don't bother checking them
 		register_messages.append(
-			(message_id, channel_id, max_count)
+			(message_id, group_id)
 		)
 		custom = isinstance(emoji, int)
 		unicode = isinstance(emoji, str)
@@ -439,11 +541,20 @@ def add_reaction_roles(batch: Sequence[
 			(message_id, role_id, insert_unicode, insert_custom)
 		)
 
-	cursor.executemany("""
-			INSERT OR IGNORE INTO reactroles_messages
-			(message_id, channel_id, max_count)
+	cursor.execute("""
+			INSERT OR IGNORE INTO reactroles_groups
+			(group_id, channel_id, max_count)
 			VALUES
 			(?, ?, ?)
+		""",
+		(group_id, channel_id, max_count)
+	)
+
+	cursor.executemany("""
+			INSERT OR IGNORE INTO reactroles_messages
+			(message_id, group_id)
+			VALUES
+			(?, ?)
 		""",
 		register_messages,
 	)

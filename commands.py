@@ -3626,7 +3626,7 @@ async def reactroles(client, message, **kwargs):
 
 	async def interactive_make_message() -> (list[discord.Role], list[discord.Emoji]):
 		embed = emb.info(
-			'First, react to this message with the emojis you want to use. Only '
+			'React to this message with the emojis you want to use. Only '
 			'reactions made by you will be processed. (This is just to check that '
 			'those are valid emojis and for Discord’s reaction limit. You’ll specify '
 			'the roles later.)\n'
@@ -3718,7 +3718,7 @@ async def reactroles(client, message, **kwargs):
 			emojis.append(emoji)
 
 		embed = emb.info(
-			'Next, type in the names of each role for each emoji, on each line, in one '
+			'Type in the names of each role for each emoji, on each line, in one '
 			'message. IDs will work too. Example:\n'
 			'```\n'
 			'Role 1\n'
@@ -3807,12 +3807,39 @@ async def reactroles(client, message, **kwargs):
 			await bot.reply(message, emb=embed)
 			return
 
-		result = await interactive_make_message()
+		entries = []
 
-		if result is None:
-			return
+		while True:
+			result = await interactive_make_message()
 
-		roles, emojis = result
+			if result is None:
+				return
+
+			entries.append(result)
+
+			embed = emb.info(
+				'Do you need another message of reaction roles? (Use this if you’ve hit the limit on the amount of reactions a single Discord message can have.) Type `yes` if so.\n'
+				'\n'
+				'This prompt times out in 5 minutes.'
+			)
+			await bot.reply(message, emb=embed)
+
+			try:
+				response = await client.wait_for(
+					'message',
+					check = lambda m: (m.author == message.author
+					and m.channel == message.channel),
+					timeout=300,
+				)
+			except asyncio.TimeoutError:
+				embed = emb.info('Timed out, closing prompt.')
+				await bot.reply(message, emb=embed)
+				return
+
+			if response.content.lower() == 'yes':
+				continue
+
+			break
 
 		embed = emb.info(
 			'Tell me the maximum amount of roles from this group that users can have at a time. Type `0` for no limit.\n'
@@ -3873,29 +3900,32 @@ async def reactroles(client, message, **kwargs):
 			await bot.reply(message, emb=embed)
 			return
 
-		success = await post_message(roles, emojis)
-
-		if not success:
-			return
-
-		# Actually add the reaction roles now
 		batch = []
-		for role, emoji in zip(roles, emojis):
-			if hasattr(emoji, 'id'):
-				# Custom
-				emoji = emoji.id
 
-			batch.append(
-				(
-					reaction_roles_message.channel.id,
-					reaction_roles_message.id,
-					role.id,
-					emoji,
-					max_count,
+		for roles, emojis in entries:
+			reaction_roles_message = await post_message(roles, emojis)
+
+			if reaction_roles_message is None:
+				return
+
+			for role, emoji in zip(roles, emojis):
+				if hasattr(emoji, 'id'):
+					# Custom
+					emoji = emoji.id
+
+				batch.append(
+					(
+						reaction_roles_message.id,
+						role.id,
+						emoji,
+					)
 				)
-			)
 
-		reaction_roles.add_reaction_roles(batch)
+		reaction_roles.add_reaction_group(
+			batch,
+			channel_id=channel.id,
+			max_count=max_count
+		)
 
 		reaction_roles.db_commit()
 
