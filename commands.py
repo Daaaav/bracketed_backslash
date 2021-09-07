@@ -3961,3 +3961,29 @@ async def emotes(client, message, **kwargs):
 	utils.paginate_description(embed, max_length=2048)
 
 	await bot.reply(message, emb=embed)
+
+@shadow()
+async def randwiki(client, message, **kwargs):
+	try:
+		import wikipedia
+	except ModuleNotFoundError:
+		embed = emb.error(
+			'The bot host doesn’t have the `wikipedia` library installed. '
+			'Please contact them to install it!'
+		)
+		return await bot.reply(message, emb=embed)
+
+	# Originally from github.com/TRottinger/discord-randomify
+	# Originally licensed under MIT
+	page = wikipedia.random(1)
+
+	try:
+		info = wikipedia.page(page)
+	except wikipedia.DisambiguationError as e:
+		info = wikipedia.page(random.choice(e.options))
+
+	embed = discord.Embed(title='Random Wikipedia Article', colour=discord.Colour.orange())
+	embed.add_field(name=info.original_title, value=info.url, inline=False)
+	embed.add_field(name='Summary', value=info.summary, inline=False)
+
+	await bot.reply(message, emb=embed)
