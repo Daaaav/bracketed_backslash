@@ -3962,7 +3962,7 @@ async def emotes(client, message, **kwargs):
 
 	await bot.reply(message, emb=embed)
 
-@shadow()
+@shadow(aliases=['rw'])
 async def randwiki(client, message, **kwargs):
 	try:
 		import wikipedia
