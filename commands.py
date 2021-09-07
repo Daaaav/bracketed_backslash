@@ -3984,6 +3984,6 @@ async def randwiki(client, message, **kwargs):
 
 	embed = discord.Embed(title='Random Wikipedia Article', colour=discord.Colour.orange())
 	embed.add_field(name=info.original_title, value=info.url, inline=False)
-	embed.add_field(name='Summary', value=info.summary, inline=False)
+	embed.add_field(name='Summary', value=info.summary[:1024], inline=False)
 
 	await bot.reply(message, emb=embed)
