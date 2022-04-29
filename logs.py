@@ -744,8 +744,7 @@ async def log_updated_role_hierarchy(
 			)
 
 		new_log += generation_string.format(
-			name=utils.mdspecialchars(ev_new.name),
-			id=ev_new.id,
+			info=utils.obj_info(ev_new),
 			trailing_space=tmp_delta,
 		)
 
