@@ -1278,7 +1278,15 @@ async def log_updated_uncached_message(
 ) -> None:
 	"""Log an updated uncached message."""
 
-	author = channel.guild.get_member(int(payload.data['author']['id']))
+	if 'author' in payload.data:
+		author = channel.guild.get_member(int(payload.data['author']['id']))
+		author_id = author.id
+		embed_colour = author.colour
+	else:
+		author = None
+		author_id = None
+		embed_colour = None
+
 	embed = discord.Embed(
 		title=(
 			'UNCACHED MESSAGE UPDATED (SENT {reltime}'
@@ -1293,12 +1301,13 @@ async def log_updated_uncached_message(
 			),
 		),
 		description=payload.data['content'],
-		colour=author.colour,
+		colour=embed_colour,
 	)
-	embed.set_author(
-		name=author.display_name,
-		icon_url=author.avatar_url,
-	)
+	if author is not None:
+		embed.set_author(
+			name=author.display_name,
+			icon_url=author.avatar_url,
+		)
 	embed.add_field(
 		name='Pinned',
 		value='Yes' if payload.data['pinned'] else 'No',
@@ -1322,7 +1331,7 @@ async def log_updated_uncached_message(
 			' I can’t give you its older properties.'
 		)
 	)
-	embed.set_footer(text=utils.id_summary(uid=author.id, mid=payload.data['id']))
+	embed.set_footer(text=utils.id_summary(uid=author_id, mid=payload.data['id']))
 	utils.embed_manual_jump_link(embed, gid=channel.guild.id, cid=channel.id, mid=payload.data['id'])
 	await log_channel.send(embed=embed)
 
