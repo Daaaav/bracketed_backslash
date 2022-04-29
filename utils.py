@@ -813,12 +813,13 @@ async def newmemberroles(member, specialchannel, bypassjoinchannel):
 		# Are they in our database of members which had roles before?
 		if not bypassjoinchannel and member.id in wrapper.memberroles[member.guild.id]:
 			addingtheseroles = []
-			# They're found in the database! Give them the groups they should have
+			# They're found in the database! Give them the roles they should have
 			for rid in wrapper.memberroles[member.guild.id][member.id]:
 				addingrole = discord.utils.get(member.guild.roles, id=rid)
-				if addingrole.is_default():
-					continue
-				addingtheseroles.append(addingrole)
+				if addingrole is not None:
+					if addingrole.is_default():
+						continue
+					addingtheseroles.append(addingrole)
 			await member.add_roles(*addingtheseroles)
 			content = '<@!{id}> ({id}) found in the role cache\n'.format(id=member.id)
 			value = '_{} role'.format(str(len(addingtheseroles)))
