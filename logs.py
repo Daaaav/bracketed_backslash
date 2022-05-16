@@ -1286,6 +1286,11 @@ async def log_updated_uncached_message(
 		author_id = None
 		embed_colour = None
 
+	if 'content' in payload.data:
+		content = payload.data['content']
+	else:
+		content = '_(unknown content)_'
+
 	embed = discord.Embed(
 		title=(
 			'UNCACHED MESSAGE UPDATED (SENT {reltime}'
@@ -1295,11 +1300,11 @@ async def log_updated_uncached_message(
 			channel,
 			reltime=utils.reltime(
 				time.mktime(
-					discord.utils.parse_time(payload.data['timestamp']).timetuple(),
+					discord.utils.snowflake_time(payload.data['id']).timetuple(),
 				)
 			),
 		),
-		description=payload.data['content'],
+		description=content,
 		colour=embed_colour,
 	)
 	if author is not None:
@@ -1307,22 +1312,25 @@ async def log_updated_uncached_message(
 			name=author.display_name,
 			icon_url=author.avatar_url,
 		)
-	embed.add_field(
-		name='Pinned',
-		value='Yes' if payload.data['pinned'] else 'No',
-	)
-	embed.add_field(
-		name='TTS',
-		value='Yes' if payload.data['tts'] else 'No',
-	)
-	embed.add_field(
-		name='Rich Embed',
-		value=(
-			'``{}``'.format(utils.wrapbackticks(str(payload.data['embeds']['rich'])))
-			if 'rich' in payload.data['embeds']
-			else '(none)'
-		),
-	)
+	if 'pinned' in payload.data:
+		embed.add_field(
+			name='Pinned',
+			value='Yes' if payload.data['pinned'] else 'No',
+		)
+	if 'tts' in payload.data:
+		embed.add_field(
+			name='TTS',
+			value='Yes' if payload.data['tts'] else 'No',
+		)
+	if 'embeds' in payload.data:
+		embed.add_field(
+			name='Rich Embed',
+			value=(
+				'``{}``'.format(utils.wrapbackticks(str(payload.data['embeds']['rich'])))
+				if 'rich' in payload.data['embeds']
+				else '(none)'
+			),
+		)
 	embed.add_field(
 		name='\u200b',
 		value=(
