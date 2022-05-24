@@ -79,6 +79,9 @@ async def handle_delete_overedited_message(msg, schan):
 		if i < (int(time.time())-30):
 			wrapper.minutemessageedits[msg.id].remove(i)
 
+	if msg.author == wrapper.client.user or msg.author.bot:
+		return
+
 	if len(wrapper.minutemessageedits[msg.id]) >= 5:
 		# Ok, that's enough editing.
 		try:
