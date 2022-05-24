@@ -1300,7 +1300,7 @@ async def log_updated_uncached_message(
 			channel,
 			reltime=utils.reltime(
 				time.mktime(
-					discord.utils.snowflake_time(payload.data['id']).timetuple(),
+					discord.utils.snowflake_time(int(payload.data['id'])).timetuple(),
 				)
 			),
 		),
