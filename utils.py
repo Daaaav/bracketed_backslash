@@ -15,6 +15,7 @@ from typing import Tuple
 
 import discord
 
+import blackholechannel
 import bot
 import checks
 import config
@@ -486,8 +487,12 @@ def listroles_id(lijst):
 
 def getspecialchannel(guild):
 	theconfig = int(config.get_s('specialchannel', guild.id))
+	chan = None
 	if theconfig != 0:
-		return wrapper.client.get_channel(id=theconfig)
+		chan = wrapper.client.get_channel(id=theconfig)
+	if chan is None:
+		return blackholechannel.BlackHoleChannel(theconfig)
+	return chan
 
 def getspecialchannel_reply(message):
 	if message.guild is None:
