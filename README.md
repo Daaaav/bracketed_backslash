@@ -32,8 +32,8 @@ username and password every time, not just when cloning the repository.
 Make sure to `chmod +x main.py` if you want to make sure the bot can restart
 with `\restart`.
 
-After that, you start the bot by doing `./intro.sh` (if you did
-`chmod +x intro.sh`) or `bash intro.sh` or `sh intro.sh`.
+After that, you start the bot by doing `./run.sh` (if you did
+`chmod +x run.sh`) or `bash run.sh` or `sh run.sh`.
 # Configuration
 Since this started as a private bot, the variables are pretty much hard-written
 into the bot scripts themselves. But all of the hardcode variables are Discord
