@@ -51,7 +51,7 @@ def recursive_reload(module, *, include=None):
 logging.basicConfig(level=logging.INFO)
 
 with open('bot_token.conf', 'r') as f:
-	token = f.readline(60).split('\n')[0]
+	token = f.readline().strip()
 
 if __name__ == '__main__':
 	wrapper.client.run(token)
