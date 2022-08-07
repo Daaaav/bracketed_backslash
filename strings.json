@@ -138,6 +138,11 @@
 					"name": "emotes",
 					"short": "List all emotes in the server.",
 					"extra": "Useful if you want to export the list of emotes elsewhere."
+				},
+				{
+					"name": "temperature",
+					"short": "Convert temperature between Celsius and Fahrenheit.",
+					"extra": ""
 				}
 			]
 		},
