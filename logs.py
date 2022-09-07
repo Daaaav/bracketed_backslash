@@ -474,7 +474,7 @@ async def log_joined_member(
 	# Figure out which invite the member joined with
 	if has_guild_invites:
 		if guild.id not in wrapper.inv_cache:
-			wrapper.inv_cache[guild.id] = {}
+			wrapper.inv_cache[guild.id] = []
 
 		all_invites = utils.invite_diff(wrapper.inv_cache[guild.id], all_invites)
 
