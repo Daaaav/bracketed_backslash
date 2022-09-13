@@ -489,7 +489,7 @@ def getspecialchannel(guild):
 	theconfig = int(config.get_s('specialchannel', guild.id))
 	chan = None
 	if theconfig != 0:
-		chan = wrapper.client.get_channel(id=theconfig)
+		chan = wrapper.client.get_channel(theconfig)
 	if chan is None:
 		return blackholechannel.BlackHoleChannel(theconfig)
 	return chan
