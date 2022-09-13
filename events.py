@@ -656,17 +656,17 @@ async def on_member_remove(member):
 	reason = ''
 
 	try:
-		async for entry in guild.audit_logs(
+		entries = [entry async for entry in guild.audit_logs(
 			# Apparently this parameter is fucked on Discord's end currently
 			#after=datetime.datetime.now() - datetime.timedelta(seconds=2),
 			oldest_first=False,
-		).filter(
-			# Can't grab more than one type of action when making the request
-			# so we'll have to filter it ourselves
-			lambda e: e.action in (
-				discord.AuditLogAction.kick, # TODO: discord.AuditLogAction.ban
-			),
-		):
+		)
+		# Can't grab more than one type of action when making the request
+		# so we'll have to filter it ourselves
+		if entry.action in (
+			discord.AuditLogAction.kick, # TODO: discord.AuditLogAction.ban
+		)]
+		for entry in entries:
 			# Can't filter out entries AFTER a certain point in time
 			# because the endpoint is fucked
 			# so we'll have to, hurr durr, filter it ourselves
