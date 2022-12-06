@@ -983,16 +983,18 @@ async def log_changed_guild_icon(
 	"""Log a changed guild icon."""
 
 	embed = discord.Embed(description='Server changed icon')
-	embed.set_thumbnail(url=old.icon_url)
+	if old.icon is not None:
+		embed.set_thumbnail(url=old.icon.url)
 	embed.add_field(
-		name='Older Icon URL: None' if old.icon_url == '' else 'Older Icon URL (Thumbnail)',
-		value='No Older Icon URL' if old.icon_url == '' else old.icon_url,
+		name='Older Icon URL: None' if old.icon is None else 'Older Icon URL (Thumbnail)',
+		value='No Older Icon URL' if old.icon is None else old.icon.url,
 	)
 	embed.add_field(
-		name='Newer Icon URL: None' if new.icon_url == '' else 'Newer Icon URL (Inset Image)',
-		value='No Newer Icon URL' if new.icon_url == '' else new.icon_url,
+		name='Newer Icon URL: None' if new.icon is None else 'Newer Icon URL (Inset Image)',
+		value='No Newer Icon URL' if new.icon is None else new.icon.url,
 	)
-	embed.set_image(url=new.icon_url)
+	if new.icon is not None:
+		embed.set_image(url=new.icon.url)
 	await log_channel.send(embed=embed)
 
 async def log_renamed_guild(
@@ -1001,7 +1003,8 @@ async def log_renamed_guild(
 	"""Log a renamed guild."""
 
 	embed = discord.Embed(description='Server changed name')
-	embed.set_thumbnail(url=new.icon_url)
+	if new.icon is not None:
+		embed.set_thumbnail(url=new.icon.url)
 	embed.add_field(name='Older Name', value=utils.mdspecialchars(old.name))
 	embed.add_field(name='Newer Name', value=utils.mdspecialchars(new.name))
 	await log_channel.send(embed=embed)
@@ -1012,7 +1015,8 @@ async def log_changed_guild_voice_region(
 	"""Log a changed guild voice region."""
 
 	embed = discord.Embed(description='VOICE REGION CHANGE')
-	embed.set_thumbnail(url=new.icon_url)
+	if new.icon is not None:
+		embed.set_thumbnail(url=new.icon.url)
 	embed.add_field(name='Older Region', value=str(old.region))
 	embed.add_field(name='Newer Region', value=str(new.region))
 	await log_channel.send(embed=embed)
@@ -1027,7 +1031,8 @@ async def log_changed_guild_afk_timeout(
 	a_m, a_s = divmod(new.afk_timeout, 60)
 	a_h, a_s = divmod(a_m, 60)
 	embed = discord.Embed(description='AFK TIMEOUT CHANGE')
-	embed.set_thumbnail(url=new.icon_url)
+	if new.icon is not None:
+		embed.set_thumbnail(url=new.icon.url)
 	embed.add_field(
 		name='Older Timeout',
 		value='{h}h {m}m {s}s'.format(h=b_h, m=b_m, s=b_s),
@@ -1044,7 +1049,8 @@ async def log_changed_guild_afk_channel(
 	"""Log a changed AFK channel."""
 
 	embed = discord.Embed(description='AFK CHANNEL CHANGE')
-	embed.set_thumbnail(url=new.icon_url)
+	if new.icon is not None:
+		embed.set_thumbnail(url=new.icon.url)
 	embed.add_field(
 		name='Older Channel: None' if old.afk_channel is None else 'Older Channel',
 		value='No Older Channel' if old.afk_channel is None else utils.obj_info(old.afk_channel),
@@ -1061,7 +1067,8 @@ async def log_changed_guild_verification_level(
 	"""Log a changed verification level."""
 
 	embed = discord.Embed(description='VERIFICATION LEVEL CHANGE')
-	embed.set_thumbnail(url=new.icon_url)
+	if new.icon is not None:
+		embed.set_thumbnail(url=new.icon.url)
 	embed.add_field(
 		name='Older Level',
 		value=str(old.verification_level).title(),

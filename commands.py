@@ -604,10 +604,8 @@ async def findc(client, message, **kwargs):
 		vchans = '_(none)_' if not vchans else vchans
 
 		em = discord.Embed(colour=message.guild.me.colour)
-		try:
-			em.set_thumbnail(url=message.guild.icon_url)
-		except TypeError:
-			pass
+		if message.guild.icon is not None:
+			em.set_thumbnail(url=message.guild.icon.url)
 
 		utils.paginate_field(em, max_length=1024,
 			name='Text Channels ({0})'.format(tchanc),
@@ -633,10 +631,8 @@ async def findc(client, message, **kwargs):
 		readbleby += 1 if tgt.permissions_for(i).read_messages else 0
 
 	em = discord.Embed(description='Matched ' + tgt.mention, colour=message.guild.me.colour)
-	try:
-		em.set_thumbnail(url=message.guild.icon_url)
-	except TypeError:
-		pass
+	if message.guild.icon is not None:
+		em.set_thumbnail(url=message.guild.icon.url)
 	em.add_field(name='Name', value=utils.mdspecialchars(tgt.name))
 	em.add_field(name='ID', value=tgt.id)
 	em.add_field(name='Type', value=type(tgt).__name__)
@@ -1681,10 +1677,8 @@ async def bans(client, message, **kwargs):
 		description=ulist,
 		colour=col.r_success,
 	)
-	try:
-		embed.set_thumbnail(url=message.guild.icon_url)
-	except TypeError:
-		pass
+	if message.guild.icon is not None:
+		embed.set_thumbnail(url=message.guild.icon.url)
 
 	utils.paginate_description(embed=embed, max_length=2048)
 

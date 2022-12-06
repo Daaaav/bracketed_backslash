@@ -1135,7 +1135,8 @@ async def on_guild_join(guild):
 		description=utils.obj_info(guild),
 		colour=wrapper.client.get_guild(op_ids.ids['opguild']).me.colour,
 	)
-	em.set_image(url=guild.icon_url)
+	if guild.icon is not None:
+		em.set_image(url=guild.icon.url)
 	await wrapper.client.get_channel(op_ids.ids['opguild_chans']['bot_guilds']).send(embed=em)
 
 async def on_guild_remove(guild):
@@ -1144,7 +1145,8 @@ async def on_guild_remove(guild):
 		description=utils.obj_info(guild),
 		colour=wrapper.client.get_guild(op_ids.ids['opguild']).me.colour,
 	)
-	em.set_image(url=guild.icon_url)
+	if guild.icon is not None:
+		em.set_image(url=guild.icon.url)
 	await wrapper.client.get_channel(op_ids.ids['opguild_chans']['bot_guilds']).send(embed=em)
 
 async def on_error(event_name, *args, **kwargs):
