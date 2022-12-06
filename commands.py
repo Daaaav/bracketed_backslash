@@ -554,7 +554,6 @@ async def findu(client, message, **kwargs):
 	embed.add_field(name=displaygamestatus, value=displaygamename)
 	embed.add_field(name=displaygameurlstatus, value=displaygameurl)
 	embed.add_field(name='Status', value='Do Not Disturb' if str(targetmember.status) == 'dnd' else str(targetmember.status).title())
-	embed.add_field(name='Default Avatar', value=str(targetmember.default_avatar).title())
 	embed.add_field(
 		name='Joined Server At',
 		value=time.strftime(
