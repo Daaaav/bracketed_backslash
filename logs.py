@@ -40,7 +40,7 @@ async def log_deleted_message(log_channel: discord.TextChannel, message: discord
 
 	embed.set_author(
 		name=message.author.display_name,
-		icon_url=message.author.avatar_url,
+		icon_url=message.author.display_avatar.url,
 	)
 
 	embed.add_field(
@@ -99,7 +99,7 @@ async def log_pinned_message(log_channel: discord.TextChannel, message: discord.
 	)
 	embed.set_author(
 		name=message.author.display_name,
-		icon_url=message.author.avatar_url,
+		icon_url=message.author.display_avatar.url,
 	)
 	embed.set_footer(
 		text=utils.id_summary(uid=message.author.id, mid=message.id, cid=message.channel.id),
@@ -122,7 +122,7 @@ async def log_unpinned_message(log_channel: discord.TextChannel, message: discor
 	)
 	embed.set_author(
 		name=message.author.display_name,
-		icon_url=message.author.avatar_url,
+		icon_url=message.author.display_avatar.url,
 	)
 	embed.set_footer(
 		text=utils.id_summary(uid=message.author.id, mid=message.id, cid=message.channel.id),
@@ -151,7 +151,7 @@ async def log_deleted_embed(
 	)
 	embed.set_author(
 		name=message.author.display_name,
-		icon_url=message.author.avatar_url,
+		icon_url=message.author.display_avatar.url,
 	)
 
 	if message.content:
@@ -194,7 +194,7 @@ async def log_edited_message(
 	)
 	embed.set_author(
 		name=new.author.display_name,
-		icon_url=new.author.avatar_url,
+		icon_url=new.author.display_avatar.url,
 	)
 
 	if old.content:
@@ -230,7 +230,7 @@ async def log_changed_nickname(
 		timestamp=datetime.datetime.now(),
 	)
 
-	embed.set_author(name=new.name, icon_url=new.avatar_url)
+	embed.set_author(name=new.name, icon_url=new.display_avatar.url)
 
 	if old.nick is None:
 		embed.add_field(name='No Older Nickname', value='\u200b')
@@ -289,7 +289,7 @@ async def log_updated_roles(
 		)
 		embed.set_author(
 			name=new.display_name,
-			icon_url=new.avatar_url,
+			icon_url=new.display_avatar.url,
 		)
 		embed.add_field(
 			name=('Added role' if boosteradd else 'Removed role'),
@@ -342,7 +342,7 @@ async def log_updated_roles(
 
 		embed.set_author(
 			name=new.display_name,
-			icon_url=new.avatar_url,
+			icon_url=new.display_avatar.url,
 		)
 		embed.set_footer(text=utils.id_summary(uid=new.id, rid=roleid))
 
@@ -386,7 +386,7 @@ async def log_changed_tag(
 
 	embed.set_author(
 		name=new.display_name,
-		icon_url=new.avatar_url,
+		icon_url=new.display_avatar.url,
 	)
 
 	embed.add_field(name='Older Username', value=utils.mdspecialchars(old.name))
@@ -417,10 +417,10 @@ async def log_changed_avatar(
 
 	if not old.avatar and new.avatar:
 		title='\N{BUSTS IN SILHOUETTE}\N{UPWARDS BLACK ARROW}ADDED AVATAR'
-		desc=new.avatar
+		desc=new.avatar.key
 	elif old.avatar and not new.avatar:
 		title='\N{BUSTS IN SILHOUETTE}\N{NO ENTRY SIGN}REMOVED AVATAR'
-		desc=old.avatar
+		desc=old.avatar.key
 	else:
 		title=(
 			'\N{BUSTS IN SILHOUETTE}'
@@ -437,22 +437,22 @@ async def log_changed_avatar(
 		timestamp=datetime.datetime.now(),
 	)
 
-	embed.set_author(name=new.display_name, icon_url=new.avatar_url)
+	embed.set_author(name=new.display_name, icon_url=new.display_avatar.url)
 
 	if not old.avatar and new.avatar:
-		embed.set_image(url=new.avatar_url)
+		embed.set_image(url=new.display_avatar.url)
 	elif old.avatar and not new.avatar:
-		embed.set_image(url=old.avatar_url)
+		embed.set_image(url=old.display_avatar.url)
 	else:
-		embed.add_field(name='Older Avatar Hash (Thumbnail)', value=old.avatar)
+		embed.add_field(name='Older Avatar Hash (Thumbnail)', value=old.avatar.key)
 		embed.add_field(
 			name='Newer Avatar Hash (Inset Image)',
-			value=new.avatar,
+			value=new.avatar.key,
 			inline=False,
 		)
 
-		embed.set_thumbnail(url=old.avatar_url)
-		embed.set_image(url=new.avatar_url)
+		embed.set_thumbnail(url=old.display_avatar.url)
+		embed.set_image(url=new.display_avatar.url)
 
 	# This is not standard procedure, but only because we can't place the ID summary
 	# field after an inset image
@@ -531,8 +531,8 @@ async def log_joined_member(
 		inline=False,
 	)
 
-	embed.set_author(name=member.display_name, icon_url=member.avatar_url)
-	embed.set_thumbnail(url=member.avatar_url)
+	embed.set_author(name=member.display_name, icon_url=member.display_avatar.url)
+	embed.set_thumbnail(url=member.display_avatar.url)
 	await log_channel.send(embed=embed)
 
 async def log_removed_member(
@@ -591,8 +591,8 @@ async def log_removed_member(
 		inline=False,
 	)
 
-	embed.set_author(name=member.display_name, icon_url=member.avatar_url)
-	embed.set_thumbnail(url=member.avatar_url)
+	embed.set_author(name=member.display_name, icon_url=member.display_avatar.url)
+	embed.set_thumbnail(url=member.display_avatar.url)
 
 	await log_channel.send(embed=embed)
 
@@ -858,7 +858,7 @@ async def log_added_reaction(
 
 	embed.set_author(
 		name=user.display_name,
-		icon_url=user.avatar_url,
+		icon_url=user.display_avatar.url,
 	)
 
 	embed.add_field(
@@ -913,7 +913,7 @@ async def log_removed_reaction(
 		timestamp=datetime.datetime.now(),
 	)
 
-	embed.set_author(name=user.display_name, icon_url=user.avatar_url)
+	embed.set_author(name=user.display_name, icon_url=user.display_avatar.url)
 
 	embed.add_field(
 		name='Reaction',
@@ -1314,7 +1314,7 @@ async def log_updated_uncached_message(
 	if author is not None:
 		embed.set_author(
 			name=author.display_name,
-			icon_url=author.avatar_url,
+			icon_url=author.display_avatar.url,
 		)
 	if 'pinned' in payload.data:
 		embed.add_field(
@@ -1364,7 +1364,7 @@ async def log_added_uncached_reaction(
 	)
 	embed.set_author(
 		name=author.display_name,
-		icon_url=author.avatar_url,
+		icon_url=author.display_avatar.url,
 	)
 	embed.add_field(
 		name='Member of Reaction',
@@ -1401,7 +1401,7 @@ async def log_removed_uncached_reaction(
 	)
 	embed.set_author(
 		name=author.display_name,
-		icon_url=author.avatar_url,
+		icon_url=author.display_avatar.url,
 	)
 	embed.add_field(
 		name='Member of Reaction',

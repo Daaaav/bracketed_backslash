@@ -545,7 +545,7 @@ async def findu(client, message, **kwargs):
 			displaygameurlstatus = 'Stream Link'
 			displaygameurl = utils.mdspecialchars(targetmember.activity.url)
 	embed = discord.Embed(description='Matched ' + displaymatch, colour=targetmember.colour)
-	embed.set_image(url=targetmember.avatar_url)
+	embed.set_image(url=targetmember.display_avatar.url)
 	embed.add_field(name='Nickname' if targetmember.nick is not None else 'No Nickname', value=utils.mdspecialchars(targetmember.nick) if targetmember.nick is not None else 'No Nickname')
 	embed.add_field(name='Username', value=utils.mdspecialchars(targetmember.name))
 	embed.add_field(name='Discriminator', value='#{}'.format(targetmember.discriminator))
@@ -1434,9 +1434,9 @@ async def botok(client, message, **kwargs):
 async def uptime(client, message, **kwargs):
 	hostuptime = subprocess.Popen(['uptime', '-p'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
 	embed = discord.Embed(colour=col.r_success, timestamp=message.created_at)
-	embed.set_author(name='Uptime Statistics', icon_url=client.user.avatar_url)
-	embed.set_thumbnail(url=client.user.avatar_url)
-	embed.set_footer(text='Uptime Statistics', icon_url=client.user.avatar_url)
+	embed.set_author(name='Uptime Statistics', icon_url=client.user.display_avatar.url)
+	embed.set_thumbnail(url=client.user.display_avatar.url)
+	embed.set_footer(text='Uptime Statistics', icon_url=client.user.display_avatar.url)
 	embed.add_field(name='Boot Time', value=wrapper.boottime)
 	try:
 		now = config.get_s('timeformat', message.guild.id)
@@ -1460,10 +1460,10 @@ async def invite(client, message, **kwargs):
 @shadow()
 async def version(client, message, **kwargs):
 	embed = discord.Embed(colour=col.r_success, timestamp=message.created_at)
-	embed.set_author(name='Version Information', icon_url=client.user.avatar_url)
-	embed.set_thumbnail(url=client.user.avatar_url)
-	embed.set_footer(text='Version Information', icon_url=client.user.avatar_url)
-	embed.set_thumbnail(url=client.user.avatar_url)
+	embed.set_author(name='Version Information', icon_url=client.user.display_avatar.url)
+	embed.set_thumbnail(url=client.user.display_avatar.url)
+	embed.set_footer(text='Version Information', icon_url=client.user.display_avatar.url)
+	embed.set_thumbnail(url=client.user.display_avatar.url)
 	embed.add_field(name='\\[\\\\\\]', value='{}, commit {}{}'.format(
 		bot.version,
 		wrapper.current_commit,

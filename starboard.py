@@ -695,7 +695,7 @@ def star_message_embed(message, score):
 		timestamp = message.created_at
 	).set_author(
 		name=message.author.display_name,
-		icon_url=message.author.avatar_url_as(format='png')
+		icon_url=message.author.display_avatar.replace(format='png', static_format='png')
 	)
 
 	# For attachments and embeds, we want the following:

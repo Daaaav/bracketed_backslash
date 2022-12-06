@@ -99,7 +99,7 @@ async def handle_delete_overedited_message(msg, schan):
 			)
 			em.set_author(
 				name=msg.author.display_name,
-				icon_url=msg.author.avatar_url,
+				icon_url=msg.author.display_avatar.url,
 			)
 			em.add_field(
 				name='Message author',
@@ -119,7 +119,7 @@ async def handle_delete_overedited_message(msg, schan):
 			)
 			em.set_author(
 				name=msg.author.display_name,
-				icon_url=msg.author.avatar_url,
+				icon_url=msg.author.display_avatar.url,
 			)
 			em.add_field(
 				name='Message author',
@@ -367,13 +367,12 @@ async def id_lookup(uid: int) -> discord.User:
 	user ID and doesn't exist on Discord, return None.
 
 	Since a discord.User object is returned, the only attributes that should be used are:
-	- name
-	- id
-	- discriminator
-	- avatar/avatar_url/avatar_url_as
+	- avatar/display_avatar/default_avatar
 	- bot
-	- default_avatar/default_avatar_url
+	- discriminator
+	- name/display_name
 	- mention/mentioned_in
+	- id
 	- created_at
 	"""
 

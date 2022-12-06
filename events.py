@@ -246,7 +246,7 @@ async def on_message(m):
 			timestamp=m.created_at,
 			colour=wrapper.client.get_guild(op_ids.ids['opguild']).me.colour,
 		)
-		e.set_author(name=m.author.name, icon_url=m.author.avatar_url)
+		e.set_author(name=m.author.name, icon_url=m.author.display_avatar.url)
 		e.set_footer(text=utils.id_summary(uid=m.author.id, mid=m.id, cid=m.channel.id))
 		await wrapper.client.get_channel(op_ids.ids['opguild_chans']['direct_messages']).send(
 			embed=e,
@@ -268,7 +268,7 @@ async def on_message(m):
 		)
 		e.set_author(
 			name=m.author.display_name,
-			icon_url=m.author.avatar_url
+			icon_url=m.author.display_avatar.url
 		)
 		e.add_field(
 			name='Message author',
@@ -505,7 +505,7 @@ async def on_message_delete(msg):
 					' user was deleted too recently.'
 				),
 			)
-		em.set_author(name=msg.author.display_name, icon_url=msg.author.avatar_url)
+		em.set_author(name=msg.author.display_name, icon_url=msg.author.display_avatar.url)
 		await msg.channel.send(embed=em)
 
 async def on_message_edit(old, new):
@@ -560,7 +560,7 @@ async def on_message_edit(old, new):
 		if len(new.content) > 1024:
 			embed.add_field(name='[continued]', value=new.content[1024:], inline=False)
 
-		embed.set_author(name=new.author.display_name, icon_url=new.author.avatar_url)
+		embed.set_author(name=new.author.display_name, icon_url=new.author.display_avatar.url)
 		embed.set_footer(text='These contents were resent as this message was edited too heavily.')
 
 		await new.channel.send(embed=embed)
@@ -582,7 +582,7 @@ async def on_member_update(before, after):
 		# FIXME: This hasn't fired since a certain Discord/discord.py refactor!
 		await logs.log_changed_tag(specialchannel, before, after)
 
-	if before.avatar != after.avatar and \
+	if before.display_avatar != after.display_avatar and \
 	(not utils.logdisabled('member_botavatar', after.guild) \
 	if checks.is_bot(after) \
 	else not utils.logdisabled('member_avatar', after.guild)):
