@@ -918,8 +918,6 @@ async def on_guild_update(before, after):
 		await logs.log_changed_guild_icon(specialchannel, before, after)
 	if before.name != after.name and not utils.logdisabled('guild_rename', after):
 		await logs.log_renamed_guild(specialchannel, before, after)
-	if before.region != after.region and not utils.logdisabled('guild_region', after):
-		await logs.log_changed_guild_voice_region(specialchannel, before, after)
 	if before.afk_timeout != after.afk_timeout and \
 	not utils.logdisabled('guild_afktimeout', after):
 		await logs.log_changed_guild_afk_timeout(specialchannel, before, after)

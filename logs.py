@@ -1009,18 +1009,6 @@ async def log_renamed_guild(
 	embed.add_field(name='Newer Name', value=utils.mdspecialchars(new.name))
 	await log_channel.send(embed=embed)
 
-async def log_changed_guild_voice_region(
-	log_channel: discord.TextChannel, old: discord.Guild, new: discord.Guild,
-) -> None:
-	"""Log a changed guild voice region."""
-
-	embed = discord.Embed(description='VOICE REGION CHANGE')
-	if new.icon is not None:
-		embed.set_thumbnail(url=new.icon.url)
-	embed.add_field(name='Older Region', value=str(old.region))
-	embed.add_field(name='Newer Region', value=str(new.region))
-	await log_channel.send(embed=embed)
-
 async def log_changed_guild_afk_timeout(
 	log_channel: discord.TextChannel, old: discord.Guild, new: discord.Guild,
 ) -> None:
