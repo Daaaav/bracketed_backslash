@@ -737,12 +737,12 @@ def star_message_embed(message, score):
 				number_rich_embeds += 1
 			elif message_embed.type == 'image':
 				if embed_image_unset \
-				and message_embed.url is not discord.Embed.Empty:
+				and message_embed.url is not None:
 					embed.set_image(url=message_embed.url)
 					embed_image_unset = False
 			elif message_embed.type in ('gifv', 'video'):
 				if embed_image_unset \
-				and message_embed.thumbnail.url is not discord.Embed.Empty:
+				and message_embed.thumbnail.url is not None:
 					embed.set_image(url=message_embed.thumbnail.url)
 					embed_image_unset = False
 
