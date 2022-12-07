@@ -144,7 +144,7 @@ async def errors(client, message, **kwargs):
 	n_in_24h = 0
 	for i in range(len(wrapper.runtime_exceptions)-1, -1, -1):
 		if wrapper.runtime_exceptions[i][0] < (
-			datetime.datetime.now() - datetime.timedelta(hours=24)
+			discord.utils.utcnow() - datetime.timedelta(hours=24)
 		):
 			break
 		n_in_24h += 1

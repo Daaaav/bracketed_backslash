@@ -375,7 +375,7 @@ async def check_message(
 		)
 
 	if member.id in cooldown:
-		now = datetime.datetime.now()
+		now = discord.utils.utcnow()
 		if cooldown[member.id] > now:
 			if member.id in locked:
 				return
@@ -444,11 +444,11 @@ async def check_message(
 
 	del queued[member.id]
 
-	cooldown[member.id] = datetime.datetime.now() + datetime.timedelta(seconds=2)
+	cooldown[member.id] = discord.utils.utcnow() + datetime.timedelta(seconds=2)
 
 	await asyncio.sleep(3)
 
-	if member.id in cooldown and cooldown[member.id] < datetime.datetime.now():
+	if member.id in cooldown and cooldown[member.id] < discord.utils.utcnow():
 		del cooldown[member.id]
 
 # TODO: This function is unused, group IDs need to be added to it

@@ -35,7 +35,7 @@ async def log_deleted_message(log_channel: discord.TextChannel, message: discord
 		),
 		description=content,
 		colour=message.author.colour,
-		timestamp=datetime.datetime.now(),
+		timestamp=discord.utils.utcnow(),
 	)
 
 	embed.set_author(
@@ -227,7 +227,7 @@ async def log_changed_nickname(
 	embed = discord.Embed(
 		title='\N{REGIONAL INDICATOR SYMBOL LETTER N}\N{PAGER}CHANGED NICKNAME',
 		colour=new.colour,
-		timestamp=datetime.datetime.now(),
+		timestamp=discord.utils.utcnow(),
 	)
 
 	embed.set_author(name=new.name, icon_url=new.display_avatar.url)
@@ -381,7 +381,7 @@ async def log_changed_tag(
 	embed = discord.Embed(
 		title=title,
 		colour=new.colour, # FIXME: Outside guilds, users don't have a color!
-		timestamp=datetime.datetime.now(),
+		timestamp=discord.utils.utcnow(),
 	)
 
 	embed.set_author(
@@ -434,7 +434,7 @@ async def log_changed_avatar(
 		title=title,
 		description=desc,
 		colour=new.colour, # FIXME: Outside guilds, users don't have a color!
-		timestamp=datetime.datetime.now(),
+		timestamp=discord.utils.utcnow(),
 	)
 
 	embed.set_author(name=new.display_name, icon_url=new.display_avatar.url)
@@ -491,7 +491,7 @@ async def log_joined_member(
 			'\N{BLACK RIGHTWARDS ARROW}\N{ROBOT FACE}BOT ADDED TO SERVER'
 		),
 		color=utils.colorize(member),
-		timestamp=datetime.datetime.now(),
+		timestamp=discord.utils.utcnow(),
 	)
 	embed.add_field(
 		name='This server now has',
@@ -562,7 +562,7 @@ async def log_removed_member(
 	embed = discord.Embed(
 		title=title,
 		color=utils.colorize(member),
-		timestamp=datetime.datetime.now(),
+		timestamp=discord.utils.utcnow(),
 	)
 
 	embed.add_field(
@@ -776,7 +776,7 @@ async def log_updated_role_hierarchy(
 
 	embed = discord.Embed(
 		title='\N{KEY}\N{TWISTED RIGHTWARDS ARROWS} ROLE HIERARCHY UPDATED',
-		timestamp=datetime.datetime.now(),
+		timestamp=discord.utils.utcnow(),
 		colour=colour,
 	)
 	embed.add_field(
@@ -853,7 +853,7 @@ async def log_added_reaction(
 		),
 		description=message.content,
 		colour=user.colour,
-		timestamp=datetime.datetime.now(),
+		timestamp=discord.utils.utcnow(),
 	)
 
 	embed.set_author(
@@ -910,7 +910,7 @@ async def log_removed_reaction(
 		),
 		description=message.content,
 		colour=user.colour,
-		timestamp=datetime.datetime.now(),
+		timestamp=discord.utils.utcnow(),
 	)
 
 	embed.set_author(name=user.display_name, icon_url=user.display_avatar.url)
@@ -1188,7 +1188,7 @@ async def log_deleted_guild_channel(
 		),
 		description='**{name}**'.format(name=utils.mdspecialchars(channel.name)),
 		colour=utils.colorize(channel.id),
-		timestamp=datetime.datetime.now(),
+		timestamp=discord.utils.utcnow(),
 	)
 
 	if channel.type is not discord.ChannelType.category:
@@ -1241,7 +1241,7 @@ async def log_bulk_deleted_messages(
 			ni=newest_id, nt=utils.reltime(newest_time)
 		),
 		colour=0xFF0000,
-		timestamp=datetime.datetime.now(),
+		timestamp=discord.utils.utcnow(),
 	)
 	embed.add_field(
 		name='\u200b',

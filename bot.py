@@ -239,7 +239,7 @@ async def bot_connected_message(channel, *, color, startup_time):
 	embed = discord.Embed(
 		title='\N{ELECTRIC PLUG}BOT CONNECTED',
 		color=color,
-		timestamp=datetime.datetime.now(),
+		timestamp=discord.utils.utcnow(),
 	)
 	embed.add_field(name='Startup Time', value=utils.reltime(startup_time))
 	await channel.send(embed=embed)

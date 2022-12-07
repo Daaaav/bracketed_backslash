@@ -95,7 +95,7 @@ async def handle_delete_overedited_message(msg, schan):
 				).format(msg),
 				description=msg.content,
 				colour=msg.author.colour,
-				timestamp=datetime.datetime.now(),
+				timestamp=discord.utils.utcnow(),
 			)
 			em.set_author(
 				name=msg.author.display_name,
@@ -115,7 +115,7 @@ async def handle_delete_overedited_message(msg, schan):
 				).format(msg),
 				description=msg.content,
 				colour=msg.author.colour,
-				timestamp=datetime.datetime.now(),
+				timestamp=discord.utils.utcnow(),
 			)
 			em.set_author(
 				name=msg.author.display_name,

@@ -139,7 +139,7 @@ async def check_message(payload, channel, adding):
 		return
 
 	# Make sure the message isn't too old.
-	if (datetime.datetime.now() - orig_message.created_at) > datetime.timedelta(
+	if (discord.utils.utcnow() - orig_message.created_at) > datetime.timedelta(
 		seconds=config.get_s('starboard_timelimit', payload.guild_id)
 	):
 		return
@@ -317,8 +317,9 @@ async def remove_message(payload, channel):
 
 	# Make sure the message isn't too old. It might be getting deleted and thus the timestamp
 	# might be potentially gone, but there's always the snowflake!
-	if (datetime.datetime.now() - datetime.datetime.utcfromtimestamp(
-			((payload.message_id >> 22) + 1420070400000)/1000
+	if (discord.utils.utcnow() - datetime.datetime.fromtimestamp(
+			((payload.message_id >> 22) + 1420070400000)/1000,
+			tz=datetime.timezone.utc
 		)
 	) > datetime.timedelta(
 		seconds=config.get_s('starboard_timelimit', payload.guild_id)
@@ -519,7 +520,7 @@ async def remove_starboard_message(message_id, starboard_message_id, guild_id, r
 
 	# Maybe we were already planning to remove the message in a few seconds!
 	if remove_slowly and starboard_message_id in unstarboard_message_at:
-		if unstarboard_message_at[starboard_message_id] < datetime.datetime.now():
+		if unstarboard_message_at[starboard_message_id] < discord.utils.utcnow():
 			# If it should be deleted now, maybe it's not getting done. Let's do it now.
 			remove_slowly = False
 		else:
@@ -529,13 +530,13 @@ async def remove_starboard_message(message_id, starboard_message_id, guild_id, r
 	if remove_slowly:
 		# We can remove the message after 10 seconds; 9 for certainty.
 		unstarboard_message_at[starboard_message_id] = (
-			datetime.datetime.now() + datetime.timedelta(seconds=9)
+			discord.utils.utcnow() + datetime.timedelta(seconds=9)
 		)
 		await asyncio.sleep(10)
 
 		# Still not changed?
 		if starboard_message_id not in unstarboard_message_at \
-		or unstarboard_message_at[starboard_message_id] > datetime.datetime.now():
+		or unstarboard_message_at[starboard_message_id] > discord.utils.utcnow():
 			# Never mind!
 			return
 

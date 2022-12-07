@@ -486,7 +486,7 @@ async def on_message_delete(msg):
 	dthreshold = datetime.timedelta(
 		seconds=config.get_s('deleted_message_resend_timer', msg.guild.id),
 	)
-	if (datetime.datetime.now() - msg.created_at) < dthreshold and \
+	if (discord.utils.utcnow() - msg.created_at) < dthreshold and \
 	not msg.author.bot:
 		if config.get_s('deleted_message_resend_content', msg.guild.id):
 			em = discord.Embed(
@@ -517,7 +517,7 @@ async def on_message_edit(old, new):
 		return
 	edited_at = new.edited_at
 	if edited_at is None:
-		edited_at = datetime.datetime.now()
+		edited_at = discord.utils.utcnow()
 	schan = utils.getspecialchannel_reply(new)
 	if not old.pinned and new.pinned and not utils.logdisabled('message_pin', new.guild):
 		await logs.log_pinned_message(schan, new)
@@ -658,7 +658,7 @@ async def on_member_remove(member):
 	try:
 		entries = [entry async for entry in guild.audit_logs(
 			# Apparently this parameter is fucked on Discord's end currently
-			#after=datetime.datetime.now() - datetime.timedelta(seconds=2),
+			#after=discord.utils.utcnow() - datetime.timedelta(seconds=2),
 			oldest_first=False,
 		)
 		# Can't grab more than one type of action when making the request
@@ -671,7 +671,7 @@ async def on_member_remove(member):
 			# because the endpoint is fucked
 			# so we'll have to, hurr durr, filter it ourselves
 			if discord.utils.snowflake_time(entry.id) > \
-			datetime.datetime.now() - datetime.timedelta(seconds=2) and \
+			discord.utils.utcnow() - datetime.timedelta(seconds=2) and \
 			entry.target.id == member.id:
 				moderator = entry.user
 				action = entry.action
@@ -1149,7 +1149,7 @@ async def on_guild_remove(guild):
 
 async def on_error(event_name, *args, **kwargs):
 	# See discord.py's client.py for the default implementation
-	now = datetime.datetime.now()
+	now = discord.utils.utcnow()
 	print('\x1b[41m[{}] Exception in event {}\x1b[0m'.format(now, event_name), file=sys.stderr)
 	traceback.print_exc()
 
