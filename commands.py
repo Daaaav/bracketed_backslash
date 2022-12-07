@@ -3589,7 +3589,7 @@ async def _starboard(client, message, **kwargs):
 
 		try:
 			count = starboard.ignore_danny_stars(
-				await scan_channel.history(limit=200).flatten(), int(splitargs[2])
+				[m async for m in scan_channel.history(limit=200)], int(splitargs[2])
 			)
 		except ValueError:
 			em = emb.error('Please enter a valid user ID.')
@@ -3667,7 +3667,7 @@ async def reactroles(client, message, **kwargs):
 			# events to circumvent having to do this network request. But we'll have to
 			# be waiting for both a message and a reaction at the same time, and we'll
 			# quickly be plunged into async hell, bleh
-			users = await reaction.users().flatten()
+			users = [user async for user in reaction.users()]
 			user_ids = (user.id for user in users)
 
 			# After a million years waiting for the network request, we'll finally know

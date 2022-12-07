@@ -212,9 +212,9 @@ async def check_message(payload, channel, adding):
 
 		# So who has used this reaction?
 		if is_star:
-			starrers.extend(await reaction.users().flatten())
+			starrers.extend([user async for user in reaction.users()])
 		if is_nostar:
-			nostarrers.extend(await reaction.users().flatten())
+			nostarrers.extend([user async for user in reaction.users()])
 
 			# Also keep the nostar emote object handy in case we need to confirm a veto
 			nostar_emote = reaction.emoji
