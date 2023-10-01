@@ -358,7 +358,7 @@ async def log_updated_roles(
 				else:
 					embed_.add_field(
 						name=text_singular,
-						value=addedroles_list,
+						value=roles_list,
 						inline=False,
 					)
 
