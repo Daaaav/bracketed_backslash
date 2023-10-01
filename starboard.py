@@ -716,15 +716,15 @@ def star_message_embed(message, score):
 	embed_image_unset = True
 	number_rich_embeds = 0
 
-	def is_image_url(url):
-		return url.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))
+	def is_image_filename(filename):
+		return filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))
 
 	if message.attachments:
 		attachments_are_listed = (
-			len(message.attachments) > 1 or not is_image_url(message.attachments[0].url)
+			len(message.attachments) > 1 or not is_image_filename(message.attachments[0].filename)
 		)
 		for message_attach in message.attachments:
-			if is_image_url(message_attach.url) and embed_image_unset:
+			if is_image_filename(message_attach.filename) and embed_image_unset:
 				embed.set_image(url=message_attach.url)
 				embed_image_unset = False
 			attachment_list.append('[{}]({})'.format(
