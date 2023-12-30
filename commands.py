@@ -1022,6 +1022,33 @@ async def rolecacheinfo(client, message, **kwargs):
 
 	await bot.reply(message, content)
 
+@shadow()
+async def rolecache(client, message, **kwargs):
+	perms = message.channel.permissions_for(message.author)
+	if not perms.manage_guild and not kwargs['sudo']:
+		embed = emb.error(bot.t['you_no_permission'])
+		utils.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
+		await bot.reply(message, emb=embed)
+		return
+
+	if not config.is_detached('rolecachemode', message.guild.id):
+		config.detach('rolecachemode', message.guild.id)
+
+	if kwargs['arguments'] == 'enable':
+		config.set_s('rolecachemode', 2, message.guild.id)
+		em = emb.success('Role cache has been enabled. Make sure to run `\\rolesync` to sync everyone’s roles.')
+	elif kwargs['arguments'] == 'enable_with_default':
+		config.set_s('rolecachemode', 1, message.guild.id)
+		em = emb.success('Role cache has been enabled, and new members will be given default roles. Make sure to run `\\rolesync` to sync everyone’s roles.')
+	elif kwargs['arguments'] == 'disable':
+		config.set_s('rolecachemode', 0, message.guild.id)
+		em = emb.success('Role cache has been disabled.')
+	else:
+		em = emb.error('Invalid argument. Use either `enable`, `enable_with_default`, or `disable`.')
+
+	config.saveconfig()
+	await bot.reply(message, emb=em)
+
 @shadow(aliases=['rule'], guildonly=True)
 async def rules(client, message, **kwargs):
 	if message.guild.id in wrapper.disabledrules and not checks.is_mod(message.author):
