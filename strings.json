@@ -306,6 +306,11 @@
 					"extra": ""
 				},
 				{
+					"name": "rolecache",
+					"short": "Enable or disable the role cache, which gives people’s roles when they rejoin the server.",
+					"extra": "`\\rolecache enable` enables the cache. `\\rolecache enable_with_default` enables the cache, and gives the default role to new members. `\\rolecache disable` disables the cache. Make sure to run `\\rolesync` after enabling the cache."
+				},
+				{
 					"name": "rolecacheinfo",
 					"short": "Shows the roles that are stored in the role cache for a specific user.",
 					"extra": "Only accepts a user ID."
