@@ -717,7 +717,7 @@ async def rolerst(client, message, **kwargs):
 @shadow(guildonly=True, aliases=['role_add_all', 'remove_role_all', 'role_remove_all'])
 async def add_role_all(client, message, **kwargs):
 	perms = message.channel.permissions_for(message.author)
-	if not perms.manage_roles:
+	if not perms.manage_roles and not kwargs['sudo']:
 		embed = emb.error(bot.t['you_no_permission'])
 		utils.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 		await bot.reply(message, emb=embed)
@@ -976,7 +976,7 @@ async def rolecacheadd(client, message, **kwargs):
 @shadow(aliases=['syncroles'])
 async def rolesync(client, message, **kwargs):
 	perms = message.channel.permissions_for(message.author)
-	if not perms.manage_roles:
+	if not perms.manage_roles and not kwargs['sudo']:
 		embed = emb.error(bot.t['you_no_permission'])
 		utils.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 		await bot.reply(message, emb=embed)
