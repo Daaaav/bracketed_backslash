@@ -712,6 +712,7 @@ def star_message_embed(message, score):
 	#   attribute and embeds of type 'gifv' or 'video' should use thumbnail_url.
 	attachments_are_listed = False
 	attachment_list = []
+	attachment_list_basic = [] # this sucks, but it's for the 1024 char limit
 	embed_image_unset = True
 	number_rich_embeds = 0
 
@@ -730,6 +731,7 @@ def star_message_embed(message, score):
 					message_attach.filename, message_attach.url
 				)
 			)
+			attachment_list_basic.append('{}'.format(message_attach.filename))
 	if message.embeds:
 		for message_embed in message.embeds:
 			if message_embed.type == 'rich':
@@ -746,7 +748,10 @@ def star_message_embed(message, score):
 					embed_image_unset = False
 
 	if attachments_are_listed:
-		embed.add_field(name='📎', value='\n'.join(attachment_list), inline=False)
+		attachment_field = '\n'.join(attachment_list)
+		if len(attachment_field) > 1024:
+			attachment_field = '\n'.join(attachment_list_basic)
+		embed.add_field(name='📎', value=attachment_field, inline=False)
 
 	if number_rich_embeds == 1:
 		embed.set_footer(text='📄 Message has a rich embed')
