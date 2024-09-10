@@ -516,8 +516,13 @@ async def on_message_edit(old, new):
 	if utils.usernotlogged(new.author, new.guild):
 		return
 	edited_at = new.edited_at
-	if edited_at is None:
-		edited_at = discord.utils.utcnow()
+	if edited_at is None or edited_at < discord.utils.utcnow() - datetime.timedelta(days=1):
+		logging.info(
+			'Suppressing message edit event for {} because it was last edited {}'.format(
+				new.id, edited_at
+			)
+		)
+		return
 	schan = utils.getspecialchannel_reply(new)
 	if not old.pinned and new.pinned and not utils.logdisabled('message_pin', new.guild):
 		await logs.log_pinned_message(schan, new)

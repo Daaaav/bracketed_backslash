@@ -5,6 +5,7 @@
 """Contains the functions that send mod log messages."""
 
 import datetime
+import logging
 import os
 import time
 from typing import List, Sequence, Union
@@ -1276,14 +1277,25 @@ async def log_updated_uncached_message(
 ) -> None:
 	"""Log an updated uncached message."""
 
+	if 'edited_timestamp' in payload.data:
+		edited_iso = payload.data['edited_timestamp']
+		if edited_iso is None \
+		or datetime.datetime.fromisoformat(edited_iso) < discord.utils.utcnow() - datetime.timedelta(days=1):
+			logging.info(
+				'Suppressing raw message edit event for {} because it was last edited {}'.format(
+					payload.data['id'], edited_iso
+				)
+			)
+			return
+
+	author = None
+	author_id = None
+	embed_colour = None
 	if 'author' in payload.data:
 		author = channel.guild.get_member(int(payload.data['author']['id']))
-		author_id = author.id
-		embed_colour = author.colour
-	else:
-		author = None
-		author_id = None
-		embed_colour = None
+		if author is not None:
+			author_id = author.id
+			embed_colour = author.colour
 
 	if 'content' in payload.data:
 		content = payload.data['content']
