@@ -20,7 +20,7 @@ import wrapper
 async def log_deleted_message(log_channel: discord.TextChannel, message: discord.Message) -> None:
 	"""Log a deleted message. Reuploads its attachments if the message had any."""
 
-	if message.type is not discord.MessageType.default:
+	if message.is_system():
 		content = message.system_content
 	else:
 		content = message.content
@@ -29,7 +29,7 @@ async def log_deleted_message(log_channel: discord.TextChannel, message: discord
 		title=(
 			'\N{NO ENTRY SIGN}{system}MESSAGE {withatch}DELETED (SENT {reltime} IN #{chan})'
 		).format(
-			system='SYSTEM ' if message.type is not discord.MessageType.default else '',
+			system='SYSTEM ' if message.is_system() else '',
 			withatch='WITH ATTACHMENT ' if message.attachments != [] else '',
 			reltime=utils.reltime(time.mktime(message.created_at.timetuple())),
 			chan=utils.mdspecialchars(message.channel.name),
