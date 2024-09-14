@@ -115,7 +115,7 @@ async def restart(client, message, **kwargs):
 	embed.add_field(name='Messages in Cache', value=str(len(client.cached_messages)))
 	utils.logcommand(kwargs['command'], kwargs['arguments'], message)
 	await bot.reply(message, emb=embed)
-	await client.logout()
+	await client.close()
 	__main__ = __import__('__main__')
 	__main__.exit_code = 8
 
@@ -125,7 +125,7 @@ async def kill(client, message, **kwargs):
 	embed.add_field(name='Uptime', value=utils.reltime(wrapper.boottimeunix, True))
 	utils.logcommand(kwargs['command'], kwargs['arguments'], message)
 	await bot.reply(message, emb=embed)
-	await client.logout()
+	await client.close()
 	__main__ = __import__('__main__')
 	__main__.exit_code = 4
 
