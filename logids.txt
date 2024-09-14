@@ -45,7 +45,6 @@ role_permissions
 
 guild_icon
 guild_rename
-guild_region
 guild_afktimeout
 guild_afkchannel
 guild_verificationlevel
