@@ -1684,39 +1684,6 @@ async def kick(client, message, **kwargs):
 		embed = emb.error(bot.t['no_permission'])
 	await bot.reply(message, content, emb=embed)
 
-@shadow()
-async def bans(client, message, **kwargs):
-	try:
-		bans = await message.guild.bans()
-	except discord.errors.Forbidden:
-		embed = emb.error(bot.t['no_permission'])
-		await bot.reply(message, emb=embed)
-		return
-	ulist = ''
-	for ban_entry in bans:
-		ulist += '{user}{reason}\n'.format(
-			user=utils.obj_info(ban_entry.user),
-			reason=' - ' + ban_entry.reason if ban_entry.reason is not None else '',
-		)
-
-	if not ulist:
-		# Apparently there are no bans, so don't just display a server avatar
-		ulist = '_(No server bans are currently active)_'
-
-	embed = discord.Embed(
-		name='Bans',
-		description=ulist,
-		colour=col.r_success,
-	)
-	try:
-		embed.set_thumbnail(url=message.guild.icon_url)
-	except TypeError:
-		pass
-
-	utils.paginate_description(embed=embed, max_length=2048)
-
-	await bot.reply(message, emb=embed)
-
 @shadow(auth=checks.is_operator)
 async def reloadstrings(client, message, **kwargs):
 	bot.loadstrings()
