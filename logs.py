@@ -1285,7 +1285,7 @@ async def log_updated_uncached_message(
 	if 'edited_timestamp' in payload.data:
 		edited_iso = payload.data['edited_timestamp']
 		if edited_iso is None \
-		or datetime.datetime.fromisoformat(edited_iso) < datetime.datetime.now() - datetime.timedelta(days=1):
+		or datetime.datetime.fromisoformat(edited_iso) < datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1):
 			logging.info(
 				'Suppressing raw message edit event for {} because it was last edited {}'.format(
 					payload.data['id'], edited_iso
