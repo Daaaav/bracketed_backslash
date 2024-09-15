@@ -690,13 +690,13 @@ async def voicemute(client, message, **kwargs):
 		if targetmember.voice.voice_channel is None:
 			embed = emb.error('User is not in a voice channel.')
 		elif kwargs['command'] == 'voicemute':
-			await targetmember.edit(mute=True)
 			content = targetmember.mention
 			embed = emb.success('Voice muted <@{}>.'.format(targetmember.id))
+			await targetmember.edit(mute=True)
 		elif kwargs['command'] == 'voiceunmute':
-			await targetmember.edit(mute=False)
 			content = targetmember.mention
 			embed = emb.success('Voice unmuted <@{}>.'.format(targetmember.id))
+			await targetmember.edit(mute=False)
 	except AttributeError:
 		embed = emb.error(bot.t['specify_user'])
 	except discord.errors.Forbidden:
@@ -1724,8 +1724,10 @@ async def b(client, message, **kwargs):
 		await specialchannel.send(embed=embed)
 		banningnonmod = False
 		return
+	target_mention = targetmember.mention
+	target_id = targetmember.id
 	if checks.is_tntgb_banned(targetmember):
-		embed = emb.warning('{} is already banned!'.format(targetmember.mention))
+		embed = emb.warning('{} is already banned!'.format(target_mention))
 		await specialchannel.send(embed=embed)
 		banningnonmod = False  # See this as "don't set expiry timer"
 	elif checks.is_tntgb_mod(targetmember):
@@ -1735,7 +1737,7 @@ async def b(client, message, **kwargs):
 				'{} is a mod, please use `\\b_mod` instead '
 				'to cause {bans} ban{s} to be lifted!'
 				.format(
-					targetmember.mention,
+					target_mention,
 					bans=(
 						str(mod_mistake_lifts)
 						if mod_mistake_lifts == 0
@@ -1835,7 +1837,7 @@ async def b(client, message, **kwargs):
 		).format(
 			whose,
 			message.author.display_name,
-			targetmember.mention,
+			target_mention,
 			splitargs[1],
 			message.channel.mention
 		)
@@ -1850,7 +1852,7 @@ async def b(client, message, **kwargs):
 		)
 		ban_days = str(config.get_s('tntgb', message.guild.id)['ban_days'])
 		announcemsg = '{} has been banned for {ban_days} days by {} in {} for {}.'.format(
-			targetmember.mention,
+			target_mention,
 			message.author.display_name,
 			message.channel.mention,
 			splitargs[1],
@@ -1863,11 +1865,11 @@ async def b(client, message, **kwargs):
 		# Also set an expiry timer
 		expirytime = utils.parsereltime(ban_days + 'd')
 
-		utils.addexpiryentry(message.guild.id, targetmember.id, expirytime,
+		utils.addexpiryentry(message.guild.id, target_id, expirytime,
 			e_channel=sentmessage.channel.id, e_message=sentmessage.id,
 			e_newcontent='[LIFTED] ' + announcemsg,
 			p_channel=ban_log_channel.id,
-			p_content='The ban on {} has expired.'.format(targetmember.mention)
+			p_content='The ban on {} has expired.'.format(target_mention)
 		)
 
 		utils.rolexpiresave()
@@ -1902,10 +1904,12 @@ async def selfban(client, message, **kwargs):
 		if role is not None:
 			roles.append(role)
 
+	author_id = message.author.id
+	author_mention = message.author.mention
 	await message.author.edit(roles=roles)
 	ban_days = config.get_s('tntgb', message.guild.id)['ban_days']
 	announcemsg = '{} has carried out a self-ban for {ban_days} days in {} for {}.'.format(
-		message.author.mention,
+		author_mention,
 		message.channel.mention,
 		kwargs['arguments'],
 		ban_days=ban_days,
@@ -1920,12 +1924,12 @@ async def selfban(client, message, **kwargs):
 
 	utils.addexpiryentry(
 		message.guild.id,
-		message.author.id,
+		author_id,
 		expirytime,
 		e_channel=sentmessage.channel.id, e_message=sentmessage.id,
 		e_newcontent='[LIFTED] ' + announcemsg,
 		p_channel=ban_log_channel.id,
-		p_content='The ban on {} has expired.'.format(message.author.mention),
+		p_content='The ban on {} has expired.'.format(author_mention),
 	)
 
 	utils.rolexpiresave()
