@@ -1347,9 +1347,13 @@ async def channelperms(client, message, **kwargs):
 		'\t\t\t<td></td>\n'
 	)
 	for o in ordered_overwrites:
-		name = o.name
+		if hasattr(o, 'name'):
+			name = o.name
+		else:
+			# Must be a plain discord.Object, which only has created_at, id and type...
+			name = o.id
 		if isinstance(o, discord.Member) or isinstance(o, discord.User):
-			name += '#{}'.format(o.discriminator)
+			name = '@' + name
 		html_table += '\t\t\t<td style="color: rgb({},{},{});">{}</td>\n'.format(
 			o.color.r, o.color.g, o.color.b, html.escape(name)
 		)

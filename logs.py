@@ -1073,9 +1073,9 @@ async def log_changed_guild_mfa_level(
 ) -> None:
 	"""Log two-factor authentication being turned on or off."""
 
-	if old.mfa_level == 0 and new.mfa_level == 1:
+	if old.mfa_level == discord.MFALevel.disabled and new.mfa_level == discord.MFALevel.require_2fa:
 		embed=discord.Embed(description='SERVER 2FA ENABLED')
-	elif old.mfa_level == 1 and new.mfa_level == 0:
+	elif old.mfa_level == discord.MFALevel.require_2fa and new.mfa_level == discord.MFALevel.disabled:
 		embed=discord.Embed(description='SERVER 2FA DISABLED')
 	await log_channel.send(embed=embed)
 
