@@ -371,13 +371,9 @@ async def log_updated_roles(
 async def log_changed_tag(
 	log_channel: discord.TextChannel, old: discord.User, new: discord.User,
 ) -> None:
-	"""Log that a user's username changed.
-	If their discriminator changed as well, then log that too.
-	"""
+	"""Log that a user's username changed."""
 
 	title = '\N{REGIONAL INDICATOR SYMBOL LETTER U}\N{PAGER}CHANGED USERNAME'
-	if old.discriminator != new.discriminator:
-		title += ' AND DISCRIMINATOR \N{SMALL ORANGE DIAMOND}'
 
 	embed = discord.Embed(
 		title=title,
@@ -392,16 +388,6 @@ async def log_changed_tag(
 
 	embed.add_field(name='Older Username', value=utils.mdspecialchars(old.name))
 	embed.add_field(name='Newer Username', value=utils.mdspecialchars(new.name))
-
-	if old.discriminator != new.discriminator:
-		embed.add_field(name='\u200b', value='\u200b', inline=False)
-
-		embed.add_field(
-			name='Older Discriminator',
-			value='#' + old.discriminator,
-		)
-
-		embed.add_field(name='Newer Discriminator', value='#' + new.discriminator)
 
 	embed.add_field(
 		name='\u200b',
@@ -605,8 +591,8 @@ async def log_banned_member(
 	"""Log that a user was banned from the guild."""
 
 	# TODO: Modernize this log
-	message = '**`>`**👞🚪⛔`user` **``{}``**`#{}` `({}) banned from server {} ({})`'.format(
-		utils.wrapbackticks(user.name), user.discriminator, user.id, guild.name, guild.id,
+	message = '**`>`**👞🚪⛔`user` **``{}``** `({}) banned from server`'.format(
+		utils.wrapbackticks(user.name), user.id,
 	)
 	await log_channel.send(message)
 
@@ -617,10 +603,9 @@ async def log_unbanned_member(
 
 	# TODO: Modernize this log
 	message = (
-		'**`>`**\N{BABY ANGEL}`user` **``{}``**`#{}` `({})'
-		' unbanned from server {} ({})`'
+		'**`>`**\N{BABY ANGEL}`user` **``{}``** `({}) unbanned from server`'
 	).format(
-		utils.wrapbackticks(user.name), user.discriminator, user.id, guild.name, guild.id,
+		utils.wrapbackticks(user.name), user.id,
 	)
 	await log_channel.send(message)
 
