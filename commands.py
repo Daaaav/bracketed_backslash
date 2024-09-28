@@ -1312,6 +1312,7 @@ async def channelperms(client, message, **kwargs):
 		'\t\t\t<td></td>\n'
 	)
 	for o in ordered_overwrites:
+		kind = 'Unknown'
 		if hasattr(o, 'name'):
 			name = o.name
 		else:
@@ -1319,8 +1320,11 @@ async def channelperms(client, message, **kwargs):
 			name = o.id
 		if isinstance(o, discord.Member) or isinstance(o, discord.User):
 			name = '@' + name
-		html_table += '\t\t\t<td style="color: rgb({},{},{});">{}</td>\n'.format(
-			o.color.r, o.color.g, o.color.b, html.escape(name)
+			kind = 'Member'
+		elif isinstance(o, discord.Role):
+			kind = 'Role'
+		html_table += '\t\t\t<td style="color: rgb({},{},{});" title="{} {}">{}</td>\n'.format(
+			o.color.r, o.color.g, o.color.b, kind, o.id, html.escape(name)
 		)
 
 	html_table += '\t\t</tr>\n'
@@ -1376,8 +1380,8 @@ async def channelperms(client, message, **kwargs):
 			'to see an overview of channel permissions:'
 		)
 	else:
-		title = 'Evaluated channel permissions for {}#{} in {}'.format(
-			html.escape(person.name), person.discriminator,
+		title = 'Evaluated channel permissions for {} in {}'.format(
+			html.escape(person.name),
 			html.escape(message.guild.name)
 		)
 		result_info = (
@@ -2575,13 +2579,12 @@ async def archive(client, message, **kwargs):
 	msgs = tgt.history(limit=lim)
 	try:
 		async for m in msgs:
-			log.append('[{}] {}#{}: {}'.format(
+			log.append('[{}] {}: {}'.format(
 					time.strftime(
 						config.get_s('timeformat', message.guild.id),
 						m.created_at.timetuple()
 					),
 					m.author.name,
-					m.author.discriminator,
 					m.content
 				)
 			)
