@@ -548,8 +548,11 @@ async def findu(client, message, **kwargs):
 	embed = discord.Embed(description='Matched ' + displaymatch, colour=targetmember.colour)
 	embed.set_image(url=targetmember.display_avatar.url)
 	embed.add_field(name='Nickname' if targetmember.nick is not None else 'No Nickname', value=utils.mdspecialchars(targetmember.nick) if targetmember.nick is not None else 'No Nickname')
+	if targetmember.global_name is not None:
+		embed.add_field(name='Global Name', value=utils.mdspecialchars(targetmember.global_name))
 	embed.add_field(name='Username', value=utils.mdspecialchars(targetmember.name))
-	embed.add_field(name='Discriminator', value='#{}'.format(targetmember.discriminator))
+	if targetmember.discriminator != '0':
+		embed.add_field(name='Discriminator', value='#{}'.format(targetmember.discriminator))
 	embed.add_field(name='User ID', value=targetmember.id)
 	embed.add_field(name='Bot', value='Yes' if checks.is_bot(targetmember) else 'No')
 	embed.add_field(name=displaygamestatus, value=displaygamename)
