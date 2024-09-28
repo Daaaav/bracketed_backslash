@@ -713,11 +713,11 @@ async def on_member_ban(guild, user):
 			reason = ban.reason
 
 		logmessage = (
-			'**Ban on user**: {}#{} ({})\n'
+			'**Ban on user**: {} ({})\n'
 			'**Reason**: {}\n'
 			#'Responsible moderator: {}'
 		).format(
-			user.name, user.discriminator, user.mention,
+			user.name, user.mention,
 			reason
 		)
 		emb = discord.Embed(title='Preview', description=logmessage + '(responsible moderator?)')
@@ -746,7 +746,7 @@ async def on_member_ban(guild, user):
 		reaction, user = await wrapper.client.wait_for('reaction_add', check=react_check)
 
 		if str(reaction.emoji).startswith('🙋'):
-			logmessage += '**Responsible moderator**: {}'.format(user)
+			logmessage += '**Responsible moderator**: {}'.format(user.name)
 		else:
 			logmessage += 'This ban was placed after discussion and agreement by moderators.'
 
