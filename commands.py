@@ -505,7 +505,7 @@ async def source(client, message, **kwargs):
 	content = 'Source code to the bot: https://gitgud.io/infoteddy/bracketed_backslash'
 	await bot.reply(message, content)
 
-@shadow(aliases=['findup'])
+@shadow(aliases=['findup', 'info'])
 async def findu(client, message, **kwargs):
 	if kwargs['arguments'] is None:
 		targetmember = message.author
@@ -1266,44 +1266,6 @@ async def rulemaint(client, message, **kwargs):
 	with open('disabledrules.json', 'w') as outfile:
 		json.dump(wrapper.disabledrules, outfile)
 	await bot.reply(message, emb=embed)
-
-@shadow()
-async def info(client, message, **kwargs):
-	persontocheck = utils.match_input(message.guild.members, discord.Member, kwargs['arguments'])
-	if persontocheck is None:
-		embed = emb.error(bot.t['specify_user'])
-		await bot.reply(message, emb=embed)
-		return
-	yesperm = '✅'
-	noperm = '⛔'
-	perms = message.channel.permissions_for(persontocheck)
-
-	leftover = []
-	for detected_p in iter(perms):
-		leftover.append(detected_p[0])
-
-	content = 'Permissions for **``{}``**`#{}` in <#{}>:\n**`Server Owner:`** {}'.format(
-		persontocheck.name,
-		persontocheck.discriminator,
-		message.channel.id,
-		yesperm if persontocheck == persontocheck.guild.owner else noperm,
-	)
-
-	for stored_p in bot.permissionlabels:
-		if not stored_p[0] in leftover:
-			content += '\n**`{}:`** NOT USED'.format(stored_p[1])
-		else:
-			content += '\n**`{}:`** {}'.format(stored_p[1], yesperm if getattr(perms, stored_p[0]) else noperm)
-			leftover.remove(stored_p[0])
-		if perms.administrator:
-			await bot.reply(message, content)
-			return
-
-	for left_p in leftover:
-		# Apparently these permissions are new
-		content += '\n`{}:` {}'.format(left_p, yesperm if getattr(perms, left_p) else noperm)
-
-	await bot.reply(message, content)
 
 @shadow(auth=checks.is_role_manager)
 async def channelperms(client, message, **kwargs):

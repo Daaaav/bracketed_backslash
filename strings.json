@@ -17,36 +17,6 @@
 		"editingmasterval": "\n⚠ Master value edited",
 		"generic_error": "A fault did occur.\nKindly inform any bot-programming human what you did want to occur if this fault didn\u2019t obstruct this bot’s normal functions.\nIf a function of yours _is_ to program this bot, kindly ask this bot\u2019s host for any logs from this fault."
 	},
-	"permissionlabels": [
-		["administrator", "Administrator"],
-		["manage_guild", "Manage Server"],
-		["manage_channels", "Manage Channels"],
-		["manage_roles", "Manage Roles"],
-		["ban_members", "Ban Members"],
-		["kick_members", "Kick Members"],
-		["move_members", "Move Members"],
-		["deafen_members", "Deafen Members"],
-		["mute_members", "Mute Members"],
-		["manage_webhooks", "Manage Webhooks"],
-		["manage_nicknames", "Manage Nicknames"],
-		["manage_emojis", "Manage Custom Emotes"],
-		["manage_messages", "Manage Messages"],
-		["change_nickname", "Change Nickname"],
-		["mention_everyone", "Mention General Mentions"],
-		["external_emojis", "Use External Emotes"],
-		["attach_files", "Attach Files"],
-		["embed_links", "Embed Links"],
-		["send_tts_messages", "Use Text-to-Speech"],
-		["read_message_history", "Read Message History"],
-		["send_messages", "Send Messages"],
-		["add_reactions", "Add Reactions"],
-		["read_messages", "Read Messages"],
-		["use_voice_activation", "Use Voice Activity"],
-		["speak", "Speak"],
-		["connect", "Connect"],
-		["create_instant_invite", "Create Instant Invite"],
-		["view_audit_log", "View Audit Log"]
-	],
 	"cmds": [
 		{
 			"cat_name": "General Commands",
@@ -68,11 +38,6 @@
 					"name": "echo",
 					"short": "Echoes your input.",
 					"extra": ""
-				},
-				{
-					"name": "info",
-					"short": "Gives information about a user.",
-					"extra": "Remind Info Teddy to do more than just permissions for the user."
 				},
 				{
 					"name": "findu",

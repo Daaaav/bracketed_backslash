@@ -59,7 +59,6 @@ time.tzset()
 
 t = {}
 cmds = []
-permissionlabels = []
 help_info_string = ''
 
 def loadstrings():
@@ -67,10 +66,9 @@ def loadstrings():
 	stringsfr = stringsf.read()
 	strings = json.loads(stringsfr)
 	# TODO: noone better not put this on a cs grad thread
-	global t, cmds, permissionlabels, help_info_string
+	global t, cmds, help_info_string
 	t = strings['t']
 	cmds = strings['cmds']
-	permissionlabels = strings['permissionlabels']
 	help_info_string = strings['help_info_string']
 
 loadstrings()
