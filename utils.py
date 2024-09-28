@@ -1010,6 +1010,7 @@ def get_channel_type_name(channel: discord.abc.GuildChannel) -> str:
 		discord.ChannelType.public_thread: 'Public Thread',
 		discord.ChannelType.private_thread: 'Private Thread',
 		discord.ChannelType.forum: 'Forum Channel',
+		discord.ChannelType.media: 'Media Chanel',
 	}
 
 	retval = lookup.get(channel.type, 'Unknown Type Channel')
@@ -1037,6 +1038,7 @@ def get_channel_type_emoji(channel: discord.abc.GuildChannel) -> str:
 		discord.ChannelType.public_thread: '\N{SPOOL OF THREAD}',
 		discord.ChannelType.private_thread: '\N{SEWING NEEDLE}',
 		discord.ChannelType.forum: '\N{CLASSICAL BUILDING}',
+		discord.ChannelType.media: '\N{FRAME WITH PICTURE}',
 	}
 
 	retval = lookup.get(channel.type, '\N{BLACK QUESTION MARK ORNAMENT}')
