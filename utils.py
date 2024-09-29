@@ -290,15 +290,6 @@ def safefilename(string):
 async def id_lookup(uid: int) -> discord.User:
 	"""Return a discord.User object with a given ID. If the ID is not a
 	user ID and doesn't exist on Discord, return None.
-
-	Since a discord.User object is returned, the only attributes that should be used are:
-	- avatar/display_avatar/default_avatar
-	- bot
-	- discriminator
-	- name/display_name
-	- mention/mentioned_in
-	- id
-	- created_at
 	"""
 
 	# Look through all members the bot can see for any matching the ID
@@ -688,9 +679,9 @@ def logfailedcommand(command, arguments, message):
 	if arguments is None:
 		arguments = ''
 	logging.info(
-		'%s %s attempted by %s#%s (uuid %s) at %s utc but failed',
+		'%s %s attempted by %s (uuid %s) at %s utc but failed',
 		command, arguments,
-		message.author.name, message.author.discriminator, message.author.id,
+		message.author.name, message.author.id,
 		message.created_at,
 	)
 
@@ -698,9 +689,9 @@ def logcommand(command, arguments, message):
 	if arguments is None:
 		arguments = ''
 	logging.info(
-		'%s %s called by %s#%s (uuid %s) at %s utc',
+		'%s %s called by %s (uuid %s) at %s utc',
 		command, arguments,
-		message.author.name, message.author.discriminator, message.author.id,
+		message.author.name, message.author.id,
 		message.created_at,
 	)
 
@@ -995,13 +986,12 @@ def get_kbps(bitrate: int) -> str:
 	return '{} kbps'.format(kbps)
 
 def obj_info(obj: discord.Object, *, markdown: bool = True) -> str:
-	r"""Return a 'NAME (ID)' string, or 'NAME#DISCRIM (ID)' string, with the name bolded if
-	`markdown` is True (which it is by default). Also if `markdown` is True, it automatically
-	handles mdspecialchars().
+	r"""Return a 'NAME (ID)' string, with the name bolded if `markdown` is True (which it
+	is by default). Also if `markdown` is True, it automatically handles mdspecialchars().
 
 	Examples:
 		**\[\\\]** (328235381738962947)
-		**Info Teddy**#3737 (146814960574398464)
+		**infoteddy** (146814960574398464)
 	"""
 
 	if markdown:
@@ -1009,10 +999,6 @@ def obj_info(obj: discord.Object, *, markdown: bool = True) -> str:
 	else:
 		name = obj.name
 	id_ = '({})'.format(obj.id)
-
-	if hasattr(obj, 'discriminator'): # Only users have discriminators
-		discrim = '#{}'.format(obj.discriminator)
-		return '{}{} {}'.format(name, discrim, id_)
 
 	return '{} {}'.format(name, id_)
 
