@@ -149,19 +149,24 @@ def match_input(iterable, objtype, request):
 	It is recommended you filter out unneeded objects from `iterable` when using this function.
 
 	The following priority is used:
-	1) (Members only) Mention: <@146814960574398464> or <@!146814960574398464>
-	2) (Channels only) Mention: <#153368829160849408>
-	3) (Roles only) Mention: <@&153369506813706240>
-	4) (Emojis only) Emoji: <:unjoy:263889385492185088>
-	5) ID: 146814960574398464
-	6) (Members only) Username/Username+Discriminator (Discord tag)/Nickname, whatever
-	discord.Guild.get_member_named() accepts: Info Teddy, Info Teddy#3737, info teddy
-	7) Name: tOLP, general, Owner, unjoy
-	8) (Members only) Case-insensitive nickname complete match: info teddy
-	9) Case-insensitive name complete match: Info Teddy, tolp, owner
-	10) (Members only) Case-insensitive nickname partial match: info
-	11) Case-insensitive name partial match: Info, tOL, own
-	12) (Members only) Discriminator only (either with or without #): 3737
+	1) ID or mention.
+		For ANY type:  146814960574398464
+		For members:   <@146814960574398464> or <@!146814960574398464>
+		For channels:  <#153368829160849408>
+		For roles:     <@&153369506813706240>
+		For emojis:    <:shiny:1049463259201273906> or <a:shiny_anim:1092513647709933568>
+	2) Exact name, case-sensitive
+		For members, this is their unique [a-z0-9_.] username.
+		For other objects, this can be anything, and is not necessarily unique.
+	3) The following algorithm:
+		for (full, startswith, contains):
+			for (cs, ci):
+				for (name, server_nick, global_nick):
+					return if this matches
+
+		server_nick and global_nick are only checked for members.
+		Since (full, cs, name) is first, this algorithm indeed starts with 2).
+		So you can skip from 1) to 3) - I just thought it was important to mention explicitly.
 	"""
 	acceptvals = (
 		discord.Member,
@@ -173,7 +178,6 @@ def match_input(iterable, objtype, request):
 	if objtype not in acceptvals:
 		raise ValueError('objtype has to be one of ' + str(acceptvals))
 
-	target = None
 	int_request = None
 
 	# If nothing was specified, then we're done quickly.
@@ -188,127 +192,48 @@ def match_input(iterable, objtype, request):
 		elif (objtype is discord.Member and request[1] == '@') or \
 		(objtype is discord.abc.GuildChannel and request[1] == '#'):
 			int_request = int(request[2:-1])
-		elif objtype is discord.Emoji and request[1] == request[-20] == ':':
-			int_request = int(request[-19:-1])
-	elif request.isdigit() and len(request) != 4:
+		elif objtype is discord.Emoji:
+			m = re.search('^<a?:[^:]*:(?P<id>[0-9]+)>$', request)
+			if m is not None:
+				int_request = int(m.group('id'))
+	elif request.isdigit():
 		int_request = int(request)
 
 	# Now get the object from the ID (if we got any)
 	if int_request is not None:
 		target = discord.utils.find(lambda x: x.id == int_request, iterable)
+		if target is not None:
+			return target
 
-	if target is not None:
-		return target
+	# We're still executing, so we didn't get an ID. Time for the algorithm!
+	#	for (full, startswith, contains):
+	#		for (cs, ci):
+	#			for (name, server_nick, global_nick):
+	#				return if this matches
+	def match(extent:str, ci:bool, obj_name:str, req_name:str):
+		if obj_name is None:
+			return False
+		if ci:
+			obj_name = obj_name.lower()
+			req_name = req_name.lower()
+		if extent == 'full':
+			return obj_name == req_name
+		if extent == 'startswith':
+			return obj_name.startswith(req_name)
+		return obj_name.find(req_name) != -1
 
-	# We're still executing, so we didn't get an ID
-	if objtype is discord.Member:
-		# Not my problem
-		return match_member_attrs(iterable, request)
+	for extent in ('full', 'startswith', 'contains'):
+		for ci in (False, True):
+			for attr in ('name', 'nick', 'global_name'):
+				if objtype is not discord.Member and attr != 'name':
+					continue
 
-	# Every other type here
+				for obj in iterable:
+					if hasattr(obj, attr) and match(extent, ci, getattr(obj, attr), request):
+						return obj
 
-	namematched = None
-	namefound = None
+	return None
 
-	for obj in iterable:
-		if obj.name is None:
-			continue
-		if obj.name.lower() == request.lower():
-			namematched = obj
-			break
-		if obj.name.lower().find(request.lower()) != -1:
-			namefound = obj
-			break
-
-	target = namematched if namematched else namefound
-
-	return target
-
-def match_member_attrs(iterable, request):
-	"""Return a discord.Member object from an iterable of discord.Member objects, given a
-	string that could match the object in any way.
-
-	This is a match_input() helper function.
-
-	The following priority is used:
-	1) Username/Username+Discriminator (Discord tag)/Nickname, whatever
-	discord.Guild.get_member_named() accepts: Info Teddy, Info Teddy#3737, info teddy
-	2) Name: tOLP, general, Owner, unjoy
-	3) Case-insensitive nickname complete match: info teddy
-	4) Case-insensitive name complete match: Info Teddy, tolp, owner
-	5) Case-insensitive nickname partial match: info
-	6) Case-insensitive name partial match: Info, tOL, own
-	7) Discriminator only (either with or without #): 3737
-	"""
-	# Let's be flexible
-	if not isinstance(iterable, list):
-		iterable = list(iterable)
-
-	# Let's create an object close to a discord.Guild, so we
-	# can use discord.Guild.get_member_named()
-	class DuckTypedGuild:  # pylint: disable=too-few-public-methods
-		members = []
-	dt_guild = DuckTypedGuild()
-
-	# Let's create an object close to a discord.Member, so we
-	# can actually use discord.Guild.get_member_named()
-	# if we want to use User objects
-	# without pulling our fucking hair out
-	class DuckTypedMember: # pylint: disable=too-few-public-methods
-		def __init__(self, actual_member):
-			self.id = actual_member.id
-			self.nick = None
-			self.name = actual_member.name
-			self.discriminator = actual_member.discriminator
-
-	for idx, member in enumerate(iterable):
-		if not hasattr(member, 'nick'):
-			iterable[idx] = DuckTypedMember(member)
-
-	dt_guild.members = iterable
-
-	target = discord.Guild.get_member_named(dt_guild, request)
-
-	if target is not None:
-		return target
-
-	# Not found by guild.get_member_named()
-
-	# Everything else fails? Then try searching.
-	# Nicknames have priority, then usernames.
-	# Maybe we're entering just a discriminator, match those as well.
-	nickmatched = None
-	usermatched = None
-	nickfound = None
-	userfound = None
-	discmatched = None
-
-	for member in dt_guild.members:
-		if member.nick and member.nick.lower() == request.lower():
-			nickmatched = member
-			break
-		if member.name.lower() == request.lower():
-			usermatched = member
-			break
-		if member.nick and member.nick.lower().find(request.lower()) != -1:
-			nickfound = member
-			break
-		if member.name.lower().find(request.lower()) != -1:
-			userfound = member
-			break
-		if member.discriminator == request or \
-		(request.startswith('#') and \
-		member.discriminator == request[1:]):
-			discmatched = member
-			break
-
-	target = nickmatched if nickmatched is not None else \
-	usermatched if usermatched is not None else \
-	nickfound if nickfound is not None else \
-	userfound if userfound is not None else \
-	discmatched
-
-	return target
 
 def bracketlevels(condstring):
 	"""Changes input string so that brackets have an indication of what level they are on.
