@@ -464,7 +464,7 @@ async def log_joined_member(
 			wrapper.inv_cache[guild.id] = []
 
 		all_invites = utils.invite_diff(wrapper.inv_cache[guild.id], all_invites)
-		all_invites = list(filter(lambda i: i.uses > 0, all_invites))
+		all_invites = list(filter(lambda i: i.uses is not None and i.uses > 0, all_invites))
 
 		if len(all_invites) == 1:
 			invite = all_invites[0]
