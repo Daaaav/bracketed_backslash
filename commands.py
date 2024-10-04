@@ -879,7 +879,7 @@ async def expiryremove(client, message, **kwargs):
 			bot.rolexpiresave()
 		else:
 			embed = emb.error(
-				'Could not find <@!{}> in the expiry list.'.format(
+				'Could not find <@{}> in the expiry list.'.format(
 					targetmember.id
 				)
 			)
@@ -1744,19 +1744,19 @@ async def b(client, message, **kwargs):
 					message.guild.get_member(currentexpiry[0]),
 					message.guild
 				)
-				content +='\n<@!{}> lifted normally'.format(
+				content +='\n<@{}> lifted normally'.format(
 					currentexpiry[0]
 				)
 			else:
 				# Look in the role cache
 				if utils.removerolecache(currentexpiry[0], message.guild.id):
 					utils.rolecachesave()
-					content += '\n<@!{}> lifted via role cache'.format(
+					content += '\n<@{}> lifted via role cache'.format(
 						currentexpiry[0]
 					)
 				else:
 					content += (
-						'\n<@!{}> cannot be found '
+						'\n<@{}> cannot be found '
 						'in the role cache!'
 					).format(currentexpiry[0])
 			# Shorten this again
@@ -1766,7 +1766,7 @@ async def b(client, message, **kwargs):
 			if not utils.removeexpiryentry(message.guild.id, currentexpiry[0]):
 				em = emb.warning((
 					'Could not remove expiry entry for '
-					'<@!{}>! Debug: S:{} M:{} SI:{} MI:{}'
+					'<@{}>! Debug: S:{} M:{} SI:{} MI:{}'
 				).format(
 					currentexpiry[0],
 					message.guild.id,
@@ -1775,7 +1775,7 @@ async def b(client, message, **kwargs):
 					currentexpiry[0] in wrapper.rolexpires
 				))
 				await specialchannel.send(embed=em)
-			expiredmentions.append('<@!{}>'.format(currentexpiry[0]))
+			expiredmentions.append('<@{}>'.format(currentexpiry[0]))
 
 		utils.rolexpiresave()
 
@@ -1952,7 +1952,7 @@ async def b_id(client, message, **kwargs):
 		# see whether the ban was made after the person left the guild
 		ban_days = config.get_s('tntgb', message.guild.id)['ban_days']
 		announcemsg = (
-			'<@!{}>  has been banned for {ban_days} days by {} in {} for {}.'
+			'<@{}>  has been banned for {ban_days} days by {} in {} for {}.'
 		).format(
 			request,
 			message.author.display_name,
@@ -1975,7 +1975,7 @@ async def b_id(client, message, **kwargs):
 			e_channel=sentmessage.channel.id, e_message=sentmessage.id,
 			e_newcontent='[LIFTED] ' + announcemsg,
 			p_channel=ban_log_channel.id,
-			p_content='The ban on <@!{}> has expired.'.format(request),
+			p_content='The ban on <@{}> has expired.'.format(request),
 		)
 
 		utils.rolexpiresave()
@@ -2094,7 +2094,7 @@ async def tntgb_maint(client, message, **kwargs):
 					e_message=getmessage.id,
 					e_newcontent=content,
 					p_channel=ban_log_channel.id,
-					p_content='The ban on <@!{}> has expired.'.format(userid),
+					p_content='The ban on <@{}> has expired.'.format(userid),
 				)
 			else:
 				utils.addexpiryentry(
@@ -2105,10 +2105,10 @@ async def tntgb_maint(client, message, **kwargs):
 					e_message='0',
 					e_newcontent='',
 					p_channel=ban_log_channel.id,
-					p_content='The ban on <@!{}> has expired.'.format(userid),
+					p_content='The ban on <@{}> has expired.'.format(userid),
 				)
 
-			output = 'I found the member <@!{}>, and it expires {}. Also, the message was {} sent by me. Did I do it right?'.format(
+			output = 'I found the member <@{}>, and it expires {}. Also, the message was {} sent by me. Did I do it right?'.format(
 				userid, utils.reltime(newexpires),
 				"" if sentbybot else "not"
 			)

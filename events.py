@@ -272,7 +272,7 @@ async def on_message(m):
 		)
 		e.add_field(
 			name='Message author',
-			value='<@!{id}> ({id})'.format(id=m.author.id)
+			value='<@{id}> ({id})'.format(id=m.author.id)
 		)
 		await schan.send(embed=e)
 

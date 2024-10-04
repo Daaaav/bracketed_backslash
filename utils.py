@@ -103,7 +103,7 @@ async def handle_delete_overedited_message(msg, schan):
 			)
 			em.add_field(
 				name='Message author',
-				value='<@!{0}> ({0})'.format(msg.author.id),
+				value='<@{0}> ({0})'.format(msg.author.id),
 			)
 		except discord.errors.NotFound:
 			em = discord.Embed(
@@ -123,7 +123,7 @@ async def handle_delete_overedited_message(msg, schan):
 			)
 			em.add_field(
 				name='Message author',
-				value='<@!{id}> ({id})'.format(id=msg.author.id),
+				value='<@{id}> ({id})'.format(id=msg.author.id),
 			)
 		await schan.send(embed=em)
 
@@ -535,14 +535,14 @@ async def autoExpiry():
 						cguild.get_member(userid),
 						cguild,
 					)
-					content += '\nRoles for <@!{}> reset.'.format(userid)
+					content += '\nRoles for <@{}> reset.'.format(userid)
 				except (AttributeError, TypeError):
 					# Look if they are in the role cache, and reset it there instead.
 					if removerolecache(userid, guildid):
-						content += '\n<@!{}> was supposed to have their roles reset now, they aren’t on the server, but they’ve successfully been removed from the role cache.'.format(userid)
+						content += '\n<@{}> was supposed to have their roles reset now, they aren’t on the server, but they’ve successfully been removed from the role cache.'.format(userid)
 						rolecachesave()
 					else:
-						content += '\n<@!{}> was supposed to have their roles reset now, but they can be found neither on the server nor in the role cache!'.format(userid)
+						content += '\n<@{}> was supposed to have their roles reset now, but they can be found neither on the server nor in the role cache!'.format(userid)
 
 				# Shorten the following thing so we don't have to keep typing it.
 				thisexpiry = wrapper.rolexpires[guildid][userid]
@@ -744,7 +744,7 @@ async def newmemberroles(member, specialchannel, bypassjoinchannel):
 						continue
 					addingtheseroles.append(addingrole)
 			await member.add_roles(*addingtheseroles)
-			content = '<@!{id}> ({id}) found in the role cache\n'.format(id=member.id)
+			content = '<@{id}> ({id}) found in the role cache\n'.format(id=member.id)
 			value = '_{} role'.format(str(len(addingtheseroles)))
 			value += 's:' if len(addingtheseroles) != 1 else ':'
 			value += listroles(addingtheseroles) + '_'
