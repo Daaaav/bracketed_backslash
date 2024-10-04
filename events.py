@@ -677,7 +677,7 @@ async def on_member_remove(member):
 			# so we'll have to, hurr durr, filter it ourselves
 			if discord.utils.snowflake_time(entry.id) > \
 			discord.utils.utcnow() - datetime.timedelta(seconds=2) and \
-			entry.target.id == member.id:
+			hasattr(entry.target, 'id') and entry.target.id == member.id:
 				moderator = entry.user
 				action = entry.action
 				reason = entry.reason
