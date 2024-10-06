@@ -1064,39 +1064,47 @@ async def log_changed_guild_mfa_level(
 		embed=discord.Embed(description='SERVER 2FA DISABLED')
 	await log_channel.send(embed=embed)
 
-async def log_changed_guild_emotes(
+async def log_changed_guild_emotes_or_stickers(
 	log_channel: discord.TextChannel,
-	old: Sequence[discord.Emoji],
-	new: Sequence[discord.Emoji],
+	old: Sequence[Union[discord.Emoji, discord.Sticker]],
+	new: Sequence[Union[discord.Emoji, discord.Sticker]],
+	is_sticker: bool
 ) -> None:
-	"""Log emotes being added or removed from a guild."""
+	"""Log emotes or stickers being added or removed from a guild, or edited.
+	These are also called "expressions" so that's what we'll call them here.
+	(Actually, there's also soundboard sounds, but I don't think there's events for those...)
+	"""
 
 	diff = list(set(old).symmetric_difference(set(new)))
-	emote_list = ''
-	for emote in diff:
-		emote_list += '{str} – {0}\n'.format(utils.obj_info(emote), str=str(emote))
+	expr_list = ''
+	for expr in diff:
+		expr_list += '{str} – {0}\n'.format(utils.obj_info(expr), str=str(expr))
 	if len(old) > len(new):
-		desc = 'EMOTE REMOVE'
+		desc = 'STICKER REMOVED' if is_sticker else 'EMOTE REMOVED'
 	elif len(old) < len(new):
-		desc = 'EMOTE ADD'
+		desc = 'STICKER ADDED' if is_sticker else 'EMOTE ADDED'
 	else:
-		# Emote name change, get the emote in question
-		for old_emote in old:
-			for new_emote in new:
-				if old_emote.id == new_emote.id and old_emote.name != new_emote.name:
-					changed_old_emote = old_emote
-					changed_new_emote = new_emote
+		# Attribute change, get the emote/sticker in question
+		for old_expr in old:
+			for new_expr in new:
+				if old_expr.id == new_expr.id:
+					if old_expr.name != new_expr.name \
+					or (hasattr(old_expr, 'emoji') and old_expr.emoji != new_expr.emoji) \
+					or (hasattr(old_expr, 'description') and old_expr.description != new_expr.description):
+						changed_old_expr = old_expr
+						changed_new_expr = new_expr
+						break
 
 		embed = discord.Embed(
-			title='EMOTE NAME CHANGE',
-			description=str(changed_new_emote),
+			title='STICKER EDITED' if is_sticker else 'EMOTE EDITED',
+			description=str(changed_new_expr),
 		)
-		embed.add_field(name='Older Name', value=changed_old_emote.name)
-		embed.add_field(name='Newer Name', value=changed_new_emote.name)
+		embed.add_field(name='Older Name', value=changed_old_expr.name)
+		embed.add_field(name='Newer Name', value=changed_new_expr.name)
 		await log_channel.send(embed=embed)
 		return
 	embed = discord.Embed(description=desc)
-	embed.add_field(name='Emotes', value=emote_list)
+	embed.add_field(name='Stickers' if is_sticker else 'Emotes', value=expr_list)
 	await log_channel.send(embed=embed)
 
 async def log_created_guild_channel(

@@ -936,12 +936,19 @@ async def on_guild_update(before, after):
 	if before.mfa_level != after.mfa_level and not utils.logdisabled('guild_2fa', after):
 		await logs.log_changed_guild_mfa_level(specialchannel, before, after)
 
-async def on_guild_emojis_update(guild, b, a):
+async def on_guild_emojis_update(guild, before, after):
 	if utils.logdisabled('guild_emotes', guild):
 		# We could split this into separate emotes_* log types
 		return
 	schan = utils.getspecialchannel(guild)
-	await logs.log_changed_guild_emotes(schan, b, a)
+	await logs.log_changed_guild_emotes_or_stickers(schan, before, after, False)
+
+async def on_guild_stickers_update(guild, before, after):
+	if utils.logdisabled('guild_emotes', guild):
+		# We're just gonna reuse this one, they're really similar...
+		return
+	schan = utils.getspecialchannel(guild)
+	await logs.log_changed_guild_emotes_or_stickers(schan, before, after, True)
 
 async def on_voice_state_update(member, old, new):
 	if old.channel == new.channel:
