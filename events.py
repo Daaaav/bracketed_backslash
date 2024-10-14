@@ -1130,6 +1130,35 @@ async def on_raw_reaction_clear(payload):
 		schan = utils.getspecialchannel(mchan.guild)
 		await logs.log_cleared_uncached_reactions(schan, mchan, payload)
 
+async def on_thread_create(thread):
+	if utils.logdisabled('thread_create', thread.guild):
+		return
+
+	parent_chan = thread.parent
+
+	if parent_chan is not None:
+		if isinstance(parent_chan, discord.abc.PrivateChannel) or \
+		utils.channelnotlogged(parent_chan, parent_chan.guild):
+			return
+
+	schan = utils.getspecialchannel(thread.guild)
+
+	await logs.log_created_thread(schan, thread)
+
+async def on_raw_thread_delete(payload):
+	# We use this for both cached and uncached threads,
+	# so we don't need on_thread_delete at all.
+
+	parent_chan = wrapper.client.get_channel(payload.parent_id)
+
+	if isinstance(parent_chan, discord.abc.PrivateChannel) or \
+	utils.logdisabled('thread_delete', parent_chan.guild) or \
+	utils.channelnotlogged(parent_chan, parent_chan.guild):
+		return
+
+	schan = utils.getspecialchannel(parent_chan.guild)
+	await logs.log_deleted_thread(schan, parent_chan, payload)
+
 # TODO: Implement on_reaction_clear_emoji() and on_raw_reaction_clear_emoji()
 
 async def on_guild_channel_update(b, a):

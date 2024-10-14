@@ -32,6 +32,9 @@ channel_add
 channel_remove
 channel_rename
 
+thread_create
+thread_delete
+
 role_create
 role_delete
 role_rename

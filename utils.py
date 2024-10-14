@@ -11,7 +11,7 @@ import math
 import re
 import time
 import threading
-from typing import Tuple
+from typing import Tuple, Union
 
 import discord
 
@@ -31,7 +31,7 @@ def mdspecialchars(string, character='\\'):
 		newstring += character + i if i not in notspecialchars else i
 	return newstring
 
-def id_summary(*, uid=None, mid=None, cid=None, rid=None, eid=None, character=' '):
+def id_summary(*, uid=None, mid=None, tid=None, cid=None, rid=None, eid=None, character=' '):
 	"""Return a oneline summary of IDs."""
 
 	summary = []
@@ -40,6 +40,8 @@ def id_summary(*, uid=None, mid=None, cid=None, rid=None, eid=None, character=' 
 		summary.append('\N{BUST IN SILHOUETTE}' + str(uid))
 	if mid:
 		summary.append('\N{SPEECH BALLOON}' + str(mid))
+	if tid:
+		summary.append('\N{SPOOL OF THREAD}' + str(tid))
 	if cid:
 		summary.append('\N{TELEVISION}' + str(cid))
 	if rid:
@@ -913,7 +915,10 @@ def embed_manual_jump_link(embed, *, gid, cid, mid):
 		inline=False,
 	)
 
-def get_channel_type_name(channel: discord.abc.GuildChannel) -> str:
+def get_channel_type_name(
+	channel: Union[discord.abc.GuildChannel, discord.Thread],
+	channeltype: discord.ChannelType = None
+) -> str:
 	lookup = {
 		discord.ChannelType.text: 'Text Channel',
 		discord.ChannelType.voice: 'Voice Channel',
@@ -929,7 +934,13 @@ def get_channel_type_name(channel: discord.abc.GuildChannel) -> str:
 		discord.ChannelType.media: 'Media Chanel',
 	}
 
-	retval = lookup.get(channel.type, 'Unknown Type Channel')
+	if channeltype is None:
+		channeltype = channel.type
+
+	retval = lookup.get(channeltype, 'Unknown Type Channel')
+
+	if channel is None:
+		return retval
 
 	try:
 		nsfw = channel.is_nsfw()
@@ -941,7 +952,10 @@ def get_channel_type_name(channel: discord.abc.GuildChannel) -> str:
 
 	return retval
 
-def get_channel_type_emoji(channel: discord.abc.GuildChannel) -> str:
+def get_channel_type_emoji(
+	channel: Union[discord.abc.GuildChannel, discord.Thread],
+	channeltype: discord.ChannelType = None
+) -> str:
 	lookup = {
 		discord.ChannelType.text: '\N{SPEECH BALLOON}',
 		discord.ChannelType.voice: '\N{STUDIO MICROPHONE}',
@@ -957,7 +971,13 @@ def get_channel_type_emoji(channel: discord.abc.GuildChannel) -> str:
 		discord.ChannelType.media: '\N{FRAME WITH PICTURE}',
 	}
 
-	retval = lookup.get(channel.type, '\N{BLACK QUESTION MARK ORNAMENT}')
+	if channeltype is None:
+		channeltype = channel.type
+
+	retval = lookup.get(channeltype, '\N{BLACK QUESTION MARK ORNAMENT}')
+
+	if channel is None:
+		return retval
 
 	try:
 		nsfw = channel.is_nsfw()

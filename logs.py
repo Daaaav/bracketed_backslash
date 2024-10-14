@@ -1460,3 +1460,60 @@ async def log_renamed_guild_channel(
 	embed.add_field(name='Older Name', value=utils.mdspecialchars(old.name))
 	embed.add_field(name='Newer Name', value=utils.mdspecialchars(new.name))
 	await log_channel.send(embed=embed)
+
+async def log_created_thread(
+	log_channel: discord.TextChannel, thread: discord.Thread
+) -> None:
+	"""Log a created thread."""
+
+	embed = discord.Embed(
+		title='{emoji}\N{BLACK RIGHTWARDS ARROW}{name} CREATED'.format(
+			emoji=utils.get_channel_type_emoji(thread),
+			name=utils.get_channel_type_name(thread).upper(),
+		),
+		description='**{name}**'.format(name=utils.mdspecialchars(thread.name)),
+		colour=utils.colorize(thread.id),
+		timestamp=discord.utils.utcnow(),
+	)
+
+	if thread.parent is not None:
+		# It can be None, but that would probably be very bad
+		embed.add_field(
+			name='Parent Channel',
+			value='#{name}'.format(name=utils.mdspecialchars(thread.parent.name)),
+		)
+		embed.set_footer(text=utils.id_summary(tid=thread.id, cid=thread.parent.id))
+	else:
+		embed.set_footer(text=utils.id_summary(tid=thread.id))
+
+	await log_channel.send(embed=embed)
+
+async def log_deleted_thread(
+	log_channel: discord.TextChannel,
+	parent_channel: Union[discord.ForumChannel, discord.TextChannel],
+	payload: discord.RawThreadDeleteEvent
+) -> None:
+	"""Log a deleted thread."""
+
+	description = None
+	if payload.thread is not None:
+		description = '**{name}**'.format(name=utils.mdspecialchars(payload.thread.name))
+
+	embed = discord.Embed(
+		title='{emoji}\N{NO ENTRY SIGN}{name} DELETED'.format(
+			emoji=utils.get_channel_type_emoji(channel=None, channeltype=payload.thread_type),
+			name=utils.get_channel_type_name(channel=None, channeltype=payload.thread_type).upper(),
+		),
+		description=description,
+		colour=utils.colorize(payload.thread_id),
+		timestamp=discord.utils.utcnow(),
+	)
+
+	embed.add_field(
+		name='Originally created',
+		value=utils.reltime(time.mktime(discord.utils.snowflake_time(payload.thread_id).timetuple())),
+	)
+
+	embed.set_footer(text=utils.id_summary(tid=payload.thread_id, cid=payload.parent_id))
+
+	await log_channel.send(embed=embed)
