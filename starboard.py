@@ -102,7 +102,8 @@ async def check_message(payload, channel, adding):
 		return
 
 	# Ignore the ignored channels
-	if payload.channel_id in config.get_s('starboard_ignoredchannels', payload.guild_id):
+	ignored_channels = config.get_s('starboard_ignoredchannels', payload.guild_id)
+	if payload.channel_id in ignored_channels:
 		return
 
 	# Maybe the user is starboard-banned, trying to sneak through when someone else's reaction
@@ -117,6 +118,13 @@ async def check_message(payload, channel, adding):
 	)
 	if orig_message is None:
 		orig_message = await channel.fetch_message(payload.message_id)
+
+	# Right, so we ignored the ignored channels above...
+	# But we didn't know yet if this was a message in a thread *in* an ignored channel.
+	# Probably ignore those too.
+	if isinstance(orig_message.channel, discord.Thread) and \
+	orig_message.channel.parent_id in ignored_channels:
+		return
 
 	# We only really need the User, not Member.
 	reaction_user = wrapper.client.get_user(payload.user_id)
