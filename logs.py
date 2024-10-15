@@ -1095,6 +1095,9 @@ async def log_changed_guild_emotes_or_stickers(
 						changed_new_expr = new_expr
 						break
 
+		if changed_new_expr is None:
+			return
+
 		embed = discord.Embed(
 			title='STICKER EDITED' if is_sticker else 'EMOTE EDITED',
 			description=str(changed_new_expr),
