@@ -186,8 +186,6 @@ async def replyattach(messageobject, filetoattach, fname, message=''):
 	)
 
 async def sync_invite_cache(client, cache):
-	logging.info('%s: Syncing invite cache', datetime.datetime.now())
-
 	for guild in client.guilds:
 		if guild.id not in cache:
 			cache[guild.id] = []
