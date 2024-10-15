@@ -515,14 +515,6 @@ async def on_message_edit(old, new):
 		return
 	if utils.usernotlogged(new.author, new.guild):
 		return
-	edited_at = new.edited_at
-	if edited_at is None or edited_at < discord.utils.utcnow() - datetime.timedelta(days=1):
-		logging.info(
-			'Suppressing message edit event for {} because it was last edited {}'.format(
-				new.id, edited_at
-			)
-		)
-		return
 	schan = utils.getspecialchannel_reply(new)
 	if not old.pinned and new.pinned and not utils.logdisabled('message_pin', new.guild):
 		await logs.log_pinned_message(schan, new)
@@ -531,9 +523,17 @@ async def on_message_edit(old, new):
 
 	if not utils.logdisabled('message_deleteembed', new.guild) \
 	and len(old.embeds) > len(new.embeds) and old.content == new.content:
-		await logs.log_deleted_embed(schan, new, edited_at)
+		await logs.log_deleted_embed(schan, new, new.edited_at)
 
-	# Preliminary checkings
+	edited_at = new.edited_at
+	if edited_at is None or edited_at < discord.utils.utcnow() - datetime.timedelta(days=1):
+		logging.info(
+			'Suppressing message edit event for {} because it was last edited {}'.format(
+				new.id, edited_at
+			)
+		)
+		return
+
 	if old.content == new.content:
 		# Must be the message being pinned and/or embed(s) displaying
 		# Actually, TTS and rich embeds could also have changed,
