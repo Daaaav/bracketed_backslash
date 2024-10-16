@@ -6,7 +6,6 @@
 
 import inspect
 import importlib
-import logging
 import pkgutil
 import sys
 
@@ -48,11 +47,9 @@ def recursive_reload(module, *, include=None):
 
 	wrapper.set_current_commit()
 
-logging.basicConfig(level=logging.INFO)
-
 with open('bot_token.conf', 'r') as f:
 	token = f.readline().strip()
 
 if __name__ == '__main__':
-	wrapper.client.run(token)
+	wrapper.client.run(token, root_logger=True)
 	sys.exit(exit_code)
