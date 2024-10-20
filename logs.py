@@ -286,6 +286,12 @@ async def log_updated_roles(
 		)
 		embed.set_footer(text=utils.id_summary(uid=new.id, rid=nitrobooster.id))
 		await log_channel.send(embed=embed)
+
+		if len(addedroles) + len(removedroles) <= 1:
+			# Boost role is the only role that was changed, so no need to
+			# give another embed that only says "1 role added/removed"...
+			return
+
 	if addedroles or removedroles:
 		title = ''
 		desc = ''
