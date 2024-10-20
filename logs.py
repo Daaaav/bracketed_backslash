@@ -44,14 +44,9 @@ async def log_deleted_message(log_channel: discord.TextChannel, message: discord
 		icon_url=message.author.display_avatar.url,
 	)
 
-	embed.add_field(
-		name='\u200b',
-		value=utils.mdspecialchars(
-			utils.id_summary(uid=message.author.id, mid=message.id, cid=message.channel.id),
-		)
-	)
-
+	embed.set_footer(text=utils.id_summary(uid=message.author.id, mid=message.id, cid=message.channel.id))
 	await log_channel.send(embed=embed)
+
 	if message.attachments != []:
 		# FIXME: This only does one attachment!
 		filepath = (
@@ -164,10 +159,10 @@ async def log_deleted_embed(
 
 	embed.add_field(
 		name='\u200b',
-		value=utils.get_jump_link(message) + '\n' + utils.mdspecialchars(
-			utils.id_summary(uid=message.author.id, mid=message.id, cid=message.channel.id),
-		),
+		value=utils.get_jump_link(message),
 	)
+
+	embed.set_footer(text=utils.id_summary(uid=message.author.id, mid=message.id, cid=message.channel.id))
 	await log_channel.send(embed=embed)
 
 async def log_edited_message(
@@ -214,10 +209,10 @@ async def log_edited_message(
 
 	embed.add_field(
 		name='\u200b',
-		value=utils.get_jump_link(new) + '\n' + utils.mdspecialchars(
-			utils.id_summary(uid=new.author.id, mid=new.id, cid=new.channel.id),
-		),
+		value=utils.get_jump_link(new),
 	)
+
+	embed.set_footer(text=utils.id_summary(uid=new.author.id, mid=new.id, cid=new.channel.id))
 	await log_channel.send(embed=embed)
 
 async def log_changed_nickname(
@@ -249,14 +244,7 @@ async def log_changed_nickname(
 			value=utils.mdspecialchars(new.nick),
 		)
 
-	embed.add_field(
-		name='\u200b',
-		value=utils.mdspecialchars(
-			utils.id_summary(uid=new.id),
-		),
-		inline=False,
-	)
-
+	embed.set_footer(text=utils.id_summary(uid=new.id))
 	await log_channel.send(embed=embed)
 
 async def log_updated_roles(
@@ -389,12 +377,7 @@ async def log_changed_tag(
 	embed.add_field(name='Older Username', value=utils.mdspecialchars(old.name))
 	embed.add_field(name='Newer Username', value=utils.mdspecialchars(new.name))
 
-	embed.add_field(
-		name='\u200b',
-		value=utils.mdspecialchars(utils.id_summary(uid=new.id)),
-		inline=False,
-	)
-
+	embed.set_footer(text=utils.id_summary(uid=new.id))
 	await log_channel.send(embed=embed)
 
 async def log_changed_avatar(
@@ -512,14 +495,9 @@ async def log_joined_member(
 
 		embed.add_field(name='Joined with invite', value=invite_status)
 
-	embed.add_field(
-		name='\u200b',
-		value=utils.mdspecialchars(utils.id_summary(uid=member.id)),
-		inline=False,
-	)
-
 	embed.set_author(name=member.display_name, icon_url=member.display_avatar.url)
 	embed.set_thumbnail(url=member.display_avatar.url)
+	embed.set_footer(text=utils.id_summary(uid=member.id))
 	await log_channel.send(embed=embed)
 
 async def log_removed_member(
@@ -572,15 +550,10 @@ async def log_removed_member(
 			value=reason if reason else '\u200b',
 		)
 
-	embed.add_field(
-		name='\u200b',
-		value=utils.mdspecialchars(utils.id_summary(uid=member.id)),
-		inline=False,
-	)
-
 	embed.set_author(name=member.display_name, icon_url=member.display_avatar.url)
 	embed.set_thumbnail(url=member.display_avatar.url)
 
+	embed.set_footer(text=utils.id_summary(uid=member.id))
 	await log_channel.send(embed=embed)
 
 async def log_banned_member(
@@ -862,17 +835,18 @@ async def log_added_reaction(
 
 	embed.add_field(
 		name='\u200b',
-		value=utils.get_jump_link(message) + '\n' + utils.mdspecialchars(
-			utils.id_summary(
-				uid=user.id,
-				mid=message.id,
-				eid=reaction.emoji.id if is_custom_emoji else '',
-				character='\n' if is_custom_emoji else ' ',
-			),
-		),
+		value=utils.get_jump_link(message),
 		inline=False,
 	)
 
+	embed.set_footer(
+		text=utils.id_summary(
+			uid=user.id,
+			mid=message.id,
+			eid=reaction.emoji.id if is_custom_emoji else '',
+			character='\n' if is_custom_emoji else ' ',
+		)
+	)
 	await log_channel.send(embed=embed)
 
 async def log_removed_reaction(
@@ -916,15 +890,18 @@ async def log_removed_reaction(
 
 	embed.add_field(
 		name='\u200b',
-		value=utils.get_jump_link(message) + '\n' + utils.mdspecialchars(utils.id_summary(
+		value=utils.get_jump_link(message),
+		inline=False,
+	)
+
+	embed.set_footer(
+		text=utils.id_summary(
 			uid=user.id,
 			mid=message.id,
 			eid=reaction.emoji.id if is_custom_emoji else '',
 			character='\n' if is_custom_emoji else ' ',
-		)),
-		inline=False,
+		)
 	)
-
 	await log_channel.send(embed=embed)
 
 async def log_cleared_reactions(
@@ -1165,12 +1142,7 @@ async def log_created_guild_channel(
 			),
 		)
 
-	embed.add_field(
-		name='\u200b',
-		value=utils.mdspecialchars(utils.id_summary(cid=channel.id)),
-		inline=False,
-	)
-
+	embed.set_footer(text=utils.id_summary(cid=channel.id))
 	await log_channel.send(embed=embed)
 
 async def log_deleted_guild_channel(
@@ -1200,12 +1172,7 @@ async def log_deleted_guild_channel(
 		value=utils.reltime(time.mktime(channel.created_at.timetuple())),
 	)
 
-	embed.add_field(
-		name='\u200b',
-		value=utils.mdspecialchars(utils.id_summary(cid=channel.id)),
-		inline=False,
-	)
-
+	embed.set_footer(text=utils.id_summary(cid=channel.id))
 	await log_channel.send(embed=embed)
 
 async def log_bulk_deleted_messages(
@@ -1240,12 +1207,8 @@ async def log_bulk_deleted_messages(
 		colour=0xFF0000,
 		timestamp=discord.utils.utcnow(),
 	)
-	embed.add_field(
-		name='\u200b',
-		value=utils.mdspecialchars(
-			utils.id_summary(cid=channel.id),
-		)
-	)
+
+	embed.set_footer(text=utils.id_summary(cid=channel.id))
 	await log_channel.send(embed=embed)
 
 async def log_deleted_uncached_message(
@@ -1345,8 +1308,8 @@ async def log_updated_uncached_message(
 			' I can’t give you its older properties.'
 		)
 	)
-	embed.set_footer(text=utils.id_summary(uid=author_id, mid=payload.data['id']))
 	utils.embed_manual_jump_link(embed, gid=channel.guild.id, cid=channel.id, mid=payload.data['id'])
+	embed.set_footer(text=utils.id_summary(uid=author_id, mid=payload.data['id']))
 	await log_channel.send(embed=embed)
 
 async def log_added_uncached_reaction(
@@ -1382,8 +1345,8 @@ async def log_added_uncached_reaction(
 			id=payload.emoji.id,
 		) if payload.emoji.id is not None else payload.emoji.name,
 	)
-	embed.set_footer(text=utils.id_summary(uid=author.id, cid=channel.id, mid=payload.message_id))
 	utils.embed_manual_jump_link(embed, gid=channel.guild.id, cid=channel.id, mid=payload.message_id)
+	embed.set_footer(text=utils.id_summary(uid=author.id, cid=channel.id, mid=payload.message_id))
 	await log_channel.send(embed=embed)
 
 async def log_removed_uncached_reaction(
@@ -1419,8 +1382,8 @@ async def log_removed_uncached_reaction(
 			id=payload.emoji.id,
 		) if payload.emoji.id is not None else payload.emoji.name,
 	)
-	embed.set_footer(text=utils.id_summary(uid=author.id, cid=channel.id, mid=payload.message_id))
 	utils.embed_manual_jump_link(embed, gid=channel.guild.id, cid=channel.id, mid=payload.message_id)
+	embed.set_footer(text=utils.id_summary(uid=author.id, cid=channel.id, mid=payload.message_id))
 	await log_channel.send(embed=embed)
 
 async def log_cleared_uncached_reactions(
@@ -1441,8 +1404,8 @@ async def log_cleared_uncached_reactions(
 		),
 		colour=channel.guild.me.colour,
 	)
-	embed.set_footer(text=utils.id_summary(cid=channel.id, mid=payload.message_id))
 	utils.embed_manual_jump_link(embed, gid=channel.guild.id, cid=channel.id, mid=payload.message_id)
+	embed.set_footer(text=utils.id_summary(cid=channel.id, mid=payload.message_id))
 	await log_channel.send(embed=embed)
 
 async def log_renamed_guild_channel(
@@ -1479,16 +1442,16 @@ async def log_created_thread(
 		timestamp=discord.utils.utcnow(),
 	)
 
+	parent_id = None
 	if thread.parent is not None:
 		# It can be None, but that would probably be very bad
 		embed.add_field(
 			name='Parent Channel',
 			value='#{name}'.format(name=utils.mdspecialchars(thread.parent.name)),
 		)
-		embed.set_footer(text=utils.id_summary(tid=thread.id, cid=thread.parent.id))
-	else:
-		embed.set_footer(text=utils.id_summary(tid=thread.id))
+		parent_id = thread.parent.id
 
+	embed.set_footer(text=utils.id_summary(tid=thread.id, cid=parent_id))
 	await log_channel.send(embed=embed)
 
 async def log_deleted_thread(
