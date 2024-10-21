@@ -27,7 +27,7 @@ async def log_deleted_message(log_channel: discord.TextChannel, message: discord
 
 	embed = discord.Embed(
 		title=(
-			'\N{NO ENTRY SIGN}{system}MESSAGE {withatch}DELETED (SENT {reltime} IN #{chan})'
+			'\N{NO ENTRY SIGN} {system}MESSAGE {withatch}DELETED (SENT {reltime} IN #{chan})'
 		).format(
 			system='SYSTEM ' if message.is_system() else '',
 			withatch='WITH ATTACHMENT ' if message.attachments != [] else '',
@@ -57,7 +57,7 @@ async def log_deleted_message(log_channel: discord.TextChannel, message: discord
 		)
 		if os.path.isfile(filepath):
 			con = (
-				'_\N{PAPERCLIP}The attachment for message {0.id} is attached._'
+				'_\N{PAPERCLIP} The attachment for message {0.id} is attached._'
 			).format(message)
 			try:
 				await log_channel.send(
@@ -84,7 +84,7 @@ async def log_pinned_message(log_channel: discord.TextChannel, message: discord.
 
 	embed = discord.Embed(
 		title=(
-			'\N{PUSHPIN}MESSAGE PINNED (SENT {reltime} IN #{chan})'
+			'\N{PUSHPIN} MESSAGE PINNED (SENT {reltime} IN #{chan})'
 		).format(
 			reltime=utils.reltime(time.mktime(message.created_at.timetuple())),
 			chan=utils.mdspecialchars(message.channel.name),
@@ -107,7 +107,7 @@ async def log_unpinned_message(log_channel: discord.TextChannel, message: discor
 
 	embed = discord.Embed(
 		title=(
-			'\N{PUSHPIN}MESSAGE UNPINNED (SENT {reltime} IN #{chan})'
+			'\N{PUSHPIN} MESSAGE UNPINNED (SENT {reltime} IN #{chan})'
 		).format(
 			reltime=utils.reltime(time.mktime(message.created_at.timetuple())),
 			chan=utils.mdspecialchars(message.channel.name),
@@ -132,7 +132,7 @@ async def log_deleted_embed(
 
 	embed = discord.Embed(
 		title=(
-			'\N{MEMO}EMBED REMOVED FROM MESSAGE (SENT {reltime} IN #{chan})'
+			'\N{MEMO} EMBED REMOVED FROM MESSAGE (SENT {reltime} IN #{chan})'
 		).format(
 			reltime=utils.reltime(
 				time.mktime(
@@ -173,7 +173,7 @@ async def log_edited_message(
 
 	embed = discord.Embed(
 		title=(
-			'\N{MEMO}MESSAGE{withattach} EDITED (SENT {reltime} IN #{chan})'
+			'\N{MEMO} MESSAGE{withattach} EDITED (SENT {reltime} IN #{chan})'
 		).format(
 			withattach=' WITH ATTACHMENT' if new.attachments else '',
 			reltime=utils.reltime(
@@ -218,7 +218,7 @@ async def log_changed_nickname(
 	"""Log that a member's nickname was changed."""
 
 	embed = discord.Embed(
-		title='\N{REGIONAL INDICATOR SYMBOL LETTER N}\N{PAGER}CHANGED NICKNAME',
+		title='\N{PAGER} CHANGED NICKNAME',
 		colour=new.colour,
 	)
 
@@ -304,7 +304,7 @@ async def log_updated_roles(
 		removedroles_list = rolelist(removedroles)
 
 		if mixed:
-			title = '\N{TWISTED RIGHTWARDS ARROWS}ROLES CHANGED FOR USER'
+			title = '\N{TWISTED RIGHTWARDS ARROWS} ROLES CHANGED FOR USER'
 		elif addedroles:
 			if addedplural:
 				title = 'ROLES ADDED TO USER'
@@ -314,7 +314,7 @@ async def log_updated_roles(
 				desc = '**{}**'.format(utils.mdspecialchars(addedroles[0].name))
 				roleid = addedroles[0].id
 				color = addedroles[0].colour
-			title = '\N{INBOX TRAY}{}'.format(title)
+			title = '\N{INBOX TRAY} {}'.format(title)
 		elif removedroles:
 			if removedplural:
 				title = 'ROLES REMOVED FROM USER'
@@ -324,7 +324,7 @@ async def log_updated_roles(
 				desc = '**{}**'.format(utils.mdspecialchars(removedroles[0].name))
 				roleid = removedroles[0].id
 				color = removedroles[0].colour
-			title = '\N{OUTBOX TRAY}{}'.format(title)
+			title = '\N{OUTBOX TRAY} {}'.format(title)
 
 		title = '\N{KEY}{}'.format(title)
 
@@ -384,9 +384,9 @@ async def log_joined_member(
 
 	embed = discord.Embed(
 		title=(
-			'\N{BLACK RIGHTWARDS ARROW}JOINED SERVER'
+			'\N{BLACK RIGHTWARDS ARROW} JOINED SERVER'
 			if not member.bot else
-			'\N{BLACK RIGHTWARDS ARROW}\N{ROBOT FACE}BOT ADDED TO SERVER'
+			'\N{BLACK RIGHTWARDS ARROW}\N{ROBOT FACE} BOT ADDED TO SERVER'
 		),
 		color=utils.colorize(member),
 	)
@@ -439,17 +439,17 @@ async def log_removed_member(
 	"""
 
 	if member.bot:
-		bot_ = '\N{ROBOT FACE}BOT '
+		bot_ = '\N{ROBOT FACE} BOT'
 	else:
 		bot_ = ''
 
 	if action is discord.AuditLogAction.kick:
-		title = '\N{MANS SHOE}\N{DOOR}{bot}KICKED FROM SERVER'.format(bot=bot_)
+		title = '\N{MANS SHOE}\N{DOOR}{bot} KICKED FROM SERVER'.format(bot=bot_)
 	elif action is discord.AuditLogAction.ban:
 		# TODO: Implement, taking care of on_member_ban() in the process
 		pass
 	else:
-		title = '\N{DOOR}{bot}REMOVED FROM SERVER'.format(bot=bot_)
+		title = '\N{DOOR}{bot} REMOVED FROM SERVER'.format(bot=bot_)
 
 	embed = discord.Embed(
 		title=title,
@@ -514,7 +514,7 @@ async def log_created_role(
 	"""Log a created role. Also if it's the Nitro Booster role, add a special message."""
 
 	embed = discord.Embed(
-		title='ROLE ADD AT {time}'.format(time=str(role.created_at)),
+		title='ROLE ADDED',
 		description=utils.mdspecialchars(role.name),
 		colour=role.colour,
 	)
@@ -528,7 +528,7 @@ async def log_deleted_role(log_channel: discord.TextChannel, role: discord.Role)
 	"""Log a deleted role."""
 
 	embed = discord.Embed(
-		title='ROLE REMOVE',
+		title='ROLE REMOVED',
 		description=utils.mdspecialchars(role.name),
 		colour=role.colour,
 	)
@@ -541,7 +541,7 @@ async def log_renamed_role(
 	"""Log a renamed role."""
 
 	embed = discord.Embed(
-		title='ROLE NAME CHANGE',
+		title='ROLE NAME CHANGED',
 		description=utils.mdspecialchars(new.name),
 		colour=new.colour,
 	)
@@ -553,7 +553,7 @@ async def log_hoisted_role(log_channel: discord.TextChannel, role: discord.Role)
 	"""Log a hoisted role."""
 
 	embed = discord.Embed(
-		title='ROLE HOIST',
+		title='ROLE HOISTED',
 		description='{name}\nID: {id}'.format(
 			name=utils.mdspecialchars(role.name),
 			id=role.id,
@@ -566,7 +566,7 @@ async def log_unhoisted_role(log_channel: discord.TextChannel, role: discord.Rol
 	"""Log an unhoisted role."""
 
 	embed = discord.Embed(
-		title='ROLE UNHOIST',
+		title='ROLE UNHOISTED',
 		description='{name}\nID: {id}'.format(
 			name=utils.mdspecialchars(role.name),
 			id=role.id,
@@ -680,7 +680,7 @@ async def log_changed_role_color(
 	"""Log a changed role color."""
 
 	embed = discord.Embed(
-		title='ROLE COLOR CHANGE',
+		title='ROLE COLOR CHANGED',
 		description=utils.mdspecialchars(new.name),
 		colour=new.colour,
 	)
@@ -702,7 +702,7 @@ async def log_changed_role_permissions(
 	# FIXME: This only does one permission!
 	diff = list(set(old.permissions).symmetric_difference(set(new.permissions)))
 	embed = discord.Embed(
-		title='ROLE PERMISSIONS CHANGE',
+		title='ROLE PERMISSIONS CHANGED',
 		description=utils.obj_info(new),
 		colour=new.colour,
 	)
@@ -729,7 +729,7 @@ async def log_added_reaction(
 
 	embed = discord.Embed(
 		title=(
-			'\N{WHITE SMILING FACE}\N{UPWARDS BLACK ARROW}'
+			'\N{WHITE SMILING FACE}\N{UPWARDS BLACK ARROW} '
 			'REACTION ADDED TO MESSAGE (SENT {reltime} IN #{name})'
 		).format(
 			reltime=utils.reltime(time.mktime(message.created_at.timetuple())),
@@ -786,7 +786,7 @@ async def log_removed_reaction(
 
 	embed = discord.Embed(
 		title=(
-			'\N{WHITE SMILING FACE}\N{NO ENTRY SIGN}'
+			'\N{WHITE SMILING FACE}\N{NO ENTRY SIGN} '
 			'REACTION REMOVED FROM MESSAGE (SENT {reltime} IN #{name})'
 		).format(
 			reltime=utils.reltime(time.mktime(message.created_at.timetuple())),
@@ -868,7 +868,7 @@ async def log_changed_guild_icon(
 ) -> None:
 	"""Log a changed guild icon."""
 
-	embed = discord.Embed(description='Server changed icon')
+	embed = discord.Embed(title='SERVER CHANGED ICON')
 	if old.icon is not None:
 		embed.set_thumbnail(url=old.icon.url)
 	embed.add_field(
@@ -888,7 +888,7 @@ async def log_renamed_guild(
 ) -> None:
 	"""Log a renamed guild."""
 
-	embed = discord.Embed(description='Server changed name')
+	embed = discord.Embed(title='SERVER CHANGED NAME')
 	if new.icon is not None:
 		embed.set_thumbnail(url=new.icon.url)
 	embed.add_field(name='Older name', value=utils.mdspecialchars(old.name))
@@ -904,7 +904,7 @@ async def log_changed_guild_afk_timeout(
 	b_h, b_m = divmod(b_m, 60)
 	a_m, a_s = divmod(new.afk_timeout, 60)
 	a_h, a_s = divmod(a_m, 60)
-	embed = discord.Embed(description='AFK TIMEOUT CHANGE')
+	embed = discord.Embed(title='AFK TIMEOUT CHANGED')
 	if new.icon is not None:
 		embed.set_thumbnail(url=new.icon.url)
 	embed.add_field(
@@ -922,7 +922,7 @@ async def log_changed_guild_afk_channel(
 ) -> None:
 	"""Log a changed AFK channel."""
 
-	embed = discord.Embed(description='AFK CHANNEL CHANGE')
+	embed = discord.Embed(title='AFK CHANNEL CHANGED')
 	if new.icon is not None:
 		embed.set_thumbnail(url=new.icon.url)
 	embed.add_field(
@@ -940,7 +940,7 @@ async def log_changed_guild_verification_level(
 ) -> None:
 	"""Log a changed verification level."""
 
-	embed = discord.Embed(description='VERIFICATION LEVEL CHANGE')
+	embed = discord.Embed(title='VERIFICATION LEVEL CHANGED')
 	if new.icon is not None:
 		embed.set_thumbnail(url=new.icon.url)
 	embed.add_field(
@@ -959,9 +959,9 @@ async def log_changed_guild_mfa_level(
 	"""Log two-factor authentication being turned on or off."""
 
 	if old.mfa_level == discord.MFALevel.disabled and new.mfa_level == discord.MFALevel.require_2fa:
-		embed=discord.Embed(description='SERVER 2FA ENABLED')
+		embed=discord.Embed(title='SERVER 2FA ENABLED')
 	elif old.mfa_level == discord.MFALevel.require_2fa and new.mfa_level == discord.MFALevel.disabled:
-		embed=discord.Embed(description='SERVER 2FA DISABLED')
+		embed=discord.Embed(title='SERVER 2FA DISABLED')
 	await log_channel.send(embed=embed)
 
 async def log_changed_guild_emotes_or_stickers(
@@ -980,9 +980,9 @@ async def log_changed_guild_emotes_or_stickers(
 	for expr in diff:
 		expr_list += '{str} – {0}\n'.format(utils.obj_info(expr), str=str(expr))
 	if len(old) > len(new):
-		desc = 'STICKER REMOVED' if is_sticker else 'EMOTE REMOVED'
+		title = 'STICKER REMOVED' if is_sticker else 'EMOTE REMOVED'
 	elif len(old) < len(new):
-		desc = 'STICKER ADDED' if is_sticker else 'EMOTE ADDED'
+		title = 'STICKER ADDED' if is_sticker else 'EMOTE ADDED'
 	else:
 		# Attribute change, get the emote/sticker in question
 		for old_expr in old:
@@ -1006,7 +1006,7 @@ async def log_changed_guild_emotes_or_stickers(
 		embed.add_field(name='Newer name', value=changed_new_expr.name)
 		await log_channel.send(embed=embed)
 		return
-	embed = discord.Embed(description=desc)
+	embed = discord.Embed(title=title)
 	embed.add_field(name='Stickers' if is_sticker else 'Emotes', value=expr_list)
 	await log_channel.send(embed=embed)
 
@@ -1016,7 +1016,7 @@ async def log_created_guild_channel(
 	"""Log a created channel."""
 
 	embed = discord.Embed(
-		title='{emoji}\N{BLACK RIGHTWARDS ARROW}{name} CREATED'.format(
+		title='{emoji}\N{BLACK RIGHTWARDS ARROW} {name} CREATED'.format(
 			emoji=utils.get_channel_type_emoji(channel),
 			name=utils.get_channel_type_name(channel).upper(),
 		),
@@ -1073,7 +1073,7 @@ async def log_deleted_guild_channel(
 	"""Log a deleted channel."""
 
 	embed = discord.Embed(
-		title='{emoji}\N{NO ENTRY SIGN}{name} DELETED'.format(
+		title='{emoji}\N{NO ENTRY SIGN} {name} DELETED'.format(
 			emoji=utils.get_channel_type_emoji(channel),
 			name=utils.get_channel_type_name(channel).upper(),
 		),
@@ -1115,7 +1115,7 @@ async def log_bulk_deleted_messages(
 	newest_time = ((newest_id >> 22) + 1420070400000)/1000
 
 	embed = discord.Embed(
-		title='\N{RADIOACTIVE SIGN}{amount} MESSAGES PURGED IN #{channel.name}'.format(
+		title='\N{RADIOACTIVE SIGN} {amount} MESSAGES PURGED IN #{channel.name}'.format(
 			amount=len(payload.message_ids), channel=channel
 		),
 		description=(
@@ -1336,7 +1336,7 @@ async def log_renamed_guild_channel(
 	"""Log a renamed channel."""
 
 	embed = discord.Embed(
-		title='{emoji}\N{TWISTED RIGHTWARDS ARROWS}{name} UPDATE'.format(
+		title='{emoji}\N{TWISTED RIGHTWARDS ARROWS} {name} RENAMED'.format(
 			emoji=utils.get_channel_type_emoji(new),
 			name=utils.get_channel_type_name(new).upper(),
 		),
@@ -1353,7 +1353,7 @@ async def log_created_thread(
 	"""Log a created thread."""
 
 	embed = discord.Embed(
-		title='{emoji}\N{BLACK RIGHTWARDS ARROW}{name} CREATED'.format(
+		title='{emoji}\N{BLACK RIGHTWARDS ARROW} {name} CREATED'.format(
 			emoji=utils.get_channel_type_emoji(thread),
 			name=utils.get_channel_type_name(thread).upper(),
 		),
@@ -1385,7 +1385,7 @@ async def log_deleted_thread(
 		description = '**{name}**'.format(name=utils.mdspecialchars(payload.thread.name))
 
 	embed = discord.Embed(
-		title='{emoji}\N{NO ENTRY SIGN}{name} DELETED'.format(
+		title='{emoji}\N{NO ENTRY SIGN} {name} DELETED'.format(
 			emoji=utils.get_channel_type_emoji(channel=None, channeltype=payload.thread_type),
 			name=utils.get_channel_type_name(channel=None, channeltype=payload.thread_type).upper(),
 		),
