@@ -557,11 +557,11 @@ async def on_message_edit(old, new):
 	config.get_s('edited_message_resend_threshold', new.guild.id)):
 		embed = discord.Embed(title='UNEDITED MESSAGE', colour=new.author.colour)
 
-		embed.add_field(name='Older Content', value=old.content[:1024], inline=False)
+		embed.add_field(name='Older content', value=old.content[:1024], inline=False)
 		if len(old.content) > 1024:
 			embed.add_field(name='[continued]', value=old.content[1024:], inline=False)
 
-		embed.add_field(name='Newer Content', value=new.content[:1024], inline=False)
+		embed.add_field(name='Newer content', value=new.content[:1024], inline=False)
 		if len(new.content) > 1024:
 			embed.add_field(name='[continued]', value=new.content[1024:], inline=False)
 

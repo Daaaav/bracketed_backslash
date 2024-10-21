@@ -112,7 +112,7 @@ async def _help(client, message, **kwargs):
 async def restart(client, message, **kwargs):
 	embed = emb.success('Restarting.', True)
 	embed.add_field(name='Uptime', value=utils.reltime(wrapper.boottimeunix, True))
-	embed.add_field(name='Messages in Cache', value=str(len(client.cached_messages)))
+	embed.add_field(name='Messages in cache', value=str(len(client.cached_messages)))
 	utils.logcommand(kwargs['command'], kwargs['arguments'], message)
 	await bot.reply(message, emb=embed)
 	await client.close()
@@ -518,10 +518,10 @@ async def findu(client, message, **kwargs):
 	displaymatch = '<@{}>'.format(targetmember.id)
 	if targetmember.activity is None:
 		memberhasgame = False
-		displaygamestatus = 'Not Playing'
-		displaygamename = 'Not Playing'
-		displaygameurlstatus = 'No Stream Link'
-		displaygameurl = 'No Stream Link'
+		displaygamestatus = 'Not playing'
+		displaygamename = '\u200b'
+		displaygameurlstatus = 'No stream link'
+		displaygameurl = '\u200b'
 	else:
 		memberhasgame = True
 
@@ -540,16 +540,16 @@ async def findu(client, message, **kwargs):
 			displaygamestatus = 'Watching'
 
 		if not hasattr(targetmember.activity, 'url') or targetmember.activity.url is None:
-			displaygameurlstatus = 'No Stream Link'
-			displaygameurl = 'No Stream Link'
+			displaygameurlstatus = 'No stream link'
+			displaygameurl = '\u200b'
 		else:
-			displaygameurlstatus = 'Stream Link'
+			displaygameurlstatus = 'Stream link'
 			displaygameurl = utils.mdspecialchars(targetmember.activity.url)
 	embed = discord.Embed(description='Matched ' + displaymatch, colour=targetmember.colour)
 	embed.set_image(url=targetmember.display_avatar.url)
-	embed.add_field(name='Nickname' if targetmember.nick is not None else 'No Nickname', value=utils.mdspecialchars(targetmember.nick) if targetmember.nick is not None else 'No Nickname')
+	embed.add_field(name='Nickname' if targetmember.nick is not None else 'No nickname', value=utils.mdspecialchars(targetmember.nick) if targetmember.nick is not None else '\u200b')
 	if targetmember.global_name is not None:
-		embed.add_field(name='Global Name', value=utils.mdspecialchars(targetmember.global_name))
+		embed.add_field(name='Global name', value=utils.mdspecialchars(targetmember.global_name))
 	embed.add_field(name='Username', value=utils.mdspecialchars(targetmember.name))
 	if targetmember.discriminator != '0':
 		embed.add_field(name='Discriminator', value='#{}'.format(targetmember.discriminator))
@@ -557,16 +557,16 @@ async def findu(client, message, **kwargs):
 	embed.add_field(name='Bot', value='Yes' if checks.is_bot(targetmember) else 'No')
 	embed.add_field(name=displaygamestatus, value=displaygamename)
 	embed.add_field(name=displaygameurlstatus, value=displaygameurl)
-	embed.add_field(name='Status', value='Do Not Disturb' if str(targetmember.status) == 'dnd' else str(targetmember.status).title())
+	embed.add_field(name='Status', value='Do not disturb' if str(targetmember.status) == 'dnd' else str(targetmember.status).title())
 	embed.add_field(
-		name='Joined Server At',
+		name='Joined server at',
 		value=time.strftime(
 			config.get_s('timeformat', message.guild.id),
 			targetmember.joined_at.timetuple(),
 		),
 	)
 	embed.add_field(
-		name='Joined Discord At',
+		name='Joined Discord at',
 		value=time.strftime(
 			config.get_s('timeformat', message.guild.id),
 			targetmember.created_at.timetuple(),
@@ -611,12 +611,12 @@ async def findc(client, message, **kwargs):
 			em.set_thumbnail(url=message.guild.icon.url)
 
 		utils.paginate_field(em, max_length=1024,
-			name='Text Channels ({0})'.format(tchanc),
+			name='Text channels ({0})'.format(tchanc),
 			value=tchans,
 			inline=False,
 		)
 		utils.paginate_field(em, max_length=1024,
-			name='Voice Channels ({0})'.format(vchanc),
+			name='Voice channels ({0})'.format(vchanc),
 			value=vchans,
 			inline=False,
 		)
@@ -647,22 +647,22 @@ async def findc(client, message, **kwargs):
 		),
 	)
 	em.add_field(
-		name='Topic' if hasattr(tgt, 'topic') and tgt.topic else 'No Topic',
-		value=tgt.topic if hasattr(tgt, 'topic') and tgt.topic else 'No Topic',
+		name='Topic' if hasattr(tgt, 'topic') and tgt.topic else 'No topic',
+		value=tgt.topic if hasattr(tgt, 'topic') and tgt.topic else '\u200b',
 	)
 	em.add_field(
-		name='Created At',
+		name='Created at',
 		value=time.strftime(
 			config.get_s('timeformat', message.guild.id),
 			tgt.created_at.timetuple(),
 		),
 	)
 	em.add_field(
-		name='User Limit',
+		name='User limit',
 		value='N/A' if not isinstance(tgt, discord.VoiceChannel) else str(tgt.user_limit),
 	)
 	em.add_field(
-		name='Voice Members',
+		name='Voice members',
 		value=(
 			'N/A' if not isinstance(tgt, discord.VoiceChannel) else
 			str(len(tgt.members))
@@ -677,7 +677,7 @@ async def findc(client, message, **kwargs):
 	)
 	em.add_field(name='Overwrites', value=str(len(tgt.overwrites)))
 	em.add_field(
-		name='Readable By',
+		name='Readable by',
 		value=(
 			'N/A' if not isinstance(tgt, discord.TextChannel) else
 			str(readbleby) + ' members'
@@ -1430,17 +1430,17 @@ async def botok(client, message, **kwargs):
 async def uptime(client, message, **kwargs):
 	hostuptime = subprocess.Popen(['uptime', '-p'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
 	embed = discord.Embed(colour=col.r_success, timestamp=message.created_at)
-	embed.set_author(name='Uptime Statistics', icon_url=client.user.display_avatar.url)
+	embed.set_author(name='Uptime statistics', icon_url=client.user.display_avatar.url)
 	embed.set_thumbnail(url=client.user.display_avatar.url)
-	embed.set_footer(text='Uptime Statistics', icon_url=client.user.display_avatar.url)
-	embed.add_field(name='Boot Time', value=wrapper.boottime)
+	embed.set_footer(text='Uptime statistics', icon_url=client.user.display_avatar.url)
+	embed.add_field(name='Boot time', value=wrapper.boottime)
 	try:
 		now = config.get_s('timeformat', message.guild.id)
 	except AttributeError:
 		now = config.get_s('timeformat')
-	embed.add_field(name='Current Time', value=time.strftime(now))
-	embed.add_field(name='Bot Uptime', value=utils.reltime(wrapper.boottimeunix, True))
-	embed.add_field(name='Host Uptime', value=hostuptime.decode('utf-8'))
+	embed.add_field(name='Current time', value=time.strftime(now))
+	embed.add_field(name='Bot uptime', value=utils.reltime(wrapper.boottimeunix, True))
+	embed.add_field(name='Host uptime', value=hostuptime.decode('utf-8'))
 	await bot.reply(message, emb=embed)
 
 @shadow()
@@ -1456,9 +1456,9 @@ async def invite(client, message, **kwargs):
 @shadow()
 async def version(client, message, **kwargs):
 	embed = discord.Embed(colour=col.r_success, timestamp=message.created_at)
-	embed.set_author(name='Version Information', icon_url=client.user.display_avatar.url)
+	embed.set_author(name='Version information', icon_url=client.user.display_avatar.url)
 	embed.set_thumbnail(url=client.user.display_avatar.url)
-	embed.set_footer(text='Version Information', icon_url=client.user.display_avatar.url)
+	embed.set_footer(text='Version information', icon_url=client.user.display_avatar.url)
 	embed.set_thumbnail(url=client.user.display_avatar.url)
 	embed.add_field(name='\\[\\\\\\]', value='{}, commit {}{}'.format(
 		bot.version,
@@ -3948,7 +3948,7 @@ async def randwiki(client, message, **kwargs):
 	except wikipedia.DisambiguationError as e:
 		info = wikipedia.page(random.choice(e.options))
 
-	embed = discord.Embed(title='Random Wikipedia Article', colour=discord.Colour.orange())
+	embed = discord.Embed(title='Random Wikipedia article', colour=discord.Colour.orange())
 	embed.add_field(name=info.original_title, value=info.url, inline=False)
 	embed.add_field(name='Summary', value=info.summary[:1024], inline=False)
 

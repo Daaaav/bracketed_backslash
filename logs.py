@@ -149,9 +149,9 @@ async def log_deleted_embed(
 	)
 
 	if message.content:
-		embed.add_field(name='Message Content', value=message.content[:1024], inline=False)
+		embed.add_field(name='Message content', value=message.content[:1024], inline=False)
 	else:
-		embed.add_field(name='No Message Content', value='_(none)_', inline=False)
+		embed.add_field(name='No message content', value='\u200b', inline=False)
 	if len(message.content) > 1024:
 		embed.add_field(name='[continued]', value=message.content[1024:], inline=False)
 
@@ -191,16 +191,16 @@ async def log_edited_message(
 	)
 
 	if old.content:
-		embed.add_field(name='Older Content', value=old.content[:1024], inline=False)
+		embed.add_field(name='Older content', value=old.content[:1024], inline=False)
 	else:
-		embed.add_field(name='No Older Content', value='_(none)_', inline=False)
+		embed.add_field(name='No older content', value='\u200b', inline=False)
 	if len(old.content) > 1024:
 		embed.add_field(name='[continued]', value=old.content[1024:], inline=False)
 
 	if new.content:
-		embed.add_field(name='Newer Content', value=new.content[:1024], inline=False)
+		embed.add_field(name='Newer content', value=new.content[:1024], inline=False)
 	else:
-		embed.add_field(name='No Newer Content', value='_(none)_', inline=False)
+		embed.add_field(name='No newer content', value='\u200b', inline=False)
 	if len(new.content) > 1024:
 		embed.add_field(name='[continued]', value=new.content[1024:], inline=False)
 
@@ -225,18 +225,18 @@ async def log_changed_nickname(
 	embed.set_author(name=new.name, icon_url=new.display_avatar.url)
 
 	if old.nick is None:
-		embed.add_field(name='No Older Nickname', value='\u200b')
+		embed.add_field(name='No older nickname', value='\u200b')
 	else:
 		embed.add_field(
-			name='Older Nickname',
+			name='Older nickname',
 			value=utils.mdspecialchars(old.nick),
 		)
 
 	if new.nick is None:
-		embed.add_field(name='No Newer Nickname', value='\u200b')
+		embed.add_field(name='No newer nickname', value='\u200b')
 	else:
 		embed.add_field(
-			name='Newer Nickname',
+			name='Newer nickname',
 			value=utils.mdspecialchars(new.nick),
 		)
 
@@ -532,7 +532,7 @@ async def log_deleted_role(log_channel: discord.TextChannel, role: discord.Role)
 		description=utils.mdspecialchars(role.name),
 		colour=role.colour,
 	)
-	embed.add_field(name='Original Creation Time', value=str(role.created_at))
+	embed.add_field(name='Original creation time', value=str(role.created_at))
 	await log_channel.send(embed=embed)
 
 async def log_renamed_role(
@@ -545,8 +545,8 @@ async def log_renamed_role(
 		description=utils.mdspecialchars(new.name),
 		colour=new.colour,
 	)
-	embed.add_field(name='Older Name', value=utils.mdspecialchars(old.name))
-	embed.add_field(name='Newer Name', value=utils.mdspecialchars(new.name))
+	embed.add_field(name='Older name', value=utils.mdspecialchars(old.name))
+	embed.add_field(name='Newer name', value=utils.mdspecialchars(new.name))
 	await log_channel.send(embed=embed)
 
 async def log_hoisted_role(log_channel: discord.TextChannel, role: discord.Role) -> None:
@@ -664,11 +664,11 @@ async def log_updated_role_hierarchy(
 		colour=colour,
 	)
 	embed.add_field(
-		name='Older Hierarchy',
+		name='Older hierarchy',
 		value='{}{}{}'.format(trun_indic_top, old_log, trun_indic_bottom),
 	)
 	embed.add_field(
-		name='Newer Hierarchy',
+		name='Newer hierarchy',
 		value='{}{}{}'.format(trun_indic_top, new_log, trun_indic_bottom),
 	)
 
@@ -685,11 +685,11 @@ async def log_changed_role_color(
 		colour=new.colour,
 	)
 	embed.add_field(
-		name='Older Color',
+		name='Older color',
 		value='(default)' if old.colour.value == 0 else str(old.colour).upper(),
 	)
 	embed.add_field(
-		name='Newer Color',
+		name='Newer color',
 		value='(default)' if new.colour.value == 0 else str(new.colour).upper(),
 	)
 	await log_channel.send(embed=embed)
@@ -706,13 +706,13 @@ async def log_changed_role_permissions(
 		description=utils.obj_info(new),
 		colour=new.colour,
 	)
-	embed.add_field(name='Permission Updated', value=diff[0][0])
+	embed.add_field(name='Permission updated', value=diff[0][0])
 	embed.add_field(
-		name='Older Permission',
+		name='Older permission',
 		value=str(dict(old.permissions)[diff[0][0]]),
 	)
 	embed.add_field(
-		name='Newer Permission',
+		name='Newer permission',
 		value=str(dict(new.permissions)[diff[0][0]]),
 	)
 	await log_channel.send(embed=embed)
@@ -722,7 +722,7 @@ async def log_added_reaction(
 	reaction: discord.Reaction,
 	user: Union[discord.Member, discord.User],
 ) -> None:
-	"Log an added reaction."""
+	"""Log an added reaction."""
 
 	message = reaction.message
 	is_custom_emoji = hasattr(reaction.emoji, 'name')
@@ -872,12 +872,12 @@ async def log_changed_guild_icon(
 	if old.icon is not None:
 		embed.set_thumbnail(url=old.icon.url)
 	embed.add_field(
-		name='Older Icon URL: None' if old.icon is None else 'Older Icon URL (Thumbnail)',
-		value='No Older Icon URL' if old.icon is None else old.icon.url,
+		name='No older icon' if old.icon is None else 'Older icon URL (thumbnail)',
+		value='\u200b' if old.icon is None else old.icon.url,
 	)
 	embed.add_field(
-		name='Newer Icon URL: None' if new.icon is None else 'Newer Icon URL (Inset Image)',
-		value='No Newer Icon URL' if new.icon is None else new.icon.url,
+		name='No newer icon' if new.icon is None else 'Newer icon URL (inset image)',
+		value='\u200b' if new.icon is None else new.icon.url,
 	)
 	if new.icon is not None:
 		embed.set_image(url=new.icon.url)
@@ -891,8 +891,8 @@ async def log_renamed_guild(
 	embed = discord.Embed(description='Server changed name')
 	if new.icon is not None:
 		embed.set_thumbnail(url=new.icon.url)
-	embed.add_field(name='Older Name', value=utils.mdspecialchars(old.name))
-	embed.add_field(name='Newer Name', value=utils.mdspecialchars(new.name))
+	embed.add_field(name='Older name', value=utils.mdspecialchars(old.name))
+	embed.add_field(name='Newer name', value=utils.mdspecialchars(new.name))
 	await log_channel.send(embed=embed)
 
 async def log_changed_guild_afk_timeout(
@@ -908,11 +908,11 @@ async def log_changed_guild_afk_timeout(
 	if new.icon is not None:
 		embed.set_thumbnail(url=new.icon.url)
 	embed.add_field(
-		name='Older Timeout',
+		name='Older timeout',
 		value='{h}h {m}m {s}s'.format(h=b_h, m=b_m, s=b_s),
 	)
 	embed.add_field(
-		name='Newer Timeout',
+		name='Newer timeout',
 		value='{h}h {m}m {s}s'.format(h=a_h, m=a_m, s=a_s),
 	)
 	await log_channel.send(embed=embed)
@@ -926,12 +926,12 @@ async def log_changed_guild_afk_channel(
 	if new.icon is not None:
 		embed.set_thumbnail(url=new.icon.url)
 	embed.add_field(
-		name='Older Channel: None' if old.afk_channel is None else 'Older Channel',
-		value='No Older Channel' if old.afk_channel is None else utils.obj_info(old.afk_channel),
+		name='No older channel' if old.afk_channel is None else 'Older channel',
+		value='\u200b' if old.afk_channel is None else utils.obj_info(old.afk_channel),
 	)
 	embed.add_field(
-		name='Newer Channel: None' if new.afk_channel is None else 'Newer Channel',
-		value='No Newer Channel' if new.afk_channel is None else utils.obj_info(new.afk_channel),
+		name='No newer channel' if new.afk_channel is None else 'Newer channel',
+		value='\u200b' if new.afk_channel is None else utils.obj_info(new.afk_channel),
 	)
 	await log_channel.send(embed=embed)
 
@@ -944,11 +944,11 @@ async def log_changed_guild_verification_level(
 	if new.icon is not None:
 		embed.set_thumbnail(url=new.icon.url)
 	embed.add_field(
-		name='Older Level',
+		name='Older level',
 		value=str(old.verification_level).title(),
 	)
 	embed.add_field(
-		name='Newer Level',
+		name='Newer level',
 		value=str(new.verification_level).title(),
 	)
 	await log_channel.send(embed=embed)
@@ -1002,8 +1002,8 @@ async def log_changed_guild_emotes_or_stickers(
 			title='STICKER EDITED' if is_sticker else 'EMOTE EDITED',
 			description=str(changed_new_expr),
 		)
-		embed.add_field(name='Older Name', value=changed_old_expr.name)
-		embed.add_field(name='Newer Name', value=changed_new_expr.name)
+		embed.add_field(name='Older name', value=changed_old_expr.name)
+		embed.add_field(name='Newer name', value=changed_new_expr.name)
 		await log_channel.send(embed=embed)
 		return
 	embed = discord.Embed(description=desc)
@@ -1035,16 +1035,16 @@ async def log_created_guild_channel(
 
 	if hasattr(channel, 'slowmode_delay'):
 		embed.add_field(
-			name='No Slowmode' if channel.slowmode_delay == 0 else 'Slowmode',
-			value='_(none)_' if channel.slowmode_delay == 0 else '{} seconds'.format(
+			name='No slowmode' if channel.slowmode_delay == 0 else 'Slowmode',
+			value='\u200b' if channel.slowmode_delay == 0 else '{} seconds'.format(
 				channel.slowmode_delay,
 			), # TODO: Account for hours/minutes/etc. Should be a utils.py function
 		)
 
 	if hasattr(channel, 'topic'):
 		embed.add_field(
-			name='No Topic' if channel.topic is None else 'Topic',
-			value='_(none)_' if channel.topic is None else channel.topic,
+			name='No topic' if channel.topic is None else 'Topic',
+			value='\u200b' if channel.topic is None else channel.topic,
 			inline=False,
 		)
 
@@ -1058,8 +1058,8 @@ async def log_created_guild_channel(
 
 	if hasattr(channel, 'user_limit'):
 		embed.add_field(
-			name='No User Limit' if channel.user_limit == 0 else 'User Limit',
-			value='_(none)_' if channel.user_limit == 0 else '{} users'.format(
+			name='No user limit' if channel.user_limit == 0 else 'User limit',
+			value='\u200b' if channel.user_limit == 0 else '{} users'.format(
 				channel.user_limit,
 			),
 		)
@@ -1214,7 +1214,7 @@ async def log_updated_uncached_message(
 		)
 	if 'embeds' in payload.data:
 		embed.add_field(
-			name='Rich Embed',
+			name='Rich embed',
 			value=(
 				'``{}``'.format(utils.wrapbackticks(str(payload.data['embeds']['rich'])))
 				if 'rich' in payload.data['embeds']
@@ -1253,7 +1253,7 @@ async def log_added_uncached_reaction(
 		icon_url=author.display_avatar.url,
 	)
 	embed.add_field(
-		name='Member of Reaction',
+		name='Reacting member',
 		value=author.mention,
 	)
 	embed.add_field(
@@ -1290,7 +1290,7 @@ async def log_removed_uncached_reaction(
 		icon_url=author.display_avatar.url,
 	)
 	embed.add_field(
-		name='Member of Reaction',
+		name='Reacting member',
 		value=author.mention,
 	)
 	embed.add_field(
@@ -1343,8 +1343,8 @@ async def log_renamed_guild_channel(
 		description=utils.obj_info(new),
 		colour=new.guild.me.colour,
 	)
-	embed.add_field(name='Older Name', value=utils.mdspecialchars(old.name))
-	embed.add_field(name='Newer Name', value=utils.mdspecialchars(new.name))
+	embed.add_field(name='Older name', value=utils.mdspecialchars(old.name))
+	embed.add_field(name='Newer name', value=utils.mdspecialchars(new.name))
 	await log_channel.send(embed=embed)
 
 async def log_created_thread(
@@ -1365,7 +1365,7 @@ async def log_created_thread(
 	if thread.parent is not None:
 		# It can be None, but that would probably be very bad
 		embed.add_field(
-			name='Parent Channel',
+			name='Parent channel',
 			value='#{name}'.format(name=utils.mdspecialchars(thread.parent.name)),
 		)
 		parent_id = thread.parent.id
