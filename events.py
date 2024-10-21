@@ -582,18 +582,6 @@ async def on_member_update(before, after):
 			utils.updaterolecache(after)
 			utils.rolecachesave()
 
-	if before.name != after.name and not utils.logdisabled('member_username', after.guild):
-		# FIXME: This doesn't log solo discrim changes, only name+discrim changes!
-		# FIXME: This hasn't fired since a certain Discord/discord.py refactor!
-		await logs.log_changed_tag(specialchannel, before, after)
-
-	if before.display_avatar != after.display_avatar and \
-	(not utils.logdisabled('member_botavatar', after.guild) \
-	if checks.is_bot(after) \
-	else not utils.logdisabled('member_avatar', after.guild)):
-		# FIXME: This hasn't fired since a certain Discord/discord.py refactor!
-		await logs.log_changed_avatar(specialchannel, before, after)
-
 async def on_member_join(member):
 	guild = member.guild
 
