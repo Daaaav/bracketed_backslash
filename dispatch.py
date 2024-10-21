@@ -5,11 +5,6 @@
 """handles dispatching individual tasks for each event"""
 
 import asyncio
-import datetime
-
-import discord
-
-import utils
 
 def run(client, coro):
 	# Use this function for event creation because it requires less verbosity and there is less

@@ -3024,7 +3024,7 @@ async def _starboard(client, message, **kwargs):
 		sth = config.get_s('starboard_threshold', message.guild.id)
 		snb = config.get_s('starboard_nostar_barrier', message.guild.id)
 		stl = config.get_s('starboard_timelimit', message.guild.id)
-		sic = config.get_s('starboard_ignoredchannels', message.guild.id)
+		#sic = config.get_s('starboard_ignoredchannels', message.guild.id)
 		sanm = config.get_s('starboard_author_nostar_mode', message.guild.id)
 
 		text = '' if sa else 'NOTE: The starboard is currently not active.\n'

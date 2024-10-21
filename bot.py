@@ -4,7 +4,6 @@
 
 # Fun side effect: main.py has a reference to bot.customcommands
 import customcommands  # pylint: disable=unused-import
-import datetime
 import importlib
 import inspect
 import json

@@ -7,10 +7,7 @@ import copy
 import datetime
 import logging
 import json
-import os
 import sys
-import threading
-import time
 import traceback
 
 import discord
@@ -62,7 +59,7 @@ async def on_ready():
 			startup_time=wrapper.boottimeunix,
 		)
 		wrapper.startup_errors['send_connect'] = False
-	except Exception as e:
+	except Exception:
 		logging.error('\x1b[41mStartup error when sending connect message\x1b[0m')
 		traceback.print_exc()
 
@@ -131,7 +128,7 @@ async def on_ready():
 				json.dump(wrapper.memberroles, outfile)
 
 		wrapper.startup_errors['memberroles'] = False
-	except Exception as e:
+	except Exception:
 		logging.error('\x1b[41mStartup error when loading role cache\x1b[0m')
 		traceback.print_exc()
 
@@ -155,7 +152,7 @@ async def on_ready():
 			with open('disabledrules.json', 'w') as outfile:
 				json.dump(wrapper.disabledrules, outfile)
 		wrapper.startup_errors['rules'] = False
-	except Exception as e:
+	except Exception:
 		logging.error('\x1b[41mStartup error when loading rules\x1b[0m')
 		traceback.print_exc()
 
@@ -174,7 +171,7 @@ async def on_ready():
 		await utils.handleExpiryTimer()
 
 		wrapper.startup_errors['rolexpires'] = False
-	except Exception as e:
+	except Exception:
 		logging.error('\x1b[41mStartup error when loading rolexpires\x1b[0m')
 		traceback.print_exc()
 

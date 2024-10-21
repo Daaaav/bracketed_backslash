@@ -12,7 +12,6 @@ import discord
 
 import config
 import dispatch
-import utils
 import wrapper
 
 

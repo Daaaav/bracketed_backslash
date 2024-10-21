@@ -13,7 +13,6 @@ from typing import List, Sequence, Union
 import discord
 
 import bot
-import config
 import utils
 import wrapper
 
