@@ -582,7 +582,7 @@ def ignore_danny_stars(messages, rdanny_id):
 	starboard messages.
 	IDs are read from these messages, and will be inserted in our database as having NULL
 	star_message_id values, so that our bot ignores those messages. This way, you can
-	transition from R. Danny's to [\]'s starboard very smoothly, without duplicate
+	transition from R. Danny's to [\\]'s starboard very smoothly, without duplicate
 	announcements, starboard downtime or temporarily low time limits.
 	"""
 	global cursor
@@ -592,7 +592,7 @@ def ignore_danny_stars(messages, rdanny_id):
 		if message.author.id != rdanny_id:
 			continue
 
-		m = re.search("\<#(?P<chan>[0-9]+)\> ID: (?P<msg>[0-9]+)", message.content)
+		m = re.search(r"\<#(?P<chan>[0-9]+)\> ID: (?P<msg>[0-9]+)", message.content)
 
 		if m.group('chan') is None or m.group('msg') is None:
 			continue

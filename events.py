@@ -403,7 +403,7 @@ async def on_message(m):
 			(priv and config.get_s('notify_invalidcmd')):
 				e = emb.warning(
 					(
-						'Invalid command. Input `\help` for'
+						'Invalid command. Input `\\help` for'
 						' a list of valid commands.'
 					)
 				)

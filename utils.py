@@ -313,7 +313,7 @@ def helplist(cats, guild, onlycat=None):
 		if (onlycat is None and cat['cat_shown']) or onlycat == cat['cat_slug']:
 			if onlycat is None:
 				returnage += (
-					'\n\n__`{}:`__ — For command descriptions: **`\help {}`**'
+					'\n\n__`{}:`__ — For command descriptions: **`\\help {}`**'
 				).format(cat['cat_name'], cat['cat_slug'])
 			else:
 				if cat['cat_desc'] != '':
@@ -332,12 +332,12 @@ def helplist(cats, guild, onlycat=None):
 			for cmd in helpcommands:
 				if onlycat is None:
 					if first:
-						returnage += '\n`\{}`'.format(cmd['name'])
+						returnage += '\n`\\{}`'.format(cmd['name'])
 						first = False
 					else:
-						returnage += '   `\{}`'.format(cmd['name'])
+						returnage += '   `\\{}`'.format(cmd['name'])
 				else:
-					returnage += '\n`\{}` – {}'.format(
+					returnage += '\n`\\{}` – {}'.format(
 						cmd['name'], cmd['short']
 					)
 	return returnage

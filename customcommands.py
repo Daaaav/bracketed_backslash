@@ -416,7 +416,7 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 				levelexists = True
 				while levelexists:
 					# Find the first set of brackets on this level
-					m = re.search('\(\<{i}\>(.*?)\)\<{i}\>'.format(i=level),
+					m = re.search(r'\(\<{i}\>(.*?)\)\<{i}\>'.format(i=level),
 						condstring
 					)
 
@@ -447,7 +447,7 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 		return None
 
 	# .mod / .admin / .bot
-	m = re.match('^(?P<a>c(aller)?|t(arget)?)\.(?P<b>mod|admin|bot)$', condstring)
+	m = re.match(r'^(?P<a>c(aller)?|t(arget)?)\.(?P<b>mod|admin|bot)$', condstring)
 	if m is not None:
 		if m.group('a') in ('c', 'caller'):
 			checkmember = caller
@@ -480,13 +480,13 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 		)
 
 	# Role ID?
-	m = re.match('^c(aller)?\.([0-9]+)$', condstring)
+	m = re.match(r'^c(aller)?\.([0-9]+)$', condstring)
 	if m is not None:
 		for role in caller.roles:
 			if role.id == int(m.group(2)):
 				return True
 		return False
-	m = re.match('^t(arget)?\.([0-9]+)$', condstring)
+	m = re.match(r'^t(arget)?\.([0-9]+)$', condstring)
 	if m is not None:
 		if target is None:
 			raise InvalidExpression((
@@ -501,7 +501,7 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 
 	# New in 2020: time since joining time and account age!
 	m = re.match(
-		'^(?P<a>c(aller)?|t(arget)?)\.(?P<check>aa|js)(?P<op><|>)(?P<reltime>[0-9a-z]+)$',
+		r'^(?P<a>c(aller)?|t(arget)?)\.(?P<check>aa|js)(?P<op><|>)(?P<reltime>[0-9a-z]+)$',
 		condstring
 	)
 	if m is not None:
@@ -571,22 +571,22 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 
 		# That means we need to check whether this has the correct syntax.
 		# Are all characters valid? We're also not expecting any brackets anymore
-		m = re.match('.*?([^a-z0-9\.\~\|\&<>])', condstring)
+		m = re.match(r'.*?([^a-z0-9\.\~\|\&<>])', condstring)
 		if m is not None:
 			raise InvalidExpression('Syntax error, unrecognized `{}`'.format(
 				utils.mdspecialchars(m.group(1))
 			)
 		)
 		# No two operators in a row?
-		m = re.match('(.*?)([\~\|\&]{2})', condstring)
+		m = re.match(r'(.*?)([\~\|\&]{2})', condstring)
 		if m is not None:
 			raise InvalidExpression('Syntax error at `{}`'.format(m.group(2)))
 		# No operator at the end of the line?
-		m = re.match('(.*?)[\~\|\&]$', condstring)
+		m = re.match(r'(.*?)[\~\|\&]$', condstring)
 		if m is not None:
 			raise InvalidExpression('Syntax error, unexpected end of expression')
 		# Nor at the beginning?
-		m = re.match('([\~\|\&])', condstring)
+		m = re.match(r'([\~\|\&])', condstring)
 		if m is not None:
 			raise InvalidExpression((
 					'Syntax error, unexpected `{}` '
@@ -594,7 +594,7 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 				).format(m.group(1))
 			)
 		# ARE there any operators? We're expecting at least something right now...
-		m = re.match('(.*?)([\~\|\&])', condstring)
+		m = re.match(r'(.*?)([\~\|\&])', condstring)
 		if m is None:
 			raise InvalidExpression('Unknown term `{}`'.format(
 					utils.mdspecialchars(condstring)
@@ -603,9 +603,9 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 
 		# Okay, time to handle this expression!
 		return solveroleconditionalarrays(
-			re.split('[\~\|\&]', condstring), # Split by operators: get list of terms
-			re.split('[^\~\|\&]+', stripterms(condstring)), # Split by terms: get list
-			caller,                                         #             of operators
+			re.split(r'[\~\|\&]', condstring), # Split by operators: get list of terms
+			re.split(r'[^\~\|\&]+', stripterms(condstring)), # Split by terms: get list
+			caller,                                          #             of operators
 			target
 		)
 
@@ -616,7 +616,7 @@ def parseroleconditional(condstring, caller, target, recursivecall=0):
 def stripterms(condstring):
 	"""Strips the terms at the beginning and end of a conditional expression.
 	"""
-	return re.sub('^([^\~\|\&]+)|([^\~\|\&]+)$', '', condstring)
+	return re.sub(r'^([^\~\|\&]+)|([^\~\|\&]+)$', '', condstring)
 
 def solveroleconditionalarrays(terms, operators, caller, target):
 	"""This function handles role conditional expressions which have operators in them.

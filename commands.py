@@ -83,11 +83,11 @@ async def _help(client, message, **kwargs):
 			for cmd in cat['commands']:
 				if kwargs['arguments'] == cmd['name']:
 					try:
-						content = '`\{}` – {}'.format(
+						content = '`\\{}` – {}'.format(
 							cmd['name'], cmd['extrafull']
 						)
 					except KeyError:
-						content = '`\{}` – {}\n{}'.format(
+						content = '`\\{}` – {}\n{}'.format(
 							cmd['name'], cmd['short'], cmd['extra']
 						)
 					matched = True
@@ -103,7 +103,7 @@ async def _help(client, message, **kwargs):
 		if not matched:
 			content = (
 				'Invalid arguments passed, or the command is not in the help list. '
-				'Input `\help` for a list of valid commands to pass as arguments.'
+				'Input `\\help` for a list of valid commands to pass as arguments.'
 			)
 	embed = discord.Embed(description=content, colour=col.r_success)
 	await bot.reply(message, emb=embed)
@@ -174,15 +174,15 @@ async def _config(client, message, **kwargs):
 	if kwargs['arguments'] is None:
 		content = (
 			'You can use the following options:\n'
-			'`\config list [CAT]`\n'
-			'`\config reload`\n'
-			'`\config get <key>`\n'
-			'`\config set <key> <value>` (not for arrays or dics)\n'
-			'`\config insert <key> [indice] <value>` (only for arrays and dics)\n'
-			'`\config remove <key> <value/indice>` (only for arrays and dics)\n'
-			'`\config detach <key>`\n'
-			'`\config reattach <key>`\n'
-			'`\config default <key>`\n'
+			'`\\config list [CAT]`\n'
+			'`\\config reload`\n'
+			'`\\config get <key>`\n'
+			'`\\config set <key> <value>` (not for arrays or dics)\n'
+			'`\\config insert <key> [indice] <value>` (only for arrays and dics)\n'
+			'`\\config remove <key> <value/indice>` (only for arrays and dics)\n'
+			'`\\config detach <key>`\n'
+			'`\\config reattach <key>`\n'
+			'`\\config default <key>`\n'
 		)
 		await bot.reply(message, content)
 		return
@@ -196,7 +196,7 @@ async def _config(client, message, **kwargs):
 		content = 'All option categories:\n'
 		for cat in config.configcats:
 			content += '    `{}`: {}\n'.format(cat, config.configcats[cat]['name'])
-		content += 'Use `\config list <CAT>` to list all settings under a given category.'
+		content += 'Use `\\config list <CAT>` to list all settings under a given category.'
 		await bot.reply(message, content)
 		return
 
@@ -1860,7 +1860,7 @@ async def selfban(client, message, **kwargs):
 		return
 	if checks.is_tntgb_mod(message.author):
 		specialchannel = utils.getspecialchannel(message.channel.guild)
-		embed = emb.warning('Sorry, moderators cannot use `\selfban`!')
+		embed = emb.warning('Sorry, moderators cannot use `\\selfban`!')
 		await specialchannel.send(embed=embed)
 
 
@@ -2208,7 +2208,7 @@ async def sudo(client, message, **kwargs):
 		else:
 			e = emb.warning(
 				(
-					'Invalid command. Input `\help` for'
+					'Invalid command. Input `\\help` for'
 					' a list of valid commands.'
 				)
 			)
@@ -2309,7 +2309,7 @@ async def testroleconditional(client, message, **kwargs):
 			)
 		)
 	except (AttributeError, IndexError):
-		embed = emb.error('Not enough arguments. See the `\help`')
+		embed = emb.error('Not enough arguments. See the `\\help`')
 	except customcommands.InvalidExpression as e:
 		embed = emb.error('Invalid expression:\n{}'.format(str(e)))
 	except customcommands.UnexpectedExprParserState as e:
@@ -2325,12 +2325,12 @@ async def addcustomrolecommand(client, message, **kwargs):
 		kwargs['arguments'] = ''
 	splitargs = kwargs['arguments'].split(' ')
 	if len(splitargs) < 6:
-		embed = emb.error('Invalid amount of arguments specified, please see the `\help`')
+		embed = emb.error('Invalid amount of arguments specified, please see the `\\help`')
 		await bot.reply(message, emb=embed)
 		return
 
 	if splitargs[1] not in ('self', 'input'):
-		embed = emb.error('`{}` is an invalid target, please see the `\help`'.format(
+		embed = emb.error('`{}` is an invalid target, please see the `\\help`'.format(
 				utils.mdspecialchars(splitargs[1])
 			)
 		)
@@ -2338,7 +2338,7 @@ async def addcustomrolecommand(client, message, **kwargs):
 		return
 	if splitargs[2] not in ('no', 'input', 'input_strict', 'command') and \
 	utils.parsereltime(splitargs[2]) is None:
-		embed = emb.error('The expiry `{}` is invalid, please see the `\help`'.format(
+		embed = emb.error('The expiry `{}` is invalid, please see the `\\help`'.format(
 				utils.mdspecialchars(splitargs[2])
 			)
 		)
@@ -2351,8 +2351,8 @@ async def addcustomrolecommand(client, message, **kwargs):
 	elif splitargs[2] == 'command':
 		splitargs[2] = 'no'
 
-	ma = re.match('^\[([0-9]+(\,[0-9]+)*)?\]$', splitargs[4])
-	mb = re.match('^\[([0-9]+(\,[0-9]+)*)?\]$', splitargs[5])
+	ma = re.match(r'^\[([0-9]+(\,[0-9]+)*)?\]$', splitargs[4])
+	mb = re.match(r'^\[([0-9]+(\,[0-9]+)*)?\]$', splitargs[5])
 	if ma is None or mb is None:
 		embed = emb.error((
 				'The lists of roles must be surrounded with square '
@@ -2397,7 +2397,7 @@ async def addcustomrolecommand(client, message, **kwargs):
 	if builtin_alias_exists or splitargs[0] in commands:
 		embed = emb.error('`{}` is already a built-in {} command!'.format(
 				utils.mdspecialchars(splitargs[0]),
-				utils.mdspecialchars('[\]')
+				utils.mdspecialchars('[\\]')
 			)
 		)
 		await bot.reply(message, emb=embed)
@@ -2416,7 +2416,7 @@ async def addcustomrolecommand(client, message, **kwargs):
 	)
 	customcommands.save()
 
-	embed = emb.success('Successfully added command `\{}`'.format(
+	embed = emb.success('Successfully added command `\\{}`'.format(
 			utils.mdspecialchars(splitargs[0])
 		)
 	)
@@ -2428,7 +2428,7 @@ async def addcustomaliascommand(client, message, **kwargs):
 		kwargs['arguments'] = ''
 	splitargs = kwargs['arguments'].split(' ')
 	if len(splitargs) < 2:
-		embed = emb.error('Invalid amount of arguments specified, please see the `\help`')
+		embed = emb.error('Invalid amount of arguments specified, please see the `\\help`')
 		await bot.reply(message, emb=embed)
 		return
 
@@ -2458,7 +2458,7 @@ async def addcustomaliascommand(client, message, **kwargs):
 	if builtin_alias_exists == 1 or splitargs[0] in commands:
 		embed = emb.error('`{}` is already a built-in {} command!'.format(
 				utils.mdspecialchars(splitargs[0]),
-				utils.mdspecialchars('[\]')
+				utils.mdspecialchars('[\\]')
 			)
 		)
 		await bot.reply(message, emb=embed)
@@ -2469,7 +2469,7 @@ async def addcustomaliascommand(client, message, **kwargs):
 				'commands, `{}` is a built-in {} command.'
 			).format(
 				utils.mdspecialchars(splitargs[1]),
-				utils.mdspecialchars('[\]')
+				utils.mdspecialchars('[\\]')
 			)
 		)
 		await bot.reply(message, emb=embed)
@@ -2493,14 +2493,14 @@ async def addcustomaliascommand(client, message, **kwargs):
 	customcommands.save()
 
 	if customcommands.exists(message.guild, splitargs[1]):
-		embed = emb.success('Successfully added command `\{}`'.format(
+		embed = emb.success('Successfully added command `\\{}`'.format(
 				utils.mdspecialchars(splitargs[0])
 			)
 		)
 	else:
 		embed = emb.warning((
-				'Successfully added command `\{}`, but note that '
-				'`\{}` does not exist!'
+				'Successfully added command `\\{}`, but note that '
+				'`\\{}` does not exist!'
 			).format(
 				utils.mdspecialchars(splitargs[0]),
 				utils.mdspecialchars(splitargs[1])
@@ -2523,7 +2523,7 @@ async def removecustomcommand(client, message, **kwargs):
 	customcommands.remove_custom_command(message.guild, kwargs['arguments'])
 	customcommands.save()
 
-	embed = emb.success('Command `\{}` has been removed.'.format(
+	embed = emb.success('Command `\\{}` has been removed.'.format(
 			utils.mdspecialchars(kwargs['arguments'])
 		)
 	)
@@ -2999,7 +2999,7 @@ async def move(client, message, **kwargs):
 @shadow(aliases=['star'], guildonly=True)
 async def _starboard(client, message, **kwargs):
 	if kwargs['arguments'] is None:
-		em = emb.error('Try `\help starboard` to know what arguments can be used.\nTo see the current starboard configuration, try `\starboard summarize_config`.')
+		em = emb.error('Try `\\help starboard` to know what arguments can be used.\nTo see the current starboard configuration, try `\\starboard summarize_config`.')
 		await bot.reply(message, emb=em)
 		return
 
@@ -3011,7 +3011,7 @@ async def _starboard(client, message, **kwargs):
 		em = emb.error(
 			(
 				'There is currently no starboard channel set on this server. '
-				'Please use `\{} init #channel` to set one.'
+				'Please use `\\{} init #channel` to set one.'
 			).format(kwargs['command'])
 		)
 		await bot.reply(message, emb=em)
@@ -3095,7 +3095,7 @@ async def _starboard(client, message, **kwargs):
 		em = emb.error(
 			(
 				'The action `{}` was not recognized or forbidden. '
-				'Try `\help starboard` to know what arguments can be used.'
+				'Try `\\help starboard` to know what arguments can be used.'
 			).format(
 				utils.mdspecialchars(action)
 			)
@@ -3170,7 +3170,7 @@ async def _starboard(client, message, **kwargs):
 		em = emb.error(
 			(
 				'The action `{}` was not recognized or forbidden.'
-				'Try `\help starboard` to know what arguments can be used.'
+				'Try `\\help starboard` to know what arguments can be used.'
 			).format(
 				utils.mdspecialchars(action)
 			)
@@ -3575,7 +3575,7 @@ async def _starboard(client, message, **kwargs):
 		em = emb.error(
 			(
 				'The action `{}` was not recognized. '
-				'Try `\help starboard` to know what arguments can be used.'
+				'Try `\\help starboard` to know what arguments can be used.'
 			).format(action)
 		)
 		await bot.reply(message, emb=em)
