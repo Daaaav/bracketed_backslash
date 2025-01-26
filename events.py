@@ -71,55 +71,58 @@ async def on_ready():
 				wrapper.memberroles = utils.convert_id_keys_to_int(json.load(infile))
 
 			# Now look what I've woken up to.
+			any_rc_changes = False
 			for gld in wrapper.memberroles:
 				if config.get_s('rolecachemode', gld) == 0:
 					continue
-				if wrapper.client.get_guild(gld) is None:
+				gld_obj = wrapper.client.get_guild(gld)
+				if gld_obj is None:
 					logging.info('Guild {} seems to not be accessible anymore but is in role cache'.format(gld))
 					continue
 				rcwarnings = ''
-				for mem in wrapper.client.get_guild(gld).members:
+				for mem in gld_obj.members:
+					fix_this = False
+
 					if not mem.id in wrapper.memberroles[gld]:
 						if len(mem.roles) >= 2:
 							rcwarnings += (
-								'\n{mem.mention} is not in the cache! '
+								'\n{mem.name} ({mem.id}) is not in the cache! '
 								'(They’re suddenly in the server.) '
 								'Adding their roles to the cache now.'
 							).format(mem=mem)
 
-							# Possibly redundant list() tbh, just making sure
-							# since I can't test and I don't know python well
-							# enough to know whether it's redundant
-							wrapper.memberroles[gld][mem.id] = \
-							list(utils.rolelist(mem.roles))
-
-						continue
-					if set(wrapper.memberroles[gld][mem.id]) != \
+							fix_this = True
+					elif set(wrapper.memberroles[gld][mem.id]) != \
 					set(utils.rolelist(mem.roles)):
 						rcwarnings += (
 							'\n'
-							'{} has different roles than in the cache! Maybe you want to correct things.\n'
+							'{} ({}) has different roles than in the cache! '
+							'Updating their roles in the cache now.\n'
 							'    **`Cached:`** {}\n'
 							'    **`Seen:`** {}'
 						).format(
-							mem.mention,
+							mem.name, mem.id,
 							utils.listroles_id(wrapper.memberroles[gld][mem.id]),
 							utils.listroles(mem.roles),
 						)
+
+						fix_this = True
+
+					if fix_this:
+						# Possibly redundant list() tbh, just making sure
+						wrapper.memberroles[gld][mem.id] = list(utils.rolelist(mem.roles))
+						any_rc_changes = True
+
 				if rcwarnings:
 					logging.warning(
-						'Role cache warnings for server %s: %s',
+						'Role cache inconsistencies for server %s (%s): %s',
+						gld_obj.name,
 						gld,
 						rcwarnings,
 					)
-					rcwarnings = (
-						'**User role cache warning.**\n'
-						'Full warning output has been sent to the terminal.\n'
-						+ rcwarnings
-					)
-					await utils.getspecialchannel(
-							discord.utils.get(wrapper.client.guilds, id=gld)
-					).send(rcwarnings[:1900])
+
+			if any_rc_changes:
+				utils.rolecachesave()
 
 		except FileNotFoundError:
 			logging.info('memberroles file does not exist yet so creating it now')
