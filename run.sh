@@ -15,7 +15,7 @@ else
 fi
 
 while true; do
-	python3.9 main.py
+	python3 main.py
 
 	# Copy $? to a separate variable. If we don't do this,
 	# it'll be overwritten by `echo` when we do the `notify-send`
