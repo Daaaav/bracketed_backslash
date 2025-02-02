@@ -72,8 +72,6 @@ def set_current_commit():
 	current_dir_dirty = status != ''
 set_current_commit()
 
-maineventloop = asyncio.get_event_loop()
-
 memberroles = {}
 rolexpires = {}
 rules = {}
