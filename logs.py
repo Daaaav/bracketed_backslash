@@ -389,6 +389,28 @@ async def log_changed_timeout(
 
 	embed.set_author(name=new.display_name, icon_url=new.display_avatar.url)
 
+	# Let's also see if we can manage to get the reason...
+	try:
+		reason = None
+		async for entry in new.guild.audit_logs(
+			oldest_first=False,
+			action=discord.AuditLogAction.member_update
+		):
+			if entry.target == new and hasattr(entry.changes.after, 'timed_out_until') \
+			and entry.changes.before.timed_out_until == old.timed_out_until \
+			and entry.changes.after.timed_out_until == new.timed_out_until:
+				reason = entry.reason
+				break
+
+		if reason is not None:
+			embed.add_field(
+				name='Reason',
+				value=reason,
+				inline=False
+			)
+	except discord.HTTPException:
+		pass
+
 	embed.set_footer(text=utils.id_summary(uid=new.id))
 	await log_channel.send(embed=embed)
 
