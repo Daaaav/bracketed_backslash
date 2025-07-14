@@ -206,6 +206,11 @@
 					"extra": ""
 				},
 				{
+					"name": "timeout",
+					"short": "Gives a member a timeout.",
+					"extra": "**Syntax**: `\\timeout <MEMBER> <DURATION> [REASON]`\n\nExample: `\\timeout cactus 3d12h Didn't say hi to me`\n\nThis uses Discord's own timeout system, so the expiry is not managed by \\[\\\\\\]."
+				},
+				{
 					"name": "move",
 					"short": "Redirect the current conversation to a different channel by sending messages in both channels and linking between them.",
 					"extra": "**Syntax**: `\\move <CHANNEL> [SUBJECT]`\n\n\t`<CHANNEL>`: You can supply a channel (mention, (part of) name, id, etc) to move the conversation to.\n\n\t`[SUBJECT]`: Optionally, you can also supply the subject of the conversation, so the messages will include something like \"the conversation about _code indentation styles_\"."

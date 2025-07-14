@@ -1653,6 +1653,56 @@ async def kick(client, message, **kwargs):
 		embed = emb.error(bot.t['no_permission'])
 	await bot.reply(message, content, emb=embed)
 
+@shadow(guildonly=True)
+async def timeout(client, message, **kwargs):
+	# The timeout permission is internally named "moderate_members". Future proofing I guess!
+	if not message.author.guild_permissions.moderate_members and not kwargs['sudo']:
+		utils.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
+		embed = emb.error(bot.t['you_no_permission'])
+		await bot.reply(message, emb=embed)
+		return
+
+	if kwargs['arguments'] is None:
+		kwargs['arguments'] = ''
+	splitargs = kwargs['arguments'].split(' ', 2)
+
+	if len(splitargs) < 2:
+		embed = emb.error('**Syntax**: `\\timeout <MEMBER> <DURATION> [REASON]`')
+		await bot.reply(message, emb=embed)
+		return
+
+	targetmember = utils.match_input(message.guild.members, discord.Member, splitargs[0])
+	if targetmember is None:
+		embed = emb.error(bot.t['specify_user'])
+		await bot.reply(message, emb=embed)
+		return
+
+	expirytime = utils.parsereltime(splitargs[1], True)
+	if expirytime is None:
+		embed = emb.error((
+				'Invalid expiry time. Please input a relative time '
+				'in the format `[#d][#h][#m][#s]`, for example: '
+				'`7d12h`, `1h`, `1d`, `1d2h3m4s`, `1d20s` or '
+				'whatever combination you can think of. The units '
+				'have to be in the correct order, though.'
+			)
+		)
+		await bot.reply(message, emb=embed)
+		return
+
+	reason = None
+	if len(splitargs) == 3:
+		reason = splitargs[2]
+
+	try:
+		await targetmember.timeout(datetime.timedelta(seconds=expirytime), reason=reason)
+		embed = emb.success('Successfully timed out <@{}>.'.format(targetmember.id))
+	except discord.Forbidden:
+		embed = emb.error(bot.t['no_permission'])
+	except Exception:
+		embed = emb.error('Could not timeout <@{}>.'.format(targetmember.id))
+	await bot.reply(message, emb=embed)
+
 @shadow(auth=checks.is_operator)
 async def reloadstrings(client, message, **kwargs):
 	bot.loadstrings()
