@@ -581,6 +581,9 @@ async def on_member_update(before, after):
 		if config.get_s('rolecachemode', after.guild.id) != 0:
 			utils.updaterolecache(after)
 			utils.rolecachesave()
+	if before.timed_out_until != after.timed_out_until \
+	and not utils.logdisabled('member_timeout', after.guild):
+		await logs.log_changed_timeout(specialchannel, before, after)
 
 async def on_member_join(member):
 	guild = member.guild

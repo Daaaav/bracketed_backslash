@@ -15,6 +15,7 @@ member_join
 member_remove
 member_ban
 member_unban
+member_timeout
 member_boost
 member_unboost
 

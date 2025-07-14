@@ -357,6 +357,41 @@ async def log_updated_roles(
 
 		await log_channel.send(embed=embed)
 
+async def log_changed_timeout(
+	log_channel: discord.TextChannel, old: discord.Member, new: discord.Member,
+) -> None:
+	"""Log that a member's timed_out_until was changed."""
+
+	if new.timed_out_until is None:
+		embed = discord.Embed(
+			title='\N{STOPWATCH} TIMEOUT LIFTED',
+			colour=new.colour,
+		)
+	else:
+		embed = discord.Embed(
+			title='\N{STOPWATCH} TIMEOUT GIVEN',
+			colour=new.colour,
+		)
+
+		until = new.timed_out_until.timestamp()
+
+		# Round to nearest 10 seconds. That way, someone isn't timed out for "59m58s" or so
+		duration = round(until - time.time(), -1)
+
+		embed.add_field(
+			name='Duration',
+			value=utils.reltime(duration, False, True, True)
+		)
+		embed.add_field(
+			name='Expires',
+			value='<t:{ts}:d> <t:{ts}:t>'.format(ts=int(new.timed_out_until.timestamp()))
+		)
+
+	embed.set_author(name=new.display_name, icon_url=new.display_avatar.url)
+
+	embed.set_footer(text=utils.id_summary(uid=new.id))
+	await log_channel.send(embed=embed)
+
 async def log_joined_member(
 	log_channel: discord.TextChannel,
 	member: discord.Member,
