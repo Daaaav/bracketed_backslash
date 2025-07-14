@@ -697,8 +697,22 @@ def star_message_embed(message, score):
 	else:
 		maybe_permalink = ''
 
+	is_forward = not message.content and not message.attachments and message.message_snapshots
+	if is_forward:
+		# Looks like there's a forwarded message here... Use that instead.
+		# We can't really represent well inside an embed that it's a "quote" block,
+		# but we don't really need to anyway.
+		# Sometimes people send their art/pics/etc in multiple servers by forwarding.
+		# If you forwarded a meme, it's just like you posted that meme yourself anyway.
+		# Beware: MessageSnapshot has a lot less attributes than Message,
+		# for example it lacks author information. But what's there is all we need.
+		display_message = message.message_snapshots[0]
+	else:
+		# No forward here - it's a normal, original message
+		display_message = message
+
 	embed = discord.Embed(
-		description=maybe_permalink + message.content,
+		description=maybe_permalink + display_message.content,
 		color = star_gradient_color(score),
 		timestamp = message.created_at
 	).set_author(
@@ -727,11 +741,11 @@ def star_message_embed(message, score):
 	def is_image_filename(filename):
 		return filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))
 
-	if message.attachments:
+	if display_message.attachments:
 		attachments_are_listed = (
-			len(message.attachments) > 1 or not is_image_filename(message.attachments[0].filename)
+			len(display_message.attachments) > 1 or not is_image_filename(display_message.attachments[0].filename)
 		)
-		for message_attach in message.attachments:
+		for message_attach in display_message.attachments:
 			if is_image_filename(message_attach.filename) and embed_image_unset:
 				embed.set_image(url=message_attach.url)
 				embed_image_unset = False
@@ -740,8 +754,8 @@ def star_message_embed(message, score):
 				)
 			)
 			attachment_list_basic.append('{}'.format(message_attach.filename))
-	if message.embeds:
-		for message_embed in message.embeds:
+	if display_message.embeds:
+		for message_embed in display_message.embeds:
 			if message_embed.type == 'rich':
 				number_rich_embeds += 1
 			elif message_embed.type == 'image':
@@ -761,9 +775,16 @@ def star_message_embed(message, score):
 			attachment_field = '\n'.join(attachment_list_basic)
 		embed.add_field(name='📎', value=attachment_field, inline=False)
 
+	footer_text = []
+
+	if is_forward:
+		footer_text.append('↱ Forwarded')
 	if number_rich_embeds == 1:
-		embed.set_footer(text='📄 Message has a rich embed')
+		footer_text.append('📄 Message has a rich embed')
 	elif number_rich_embeds > 1:
-		embed.set_footer(text='📄 Message has {} rich embeds'.format(number_rich_embeds))
+		footer_text.append('📄 Message has {} rich embeds'.format(number_rich_embeds))
+
+	if footer_text:
+		embed.set_footer(text=' '.join(footer_text))
 
 	return embed
