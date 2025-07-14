@@ -167,7 +167,13 @@ async def check_message(payload, channel, adding):
 
 	# Why should other bots have a right to vote? Same with starboard-banned users.
 	# I have a right to vote, but that's for administrative reasons.
-	if (reaction_user.bot and reaction_user != wrapper.client.user) or banned_adder:
+	#
+	# Also: super reactions are apparently broken and mean non-nitro users can't vote
+	# normally, so just remove them. They don't mix well with a starboard.
+	# Oh, apparently they're not even limited to like 2 or 5 per week anymore,
+	# so I don't even have to feel bad for not being able to refund it.
+	if (reaction_user.bot and reaction_user != wrapper.client.user) \
+	or banned_adder or payload.burst:
 		if adding:
 			try:
 				await orig_message.remove_reaction(payload.emoji, reaction_user)
