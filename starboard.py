@@ -141,7 +141,7 @@ async def check_message(payload, channel, adding):
 		if adding:
 			try:
 				await orig_message.remove_reaction(payload.emoji, reaction_user)
-			except discord.errors.Forbidden:
+			except discord.HTTPException: # Forbidden, NotFound...
 				pass
 		return
 
@@ -161,7 +161,7 @@ async def check_message(payload, channel, adding):
 		if adding:
 			try:
 				await orig_message.remove_reaction(payload.emoji, reaction_user)
-			except discord.errors.Forbidden:
+			except discord.HTTPException: # Forbidden, NotFound...
 				pass
 		return
 
@@ -171,7 +171,7 @@ async def check_message(payload, channel, adding):
 		if adding:
 			try:
 				await orig_message.remove_reaction(payload.emoji, reaction_user)
-			except discord.errors.Forbidden:
+			except discord.HTTPException: # Forbidden, NotFound...
 				pass
 
 		if banned_adder:
@@ -281,7 +281,7 @@ async def check_message(payload, channel, adding):
 			async def confirm(orig_message_, nostar_emote_):
 				try:
 					await orig_message_.add_reaction(nostar_emote_)
-				except discord.errors.Forbidden:
+				except discord.HTTPException: # Forbidden, NotFound...
 					pass
 			dispatch.run(wrapper.client, confirm(orig_message, nostar_emote))
 
