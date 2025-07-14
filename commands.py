@@ -1624,21 +1624,21 @@ async def kick(client, message, **kwargs):
 	try:
 		if kwargs['command'] == 'kick':
 			if not message.author.guild_permissions.kick_members and not kwargs['sudo']:
-				bot.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
+				utils.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 				embed = emb.error(bot.t['you_no_permission'])
 				await bot.reply(message, emb=embed)
 				return
 			await targetmember.kick()
 		elif kwargs['command'] in ('serverban', 'ban'):
 			if not message.author.guild_permissions.ban_members and not kwargs['sudo']:
-				bot.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
+				utils.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 				embed = emb.error(bot.t['you_no_permission'])
 				await bot.reply(message, emb=embed)
 				return
 			await targetmember.ban(delete_message_seconds=0)
 		elif kwargs['command'] in ('unserverban', 'unban'):
 			if not message.author.guild_permissions.ban_members and not kwargs['sudo']:
-				bot.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
+				utils.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
 				embed = emb.error(bot.t['you_no_permission'])
 				await bot.reply(message, emb=embed)
 				return
