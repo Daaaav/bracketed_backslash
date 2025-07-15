@@ -397,7 +397,6 @@ async def log_changed_timeout(
 			action=discord.AuditLogAction.member_update
 		):
 			if entry.target == new and hasattr(entry.changes.after, 'timed_out_until') \
-			and entry.changes.before.timed_out_until == old.timed_out_until \
 			and entry.changes.after.timed_out_until == new.timed_out_until:
 				reason = entry.reason
 				break
