@@ -727,10 +727,10 @@ def star_message_embed(message, score):
 	)
 
 	# For attachments and embeds, we want the following:
-	# - If attachments exist, they are listed, except if only one image is attached.
-	# - If image attachments exist, the first image attachment is embedded.
+	# - If attachments exist, they are listed, except if only one unspoilered image is attached.
+	# - If image attachments exist, the first unspoilered image attachment is embedded.
 	# - That means, if an image attachment exists along with other attachments, all attachments
-	#   are listed including the embedded image
+	#   are listed including the embedded image (as long as it's not a spoiler)
 	# - If the message has embeds of type 'rich', mention the count of that. Other embed types
 	#   really aren't mentionworthy, they just supplement posted links that will show up in the
 	#   message contents anyway
@@ -749,10 +749,13 @@ def star_message_embed(message, score):
 
 	if display_message.attachments:
 		attachments_are_listed = (
-			len(display_message.attachments) > 1 or not is_image_filename(display_message.attachments[0].filename)
+			len(display_message.attachments) > 1 \
+			or not is_image_filename(display_message.attachments[0].filename)
+			or display_message.attachments[0].is_spoiler()
 		)
 		for message_attach in display_message.attachments:
-			if is_image_filename(message_attach.filename) and embed_image_unset:
+			if is_image_filename(message_attach.filename) and embed_image_unset \
+			and not message_attach.is_spoiler():
 				embed.set_image(url=message_attach.url)
 				embed_image_unset = False
 			attachment_list.append('[{}]({})'.format(
