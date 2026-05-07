@@ -363,6 +363,11 @@ async def log_changed_timeout(
 	"""Log that a member's timed_out_until was changed."""
 
 	if new.timed_out_until is None:
+		if old.timed_out_until is None \
+		or old.timed_out_until.timestamp() < time.time():
+			# That user didn't have a timeout in the first place?
+			return
+
 		embed = discord.Embed(
 			title='\N{STOPWATCH} TIMEOUT LIFTED',
 			colour=new.colour,
@@ -377,6 +382,10 @@ async def log_changed_timeout(
 
 		# Round to nearest 10 seconds. That way, someone isn't timed out for "59m58s" or so
 		duration = round(until - time.time(), -1)
+
+		# We've seen "TIMEOUT GIVEN, Duration: 2h57m ago"...
+		if duration < 0:
+			return
 
 		embed.add_field(
 			name='Duration',
