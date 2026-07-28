@@ -13,7 +13,13 @@ import config
 config.load()
 
 intents = discord.Intents.all()
+intents.auto_moderation = False
+intents.guild_scheduled_events = False
+intents.integrations = False
+intents.polls = False
+intents.presences = False
 intents.typing = False
+intents.webhooks = False
 
 client = discord.Client(
 	max_messages=999999999,

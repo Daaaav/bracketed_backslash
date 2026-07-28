@@ -516,35 +516,7 @@ async def findu(client, message, **kwargs):
 		await bot.reply(message, emb=embed)
 		return
 	displaymatch = '<@{}>'.format(targetmember.id)
-	if targetmember.activity is None:
-		memberhasgame = False
-		displaygamestatus = 'Not playing'
-		displaygamename = '\u200b'
-		displaygameurlstatus = 'No stream link'
-		displaygameurl = '\u200b'
-	else:
-		memberhasgame = True
 
-	if memberhasgame:
-		displaygamename = utils.mdspecialchars(targetmember.activity.name)
-
-		displaygamestatus = 'Activity'
-
-		if targetmember.activity.type == discord.ActivityType.playing:
-			displaygamestatus = 'Playing'
-		if targetmember.activity.type == discord.ActivityType.streaming:
-			displaygamestatus = 'Streaming'
-		if targetmember.activity.type == discord.ActivityType.listening:
-			displaygamestatus = 'Listening'
-		if targetmember.activity.type == discord.ActivityType.watching:
-			displaygamestatus = 'Watching'
-
-		if not hasattr(targetmember.activity, 'url') or targetmember.activity.url is None:
-			displaygameurlstatus = 'No stream link'
-			displaygameurl = '\u200b'
-		else:
-			displaygameurlstatus = 'Stream link'
-			displaygameurl = utils.mdspecialchars(targetmember.activity.url)
 	embed = discord.Embed(description='Matched ' + displaymatch, colour=targetmember.colour)
 	embed.set_image(url=targetmember.display_avatar.url)
 	embed.add_field(name='Nickname' if targetmember.nick is not None else 'No nickname', value=utils.mdspecialchars(targetmember.nick) if targetmember.nick is not None else '\u200b')
@@ -555,9 +527,6 @@ async def findu(client, message, **kwargs):
 		embed.add_field(name='Discriminator', value='#{}'.format(targetmember.discriminator))
 	embed.add_field(name='User ID', value=targetmember.id)
 	embed.add_field(name='Bot', value='Yes' if checks.is_bot(targetmember) else 'No')
-	embed.add_field(name=displaygamestatus, value=displaygamename)
-	embed.add_field(name=displaygameurlstatus, value=displaygameurl)
-	embed.add_field(name='Status', value='Do not disturb' if str(targetmember.status) == 'dnd' else str(targetmember.status).title())
 	embed.add_field(
 		name='Joined server at',
 		value=time.strftime(
