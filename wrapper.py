@@ -49,8 +49,6 @@ for e in startup_error_codes:
 
 runtime_exceptions = [] # List of (datetime, event_name, (exc_type, exception, traceback)), see sys.exc_info()
 
-minutemessageedits = {}
-
 messages_deleted_by_bot = []
 deleted_messages = []
 

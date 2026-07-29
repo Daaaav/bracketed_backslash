@@ -2,7 +2,6 @@ message_delete
 message_pin
 message_unpin
 message_edit
-message_overedit
 message_deleteuncached
 message_updateuncached
 message_tts

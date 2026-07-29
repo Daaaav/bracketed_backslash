@@ -543,11 +543,6 @@ async def on_message_edit(old, new):
 	if not utils.logdisabled('message_edit', new.guild):
 		await logs.log_edited_message(schan, old, new, edited_at)
 
-	# Turning off this logging also turns off the feature
-	if not utils.logdisabled('message_overedit', new.guild):
-		# Delete a message if it has been edited more than 5 times in 30 seconds
-		await utils.handle_minute_message_edits(new, schan)
-
 	# Message edited too heavily?
 	delta_threshold = datetime.timedelta(
 		config.get_s('edited_message_resend_timer', new.guild.id)
