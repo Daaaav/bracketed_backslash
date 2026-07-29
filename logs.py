@@ -393,7 +393,7 @@ async def log_changed_timeout(
 		)
 		embed.add_field(
 			name='Expires',
-			value='<t:{ts}:d> <t:{ts}:t>'.format(ts=int(new.timed_out_until.timestamp()))
+			value='<t:{ts}:s>'.format(ts=int(new.timed_out_until.timestamp()))
 		)
 
 	embed.set_author(name=new.display_name, icon_url=new.display_avatar.url)

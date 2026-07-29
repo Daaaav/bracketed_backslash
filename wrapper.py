@@ -33,7 +33,6 @@ client = discord.Client(
 	intents=intents
 ) # defines all client.* commands
 
-boottime = time.strftime(config.get_s('timeformat'))
 boottimeunix = time.time()
 
 startup_error_codes = {

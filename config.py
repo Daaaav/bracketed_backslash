@@ -13,9 +13,6 @@ configcats = {
 	'commands': {
 		'name': 'Command usage',
 	},
-	'datetime': {
-		'name': 'Date and time',
-	},
 	'logging': {
 		'name': 'Logging',
 	},
@@ -66,16 +63,6 @@ configs = {
 		'detachable': False,
 		'cat': 'sysop',
 		'access': 0,
-		'valid_user_value': True,
-	},
-	'timeformat': {
-		'default': '%Y-%m-%d %H:%M:%S (%Z)',
-		'type': 'str',
-		'is_array': False,
-		'expl': 'The date format used in messages.',
-		'detachable': True,
-		'cat': 'datetime',
-		'access': 2,
 		'valid_user_value': True,
 	},
 	'blacklist': {

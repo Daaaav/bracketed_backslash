@@ -527,21 +527,15 @@ async def findu(client, message, **kwargs):
 		embed.add_field(name='Discriminator', value='#{}'.format(targetmember.discriminator))
 	embed.add_field(name='User ID', value=targetmember.id)
 	embed.add_field(name='Bot', value='Yes' if checks.is_bot(targetmember) else 'No')
-	embed.add_field(
-		name='Joined server at',
-		value=time.strftime(
-			config.get_s('timeformat', message.guild.id),
-			targetmember.joined_at.timetuple(),
-		),
-	)
+	embed.add_field(name='Color', value='_(default)_' if str(targetmember.colour) == '#000000' else str(targetmember.colour).upper())
 	embed.add_field(
 		name='Joined Discord at',
-		value=time.strftime(
-			config.get_s('timeformat', message.guild.id),
-			targetmember.created_at.timetuple(),
-		),
+		value='<t:{}:s>'.format(int(targetmember.created_at.timestamp()))
 	)
-	embed.add_field(name='Color', value='_(default)_' if str(targetmember.colour) == '#000000' else str(targetmember.colour).upper())
+	embed.add_field(
+		name='Joined server at',
+		value='<t:{}:s>'.format(int(targetmember.joined_at.timestamp()))
+	)
 	# IMPORTANT: in `embed.add_field()`, `name` or `value` cannot be an empty string or you will get a 400 bad request when sending it
 	# (i learned that the hard way)
 	# (that was about twenty restarts smh)
@@ -621,10 +615,7 @@ async def findc(client, message, **kwargs):
 	)
 	em.add_field(
 		name='Created at',
-		value=time.strftime(
-			config.get_s('timeformat', message.guild.id),
-			tgt.created_at.timetuple(),
-		),
+		value='<t:{}:s>'.format(int(tgt.created_at.timestamp()))
 	)
 	em.add_field(
 		name='User limit',
@@ -1377,9 +1368,7 @@ async def channelperms(client, message, **kwargs):
 		'\t<p>Generated at {time}</p>'
 		'</body>'
 	).format(
-		title=title, table=html_table, time=time.strftime(
-			config.get_s('timeformat', message.guild.id)
-		)
+		title=title, table=html_table, time=time.strftime('%Y-%m-%d %H:%M:%S (%Z)')
 	)
 
 	with tempfile.NamedTemporaryFile() as temp:
@@ -1402,12 +1391,8 @@ async def uptime(client, message, **kwargs):
 	embed.set_author(name='Uptime statistics', icon_url=client.user.display_avatar.url)
 	embed.set_thumbnail(url=client.user.display_avatar.url)
 	embed.set_footer(text='Uptime statistics', icon_url=client.user.display_avatar.url)
-	embed.add_field(name='Boot time', value=wrapper.boottime)
-	try:
-		now = config.get_s('timeformat', message.guild.id)
-	except AttributeError:
-		now = config.get_s('timeformat')
-	embed.add_field(name='Current time', value=time.strftime(now))
+	embed.add_field(name='Boot time', value='<t:{}:s>'.format(int(wrapper.boottimeunix)))
+	embed.add_field(name='Current time', value='<t:{}:s>'.format(int(time.time())))
 	embed.add_field(name='Bot uptime', value=utils.reltime(wrapper.boottimeunix, True))
 	embed.add_field(name='Host uptime', value=hostuptime.decode('utf-8'))
 	await bot.reply(message, emb=embed)
@@ -2600,7 +2585,7 @@ async def archive(client, message, **kwargs):
 		async for m in msgs:
 			log.append('[{}] {}: {}'.format(
 					time.strftime(
-						config.get_s('timeformat', message.guild.id),
+						'%Y-%m-%d %H:%M:%S',
 						m.created_at.timetuple()
 					),
 					m.author.name,
