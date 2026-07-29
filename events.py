@@ -483,30 +483,6 @@ async def on_message_delete(msg):
 	if msg in wrapper.messages_deleted_by_bot:
 		wrapper.messages_deleted_by_bot.remove(msg)
 		return
-	dthreshold = datetime.timedelta(
-		seconds=config.get_s('deleted_message_resend_timer', msg.guild.id),
-	)
-	if (discord.utils.utcnow() - msg.created_at) < dthreshold and \
-	not msg.author.bot:
-		if config.get_s('deleted_message_resend_content', msg.guild.id):
-			em = discord.Embed(
-				title='UNDELETED MESSAGE',
-				description=msg.content,
-				colour=msg.author.colour,
-			)
-			em.set_footer(
-				text='This message was resent as it was deleted too recently.',
-			)
-		else:
-			em = discord.Embed(title='Message was deleted', colour=msg.author.colour)
-			em.set_footer(
-				text=(
-					'This notification was sent because a message by this'
-					' user was deleted too recently.'
-				),
-			)
-		em.set_author(name=msg.author.display_name, icon_url=msg.author.display_avatar.url)
-		await msg.channel.send(embed=em)
 
 async def on_message_edit(old, new):
 	if utils.isprivatemessage(old.guild):
@@ -542,28 +518,6 @@ async def on_message_edit(old, new):
 
 	if not utils.logdisabled('message_edit', new.guild):
 		await logs.log_edited_message(schan, old, new, edited_at)
-
-	# Message edited too heavily?
-	delta_threshold = datetime.timedelta(
-		config.get_s('edited_message_resend_timer', new.guild.id)
-	)
-	if ((edited_at - new.created_at) < delta_threshold and
-	utils.diff(old.content, new.content) >
-	config.get_s('edited_message_resend_threshold', new.guild.id)):
-		embed = discord.Embed(title='UNEDITED MESSAGE', colour=new.author.colour)
-
-		embed.add_field(name='Older content', value=old.content[:1024], inline=False)
-		if len(old.content) > 1024:
-			embed.add_field(name='[continued]', value=old.content[1024:], inline=False)
-
-		embed.add_field(name='Newer content', value=new.content[:1024], inline=False)
-		if len(new.content) > 1024:
-			embed.add_field(name='[continued]', value=new.content[1024:], inline=False)
-
-		embed.set_author(name=new.author.display_name, icon_url=new.author.display_avatar.url)
-		embed.set_footer(text='These contents were resent as this message was edited too heavily.')
-
-		await new.channel.send(embed=embed)
 
 async def on_member_update(before, after):
 	specialchannel = utils.getspecialchannel(after.guild)

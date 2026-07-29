@@ -19,9 +19,6 @@ configcats = {
 	'logging': {
 		'name': 'Logging',
 	},
-	'resending': {
-		'name': 'Message resending',
-	},
 	'reactroles': {
 		'name': 'Reaction roles',
 	},
@@ -215,28 +212,6 @@ configs = {
 		'access': 2,
 		'valid_user_value': True,
 	},
-	'deleted_message_resend_timer': {
-		'default': 0,
-		'type': 'int',
-		'is_array': False,
-		'expl': 'The time, in seconds, of how much to wait to not resend a deleted message.',
-		'detachable': True,
-		'cat': 'resending',
-		'access': 2,
-		'valid_user_value': (
-			lambda newvalue, **kwargs: newvalue >= 0
-		),
-	},
-	'deleted_message_resend_content': {
-		'default': False,
-		'type': 'bln',
-		'is_array': False,
-		'expl': 'Set to True to include the content of a deleted message when resending it before the `deleted_message_resend_timer` runs out, set to False to not include the original content.',
-		'detachable': True,
-		'cat': 'resending',
-		'access': 2,
-		'valid_user_value': True,
-	},
 	'voicechat_channel_text': {
 		'default': [],
 		'type': 'cid',
@@ -319,36 +294,6 @@ configs = {
 		'cat': 'commands',
 		'access': 2,
 		'valid_user_value': True,
-	},
-	'edited_message_resend_timer': {
-		'default': 0,
-		'type': 'int',
-		'is_array': False,
-		'expl': (
-			'The time, in seconds, of how much to wait to not resend'
-			' the older and newer content of an edited message.'
-		),
-		'detachable': True,
-		'cat': 'resending',
-		'access': 2,
-		'valid_user_value': (
-			lambda newvalue, **kwargs: newvalue >= 0
-		),
-	},
-	'edited_message_resend_threshold': {
-		'default': 10,
-		'type': 'int',
-		'is_array': False,
-		'expl': (
-			'The amount of changed characters between the older and newer content of'
-			' a message in order to resend both contents.'
-		),
-		'detachable': True,
-		'cat': 'resending',
-		'access': 2,
-		'valid_user_value': (
-			lambda newvalue, **kwargs: newvalue >= 0
-		),
 	},
 	'starboard_active': {
 		'default': False,
