@@ -544,49 +544,9 @@ async def findu(client, message, **kwargs):
 @shadow(guildonly=True)
 async def findc(client, message, **kwargs):
 	if not kwargs['arguments']:
-		# No channel for me to get? Have a list of the guild's channels, then.
-
-		# Lists
-		tchans = ''
-		vchans = ''
-
-		# Numbers
-		tchanc = 0
-		vchanc = 0
-
-		# Generation of the lists
-		for c in sorted(message.guild.channels, key=lambda c: c.position):
-			apnd = utils.obj_info(c)
-			if isinstance(c, discord.TextChannel):
-				tchans += apnd
-				tchanc += 1
-			elif isinstance(c, discord.VoiceChannel):
-				vchans += apnd
-				vchanc += 1
-
-		# Some guilds can have no voice channels. You can't have no text channels, though.
-		# Well, after a Discord update you now can, although then I'm not sure how we're receiving this command in the first place... whatever
-		tchans = '_(none)_' if not tchans else tchans
-		vchans = '_(none)_' if not vchans else vchans
-
-		em = discord.Embed(colour=message.guild.me.colour)
-		if message.guild.icon is not None:
-			em.set_thumbnail(url=message.guild.icon.url)
-
-		utils.paginate_field(em, max_length=1024,
-			name='Text channels ({0})'.format(tchanc),
-			value=tchans,
-			inline=False,
-		)
-		utils.paginate_field(em, max_length=1024,
-			name='Voice channels ({0})'.format(vchanc),
-			value=vchans,
-			inline=False,
-		)
-		await bot.reply(message, emb=em)
-		return
-
-	tgt = utils.match_input(message.guild.channels, discord.abc.GuildChannel, kwargs['arguments'])
+		tgt = message.channel
+	else:
+		tgt = utils.match_input(message.guild.channels, discord.abc.GuildChannel, kwargs['arguments'])
 	if not tgt:
 		em = emb.error('Unable to find that channel. ' + bot.t['specify_channel'])
 		await bot.reply(message, emb=em)
@@ -602,17 +562,6 @@ async def findc(client, message, **kwargs):
 	em.add_field(name='Name', value=utils.mdspecialchars(tgt.name))
 	em.add_field(name='ID', value=tgt.id)
 	em.add_field(name='Type', value=type(tgt).__name__)
-	em.add_field(name='Default', value='No')
-	em.add_field(
-		name='Position',
-		value='{0} from the top of {1} list'.format(
-			str(tgt.position), type(tgt).__name__,
-		),
-	)
-	em.add_field(
-		name='Topic' if hasattr(tgt, 'topic') and tgt.topic else 'No topic',
-		value=tgt.topic if hasattr(tgt, 'topic') and tgt.topic else '\u200b',
-	)
 	em.add_field(
 		name='Created at',
 		value='<t:{}:s>'.format(int(tgt.created_at.timestamp()))
@@ -642,6 +591,11 @@ async def findc(client, message, **kwargs):
 			'N/A' if not isinstance(tgt, discord.TextChannel) else
 			str(readbleby) + ' members'
 		),
+	)
+	em.add_field(
+		name='Topic' if hasattr(tgt, 'topic') and tgt.topic else 'No topic',
+		value=tgt.topic if hasattr(tgt, 'topic') and tgt.topic else '\u200b',
+		inline=False
 	)
 	await bot.reply(message, emb=em)
 
