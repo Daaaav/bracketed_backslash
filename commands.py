@@ -3914,8 +3914,9 @@ async def randwiki(client, message, **kwargs):
 
 @shadow(aliases=['temp'])
 async def temperature(client, message, **kwargs):
+	example_str = '\n\nTry:\n- `\\temp 50f`, `\\temp 50 F`, etc\n- `\\temp 10c`, `\\temp 10 C`, etc'
 	if kwargs['arguments'] is None:
-		embed = emb.error('A temperature needs to be specified.')
+		embed = emb.error('A temperature needs to be specified.' + example_str)
 		await bot.reply(message, emb=embed)
 		return
 
@@ -3934,7 +3935,7 @@ async def temperature(client, message, **kwargs):
 			break
 
 	if not numbers:
-		embed = emb.error('The argument does not contain numbers.')
+		embed = emb.error('The argument does not contain numbers.' + example_str)
 		await bot.reply(message, emb=embed)
 		return
 
@@ -3946,14 +3947,14 @@ async def temperature(client, message, **kwargs):
 	if unit == 'F':
 		# Fahrenheit to Celsius
 		converted = (original - 32) / 1.8
-		converted = round(converted, 5)
-		embed = emb.info(f'{original}\xB0F is {converted}\xB0C.')
+		converted = int(round(converted, 0))
+		embed = emb.info(f'**{original}\xB0F** is **{converted}\xB0C**.')
 	elif unit == 'C':
 		# Celsius to Fahrenheit
 		converted = original * 1.8 + 32
-		converted = round(converted, 5)
-		embed = emb.info(f'{original}\xB0C is {converted}\xB0F.')
+		converted = int(round(converted, 0))
+		embed = emb.info(f'**{original}\xB0C** is **{converted}\xB0F**.')
 	else:
-		embed = emb.error('Invalid unit of temperature.')
+		embed = emb.error('Invalid unit of temperature.' + example_str)
 
 	await bot.reply(message, emb=embed)
