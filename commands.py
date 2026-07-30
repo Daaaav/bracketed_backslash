@@ -803,7 +803,7 @@ async def expiryremove(client, message, **kwargs):
 		await bot.reply(message, emb=embed)
 		return
 
-@shadow()
+@shadow(auth=checks.is_mod)
 async def expirylist(client, message, **kwargs):
 	if isinstance(message.channel, discord.abc.PrivateChannel):
 		if not kwargs['arguments']:
@@ -1451,7 +1451,7 @@ async def countpins(client, message, **kwargs):
 	)
 	await bot.replyattach(message, images.progressbar(len(pins)*2), 'temp.png', content)
 
-@shadow(guildonly=True)
+@shadow(auth=checks.is_mod, guildonly=True)
 async def countallpins(client, message, **kwargs):
 	async with message.channel.typing():
 		content = ''
