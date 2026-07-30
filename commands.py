@@ -3874,7 +3874,7 @@ async def emotes(client, message, **kwargs):
 	for emoji in message.guild.emojis:
 		emoji_list.append(str(emoji))
 
-	emojis = '\n'.join(emoji_list)
+	emojis = ' '.join(emoji_list)
 
 	embed = discord.Embed(
 		title='Server emotes',
