@@ -38,7 +38,6 @@ boottimeunix = time.time()
 startup_error_codes = {
 	'send_connect': 'E01',
 	'memberroles': 'E02',
-	'rules': 'E03',
 	'rolexpires': 'E04',
 }
 
@@ -77,8 +76,6 @@ set_current_commit()
 
 memberroles = {}
 rolexpires = {}
-rules = {}
-disabledrules = []
 
 latestroled = ''
 

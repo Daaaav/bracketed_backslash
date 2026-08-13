@@ -136,30 +136,6 @@ async def on_ready():
 		traceback.print_exc()
 
 	try:
-		# Load rules.
-		# If this fails, the rules system doesn't work.
-		try:
-			with open('rules.json', 'r') as infile:
-				wrapper.rules = utils.convert_id_keys_to_int(json.load(infile))
-		except FileNotFoundError:
-			logging.info('rules file does not exist yet so creating it now')
-
-			with open('rules.json', 'w') as outfile:
-				json.dump(wrapper.rules, outfile)
-		try:
-			with open('disabledrules.json', 'r') as infile:
-				wrapper.disabledrules = [int(i) for i in json.load(infile)]
-		except FileNotFoundError:
-			logging.info('disabledrules file does not exist yet so creating it now')
-
-			with open('disabledrules.json', 'w') as outfile:
-				json.dump(wrapper.disabledrules, outfile)
-		wrapper.startup_errors['rules'] = False
-	except Exception:
-		logging.error('\x1b[41mStartup error when loading rules\x1b[0m')
-		traceback.print_exc()
-
-	try:
 		# Load role expiry.
 		# If this fails, existing expiry times won't work until next boot and new roles will never expire
 		try:

@@ -293,10 +293,6 @@ def rolecachesave():
 
 	return True
 
-def rulesave():
-	with open('rules.json', 'w') as outfile:
-		json.dump(wrapper.rules, outfile)
-
 def rolexpiresave():
 	with open('rolexpires.json', 'w') as outfile:
 		json.dump(wrapper.rolexpires, outfile)

@@ -316,49 +316,6 @@
 			]
 		},
 		{
-			"cat_name": "Rules Commands",
-			"cat_slug": "rulesystem",
-			"cat_desc": "",
-			"cat_shown": true,
-			"commands": [
-				{
-					"name": "rules",
-					"short": "View the server’s rules.",
-					"extra": "**Syntax**: `\\rule [RULE NUMBER]`"
-				},
-				{
-					"name": "rulefind",
-					"short": "Find rules that contain a given search term.",
-					"extra": "**Syntax**: `\\rulefind <TERM>`\n**Example**: `\\rulefind spam`"
-				},
-				{
-					"name": "ruleadd",
-					"short": "Insert a given `<STRING>` to `[POSITION]`. If no position is given, it\u2019s appended at the end.",
-					"extra": "**Syntax**: `\\ruleadd [POSITION] <STRING>`\n**Examples**:\n\t`\\ruleadd No trolling` \u2013 Inserting a string with no position. This will be appended at the end.\n\t`\\ruleadd 1 The most important rule is not to follow this rule.` \u2013 Inserting a string, and making it rule 1."
-				},
-				{
-					"name": "ruleedit",
-					"short": "Edit a given rule.",
-					"extra": "**Syntax**: `\\ruleedit <RULE NUMBER> <STRING>`\n**Example**: `\\ruleedit 2 No trolling`"
-				},
-				{
-					"name": "rulemove",
-					"short": "Move a given rule to a different position, with nothing overwritten.",
-					"extra": "**Syntax**: `\\rulemove <RULE NUMBER> <NEW POSITION>`\n**Example**: `\\rulemove 2 4`"
-				},
-				{
-					"name": "ruleremove",
-					"short": "Remove a given rule.",
-					"extra": "**Syntax**: `\\ruleremove <RULE NUMBER>`\n**Example**: `\\ruleremove 2`"
-				},
-				{
-					"name": "rulemaint",
-					"short": "Toggle normal members being able to see the rules for this server.",
-					"extra": ""
-				}
-			]
-		},
-		{
 			"cat_name": "TNTGB Commands",
 			"cat_slug": "tntgb",
 			"cat_desc": "",
