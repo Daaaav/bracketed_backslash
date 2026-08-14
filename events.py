@@ -912,6 +912,8 @@ async def on_guild_channel_delete(channel):
 async def on_raw_bulk_message_delete(payload):
 	# We must first know what channel it is
 	mchan = wrapper.client.get_channel(payload.channel_id)
+	if mchan is None:
+		return
 
 	unhandled_message_ids = copy.deepcopy(payload.message_ids)
 	# Can't we just handle this with normal message deletion events?
@@ -942,6 +944,8 @@ async def on_raw_bulk_message_delete(payload):
 async def on_raw_message_delete(payload):
 	# We must first know what channel it is
 	mchan = wrapper.client.get_channel(payload.channel_id)
+	if mchan is None:
+		return
 
 	await starboard.remove_message(payload, mchan)
 
@@ -973,7 +977,8 @@ async def on_raw_message_edit(payload):
 	# We must first know what channel it is
 	mchan = wrapper.client.get_channel(int(payload.data['channel_id']))
 
-	if isinstance(mchan, discord.abc.PrivateChannel) or \
+	if mchan is None or \
+	isinstance(mchan, discord.abc.PrivateChannel) or \
 	utils.logdisabled('message_updateuncached', mchan.guild) or \
 	utils.channelnotlogged(mchan, mchan.guild):
 		return
@@ -989,6 +994,8 @@ async def on_raw_message_edit(payload):
 async def on_raw_reaction_add(payload):
 	# We must first know what channel it is
 	mchan = wrapper.client.get_channel(payload.channel_id)
+	if mchan is None:
+		return
 
 	# FIXME: The starboard check blocks the rest of the function if it sends a message,
 	# then the reaction roles if it adds a role
@@ -1010,6 +1017,8 @@ async def on_raw_reaction_add(payload):
 async def on_raw_reaction_remove(payload):
 	# We must first know what channel it is
 	mchan = wrapper.client.get_channel(payload.channel_id)
+	if mchan is None:
+		return
 
 	# FIXME: Blocking function (see on_raw_reaction_add())
 	await starboard.check_message(payload, mchan, False)
@@ -1030,6 +1039,8 @@ async def on_raw_reaction_remove(payload):
 async def on_raw_reaction_clear(payload):
 	# We must first know what channel it is
 	mchan = wrapper.client.get_channel(payload.channel_id)
+	if mchan is None:
+		return
 
 	await starboard.remove_message(payload, mchan)
 	# TODO: Automatically remove message from reaction roles system?
@@ -1067,7 +1078,8 @@ async def on_raw_thread_delete(payload):
 
 	parent_chan = wrapper.client.get_channel(payload.parent_id)
 
-	if isinstance(parent_chan, discord.abc.PrivateChannel) or \
+	if parent_chan is None or \
+	isinstance(parent_chan, discord.abc.PrivateChannel) or \
 	utils.logdisabled('thread_delete', parent_chan.guild) or \
 	utils.channelnotlogged(parent_chan, parent_chan.guild):
 		return
