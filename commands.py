@@ -17,7 +17,7 @@ import tempfile
 import textwrap
 import time
 import traceback
-from typing import Optional
+from typing import Optional, Union
 
 import discord
 
@@ -39,6 +39,19 @@ import wrapper
 op_ids.load()
 
 # This file contains all the bot commands as functions.
+
+class CustomCommandTree(discord.app_commands.CommandTree):
+	async def interaction_check(self, interaction, /):
+		if interaction.guild_id is not None \
+		and interaction.user.id in config.get_s('blacklist', interaction.guild_id):
+			return False
+
+		if interaction.user.id in config.get_s('blacklist'):
+			return False
+
+		return True
+
+slashtree = CustomCommandTree(wrapper.client)
 
 commands = {}
 
@@ -1093,6 +1106,12 @@ async def channelperms(client, message, **kwargs):
 			file=discord.File(temp.name, 'channels.html')
 		)
 
+@slashtree.command(name='botok')
+async def SLASH_botok(interaction: discord.Interaction):
+	'''Check if [\\] is working'''
+	embed = emb.success('Bot is okay.')
+	await interaction.response.send_message(embed=embed)
+
 @shadow()
 async def botok(client, message, **kwargs):
 	embed = emb.success('Bot is okay.')
@@ -1269,15 +1288,29 @@ async def _eval(client, message, **kwargs):
 		return
 	await bot.reply(message, content)
 
+@slashtree.command(name='timeout')
+@discord.app_commands.guild_only
+@discord.app_commands.default_permissions(moderate_members=True)
+async def SLASH_timeout(interaction:discord.Interaction, member:discord.Member, duration:str, reason:Optional[str]):
+	'''Give a member a timeout, allowing any time up to 28 days
+
+	Parameters
+	-----------
+	member: discord.Member
+		The member to timeout
+	duration: str
+		Example: “7d12h”, “1h”, “1d”, “1d2h3m4s”, “1d20s”
+	reason: Optional[str]
+		The reason
+	'''
+
+	assert isinstance(interaction.user, discord.Member)
+
+	embed = await ACT_timeout(interaction.guild, interaction.user, member, duration, reason)
+	await interaction.response.send_message(embed=embed)
+
 @shadow(guildonly=True)
 async def timeout(client, message, **kwargs):
-	# The timeout permission is internally named "moderate_members". Future proofing I guess!
-	if not message.author.guild_permissions.moderate_members and not kwargs['sudo']:
-		utils.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
-		embed = emb.error(bot.t['you_no_permission'])
-		await bot.reply(message, emb=embed)
-		return
-
 	if kwargs['arguments'] is None:
 		kwargs['arguments'] = ''
 	splitargs = kwargs['arguments'].split(' ', 2)
@@ -1287,22 +1320,9 @@ async def timeout(client, message, **kwargs):
 		await bot.reply(message, emb=embed)
 		return
 
-	targetmember = utils.match_input(message.guild.members, discord.Member, splitargs[0])
-	if targetmember is None:
+	target = utils.match_input(message.guild.members, discord.Member, splitargs[0])
+	if target is None:
 		embed = emb.error(bot.t['specify_user'])
-		await bot.reply(message, emb=embed)
-		return
-
-	expirytime = utils.parsereltime(splitargs[1], True)
-	if expirytime is None:
-		embed = emb.error((
-				'Invalid expiry time. Please input a relative time '
-				'in the format `[#d][#h][#m][#s]`, for example: '
-				'`7d12h`, `1h`, `1d`, `1d2h3m4s`, `1d20s` or '
-				'whatever combination you can think of. The units '
-				'have to be in the correct order, though.'
-			)
-		)
 		await bot.reply(message, emb=embed)
 		return
 
@@ -1310,20 +1330,42 @@ async def timeout(client, message, **kwargs):
 	if len(splitargs) == 3:
 		reason = splitargs[2]
 
-	try:
-		await targetmember.timeout(datetime.timedelta(seconds=expirytime), reason=reason)
-		embed = emb.success('Successfully timed out <@{}>.'.format(targetmember.id))
-	except discord.Forbidden:
-		embed = emb.error(bot.t['no_permission'])
-	except Exception:
-		embed = emb.error('Could not timeout <@{}>.'.format(targetmember.id))
+	embed = await ACT_timeout(message.guild, message.author, target, splitargs[1], reason, kwargs['sudo'])
 	await bot.reply(message, emb=embed)
 
-@shadow(auth=checks.is_operator)
-async def reloadstrings(client, message, **kwargs):
-	bot.loadstrings()
-	embed = emb.success('Reloaded strings.')
-	await bot.reply(message, emb=embed)
+async def ACT_timeout(guild, author, target, duration, reason, is_sudo=False):
+	# The timeout permission is internally named "moderate_members". Future proofing I guess!
+	if not author.guild_permissions.moderate_members and not is_sudo:
+		return emb.error(bot.t['you_no_permission'])
+
+	expirytime = utils.parsereltime(duration, True)
+	if expirytime is None:
+		return emb.error((
+				'Invalid expiry time. Please input a relative time '
+				'in the format `[#d][#h][#m][#s]`, for example: '
+				'`7d12h`, `1h`, `1d`, `1d2h3m4s`, `1d20s` or '
+				'whatever combination you can think of. The units '
+				'have to be in the correct order, though.'
+			)
+		)
+
+	try:
+		await target.timeout(datetime.timedelta(seconds=expirytime), reason=reason)
+		embed = emb.success('Successfully timed out <@{}> for **{}**.'.format(
+				target.id, utils.reltime(expirytime, False, True, True)
+			)
+		)
+		if reason is not None:
+			embed.add_field(
+				name = 'Reason:',
+				value = reason,
+				inline = False
+			)
+		return embed
+	except discord.Forbidden:
+		return emb.error(bot.t['no_permission'])
+	except Exception:
+		return emb.error('Could not timeout <@{}>.'.format(target.id))
 
 @shadow(guildonly=True, joinchannelonly=True)
 async def join(client, message, **kwargs):
@@ -1838,7 +1880,12 @@ async def blacklist(client, message, **kwargs):
 			return
 		config.insert_s('blacklist', tgtmem.id, message.guild.id)
 		config.saveconfig()
-		embed = emb.success('Blacklisted {0.mention} from this server.'.format(tgtmem))
+		embed = emb.success(
+			(
+				'Blacklisted {0.mention} from using the bot in this server.\n\n'
+				'If you need this to be global, set the master value in config.'
+			).format(tgtmem)
+		)
 		await bot.reply(message, emb=embed)
 		return
 	elif kwargs['command'] == 'blackunlist':
@@ -2296,6 +2343,18 @@ async def reload(client, message, **kwargs):
 		__main__.recursive_reload.reloaded_modules = []
 	__main__.reload_bot()
 
+@shadow(auth=checks.is_operator)
+async def reloadstrings(client, message, **kwargs):
+	bot.loadstrings()
+	embed = emb.success('Reloaded strings.')
+	await bot.reply(message, emb=embed)
+
+@shadow(auth=checks.is_operator)
+async def syncslash(client, message, **kwargs):
+	await slashtree.sync()
+	embed = emb.success('Synced slash commands.')
+	await bot.reply(message, emb=embed)
+
 @shadow(auth=checks.is_admin, guildonly=True)
 async def tntgb(client, message, **kwargs):
 	if kwargs['arguments'] is None:
@@ -2570,6 +2629,35 @@ async def tntgb(client, message, **kwargs):
 	embed = emb.error('Invalid action given.')
 	await bot.reply(message, emb=embed)
 
+@slashtree.command(name='move')
+@discord.app_commands.guild_only
+@discord.app_commands.default_permissions(manage_messages=True)
+async def SLASH_move(
+	interaction: discord.Interaction,
+	destination: Union[discord.TextChannel, discord.VoiceChannel, discord.Thread],
+	topic: Optional[str]
+):
+	'''Redirect the current conversation to a different channel, by sending messages in both channels
+
+	Parameters
+	-----------
+	destination: Union[discord.TextChannel, discord.VoiceChannel, discord.Thread]
+		The channel to move the conversation to
+	topic: Optional[str]
+		The topic of the conversation
+	'''
+
+	assert isinstance(interaction.user, discord.Member)
+
+	convo_desc, embed_src = ACT_move_step1(interaction.channel, destination, interaction.user, topic)
+	sentmessage_src_inter = await interaction.response.send_message(embed=embed_src)
+
+	if convo_desc is None:
+		return
+
+	sentmessage_src = sentmessage_src_inter.resource
+	await ACT_move_step2(interaction.channel, destination, embed_src, sentmessage_src, convo_desc)
+
 @shadow(auth=checks.is_mod)
 async def move(client, message, **kwargs):
 	if kwargs['arguments'] is None:
@@ -2579,30 +2667,57 @@ async def move(client, message, **kwargs):
 
 	splitargs = kwargs['arguments'].split(' ', 1)
 
-	tgt = utils.match_input(message.guild.channels, discord.abc.GuildChannel, splitargs[0])
-	if tgt is None:
+	channel_dst = utils.match_input(message.guild.channels, discord.abc.GuildChannel, splitargs[0])
+	if channel_dst is None:
 		em = emb.error('Unable to find that channel. ' + bot.t['specify_channel'])
 		await bot.reply(message, emb=em)
 		return
 
-	if not isinstance(tgt, discord.abc.Messageable):
+	if not isinstance(channel_dst, discord.abc.Messageable):
 		em = emb.error('You can only move discussions to messageable channels.')
 		await bot.reply(message, emb=em)
 		return
 
+	topic = None
+	if len(splitargs) >= 2:
+		topic = splitargs[1]
+
+	convo_desc, embed_src = ACT_move_step1(message.channel, channel_dst, message.author, topic)
+	sentmessage_src = await message.channel.send(bot.calculate_msg_start(message), embed=embed_src)
+
+	if convo_desc is None:
+		return
+
+	await ACT_move_step2(message.channel, channel_dst, embed_src, sentmessage_src, convo_desc)
+
+def ACT_move_step1(channel_src, channel_dst, author, topic):
+	# This is part 1 of moving a message. It doesn't take any actions yet.
+	#
+	# It returns convo_desc, embed.
+	# convo_desc:
+	#	Kinda does double-duty.
+	#	If a string, it describes the conversation topic, and we should proceed with step 2.
+	#	If it's None, do not proceed with step 2.
+	# embed:
+	#	The embed to reply with in the source channel (whether we should proceed with step 2 or not)
+
+	# Do you have permission to manage messages in both channel 1 and 2?
+	if not channel_src.permissions_for(author).manage_messages \
+	or not channel_dst.permissions_for(author).manage_messages:
+		return None, emb.error(bot.t['you_no_permission'])
+
 	# So was the conversation about anything?
-	if len(splitargs) <= 1:
+	if topic is None:
 		convo_desc = 'current conversation'
 	else:
-		convo_desc = 'conversation about _{}_'.format(utils.mdspecialchars(splitargs[1]))
+		convo_desc = 'conversation about _{}_'.format(utils.mdspecialchars(topic))
 
 	emote_source = '👆'
-	emote_target = '👇'
 	emote_samech = '👍'
 
 	# People can fill in the same channel, of course.
-	if tgt == message.channel:
-		em = discord.Embed(
+	if channel_dst == channel_src:
+		embed = discord.Embed(
 			title=(
 				emote_samech + ' '
 				'Conversation kept in this channel'
@@ -2610,57 +2725,59 @@ async def move(client, message, **kwargs):
 			description=(
 				'Apparently {} _is_ the right channel for the {}. '
 				'Keep it up, I guess!'
-			).format(tgt.mention, convo_desc)
+			).format(channel_dst.mention, convo_desc)
 		)
-		await bot.reply(message, emb=em)
-		return
+		return None, embed
 
-	msg_start = bot.calculate_msg_start(message)
-
-	em_source = discord.Embed(
+	# Filled in a different channel, cool, so return the first embed!
+	embed_src = discord.Embed(
 		title=(
 			emote_source + ' '
 			'Conversation moving to #{}'
-		).format(utils.mdspecialchars(tgt.name)),
+		).format(utils.mdspecialchars(channel_dst.name)),
 		description='Please continue the {} in {}.'.format(
-			convo_desc, tgt.mention
+			convo_desc, channel_dst.mention
 		),
 		colour=0x0000FF
 	)
-	sentmessage_source = await message.channel.send(msg_start, embed=em_source)
+	return convo_desc, embed_src
 
-	url_source = sentmessage_source.jump_url
+async def ACT_move_step2(channel_src, channel_dst, embed_src, sentmessage_src, convo_desc):
+	# This is part 2 of moving a message: It carries out the actual move in the destination channel,
+	# and updates the original message with a link to it.
+
+	emote_target = '👇'
 
 	em_target = discord.Embed(
 		title=(
 			emote_target + ' '
 			'Conversation from #{} moving here'
-		).format(utils.mdspecialchars(message.channel.name)),
+		).format(utils.mdspecialchars(channel_src.name)),
 		description=(
 			'Please continue the {} from {} in this channel.\n\n'
 			'**Link to previous part**: {}'
 		).format(
-			convo_desc, message.channel.mention, url_source
+			convo_desc, channel_src.mention, sentmessage_src.jump_url
 		),
 		colour=0x0000FF
 	)
 	try:
-		sentmessage_target = await tgt.send(msg_start, embed=em_target)
+		sentmessage_target = await channel_dst.send(embed=em_target)
 
 		url_target = sentmessage_target.jump_url
 
 		# Now edit the source message
-		em_source.description = (
-			em_source.description + '\n\n'
+		embed_src.description = (
+			embed_src.description + '\n\n'
 			'**Link to next part**: ' + url_target
 		)
-	except discord.errors.Forbidden:
-		# Turns out we can't send a message in the target channel!
-		em_source.description = (
-			em_source.description + '\n\n'
-			'I don’t have permission to send a message in that channel myself, though.'
+	except Exception:
+		# Turns out we can't send a message in the target channel! Or something else went wrong
+		embed_src.description = (
+			embed_src.description + '\n\n'
+			'I can’t send a message in that channel myself, though.'
 		)
-	await sentmessage_source.edit(embed=em_source)
+	await sentmessage_src.edit(embed=embed_src)
 
 @shadow(aliases=['star'], guildonly=True)
 async def _starboard(client, message, **kwargs):
@@ -3594,45 +3711,72 @@ async def emotes(client, message, **kwargs):
 
 	await bot.reply(message, emb=embed)
 
+@slashtree.command(name='randwiki')
+async def SLASH_randwiki(interaction: discord.Interaction):
+	'''Show a random Wikipedia article (alias by description: rw)'''
+	await interaction.response.send_message(embed=ACT_randwiki())
+
 @shadow(aliases=['rw'])
 async def randwiki(client, message, **kwargs):
+	await bot.reply(message, emb=ACT_randwiki())
+
+def ACT_randwiki():
 	try:
 		import wikipedia
 	except ModuleNotFoundError:
-		embed = emb.error(
+		return emb.error(
 			'The bot host doesn’t have the `wikipedia` library installed. '
 			'Please contact them to install it!'
 		)
-		return await bot.reply(message, emb=embed)
 
 	# Originally from github.com/TRottinger/discord-randomify
 	# Originally licensed under MIT
-	page = wikipedia.random(1)
-
 	try:
-		info = wikipedia.page(page)
-	except wikipedia.DisambiguationError as e:
-		info = wikipedia.page(random.choice(e.options))
+		wikipedia.USER_AGENT = 'bracketed-backslash-bot (discord-bot@tolp.nl)'
+		page = wikipedia.random(1)
+
+		try:
+			info = wikipedia.page(page)
+		except wikipedia.DisambiguationError as e:
+			info = wikipedia.page(random.choice(e.options))
+	except Exception:
+		return emb.error(
+			'Something seems to have gone wrong with getting a Wikipedia article. '
+			'Please try again later?'
+		)
 
 	embed = discord.Embed(title='Random Wikipedia article', colour=discord.Colour.orange())
 	embed.add_field(name=info.original_title, value=info.url, inline=False)
 	embed.add_field(name='Summary', value=info.summary[:1024], inline=False)
 
-	await bot.reply(message, emb=embed)
+	return embed
+
+@slashtree.command(name='temperature')
+async def SLASH_temperature(interaction:discord.Interaction, value:str):
+	'''Convert temperature between Celsius and Fahrenheit
+
+	Parameters
+	-----------
+	value: str
+		Example: “50f”, “10 C”, etc
+	'''
+
+	await interaction.response.send_message(embed=ACT_temperature(value))
 
 @shadow(aliases=['temp'])
 async def temperature(client, message, **kwargs):
-	example_str = '\n\nTry:\n- `\\temp 50f`, `\\temp 50 F`, etc\n- `\\temp 10c`, `\\temp 10 C`, etc'
-	if kwargs['arguments'] is None:
-		embed = emb.error('A temperature needs to be specified.' + example_str)
-		await bot.reply(message, emb=embed)
-		return
+	await bot.reply(message, emb=ACT_temperature(kwargs['arguments']))
 
-	negative = kwargs['arguments'][0] == '-'
+def ACT_temperature(value):
+	example_str = '\n\nTry:\n- `\\temp 50f`, `\\temp 50 F`, etc\n- `\\temp 10c`, `\\temp 10 C`, etc'
+	if value is None:
+		return emb.error('A temperature needs to be specified.' + example_str)
+
+	negative = value[0] == '-'
 	if negative:
-		arguments = kwargs['arguments'][1:]
+		arguments = value[1:]
 	else:
-		arguments = kwargs['arguments']
+		arguments = value
 
 	numbers = []
 
@@ -3643,9 +3787,7 @@ async def temperature(client, message, **kwargs):
 			break
 
 	if not numbers:
-		embed = emb.error('The argument does not contain numbers.' + example_str)
-		await bot.reply(message, emb=embed)
-		return
+		return emb.error('The argument does not contain numbers.' + example_str)
 
 	original = int(''.join(numbers))
 	if negative:
@@ -3656,13 +3798,12 @@ async def temperature(client, message, **kwargs):
 		# Fahrenheit to Celsius
 		converted = (original - 32) / 1.8
 		converted = int(round(converted, 0))
-		embed = emb.info(f'**{original}\xB0F** is **{converted}\xB0C**.')
+		return emb.info(f'**{original}\xB0F** is **{converted}\xB0C**.')
 	elif unit == 'C':
 		# Celsius to Fahrenheit
 		converted = original * 1.8 + 32
 		converted = int(round(converted, 0))
-		embed = emb.info(f'**{original}\xB0C** is **{converted}\xB0F**.')
+		return emb.info(f'**{original}\xB0C** is **{converted}\xB0F**.')
 	else:
-		embed = emb.error('Invalid unit of temperature.' + example_str)
+		return emb.error('Invalid unit of temperature.' + example_str)
 
-	await bot.reply(message, emb=embed)

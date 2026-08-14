@@ -74,7 +74,7 @@
 			"commands": [
 				{
 					"name": "botok",
-					"short": "Pings the bot.",
+					"short": "Check if \\[\\\\\\] is working.",
 					"extra": ""
 				},
 				{
@@ -145,6 +145,11 @@
 				{
 					"name": "reloadstrings",
 					"short": "Reloads strings.",
+					"extra": ""
+				},
+				{
+					"name": "syncslash",
+					"short": "Sync slash commands.",
 					"extra": ""
 				},
 				{

@@ -291,7 +291,7 @@ async def on_message(m):
 	if not priv and m.author.id in config.get_s('blacklist', m.guild.id):
 		return
 
-	if priv and m.author.id in config.get_s('blacklist'):
+	if m.author.id in config.get_s('blacklist'):
 		return
 
 	if priv:
