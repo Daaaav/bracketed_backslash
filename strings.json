@@ -1,5 +1,5 @@
 {
-	"help_info_string": "`[\\]` is a bot written by Info Teddy and Dav999 in Python utilizing `discord.py`, for use on the tOLP Discord server, and TNTGB.\nTo get accepted into the developer team, you have to be accepted by eighty-percent of the current members of the team\nThe bot is normally hosted by Info Teddy, but currently it is temporarily hosted on one of Dav999\u2019s computers.",
+	"help_info_string": "`[\\]` is a bot originally written by Info Teddy and Dav999 in Python utilizing `discord.py`, and is now hosted and maintained by Dav999.",
 	"t": {
 		"owner_only": "Permission denied. This command can only be used by the owner.",
 		"op_only": "Permission denied. This command can only be used by an operator.",
@@ -19,7 +19,7 @@
 	},
 	"cmds": [
 		{
-			"cat_name": "General Commands",
+			"cat_name": "General commands",
 			"cat_slug": "general",
 			"cat_desc": "",
 			"cat_shown": true,
@@ -28,11 +28,6 @@
 					"name": "help",
 					"short": "Lists commands and their descriptions.",
 					"extra": "If an argument is given, `\\help` will look up in-depth description of the argument."
-				},
-				{
-					"name": "source",
-					"short": "Gives the link to the bot\u2019s source code.",
-					"extra": ""
 				},
 				{
 					"name": "echo",
@@ -50,49 +45,9 @@
 					"extrafull": "Find a channel by all or part of the name case-insensitively, or mention, or ID. Displays various information about the matched channel. If no argument is given, will give information about the current channel instead."
 				},
 				{
-					"name": "invite",
-					"short": "Give the join link to add \\[\\\\\\] to your server and the invite link for the public \\[\\\\\\] server.",
-					"extra": "The master instance of \\[\\\\\\] can only be used on those servers."
-				},
-				{
 					"name": "countpins",
 					"short": "Count the amount of pins in a channel.",
 					"extra": "If no channel mention is given, will use the current channel instead."
-				},
-				{
-					"name": "testroleconditional",
-					"short": "Gives the result of a given expression.",
-					"extra": "**Syntax**: `\\testroleconditional <targetmember> <expression>`\nFor more information about the expression system, please ask Dav or read the code, a documentation will come in the future. The system is also unfinished."
-				},
-				{
-					"name": "addcustomrolecommand",
-					"short": "Add a custom command that can give or take roles in given conditions.",
-					"extra": "**Syntax**: `\\addcustomrolecommand <name> <self|input> <no|command|input|RELATIVETIME> <condition> <giveroles> <takeroles>`\n\nFor a detailed explanation, see the [wiki page](https://gitgud.io/infoteddy/bracketed_backslash/wikis/custom-commands).\n\nExample: `\\addcustomrolecommand roleban input input c.mod&~t.mod [98765] []`"
-				},
-				{
-					"name": "addcustomaliascommand",
-					"short": "Add a custom command that is an alias for another custom command.",
-					"extra": "**Syntax**: `\\addcustomaliascommand <name> <aliasof>`\n\n`name`: The name of the command you are making now\n`aliasof`: The name of the command you want to run"
-				},
-				{
-					"name": "removecustomcommand",
-					"short": "Remove a custom command",
-					"extra": "**Syntax**: `\\removecustomcommand <name>`"
-				},
-				{
-					"name": "archive",
-					"short": "Create a chat log of the latest messages in a given channel. Not available for non-admins (yet).",
-					"extra": "**Syntax**: `\\archive <channel> [limit=100]`\n\nThe maximum limit is determined by the `maxarchive` config setting, which is global for the bot."
-				},
-				{
-					"name": "starboard",
-					"short": "Manages the starboard.",
-					"extra": "You can use the following options:\n`\\starboard init <CHANNEL>` \u2013 Initialize the starboard settings (but suspend it first).\n`\\starboard set <KEY> [VALUE]` \u2013 Change a starboard config option. VALUE is needed for all options except `star` and `nostar`. See the output of `\\starboard init` or the wiki for more details on the settings that can be changed.\n`\\starboard summarize_config` \u2013 Summarize the configuration of all the starboard settings on the server in a paragraph of English text.\n`\\starboard suspend` \u2013 Suspend the starboard, effectively freezing it.\n`\\starboard unsuspend` \u2013 Unsuspend the starboard.\n`\\starboard ignore <CHANNEL>` \u2013 Make messages sent in CHANNEL not eligible for being posted on the starboard.\n`\\starboard unignore <CHANNEL>` \u2013 Lift an ignore on a channel.\n`\\starboard ban <MEMBER>` \u2013 Ban a member from interacting with the starboard.\n`\\starboard unban <MEMBER>` \u2013 Lift a starboard ban on a member.\n`\\scan_danny <CHANNEL> <USERID>` \u2013 Scan the last 200 messages in a channel for messages by a previous starboard bot, so that those messages can be ignored for a smooth transition. See the wiki for more details.\n\nWiki: https://gitgud.io/infoteddy/bracketed_backslash/wikis/Starboard"
-				},
-				{
-					"name": "reactroles",
-					"short": "Manages reaction roles.",
-					"extra": "To add a message with reaction roles, you\u2019ll first need to create a set of reaction roles, then either associate it with an existing message, or make the bot send one.\n\nYou can use the following options:\n`\\reactroles create` \u2013 Opens a prompt to create a set of reaction roles.\n`\\reactroles refresh <MESSAGE ID>` (UNIMPLEMENTED) \u2013 Clear all reactions from a given reaction roles message and re-react with new ones. This will not remove anyone\u2019s roles."
 				},
 				{
 					"name": "emotes",
@@ -103,11 +58,16 @@
 					"name": "temperature",
 					"short": "Convert temperature between Celsius and Fahrenheit.",
 					"extra": ""
+				},
+				{
+					"name": "randwiki",
+					"short": "Show a random Wikipedia article.",
+					"extra": ""
 				}
 			]
 		},
 		{
-			"cat_name": "Bot Commands",
+			"cat_name": "Bot commands",
 			"cat_slug": "bot",
 			"cat_desc": "",
 			"cat_shown": true,
@@ -125,6 +85,16 @@
 				{
 					"name": "uptime",
 					"short": "Gives the bot uptime and host uptime.",
+					"extra": ""
+				},
+				{
+					"name": "source",
+					"short": "Gives the link to the bot\u2019s source code.",
+					"extra": ""
+				},
+				{
+					"name": "invite",
+					"short": "Give the join link to add \\[\\\\\\] to your server and the invite link for the public \\[\\\\\\] server.",
 					"extra": ""
 				},
 				{
@@ -158,9 +128,19 @@
 					"extra": ""
 				},
 				{
+					"name": "sudo",
+					"short": "Bypass certain permission checks.",
+					"extra": ""
+				},
+				{
 					"name": "setvar",
 					"short": "Sets a global variable.",
 					"extra": "**Syntax**: `\\setvar <VARIABLE> <ASSIGNMENT>"
+				},
+				{
+					"name": "reload",
+					"short": "Reloads strings.",
+					"extra": ""
 				},
 				{
 					"name": "reloadstrings",
@@ -180,7 +160,7 @@
 			]
 		},
 		{
-			"cat_name": "Moderation Commands",
+			"cat_name": "Moderation commands",
 			"cat_slug": "mod",
 			"cat_desc": "",
 			"cat_shown": true,
@@ -241,9 +221,9 @@
 					"extra": ""
 				},
 				{
-					"name": "rolecache",
-					"short": "Enable or disable the role cache, which gives people’s roles when they rejoin the server.",
-					"extra": "`\\rolecache enable` enables the cache. `\\rolecache enable_with_default` enables the cache, and gives the default role to new members. `\\rolecache disable` disables the cache. Make sure to run `\\rolesync` after enabling the cache."
+					"name": "archive",
+					"short": "Create a chat log of the latest messages in a given channel. Not available for non-admins (yet).",
+					"extra": "**Syntax**: `\\archive <channel> [limit=100]`\n\nThe maximum limit is determined by the `maxarchive` config setting, which is global for the bot."
 				},
 				{
 					"name": "rolecacheinfo",
@@ -268,9 +248,9 @@
 			]
 		},
 		{
-			"cat_name": "Administration Commands",
+			"cat_name": "Administration commands",
 			"cat_slug": "admin",
-			"cat_desc": "Commands to manage the behind-the-scenes of the server.",
+			"cat_desc": "Commands to manage setup of features.",
 			"cat_shown": true,
 			"commands": [
 				{
@@ -282,11 +262,46 @@
 					"name": "channelperms",
 					"short": "Gives an overview of permissions for all channels for all groups or a specific member.",
 					"extra": "**Syntax**: `\\channelperms [MEMBER]`\n\n\t`[MEMBER]`: The member for which to calculate permissions. If left out, give a table for all overwrites."
+				},
+				{
+					"name": "testroleconditional",
+					"short": "Gives the result of a given expression.",
+					"extra": "**Syntax**: `\\testroleconditional <targetmember> <expression>`\nFor more information about the expression system, please ask Dav or read the code, a documentation will come in the future. The system is also unfinished."
+				},
+				{
+					"name": "addcustomrolecommand",
+					"short": "Add a custom command that can give or take roles in given conditions.",
+					"extra": "**Syntax**: `\\addcustomrolecommand <name> <self|input> <no|command|input|RELATIVETIME> <condition> <giveroles> <takeroles>`\n\nFor a detailed explanation, see the [wiki page](https://gitgud.io/infoteddy/bracketed_backslash/wikis/custom-commands).\n\nExample: `\\addcustomrolecommand roleban input input c.mod&~t.mod [98765] []`"
+				},
+				{
+					"name": "addcustomaliascommand",
+					"short": "Add a custom command that is an alias for another custom command.",
+					"extra": "**Syntax**: `\\addcustomaliascommand <name> <aliasof>`\n\n`name`: The name of the command you are making now\n`aliasof`: The name of the command you want to run"
+				},
+				{
+					"name": "removecustomcommand",
+					"short": "Remove a custom command",
+					"extra": "**Syntax**: `\\removecustomcommand <name>`"
+				},
+				{
+					"name": "rolecache",
+					"short": "Enable or disable the role cache, which gives people’s roles when they rejoin the server.",
+					"extra": "`\\rolecache enable` enables the cache. `\\rolecache enable_with_default` enables the cache, and gives the default role to new members. `\\rolecache disable` disables the cache. Make sure to run `\\rolesync` after enabling the cache."
+				},
+				{
+					"name": "starboard",
+					"short": "Manages the starboard.",
+					"extra": "You can use the following options:\n`\\starboard init <CHANNEL>` \u2013 Initialize the starboard settings (but suspend it first).\n`\\starboard set <KEY> [VALUE]` \u2013 Change a starboard config option. VALUE is needed for all options except `star` and `nostar`. See the output of `\\starboard init` or the wiki for more details on the settings that can be changed.\n`\\starboard summarize_config` \u2013 Summarize the configuration of all the starboard settings on the server in a paragraph of English text.\n`\\starboard suspend` \u2013 Suspend the starboard, effectively freezing it.\n`\\starboard unsuspend` \u2013 Unsuspend the starboard.\n`\\starboard ignore <CHANNEL>` \u2013 Make messages sent in CHANNEL not eligible for being posted on the starboard.\n`\\starboard unignore <CHANNEL>` \u2013 Lift an ignore on a channel.\n`\\starboard ban <MEMBER>` \u2013 Ban a member from interacting with the starboard.\n`\\starboard unban <MEMBER>` \u2013 Lift a starboard ban on a member.\n`\\scan_danny <CHANNEL> <USERID>` \u2013 Scan the last 200 messages in a channel for messages by a previous starboard bot, so that those messages can be ignored for a smooth transition. See the wiki for more details.\n\nWiki: https://gitgud.io/infoteddy/bracketed_backslash/wikis/Starboard"
+				},
+				{
+					"name": "reactroles",
+					"short": "Manages reaction roles.",
+					"extra": "To add a message with reaction roles, you\u2019ll first need to create a set of reaction roles, then either associate it with an existing message, or make the bot send one.\n\nYou can use the following options:\n`\\reactroles create` \u2013 Opens a prompt to create a set of reaction roles.\n`\\reactroles refresh <MESSAGE ID>` (UNIMPLEMENTED) \u2013 Clear all reactions from a given reaction roles message and re-react with new ones. This will not remove anyone\u2019s roles."
 				}
 			]
 		},
 		{
-			"cat_name": "TNTGB Commands",
+			"cat_name": "TNTGB commands",
 			"cat_slug": "tntgb",
 			"cat_desc": "",
 			"cat_shown": true,
@@ -317,6 +332,11 @@
 					"extra": "Removes the original ban log entry as well! Takes a member representation."
 				},
 				{
+					"name": "tntgb",
+					"short": "Set up or stop TNTGB on a server.",
+					"extra": "**Options:**\n`\\tntgb init` \u2013 Set up TNTGB mode.\n`\\tntgb stop` \u2013 Stops TNTGB mode.\n`\\tntgb set [OPTION] [VALUE]` \u2013 Sets a TNTGB setting."
+				},
+				{
 					"name": "tntgb_maint",
 					"short": "An admin toolbox of maintenance features specifically for TNTGB.",
 					"extra": "Assumes you know what you\u2019re doing. Can only be used by an administrator.\n**Options:**\n`\\tntgb_maint liftmsg` \u2013 Edit a message in the ban log channel to change the \"⛔\" into \"[LIFTED]\", but don\u2019t announce it. Takes message ID.\n`\\tntgb_maint addtimer` \u2013 Adds an expiry timer for the first user mentioned in the message based on the timestamp of the message. If sent by the bot, it\u2019ll also automatically edit the message when the timer expires."
@@ -324,7 +344,7 @@
 			]
 		},
 		{
-			"cat_name": "Server commands",
+			"cat_name": "Custom server commands",
 			"cat_slug": "server",
 			"cat_desc": "Custom commands that are specific to this server",
 			"cat_shown": true,
