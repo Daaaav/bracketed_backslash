@@ -60,11 +60,6 @@
 					"extra": "If no channel mention is given, will use the current channel instead."
 				},
 				{
-					"name": "countallpins",
-					"short": "Count the amount of pins in all channels.",
-					"extra": ""
-				},
-				{
 					"name": "testroleconditional",
 					"short": "Gives the result of a given expression.",
 					"extra": "**Syntax**: `\\testroleconditional <targetmember> <expression>`\nFor more information about the expression system, please ask Dav or read the code, a documentation will come in the future. The system is also unfinished."
@@ -191,21 +186,6 @@
 			"cat_shown": true,
 			"commands": [
 				{
-					"name": "kick",
-					"short": "Kicks a member from the server.",
-					"extra": ""
-				},
-				{
-					"name": "serverban",
-					"short": "Bans a member from the server.",
-					"extra": ""
-				},
-				{
-					"name": "unserverban",
-					"short": "Unbans a user from the server.",
-					"extra": ""
-				},
-				{
 					"name": "timeout",
 					"short": "Gives a member a timeout.",
 					"extra": "**Syntax**: `\\timeout <MEMBER> <DURATION> [REASON]`\n\nExample: `\\timeout cactus 3d12h Didn't say hi to me`\n\nThis uses Discord's own timeout system, so the expiry is not managed by \\[\\\\\\]."
@@ -214,16 +194,6 @@
 					"name": "move",
 					"short": "Redirect the current conversation to a different channel by sending messages in both channels and linking between them.",
 					"extra": "**Syntax**: `\\move <CHANNEL> [SUBJECT]`\n\n\t`<CHANNEL>`: You can supply a channel (mention, (part of) name, id, etc) to move the conversation to.\n\n\t`[SUBJECT]`: Optionally, you can also supply the subject of the conversation, so the messages will include something like \"the conversation about _code indentation styles_\"."
-				},
-				{
-					"name": "voicemute",
-					"short": "Mutes a member in a voice channel.",
-					"extra": ""
-				},
-				{
-					"name": "voiceunmute",
-					"short": "Unmutes a member in a voice channel.",
-					"extra": ""
 				},
 				{
 					"name": "rolerst",

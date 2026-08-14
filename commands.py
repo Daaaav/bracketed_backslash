@@ -599,27 +599,6 @@ async def findc(client, message, **kwargs):
 	)
 	await bot.reply(message, emb=em)
 
-@shadow(auth=checks.is_mod, aliases=['voiceunmute'])
-async def voicemute(client, message, **kwargs):
-	targetmember = utils.match_input(message.guild.members, discord.Member, kwargs['arguments'])
-	content = None
-	try:
-		if targetmember.voice.voice_channel is None:
-			embed = emb.error('User is not in a voice channel.')
-		elif kwargs['command'] == 'voicemute':
-			content = targetmember.mention
-			embed = emb.success('Voice muted <@{}>.'.format(targetmember.id))
-			await targetmember.edit(mute=True)
-		elif kwargs['command'] == 'voiceunmute':
-			content = targetmember.mention
-			embed = emb.success('Voice unmuted <@{}>.'.format(targetmember.id))
-			await targetmember.edit(mute=False)
-	except AttributeError:
-		embed = emb.error(bot.t['specify_user'])
-	except discord.errors.Forbidden:
-		embed = emb.error(bot.t['no_permission'])
-	await bot.reply(message, content, emb=embed)
-
 @shadow(auth=checks.is_mod, guildonly=True)
 async def rolerst(client, message, **kwargs):
 	targetmember = utils.match_input(message.guild.members, discord.Member, kwargs['arguments'])
@@ -1232,23 +1211,6 @@ async def countpins(client, message, **kwargs):
 	)
 	await bot.replyattach(message, images.progressbar(len(pins)*2), 'temp.png', content)
 
-@shadow(auth=checks.is_mod, guildonly=True)
-async def countallpins(client, message, **kwargs):
-	async with message.channel.typing():
-		content = ''
-		for chan in message.guild.text_channels:
-			try:
-				pins = await chan.pins()
-				content += '{} – {} pin{s}, {} remaining\n'.format(
-					chan.mention,
-					len(pins),
-					50 - len(pins),
-					s='s' if len(pins) != 1 else '',
-				)
-			except discord.errors.Forbidden:
-				content += chan.mention + ' - Unable to get data\n'
-	await bot.reply(message, content)
-
 @shadow(auth=checks.is_operator)
 async def gamestatus(client, message, **kwargs):
 	if kwargs['arguments'] is None:
@@ -1306,41 +1268,6 @@ async def _eval(client, message, **kwargs):
 		await bot.reply(message, emb=embed)
 		return
 	await bot.reply(message, content)
-
-@shadow(aliases=['serverban', 'unserverban', 'ban', 'unban'])
-async def kick(client, message, **kwargs):
-	targetmember = utils.match_input(message.guild.members, discord.Member, kwargs['arguments'])
-	try:
-		if kwargs['command'] == 'kick':
-			if not message.author.guild_permissions.kick_members and not kwargs['sudo']:
-				utils.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
-				embed = emb.error(bot.t['you_no_permission'])
-				await bot.reply(message, emb=embed)
-				return
-			await targetmember.kick()
-		elif kwargs['command'] in ('serverban', 'ban'):
-			if not message.author.guild_permissions.ban_members and not kwargs['sudo']:
-				utils.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
-				embed = emb.error(bot.t['you_no_permission'])
-				await bot.reply(message, emb=embed)
-				return
-			await targetmember.ban(delete_message_seconds=0)
-		elif kwargs['command'] in ('unserverban', 'unban'):
-			if not message.author.guild_permissions.ban_members and not kwargs['sudo']:
-				utils.logfailedcommand(kwargs['command'], kwargs['arguments'], message)
-				embed = emb.error(bot.t['you_no_permission'])
-				await bot.reply(message, emb=embed)
-				return
-			await message.guild.unban(targetmember)
-		content = targetmember.mention
-		embed = emb.success('{}ed <@{}>.'.format(kwargs['command'].title() if kwargs['command'] == 'kick' else kwargs['command'].title() + 'n', targetmember.id))
-	except AttributeError:
-		content = ''
-		embed = emb.error(bot.t['specify_user'])
-	except discord.errors.Forbidden:
-		content = ''
-		embed = emb.error(bot.t['no_permission'])
-	await bot.reply(message, content, emb=embed)
 
 @shadow(guildonly=True)
 async def timeout(client, message, **kwargs):
