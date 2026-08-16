@@ -104,7 +104,7 @@ def exists(guild, command):
 	return True
 
 async def run(
-	guild, command, message, arguments, clean_arguments, invokesymbol,
+	guild, command, message, arguments, invokesymbol,
 	recursivecall=False, referrers=None
 ):
 	"""Run the given custom command. Assumes that you checked if the command exists, and that
@@ -327,7 +327,6 @@ async def run(
 				com['to'],
 				message,
 				arguments,
-				clean_arguments,
 				invokesymbol,
 				True,
 				referrers

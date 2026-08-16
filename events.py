@@ -314,27 +314,50 @@ async def on_message(m):
 		await m.delete()
 		wrapper.messages_deleted_by_bot.append(m)
 
+	# 2026:
+	# This is honestly a bit paranoid, but people were very explicit and specific about this...
+	# If your bot requires approval from Discord via the privileged intents form, then after
+	# getting approval, you are NOT allowed to use your message content intent for commands,
+	# period. And including prefix commands at all on the form WILL get you rejected.
+	# However, it's specifically fine to use the message content for commands if you
+	# aren't USING the intent - that is, you would've gotten the content without the intent.
+	# Which is direct messages, and when the bot gets pinged in any way (including ping-reply!)
+	if not priv and config.get_s('prefix_must_ping') and not m.guild.me in m.mentions:
+		return
+
+	# Now, if you had to stick a ping in, make sure it doesn't break the command syntax...
+	# This does break certain cases (e.g. "\findu @bot") but then just change it to
+	# "@bot \findu @bot" or "\findu @bot @bot" I guess? or "\findu bot".
+	# It seems like a really small edge case that won't realistically be a problem.
+	my_ping_1 = '<@{}>'.format(wrapper.client.user.id)
+	my_ping_2 = '<@!{}>'.format(wrapper.client.user.id)
+	m_content = m.content.replace(my_ping_1, '', 1).replace(my_ping_2, '', 1).strip()
+
 	prefixes = config.get_s('prefixes')[:]
 
 	if not priv and config.is_detached('prefixes', m.guild.id):
 		prefixes.extend(config.get_s('prefixes', m.guild.id))
 
+	if m.content.startswith(my_ping_1) or m.content.startswith(my_ping_2):
+		# One more special case: "@[\] help" now works
+		# (in addition to "@[\] \help" so add this at the end)
+		prefixes.append('')
+
 	for prefix in prefixes:
-		if m.content.startswith(prefix):
-			command = m.content.split(prefix, 1)[1]
-			clean_command_with_args = m.clean_content.split(prefix, 1)[1]
+		if m_content.startswith(prefix):
+			if prefix == '':
+				command = m_content
+			else:
+				command = m_content.split(prefix, 1)[1]
 			break
 	else:
 		return
 
 	try:
 		arguments = command.split(' ', 1)[1]
-		clean_arguments = clean_command_with_args.split(' ', 1)[1]
 	except IndexError:
 		arguments = None
-		clean_arguments = None
 	command = command.split(' ', 1)[0]
-	clean_command = clean_command_with_args.split(' ', 1)[0]
 
 	# Prevent access to those who aren't supposed to send messages
 	if not priv and \
@@ -364,7 +387,7 @@ async def on_message(m):
 	elif customcommands.exists(m.guild, command):
 		try:
 			await customcommands.run(
-				m.guild, command, m, arguments, clean_arguments, invokesymbol
+				m.guild, command, m, arguments, invokesymbol
 			)
 		except discord.errors.Forbidden:
 			e = emb.error(bot.t['no_permission'])
@@ -420,8 +443,6 @@ async def on_message(m):
 	kwargs = {
 		'command': command,
 		'arguments': arguments,
-		'clean_arguments': clean_arguments,
-		'clean_command_with_args': clean_command_with_args,
 		'invokesymbol': invokesymbol,
 		'sudo': False,
 	}

@@ -79,7 +79,17 @@ def shadow(auth=None, aliases=None, guildonly=False, tntgbguildonly=False, joinc
 
 @shadow()
 async def _help(client, message, **kwargs):
-	content = (bot.help_info_string + utils.helplist(bot.cmds, message.guild))
+	top_part = bot.help_info_string
+
+	if config.get_s('prefix_must_ping'):
+		top_part += (
+			'\n\n> Due to new Discord rules, if you want to use these `\\` commands in a server, '
+			'you need to ping me in the message. For example:\n'
+			'>             \\help <@{myid}>            <@{myid}> \\help            <@{myid}> help\n'
+			'> Or use a slash command, if available.'
+		).format(myid = wrapper.client.user.id)
+
+	content = top_part + utils.helplist(bot.cmds, message.guild)
 
 	# General
 	if kwargs['arguments'] is None:
@@ -504,31 +514,6 @@ async def _config(client, message, **kwargs):
 	else:
 		embed = emb.error('`{}` was not recognized'.format(splitargs[0]))
 		await bot.reply(message, emb=embed)
-
-@shadow()
-async def echo(client, message, **kwargs):
-	if kwargs['arguments'] is None:
-		arguments = ''
-	else:
-		arguments = kwargs['clean_arguments']
-
-	msg_start = bot.calculate_msg_start(message)
-
-	if (isinstance(message.channel, discord.abc.GuildChannel) and \
-	message.channel.permissions_for(message.guild.me).embed_links) \
-	or isinstance(message.channel, discord.abc.PrivateChannel):
-		displayarguments = arguments[:2048-len(msg_start)]
-		try:
-			echocolor = message.guild.me.colour
-		except AttributeError:
-			# No message.guild apparently! (.me and .colour always exist)
-			echocolor = None
-		em = discord.Embed(description=displayarguments, colour=echocolor)
-		replyargs = {'emb': em}
-	else:
-		displayarguments = arguments[:2000-len(msg_start)]
-		replyargs = {'message': displayarguments}
-	await bot.reply(message, **replyargs)
 
 @shadow()
 async def source(client, message, **kwargs):
@@ -1958,10 +1943,8 @@ async def sudo(client, message, **kwargs):
 	kwargs['command'] = command
 	try:
 		kwargs['arguments'] = kwargs['arguments'].split(' ', 1)[1]
-		kwargs['clean_arguments'] = kwargs['clean_command_with_args'].split(' ', 2)[2]
 	except IndexError:
 		kwargs['arguments'] = None
-		kwargs['clean_arguments'] = None
 	kwargs['sudo'] = True
 	await func[0](client, message, **kwargs)
 

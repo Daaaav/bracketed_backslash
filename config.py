@@ -432,6 +432,16 @@ configs = {
 		'access': 1,
 		'valid_user_value': True,
 	},
+	'prefix_must_ping': {
+		'default': False,
+		'type': 'bln',
+		'is_array': False,
+		'expl': 'If set, legacy commands that don\'t ping the bot will be ignored. Discord seems to forbid big bots (more than 10,000 members) from ever using the message content intent for legacy commands. The first ping will be removed when parsing the message, so you can just stick a ping in there and it will work.',
+		'detachable': False,
+		'cat': 'sysop',
+		'access': 0,
+		'valid_user_value': True,
+	},
 }
 
 s = {}

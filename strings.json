@@ -30,11 +30,6 @@
 					"extra": "If an argument is given, `\\help` will look up in-depth description of the argument."
 				},
 				{
-					"name": "echo",
-					"short": "Echoes your input.",
-					"extra": ""
-				},
-				{
 					"name": "findu",
 					"short": "Find a user by user ID or mention, or all or part of the username, nickname, or display name.",
 					"extrafull": "Find a user by user ID or mention, or all or part of the username, nickname, or display name. Displays various information about the matched user. If no argument is given, will match caller instead."
