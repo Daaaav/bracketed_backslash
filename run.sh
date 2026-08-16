@@ -23,18 +23,14 @@ while true; do
 
 	if [ $EXITCODE -eq 0 ]; then
 		echo -e "${LIGHTBLUE}Bot exited with exit code ${LIGHTCYAN}${EXITCODE}${LIGHTBLUE}: Ctrl-C used!${NOCOLOR}" >&2
-		notify-send "[\\] has been stopped"
 		exit 0
 	elif [ $EXITCODE -eq 4 ]; then
 		echo -e "${LIGHTBLUE}Bot exited with exit code ${LIGHTCYAN}${EXITCODE}${LIGHTBLUE}: kill command used!${NOCOLOR}" >&2
-		notify-send "[\\] has been stopped"
 		exit 0
 	elif [ $EXITCODE -eq 8 ]; then
 		echo -e "${LIGHTBLUE}Bot exited with exit code ${LIGHTCYAN}${EXITCODE}${LIGHTBLUE}: restart command used!${NOCOLOR}" >&2
-		notify-send "[\\] restarting now"
 	else
 		echo -e "${LIGHTBLUE}Bot exited with exit code ${LIGHTCYAN}${EXITCODE}${LIGHTBLUE}: unhandled, probably crashed, restarting in 10s${NOCOLOR}" >&2
-		notify-send "Bot exited with exit code ${EXITCODE}, restarting in 10s."
 		sleep 10
 	fi
 done

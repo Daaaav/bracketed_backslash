@@ -74,14 +74,15 @@ loadstrings()
 
 def calculate_msg_start(message):
 	# Removes the need for globalling msg_start every time
+	# Note: this assignment goes on for longer than it looks at first glance
 	indisp = (
 		(
 			'``{}``**`…`**'
 		).format(
-			utils.wrapbackticks(message.content[:100]).replace('discord.gg', 'discord\u200b.gg')
+			utils.wrapbackticks(message.clean_content[:100]).replace('discord.gg', 'discord\u200b.gg')
 		)
-	) if len(message.content) > 100 else (
-		'``{}``'.format(utils.wrapbackticks(message.content))
+	) if len(message.clean_content) > 100 else (
+		'``{}``'.format(utils.wrapbackticks(message.clean_content))
 		.replace('\n', '``**`\\n`**``​')
 		.replace('discord.gg', 'discord\u200b.gg')
 	)

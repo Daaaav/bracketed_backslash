@@ -7,7 +7,6 @@ import contextlib
 import datetime
 import io
 import inspect
-import json
 import os
 import random
 import re
@@ -44,9 +43,15 @@ class CustomCommandTree(discord.app_commands.CommandTree):
 	async def interaction_check(self, interaction, /):
 		if interaction.guild_id is not None \
 		and interaction.user.id in config.get_s('blacklist', interaction.guild_id):
+			if interaction.type == discord.InteractionType.application_command:
+				embed = emb.error('You are blacklisted from using this bot in this server.')
+				await interaction.response.send_message(embed=embed, ephemeral=True)
 			return False
 
 		if interaction.user.id in config.get_s('blacklist'):
+			if interaction.type == discord.InteractionType.application_command:
+				embed = emb.error('You are blacklisted from using this bot.')
+				await interaction.response.send_message(embed=embed, ephemeral=True)
 			return False
 
 		return True
@@ -128,9 +133,9 @@ async def restart(client, message, **kwargs):
 	embed.add_field(name='Messages in cache', value=str(len(client.cached_messages)))
 	utils.logcommand(kwargs['command'], kwargs['arguments'], message)
 	await bot.reply(message, emb=embed)
-	await client.close()
 	__main__ = __import__('__main__')
 	__main__.exit_code = 8
+	await client.close()
 
 @shadow(auth=checks.is_host)
 async def kill(client, message, **kwargs):
@@ -138,9 +143,9 @@ async def kill(client, message, **kwargs):
 	embed.add_field(name='Uptime', value=utils.reltime(wrapper.boottimeunix, True))
 	utils.logcommand(kwargs['command'], kwargs['arguments'], message)
 	await bot.reply(message, emb=embed)
-	await client.close()
 	__main__ = __import__('__main__')
 	__main__.exit_code = 4
+	await client.close()
 
 @shadow(auth=checks.is_operator)
 async def errors(client, message, **kwargs):
@@ -269,6 +274,11 @@ async def _config(client, message, **kwargs):
 		return
 
 	elif splitargs[0] == 'set':
+		if len(splitargs) <= 2:
+			value = ''
+		else:
+			value = splitargs[2]
+
 		if not config.exists(splitargs[1]):
 			embed = emb.error('That setting does not exist')
 			await bot.reply(message, emb=embed)
@@ -281,18 +291,18 @@ async def _config(client, message, **kwargs):
 			embed = emb.error('That doesn’t work for a dic.')
 			await bot.reply(message, emb=embed)
 			return
-		if config.get_type(splitargs[1]) == 'int' and not splitargs[2].isdigit():
+		if config.get_type(splitargs[1]) == 'int' and not value.isdigit():
 			embed = emb.error('Integer expected')
 			await bot.reply(message, emb=embed)
 			return
 		try:
 			try:
-				config.set_s(splitargs[1], splitargs[2], message.guild.id)
+				config.set_s(splitargs[1], value, message.guild.id)
 				editingmaster = not config.is_detached(
 					splitargs[1], message.guild.id
 				)
 			except AttributeError:
-				config.set_s(splitargs[1], splitargs[2])
+				config.set_s(splitargs[1], value)
 		except ValueError:
 			embed = emb.error('Invalid value specified')
 			await bot.reply(message, emb=embed)
@@ -301,7 +311,7 @@ async def _config(client, message, **kwargs):
 		utils.logcommand(kwargs['command'], kwargs['arguments'], message)
 		embed = emb.success('Set `{}` to `{}`{}'.format(
 				splitargs[1], utils.wrapbackticks(
-					config.input_to_type_key(splitargs[2], splitargs[1])
+					config.input_to_type_key(value, splitargs[1])
 				),
 				bot.t['editingmasterval'] if editingmaster else ''
 			)
@@ -333,23 +343,30 @@ async def _config(client, message, **kwargs):
 			content += 'Explanation: {}\n'.format(config.get_expl(splitargs[1]))
 		content += 'Value:'
 
+		def format_val(val):
+			# Special case for empty string, since `` is not an empty codeblock
+			if val == '':
+				return '(empty)'
+			else:
+				return '`{}`'.format(val)
+
 		if config.is_array(splitargs[1]):
 			try:
 				for val in config.get_s(splitargs[1], message.guild.id):
-					content += ' `{}`,'.format(val)
+					content += ' {},'.format(format_val(val))
 			except AttributeError:
 				for val in config.get_s(splitargs[1]):
-					content += ' `{}`,'.format(val)
+					content += ' {},'.format(format_val(val))
 		else:
 			try:
-				content += ' `{}`\nDefault: `{}`'.format(
-					str(config.get_s(splitargs[1], message.guild.id)),
-					str(config.get_default(splitargs[1])),
+				content += ' {}\nDefault: {}'.format(
+					str(format_val(config.get_s(splitargs[1], message.guild.id))),
+					str(format_val(config.get_default(splitargs[1]))),
 				)
 			except AttributeError:
-				content += ' `{}`\nDefault: `{}`'.format(
-					str(config.get_s(splitargs[1])),
-					str(config.get_default(splitargs[1])),
+				content += ' {}\nDefault: {}'.format(
+					str(format_val(config.get_s(splitargs[1]))),
+					str(format_val(config.get_default(splitargs[1]))),
 				)
 		await bot.reply(message, content)
 	elif splitargs[0] == 'insert' or splitargs[0] == 'remove':
@@ -1235,9 +1252,14 @@ async def gamestatus(client, message, **kwargs):
 	if kwargs['arguments'] is None:
 		status = None
 	else:
-		status = discord.Game(name=kwargs['arguments'])
+		status = discord.CustomActivity(name=kwargs['arguments'])
 	await client.change_presence(activity=status)
-	embed = emb.success('Set game status to: ``{}``'.format(utils.wrapbackticks(kwargs['arguments'])))
+	embed = emb.success(
+		(
+			'Set current status to: ``{}``.\n'
+			'To make it permanent, use `\\config set gamestatus`.'
+		).format(utils.wrapbackticks(kwargs['arguments']))
+	)
 	await bot.reply(message, emb=embed)
 
 @shadow(auth=checks.is_host, aliases=['evalfile', 'setvar'])

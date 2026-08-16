@@ -162,12 +162,17 @@ async def on_ready():
 		# None of these errors are currently really "slam on the brakes" serious
 		await wrapper.client.change_presence(
 			status=discord.Status.online,
-			activity=discord.Game(','.join(errcodes))
+			activity=discord.CustomActivity(','.join(errcodes))
 		)
 	else:
+		status_str = config.get_s('gamestatus')
+		if status_str == '':
+			activity = None
+		else:
+			activity = discord.CustomActivity(name=status_str)
 		await wrapper.client.change_presence(
 			status=discord.Status.online,
-			activity=discord.Game(name=config.get_s('gamestatus'))
+			activity=activity
 		)
 
 	# Essentials are out of the way now!
