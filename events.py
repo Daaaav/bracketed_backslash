@@ -272,27 +272,6 @@ async def on_message(m):
 			f.write(a)
 			f.close()
 
-	if not priv and m.embeds != []:
-		for n, e in enumerate(m.embeds):
-			if e.type == 'image':
-				# get the filename from the url
-				# i.e. the part after the last forward slash
-				fn = e.url.split('/')[-1]
-
-				# fetch the embed preview discord fetches
-				img = await utils.fetch(e.thumbnail.proxy_url)
-
-				# cache the image
-				dfn = '{embedcache}/{m.id}_{n}_{fn}'.format(
-					embedcache=bot.embedcache,
-					m=m,
-					n=n,
-					fn=fn,
-				)
-				with open(dfn, 'wb') as f:
-					f.write(img)
-					f.close()
-
 	if not priv and m.author.id in config.get_s('blacklist', m.guild.id):
 		return
 

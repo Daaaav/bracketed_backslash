@@ -39,7 +39,7 @@ op_ids.load()
 
 # This file contains all the bot commands as functions.
 
-class CustomCommandTree(discord.app_commands.CommandTree):
+class BBCommandTree(discord.app_commands.CommandTree):
 	async def interaction_check(self, interaction, /):
 		if interaction.guild_id is not None \
 		and interaction.user.id in config.get_s('blacklist', interaction.guild_id):
@@ -56,7 +56,7 @@ class CustomCommandTree(discord.app_commands.CommandTree):
 
 		return True
 
-slashtree = CustomCommandTree(wrapper.client)
+slashtree = BBCommandTree(wrapper.client)
 
 commands = {}
 
@@ -1111,12 +1111,12 @@ async def channelperms(client, message, **kwargs):
 @slashtree.command(name='botok')
 async def SLASH_botok(interaction: discord.Interaction):
 	'''Check if [\\] is working'''
-	embed = emb.success('Bot is okay.')
+	embed = emb.success('Bot is OK!')
 	await interaction.response.send_message(embed=embed)
 
 @shadow()
 async def botok(client, message, **kwargs):
-	embed = emb.success('Bot is okay.')
+	embed = emb.success('Bot is OK!')
 	await bot.reply(message, emb=embed)
 
 @shadow()

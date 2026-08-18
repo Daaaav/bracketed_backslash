@@ -706,7 +706,7 @@ async def log_updated_role_hierarchy(
 	colour = int(sum(role.colour.value for role in new_list) / len(new_list))
 
 	# Truncate indicators
-	roles = guild.roles
+	roles = list(guild.roles)
 	roles.sort(key=lambda r: r.position)
 	if roles[-1].position == new_list[0].position:
 		trun_indic_top = ''

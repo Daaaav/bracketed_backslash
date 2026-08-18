@@ -48,9 +48,8 @@ load_events()
 
 cachelocation = './.cache'
 attachcache = cachelocation + '/' + 'attach' # define attachment caching location
-embedcache = cachelocation + '/' + 'embed'
 
-for dir_path in (cachelocation, attachcache, embedcache):
+for dir_path in (cachelocation, attachcache):
 	pathlib.Path(dir_path).mkdir(parents=True, exist_ok=True)
 
 os.environ['TZ'] = 'UTC'

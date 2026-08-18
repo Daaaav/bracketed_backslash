@@ -383,7 +383,11 @@ async def check_message(
 			await asyncio.sleep((cooldown[member.id] - now).seconds + 1)
 			locked.remove(member.id)
 
-		del cooldown[member.id]
+		if member.id in cooldown: # KeyError was being encountered here
+			del cooldown[member.id]
+
+	if member.id not in queued: # KeyError was being encountered below
+		return
 
 	# Calculate reason
 	channels_list = []
@@ -441,7 +445,8 @@ async def check_message(
 		reason=reason,
 	)
 
-	del queued[member.id]
+	if member.id in queued: # KeyError was being encountered here
+		del queued[member.id]
 
 	cooldown[member.id] = discord.utils.utcnow() + datetime.timedelta(seconds=2)
 
