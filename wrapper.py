@@ -38,6 +38,7 @@ startup_error_codes = {
 	'send_connect': 'E01',
 	'memberroles': 'E02',
 	'rolexpires': 'E04',
+	'customslash': 'E05',
 }
 
 startup_errors = {}

@@ -154,6 +154,15 @@ async def on_ready():
 		logging.error('\x1b[41mStartup error when loading rolexpires\x1b[0m')
 		traceback.print_exc()
 
+	try:
+		# Register slash commands for custom commands. (Not sync, just locally register)
+		customcommands.load_all_slash_commands()
+
+		wrapper.startup_errors['customslash'] = False
+	except Exception:
+		logging.error('\x1b[41mStartup error when registering customcommands slashes\x1b[0m')
+		traceback.print_exc()
+
 	errcodes = []
 	for e in wrapper.startup_errors:
 		if wrapper.startup_errors[e]:
@@ -365,9 +374,10 @@ async def on_message(m):
 		func = commands.commands[command]
 	elif customcommands.exists(m.guild, command):
 		try:
-			await customcommands.run(
-				m.guild, command, m, arguments, invokesymbol
+			embed = await customcommands.run(
+				m.guild, command, m.author, arguments
 			)
+			await bot.reply(m, emb=embed)
 		except discord.errors.Forbidden:
 			e = emb.error(bot.t['no_permission'])
 			await bot.reply(m, emb=e)

@@ -7,13 +7,16 @@ import json
 import logging
 import re
 import time
+from typing import Optional
 
 import discord
 
 import checks
+import commands as commands_py
 import events
 import bot
 import utils
+import wrapper
 
 class InvalidExpression(Exception):
 	"""Exception that's thrown when an expression is invalid.
@@ -45,6 +48,8 @@ def load():
 commands = {}
 commands = load()
 
+initialized_slash = False
+
 
 def add_custom_command(guild, command, dictionary):
 	"""Add a custom command. Assumes non-DM, assumes the command doesn't already exist
@@ -54,12 +59,17 @@ def add_custom_command(guild, command, dictionary):
 		commands[guild.id] = {}
 	commands[guild.id][command] = dictionary
 
+	commands_py.slashtree.remove_command(command, guild=guild)
+	add_slash_command(guild, command, dictionary)
+
 def remove_custom_command(guild, command):
 	"""Remove a custom command. Assumes non-DM, assumes the command exists.
 	"""
 	if guild.id not in commands:
 		return
 	del commands[guild.id][command]
+
+	commands_py.slashtree.remove_command(command, guild=guild)
 
 def any_commands(guild):
 	"""Returns True if the guild has at least one custom command
@@ -104,7 +114,7 @@ def exists(guild, command):
 	return True
 
 async def run(
-	guild, command, message, arguments, invokesymbol,
+	guild, command, sender, arguments,
 	recursivecall=False, referrers=None
 ):
 	"""Run the given custom command. Assumes that you checked if the command exists, and that
@@ -128,7 +138,7 @@ async def run(
 
 		# Who gets the role change?
 		if com['target'] == 'self':
-			targetmember = message.author
+			targetmember = sender
 		elif com['target'] == 'input':
 			requiredargs += 1
 
@@ -149,13 +159,11 @@ async def run(
 					)
 				else:
 					expected = 'a member representation as an argument'
-				embed = emb.error((
+				return emb.error((
 						'No arguments specified. This command '
 						'expects {}.'
 					).format(expected)
 				)
-				await bot.reply(message, emb=embed)
-				return
 
 		if requiredargs == 2:
 			# Both a mandatory expiry time as a member representation
@@ -164,15 +172,13 @@ async def run(
 				expiryarg = splitargs[0]
 				memberarg = splitargs[1]
 			except IndexError:
-				embed = emb.error((
+				return emb.error((
 						'Not enough arguments specified. '
 						'This command expects both a relative '
 						'expiry time and a member representation '
 						'as arguments.'
 					)
 				)
-				await bot.reply(message, emb=embed)
-				return
 		elif com['expiry'] == 'input':
 			# We may give an expiry time, but we don't have to.
 			if requiredargs == 1:
@@ -194,15 +200,13 @@ async def run(
 					memberarg = arguments
 				else:
 					# Nothing?
-					embed = emb.error((
+					return emb.error((
 							'No arguments specified. This '
 							'command can optionally be given a '
 							'relative expiry time, but expects '
 							'a member representation.'
 						)
 					)
-					await bot.reply(message, emb=embed)
-					return
 			else:
 				# Maybe we have input, maybe we don't!
 				if arguments is not None:
@@ -220,7 +224,7 @@ async def run(
 			setexpirytimer = True
 			expirytime = utils.parsereltime(expiryarg)
 			if expirytime is None:
-				embed = emb.error((
+				return emb.error((
 						'Invalid expiry time. Please input a relative time '
 						'in the format `[#d][#h][#m][#s]`, for example: '
 						'`7d12h`, `1h`, `1d`, `1d2h3m4s`, `1d20s` or '
@@ -229,8 +233,6 @@ async def run(
 						'Roles have not been changed.'
 					)
 				)
-				await bot.reply(message, emb=embed)
-				return
 
 		if com['target'] == 'input':
 			try:
@@ -240,25 +242,21 @@ async def run(
 				if targetmember is None:
 					raise AttributeError('Target member is None')
 			except (AttributeError, TypeError):
-				embed = emb.error(bot.t['specify_user'])
-				await bot.reply(message, emb=embed)
-				return
+				return emb.error(bot.t['specify_user'])
 
 		# And are we allowed to do this?
-		if not parseroleconditional(com['precondition'], message.author, targetmember):
-			embed = emb.error((
+		if not parseroleconditional(com['precondition'], sender, targetmember):
+			return emb.error((
 					'You cannot do that. Maybe you are not allowed to use '
 					'this command, or you cannot use it on {}.'
 				).format(
 					targetmember.mention
 				)
 			)
-			await bot.reply(message, emb=embed)
-			return
 
 		# Now let's apply the change.
 		await utils.givetakeroles(
-			targetmember, message.guild, com['giverole'], com['takerole']
+			targetmember, guild, com['giverole'], com['takerole']
 		)
 
 		if len(com['giverole']) > 0 and len(com['takerole']) > 0:
@@ -297,8 +295,6 @@ async def run(
 				)
 			)
 
-		await bot.reply(message, emb=embed)
-
 		# Does it expire?
 		if setexpirytimer:
 			# It does!
@@ -310,37 +306,34 @@ async def run(
 		if com['setlatestroled']:
 			events.latestroled = targetmember.id
 
+		return embed
+
 	elif com['type'] == 'alias':
 		if command in referrers:
-			embed = emb.error((
+			return emb.error((
 					'An admin is looking for some amusement... '
 					'Maybe it will work with a longer chain?'
 				)
 			)
-			await bot.reply(message, emb=embed)
-			return
 		referrers.append(command)
 
 		if exists(guild, com['to']):
-			await run(
+			return await run(
 				guild,
 				com['to'],
-				message,
+				sender,
 				arguments,
-				invokesymbol,
 				True,
 				referrers
 			)
 		else:
-			embed = emb.error(
+			return emb.error(
 				'This command is an alias of `{}`, which does not exist!'.format(
 					com['to']
 				)
 			)
-			await bot.reply(message, emb=embed)
 	else:
-		embed = emb.error('Custom command type `{}` not supported!'.format(com['type']))
-		await bot.reply(message, emb=embed)
+		return emb.error('Custom command type `{}` not supported!'.format(com['type']))
 
 def parseroleconditional(condstring, caller, target, recursivecall=0):
 	"""Parses a role conditional expression and returns its result
@@ -709,3 +702,229 @@ def solveroleconditionaloperation(terms_evaluated, operators, i, result):
 	terms_evaluated[i] = result
 	del terms_evaluated[i+1]
 	del operators[i]
+
+
+def list_role_names(guild, role_ids):
+	last = len(role_ids) - 1
+	index = 0
+	ret = ''
+	for rid in role_ids:
+		if index > 0:
+			if index == last:
+				ret += ' and '
+			else:
+				ret += ', '
+		role = guild.get_role(rid)
+		if role is None:
+			ret += '@?'
+		else:
+			ret += '@{}'.format(role.name)
+		index += 1
+	return ret
+
+def upper_first(string):
+	if string == '':
+		return ''
+	return string[0].upper() + string[1:]
+
+def describe(guild, dictionary, prefix):
+	# Describe a custom command for help purposes.
+
+	# Special case for the server name:
+	# If it ends with something between parentheses, then remove that.
+	# It's mostly things like (Merry Christmas!), or long quotes,
+	# that make the server name hard to fit in the slash command description limit
+	guild_name = guild.name
+	if guild_name[-1] == ')':
+		left_paren = guild_name.rfind(' (')
+		if left_paren != -1:
+			guild_name = guild_name[:left_paren]
+	guild_prefix = '[{}] '.format(guild_name)
+
+	if dictionary['type'] == 'alias':
+		return guild_prefix + 'Alias of {}{}'.format(prefix, dictionary['to'])
+	if dictionary['type'] != 'role':
+		return guild_prefix + 'Custom server-specific command'
+
+	self = dictionary['target'] == 'self'
+
+	give_action = None
+	take_action = None
+
+	if len(dictionary['giverole']) > 0:
+		give_action = 'give{} the {} role{}'.format(
+			' yourself' if self else '',
+			list_role_names(guild, dictionary['giverole']),
+			's' if len(dictionary['giverole']) > 1 else '',
+		)
+	if len(dictionary['takerole']) > 0:
+		take_action = 'take{} {} role{}'.format(
+			' your' if self else ' the',
+			list_role_names(guild, dictionary['takerole']),
+			's' if len(dictionary['takerole']) > 1 else ''
+		)
+
+	if give_action is not None and take_action is not None:
+		return guild_prefix + upper_first(give_action) + ' and ' + take_action
+	if give_action is not None:
+		return guild_prefix + upper_first(give_action)
+	if take_action is not None:
+		return guild_prefix + upper_first(take_action)
+	return guild_prefix + 'No action configured'
+
+
+def load_all_slash_commands():
+	# Load all slash commands into the tree, done during startup
+	global initialized_slash
+
+	if initialized_slash:
+		return
+
+	for guild in wrapper.client.guilds:
+		for command in list_commands(guild):
+			add_slash_command(guild, command, commands[guild.id][command])
+
+	initialized_slash = True
+
+def add_slash_command(guild, command, dictionary):
+	"""Adds a slash command variant of this custom command to the tree.
+
+	Assumes syncing is done separately (either by \\addcustomrolecommand,
+	or during initial setup, with \\syncslash servers)
+	"""
+	if dictionary['type'] == 'alias':
+		return
+
+	commands_py.slashtree.add_command(
+		BBCustomCommand(guild, command, dictionary),
+		guild=guild
+	)
+
+class BBCustomCommand(discord.app_commands.Command):
+	def __init__(self, guild, command, dictionary):
+		if dictionary['type'] == 'alias':
+			# If we have an alias command, we're in luck!
+			# We now have to redirect to the final command in the chain!
+			# ... or we FIXME this later, don't make a BBCustomCommand for an alias
+			pass
+
+		# There are 6 possible combinations for custom commands:
+		# - expiry can be mandatory, optional, or never used
+		# - member can be mandatory or never used
+		if dictionary['expiry'] == 'input_strict':
+			# Expiry is mandatory
+			if dictionary['target'] == 'input':
+				callback = self.entry_EXPIRY_MEMBER
+			else:
+				callback = self.entry_EXPIRY
+		elif dictionary['expiry'] == 'input':
+			# Expiry is optional
+			if dictionary['target'] == 'input':
+				callback = self.entry_expiry_MEMBER
+			else:
+				callback = self.entry_expiry
+		else:
+			# Expiry is never used
+			if dictionary['target'] == 'input':
+				callback = self.entry_MEMBER
+			else:
+				callback = self.entry
+
+		super().__init__(
+			name = command,
+			description = describe(guild, dictionary, '/'),
+			callback = callback
+		)
+
+	async def entry_EXPIRY_MEMBER(self, interaction:discord.Interaction, expiry:str, member:discord.Member):
+		'''Custom role command on this server
+
+		Parameters
+		-----------
+		expiry: str
+			Example: “7d12h”, “1h”, “1d”, “1d2h3m4s”, “1d20s”, or for no expiry: “inf”, “none”, “x”, “no”
+		member: discord.Member
+			The member to target
+		'''
+		await self.run_with_legacy_args(interaction, '{} {}'.format(expiry.replace(' ', ''), member.id))
+
+	async def entry_EXPIRY(self, interaction:discord.Interaction, expiry:str):
+		'''Custom role command on this server
+
+		Parameters
+		-----------
+		expiry: str
+			Example: “7d12h”, “1h”, “1d”, “1d2h3m4s”, “1d20s”, or for no expiry: “inf”, “none”, “x”, “no”
+		'''
+		await self.run_with_legacy_args(interaction, expiry.replace(' ', ''))
+
+	async def entry_expiry_MEMBER(self, interaction:discord.Interaction, expiry:Optional[str], member:discord.Member):
+		'''Custom role command on this server
+
+		Parameters
+		-----------
+		expiry: Optional[str]
+			Example: “7d12h”, “1h”, “1d”, “1d2h3m4s”, “1d20s”, or for no expiry: “inf”, “none”, “x”, “no”
+		member: discord.Member
+			The member to target
+		'''
+		if expiry is not None:
+			arguments = '{} {}'.format(expiry.replace(' ', ''), member.id)
+		else:
+			arguments = '{}'.format(member.id)
+
+		await self.run_with_legacy_args(interaction, arguments)
+
+	async def entry_expiry(self, interaction:discord.Interaction, expiry:Optional[str]):
+		'''Custom role command on this server
+
+		Parameters
+		-----------
+		expiry: Optional[str]
+			Example: “7d12h”, “1h”, “1d”, “1d2h3m4s”, “1d20s”, or for no expiry: “inf”, “none”, “x”, “no”
+		'''
+		arguments = None
+		if expiry is not None:
+			arguments = expiry.replace(' ', '')
+
+		await self.run_with_legacy_args(interaction, arguments)
+
+	async def entry_MEMBER(self, interaction:discord.Interaction, member:discord.Member):
+		'''Custom role command on this server
+
+		Parameters
+		-----------
+		member: discord.Member
+			The member to target
+		'''
+		await self.run_with_legacy_args(interaction, '{}'.format(member.id))
+
+	async def entry(self, interaction:discord.Interaction):
+		'''Custom role command on this server'''
+		await self.run_with_legacy_args(interaction, None)
+
+	async def run_with_legacy_args(self, interaction:discord.Interaction, arguments):
+		if interaction.command is None:
+			embed = emb.error('Command could not be found in tree!')
+			await interaction.response.send_message(embed=embed)
+			return
+
+		if not exists(interaction.guild, interaction.command.name):
+			embed = emb.error('Command does not exist!')
+			await interaction.response.send_message(embed=embed)
+			return
+
+		try:
+			assert isinstance(interaction.user, discord.Member)
+			embed = await run(
+				interaction.guild, interaction.command.name, interaction.user, arguments
+			)
+			await interaction.response.send_message(embed=embed)
+		except discord.errors.Forbidden:
+			embed = emb.error(bot.t['no_permission'])
+			await interaction.response.send_message(embed=embed)
+			raise
+		except Exception:
+			embed = emb.error(bot.t['generic_error'])
+			await interaction.response.send_message(embed=embed)
+			raise

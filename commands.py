@@ -122,7 +122,11 @@ async def _help(client, message, **kwargs):
 					break
 			for cmd in customcommands.list_commands(message.guild):
 				if kwargs['arguments'] == cmd:
-					content = '[Custom command, more info NYI]'
+					content = customcommands.describe(
+						message.guild,
+						customcommands.commands[message.guild.id][cmd],
+						'\\'
+					)
 					matched = True
 					break
 			if matched:
@@ -2134,10 +2138,21 @@ async def addcustomrolecommand(client, message, **kwargs):
 	)
 	customcommands.save()
 
-	embed = emb.success('Successfully added command `\\{}`'.format(
-			utils.mdspecialchars(splitargs[0])
+	name_fmt = utils.mdspecialchars(splitargs[0])
+
+	try:
+		await slashtree.sync(guild=message.guild)
+	except Exception:
+		embed = emb.warning(
+			(
+				'Successfully added command `\\{}`, '
+				'but could not sync slash command!'
+			).format(name_fmt)
 		)
-	)
+		await bot.reply(message, emb=embed)
+		return
+
+	embed = emb.success('Successfully added command `\\{}`'.format(name_fmt))
 	await bot.reply(message, emb=embed)
 
 @shadow(auth=checks.is_admin, guildonly=True)
@@ -2210,17 +2225,28 @@ async def addcustomaliascommand(client, message, **kwargs):
 	)
 	customcommands.save()
 
-	if customcommands.exists(message.guild, splitargs[1]):
-		embed = emb.success('Successfully added command `\\{}`'.format(
-				utils.mdspecialchars(splitargs[0])
-			)
+	name_fmt = utils.mdspecialchars(splitargs[0])
+
+	try:
+		await slashtree.sync(guild=message.guild)
+	except Exception:
+		embed = emb.warning(
+			(
+				'Successfully added command `\\{}`, '
+				'but could not sync slash command!'
+			).format(name_fmt)
 		)
+		await bot.reply(message, emb=embed)
+		return
+
+	if customcommands.exists(message.guild, splitargs[1]):
+		embed = emb.success('Successfully added command `\\{}`'.format(name_fmt))
 	else:
 		embed = emb.warning((
 				'Successfully added command `\\{}`, but note that '
 				'`\\{}` does not exist!'
 			).format(
-				utils.mdspecialchars(splitargs[0]),
+				name_fmt,
 				utils.mdspecialchars(splitargs[1])
 			)
 		)
@@ -2241,10 +2267,21 @@ async def removecustomcommand(client, message, **kwargs):
 	customcommands.remove_custom_command(message.guild, kwargs['arguments'])
 	customcommands.save()
 
-	embed = emb.success('Command `\\{}` has been removed.'.format(
-			utils.mdspecialchars(kwargs['arguments'])
+	name_fmt = utils.mdspecialchars(kwargs['arguments'])
+
+	try:
+		await slashtree.sync(guild=message.guild)
+	except Exception:
+		embed = emb.warning(
+			(
+				'Command `\\{}` has been removed, '
+				'but could not sync slash command!'
+			).format(name_fmt)
 		)
-	)
+		await bot.reply(message, emb=embed)
+		return
+
+	embed = emb.success('Command `\\{}` has been removed.'.format(name_fmt))
 	await bot.reply(message, emb=embed)
 
 @shadow(auth=checks.is_admin, guildonly=True)
@@ -2356,8 +2393,33 @@ async def reloadstrings(client, message, **kwargs):
 
 @shadow(auth=checks.is_operator)
 async def syncslash(client, message, **kwargs):
-	await slashtree.sync()
-	embed = emb.success('Synced slash commands.')
+	if kwargs['arguments'] is None:
+		await slashtree.sync()
+		embed = emb.success('Synced global slash commands. Use `servers` to sync all server-specific commands, if needed')
+	elif kwargs['arguments'] == 'servers':
+		print('Syncing server-specific slash commands...')
+		goods = 0
+		bads = 0
+		for g in wrapper.client.guilds:
+			print('=== {} ==='.format(g.name))
+			try:
+				await slashtree.sync(guild=g)
+				print('-> Done!')
+				goods += 1
+			except Exception as e:
+				print('-> Error: {}'.format(e))
+				bads += 1
+		embed = emb.success(
+			(
+				'Synced server-specific slash commands.\n'
+				'Successful: {}\n'
+				'Failed: {}\n'
+				'See console for more details.'
+			).format(goods, bads)
+		)
+	else:
+		embed = emb.error('Unrecognized argument - try none for global commands, try `servers` for all servers')
+
 	await bot.reply(message, emb=embed)
 
 @shadow(auth=checks.is_admin, guildonly=True)
