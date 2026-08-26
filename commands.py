@@ -521,7 +521,7 @@ async def _config(client, message, **kwargs):
 
 @shadow()
 async def source(client, message, **kwargs):
-	content = 'Source code to the bot: https://gitgud.io/infoteddy/bracketed_backslash'
+	content = 'Source code to the bot: https://github.com/Daaaav/bracketed_backslash'
 	await bot.reply(message, content)
 
 @shadow(aliases=['findup', 'info'])
@@ -1141,8 +1141,7 @@ async def invite(client, message, **kwargs):
 	oauth_url = discord.utils.oauth_url(client.user.id)
 	content = (
 		'Invite link for this bot:\n'
-		f'<{oauth_url}>\n\n'
-		'Join the **[\\\\]** server at <https://discord.gg/nc7HUZ4>'
+		f'<{oauth_url}>'
 	)
 	await bot.reply(message, content)
 
